@@ -1,0 +1,124 @@
+{
+  "theme": "Caribbean Futurism (Light Mode Dominant)",
+  "typography": {
+    "headings": {
+      "family": "Cabinet Grotesk",
+      "fallbacks": ["sans-serif"],
+      "weights": ["light", "bold", "black"],
+      "usage": "Use tight letter spacing (tracking-tight) for all headings to emphasize the technical/futuristic feel. Never use Inter or Roboto for headings.",
+      "scales": {
+        "h1": "text-5xl md:text-6xl tracking-tighter leading-none",
+        "h2": "text-3xl md:text-4xl tracking-tight leading-tight",
+        "h3": "text-xl md:text-2xl tracking-tight leading-snug"
+      }
+    },
+    "body": {
+      "family": "Manrope",
+      "fallbacks": ["sans-serif"],
+      "weights": ["regular", "medium", "semibold"],
+      "usage": "Use regular for standard text, semibold for labels and UI elements.",
+      "scales": {
+        "base": "text-base leading-relaxed",
+        "small": "text-sm leading-normal",
+        "overline": "text-xs font-bold uppercase tracking-[0.2em]"
+      }
+    }
+  },
+  "colors": {
+    "background": {
+      "primary": "#FAFAFA",
+      "secondary": "#F3F1EC",
+      "surface": "#FFFFFF"
+    },
+    "text": {
+      "primary": "#1A1A1A",
+      "secondary": "#525252",
+      "inverse": "#FFFFFF"
+    },
+    "brand": {
+      "primary": "#E05A33",
+      "primary_hover": "#C2410C",
+      "secondary": "#143628",
+      "accent": "#F59E0B"
+    },
+    "stages_vegetaux": {
+      "graine": "#A37D62",
+      "pousse": "#86EFAC",
+      "racine": "#C2410C",
+      "branches": "#22C55E",
+      "arbre": "#15803D",
+      "foret": "#064E3B"
+    }
+  },
+  "visual_enhancers": {
+    "surfaces": {
+      "glassmorphism": "Use backdrop-blur-xl bg-white/70 (never fully transparent) with a delicate border-white/40 inner stroke for floating panels, sticky headers, and AI Mentor chat overlays.",
+      "neumorphism": "Use subtle flat solid backgrounds (bg-white) with crisp 1px border (border-black/5) and a soft ambient shadow (shadow-sm) for Dashboard Cards and Quiz UI."
+    },
+    "textures": "Incorporate a subtle SVG noise overlay (opacity 2-3%) on the main background to eliminate pure digital flatness, evoking a warm, sandy Caribbean feel."
+  },
+  "component_patterns": {
+    "buttons": {
+      "primary": "Pill-shaped (rounded-full), bg-[#E05A33] text-white, hover:-translate-y-1 hover:shadow-lg transition-transform duration-300.",
+      "secondary": "Rounded-full, bg-transparent border-2 border-[#143628] text-[#143628] hover:bg-[#143628] hover:text-white transition-colors duration-300."
+    },
+    "cards": {
+      "formation_grid": "Flat rectangular cards with 8px border-radius, crisp 1px border-border, no shadow by default. On hover: slight lift (-translate-y-1), soft shadow (shadow-lg), border color darkens to primary orange."
+    },
+    "frek_id_profile": {
+      "style": "Technical/Futuristic terminal-like card but in light mode context. Use monospace fonts for signals (FREK-TIME/WORK/SCORE) with subtle orange glowing accents."
+    },
+    "ai_mentor": {
+      "style": "Conversational sidebar with high-end glassmorphism (bg-white/80 backdrop-blur-2xl). Messages from mentor have soft orange gradients, user messages are crisp white with borders."
+    }
+  },
+  "grids_and_layouts": {
+    "dashboard": "High Density Bento Grid (grid-cols-1 md:grid-cols-3 lg:grid-cols-4). Tight gaps (gap-4 or gap-6). North Star metric (Global Progression) in top-left (col-span-2). Missions and Badges in narrow vertical feeds (col-span-1 row-span-2).",
+    "roadmap": "Horizontal scrolling container (flex overflow-x-auto) with snap-x snap-mandatory. Massive spacing (gap-12) between the 6 stages (Graine to Forêt).",
+    "spacing_scale": "Use generous spacing. Tailwind scale: p-4, p-6, p-8, p-12. Containers with borders MUST have p-6 or p-8 internal padding."
+  },
+  "motion_and_interactions": {
+    "hover_states": "All interactive elements must explicitly set text color on hover. Use scale and subtle translate transforms.",
+    "page_transitions": "Smooth fade and slight upward slide using framer-motion.",
+    "roadmap_scroll": "Use Lenis for smooth momentum scrolling on the horizontal roadmap.",
+    "accessibility": "Respect prefers-reduced-motion. Ensure 4.5:1 contrast for text. All focus states must have a highly visible ring-2 ring-[#E05A33]."
+  },
+  "accessibility": {
+    "contrast": "Ensure minimum 4.5:1 contrast ratio for normal text and 3:1 for large text.",
+    "data_testid": "All interactive and key informational elements MUST include a data-testid attribute in kebab-case."
+  },
+  "media_and_assets": {
+    "icons": "Use iconoir-react for a distinctive, non-corporate technical look that fits the 'futuristic' vibe.",
+    "image_urls": {
+      "hero_background": {
+        "url": "https://images.unsplash.com/photo-1571625765332-4cea822318b1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NTN8MHwxfHNlYXJjaHwyfHxDYXJpYmJlYW4lMjB0ZWNoJTIwY3JlYXRpdmUlMjBwcm9mZXNzaW9uYWwlMjBzdW5zZXR8ZW58MHx8fHwxNzg0MjQ0OTI1fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Calm sea during golden hour. Use with a white/sand gradient overlay to ensure text readability."
+      },
+      "roadmap_stages": {
+        "url": "https://images.unsplash.com/photo-1530049478161-0780526964f4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzR8MHwxfHNlYXJjaHwxfHx0cm9waWNhbCUyMGJvdGFuaWNhbCUyMHBsYW50JTIwZ3Jvd3RoJTIwc2VlZGxpbmclMjBsZWF2ZXN8ZW58MHx8fHwxNzg0MjQ0OTI1fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Closeup photo of green plants for the botanical progression metaphor."
+      },
+      "architectural_accents": {
+        "url": "https://images.unsplash.com/photo-1574086180165-265509b0d484?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjY2NjV8MHwxfHNlYXJjaHwxfHxmdXR1cmlzdGljJTIwd2hpdGUlMjBvcmFuZ2UlMjBhcmNoaXRlY3R1cmUlMjB3YXJtJTIwbGlnaHR8ZW58MHx8fHwxNzg0MjQ0OTI1fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Futuristic white and orange architecture to use in header/hero backgrounds subtly."
+      }
+    }
+  },
+  "3d_and_creative_libraries": {
+    "recommendation": "Use Framer Motion for UI micro-interactions and page transitions.",
+    "scrolling": "Implement Lenis for buttery smooth momentum scrolling, critical for the premium 'Academy OS' feel."
+  },
+  "general_instructions_for_main_agent": [
+    "You are building 'CVLN Academy OS', a futuristic Caribbean learning platform.",
+    "CRITICAL: Do NOT use a fully transparent background on headers or overlays. Always use at least bg-white/70 with backdrop-blur-xl.",
+    "CRITICAL: Output all React components in `.js` files, not `.tsx` files.",
+    "Implement a trilingual toggle (FR/EN/KR) prominently in the header or sidebar (FR is default).",
+    "Do not center-align the app container. Respect optical alignment.",
+    "Always apply data-testid to buttons, form inputs, navigation links, and major display panels.",
+    "Use standard Shadcn components for complex logic (Select, Dialog, Tabs) but customize their Tailwind classes to match the 'Caribbean Futurism' aesthetic.",
+    "Avoid the generic 'Vercel Look' (grayscale). Infuse the white/orange/botanical green color palette strategically.",
+    "Install and use `iconoir-react` for all icons.",
+    "Ensure the FREK-ID dashboard prominently displays signals (FREK-TIME, SCORE) using a highly structured technical layout.",
+    "Use standard sonner component for toast notifications."
+  ]
+}
