@@ -11,6 +11,7 @@ import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import Formations from "@/pages/Formations";
 import FormationDetail from "@/pages/FormationDetail";
+import ModuleJourney from "@/pages/ModuleJourney";
 import Missions from "@/pages/Missions";
 import Badges from "@/pages/Badges";
 import FrekProfile from "@/pages/FrekProfile";
@@ -37,6 +38,7 @@ function App() {
             <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
             <Route path="/formations" element={<Protected><Formations /></Protected>} />
             <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
+            <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
             <Route path="/missions" element={<Protected><Missions /></Protected>} />
             <Route path="/badges" element={<Protected><Badges /></Protected>} />
             <Route path="/frek-profile" element={<Protected><FrekProfile /></Protected>} />

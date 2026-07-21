@@ -191,7 +191,47 @@ class TestQuiz:
         # From quiz.py inspection: Q1=A, Q2=A, Q3=VRAI, Q4=C, Q5=A, Q6=C, Q7=A, Q8=A
         return {"1": "A", "2": "A", "3": "VRAI", "4": "C", "5": "A", "6": "C", "7": "A", "8": "A"}
 
+    def test_quiz_submit_gated_without_prereqs(self, http, auth_headers):
+        """LX v2 gate — quiz must reject before all pre-phases are ticked."""
+        answers = self._correct_answers(http)
+        r = http.post(
+            f"{API}/formations/FMS-01/modules/FMS-01-M01/quiz/submit",
+            json={"module_code": "FMS-01-M01", "answers": answers},
+            headers=auth_headers,
+        )
+        assert r.status_code == 400, r.text
+        detail = r.json().get("detail", "")
+        assert "Complète d'abord les phases" in detail
+        # Missing phases should include all 5 gates
+        for expected in ("hook", "objectives", "course", "workshop", "deliverable"):
+            assert expected in detail, f"expected '{expected}' in gate error: {detail}"
+
+    def _complete_prereqs(self, http, auth_headers, fc="FMS-01", mc="FMS-01-M01"):
+        """Tick all 4 pre-phases + submit deliverable (>=250 chars)."""
+        base = f"{API}/modules/{fc}/{mc}/phase"
+        for key in ("hook", "objectives", "workshop"):
+            r = http.post(base, json={"key": key}, headers=auth_headers)
+            assert r.status_code == 200, f"phase {key}: {r.text}"
+        r = http.post(base, json={"key": "course", "progress_pct": 100},
+                      headers=auth_headers)
+        assert r.status_code == 200, r.text
+        text = ("Voici mon livrable détaillé pour FMS-01-M01. "
+                "Intention : produire un plan de sortie caribéen. "
+                "Méthode : j'ai suivi les 5 étapes de l'atelier CVLN, "
+                "en m'ancrant dans le contexte Martinique. "
+                "Résultat : un plan structuré en 3 phases (teasing, sortie, "
+                "sustain). Apprentissages : la doctrine CVLN est concrète, "
+                "l'ancrage territorial est central, la mini-mission relie "
+                "théorie et terrain de manière opérationnelle.")
+        assert len(text) >= 250
+        r = http.post(f"{API}/modules/{fc}/{mc}/deliverable",
+                      json={"text": text}, headers=auth_headers)
+        assert r.status_code == 200, r.text
+
     def test_submit_all_correct(self, http, auth_headers, registered):
+        # Complete prereqs first (LX v2)
+        self._complete_prereqs(http, auth_headers)
+
         # snapshot user state
         r_me_before = http.get(f"{API}/auth/me", headers=auth_headers).json()
         cc_before = r_me_before["cc_credits"]
@@ -450,3 +490,339 @@ class TestOnboarding:
         badges = http.get(f"{API}/badges/mine", headers=ob_headers).json()
         codes = [b["code"] for b in badges]
         assert codes.count("BADGE-DECOUVERTE") == 1
+
+
+# ---------------- LX v2 — Module Journey / Gating / Learning Path ----------------
+DELIVERABLE_TEXT = (
+    "Voici mon livrable LX v2. Intention : produire un plan de sortie caribéen. "
+    "Méthode : j'ai suivi les 5 étapes de l'atelier CVLN, en m'ancrant dans le "
+    "contexte Martinique. Résultat : un plan en 3 phases (teasing / sortie / "
+    "sustain), aligné avec la doctrine FREK. Apprentissages : la doctrine CVLN "
+    "est concrète, l'ancrage territorial est central, la mini-mission relie "
+    "théorie et terrain de manière opérationnelle."
+)
+
+
+CORRECT_ANSWERS = {"1": "A", "2": "A", "3": "VRAI", "4": "C",
+                   "5": "A", "6": "C", "7": "A", "8": "A"}
+
+
+@pytest.fixture(scope="module")
+def lx_user(http):
+    """Fresh, fully-onboarded FMS user shared across LX v2 test classes."""
+    uid = uuid.uuid4().hex[:8]
+    creds = {
+        "email": f"qa-lx2+{uid}@test.com",
+        "password": "Cvln!2026",
+        "display_name": f"QA LX2 {uid}",
+        "lang": "fr",
+    }
+    r = http.post(f"{API}/auth/register", json=creds)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    headers = {"Authorization": f"Bearer {data['token']}"}
+    # Onboard as FMS
+    ob = http.post(f"{API}/onboarding/complete", headers=headers, json={
+        "lang": "fr", "metier_vise": "FMS", "territoire": "martinique",
+        "objectif_perso": "Sortir mon premier EP CVLN caribéen.",
+    })
+    assert ob.status_code == 200, ob.text
+    return {"token": data["token"], "user": data["user"], "creds": creds, "headers": headers}
+
+
+@pytest.fixture(scope="module")
+def lx_headers(lx_user):
+    return lx_user["headers"]
+
+
+@pytest.fixture(scope="class")
+def lx_fresh_headers(http):
+    """Isolated fresh onboarded FMS user for read-only journey shape tests."""
+    uid = uuid.uuid4().hex[:8]
+    creds = {"email": f"qa-lxf+{uid}@test.com", "password": "Cvln!2026",
+             "display_name": f"QA LXF {uid}", "lang": "fr"}
+    r = http.post(f"{API}/auth/register", json=creds)
+    assert r.status_code == 200
+    headers = {"Authorization": f"Bearer {r.json()['token']}"}
+    http.post(f"{API}/onboarding/complete", headers=headers, json={
+        "lang": "fr", "metier_vise": "FMS", "territoire": "martinique",
+        "objectif_perso": "Read-only journey inspection.",
+    })
+    return headers
+
+
+class TestLXv2ModuleJourney:
+    """GET /api/modules/{fc}/{mc} enriched payload."""
+
+    def test_module_journey_shape(self, http, lx_fresh_headers):
+        r = http.get(f"{API}/modules/FMS-01/FMS-01-M01", headers=lx_fresh_headers)
+        assert r.status_code == 200, r.text
+        j = r.json()
+        # Top-level keys
+        for k in ("formation", "module", "is_unlocked", "lock_reason",
+                  "progress", "status", "phase_flags"):
+            assert k in j, f"missing {k}"
+        assert j["is_unlocked"] is True
+        assert j["status"] == "available"
+        # phase_flags all False initially
+        pf = j["phase_flags"]
+        for key in ("hook", "objectives", "course", "workshop",
+                    "deliverable", "quiz", "mini_mission"):
+            assert pf[key] is False, f"expected {key}=False, got {pf}"
+
+        # Enriched module → phases dict
+        phases = j["module"]["phases"]
+        assert "narrative" in phases["hook"]
+        assert len(phases["objectives"]["items"]) == 4
+        assert len(phases["course"]["content_md"]) > 200
+        assert isinstance(phases["course"]["reading_min"], int)
+        assert len(phases["workshop"]["steps"]) == 5
+        assert phases["deliverable"]["min_chars"] == 250
+        assert phases["quiz"]["passing_score"] == 0.8
+        assert "brief" in phases["mini_mission"]
+
+    def test_module_journey_requires_auth(self, http):
+        r = http.get(f"{API}/modules/FMS-01/FMS-01-M01")
+        assert r.status_code == 401
+
+    def test_module_journey_locked_module(self, http, lx_fresh_headers):
+        # FMS-01-M02 is locked until M01 validated
+        r = http.get(f"{API}/modules/FMS-01/FMS-01-M02", headers=lx_fresh_headers)
+        assert r.status_code == 200
+        j = r.json()
+        assert j["is_unlocked"] is False
+        assert j["lock_reason"]
+
+
+class TestLXv2Gating:
+    """Quiz-submit gate + deliverable + mini-mission gate."""
+
+    def test_quiz_rejects_when_no_phase_done(self, http, lx_headers):
+        r = http.post(
+            f"{API}/formations/FMS-01/modules/FMS-01-M01/quiz/submit",
+            json={"module_code": "FMS-01-M01", "answers": CORRECT_ANSWERS},
+            headers=lx_headers,
+        )
+        assert r.status_code == 400
+        detail = r.json()["detail"]
+        assert "Complète d'abord les phases" in detail
+        # all 5 keys named
+        for k in ("hook", "objectives", "course", "workshop", "deliverable"):
+            assert k in detail
+
+    def test_phase_tick_hook_objectives_workshop(self, http, lx_headers):
+        for key in ("hook", "objectives", "workshop"):
+            r = http.post(f"{API}/modules/FMS-01/FMS-01-M01/phase",
+                          json={"key": key}, headers=lx_headers)
+            assert r.status_code == 200, f"{key}: {r.text}"
+            j = r.json()
+            assert j["ok"] is True
+            assert j["phase_flags"][key] is True
+        # After 3 ticks (no course, no deliverable), quiz still gated
+        r = http.get(f"{API}/modules/FMS-01/FMS-01-M01", headers=lx_headers)
+        pf = r.json()["phase_flags"]
+        assert pf["hook"] and pf["objectives"] and pf["workshop"]
+        assert pf["course"] is False and pf["deliverable"] is False
+
+    def test_course_progress_below_80_does_not_count(self, http, lx_headers):
+        r = http.post(f"{API}/modules/FMS-01/FMS-01-M01/phase",
+                      json={"key": "course", "progress_pct": 50},
+                      headers=lx_headers)
+        assert r.status_code == 200
+        assert r.json()["phase_flags"]["course"] is False
+
+    def test_course_progress_80_counts(self, http, lx_headers):
+        r = http.post(f"{API}/modules/FMS-01/FMS-01-M01/phase",
+                      json={"key": "course", "progress_pct": 100},
+                      headers=lx_headers)
+        assert r.status_code == 200
+        assert r.json()["phase_flags"]["course"] is True
+
+    def test_deliverable_too_short_rejected(self, http, lx_headers):
+        r = http.post(f"{API}/modules/FMS-01/FMS-01-M01/deliverable",
+                      json={"text": "trop court"}, headers=lx_headers)
+        assert r.status_code == 400
+        assert "250" in r.json()["detail"]
+
+    def test_deliverable_valid_submits(self, http, lx_headers):
+        r = http.post(f"{API}/modules/FMS-01/FMS-01-M01/deliverable",
+                      json={"text": DELIVERABLE_TEXT}, headers=lx_headers)
+        assert r.status_code == 200, r.text
+        j = r.json()
+        assert j["phase_flags"]["deliverable"] is True
+        assert j["status"] == "ready_for_quiz"
+
+    def test_mini_mission_gated_before_quiz(self, http, lx_headers):
+        r = http.post(f"{API}/modules/FMS-01/FMS-01-M01/mini-mission/commit",
+                      headers=lx_headers)
+        assert r.status_code == 400
+        assert "quiz" in r.json()["detail"].lower()
+
+    def test_quiz_submit_after_prereqs(self, http, lx_headers):
+        r = http.post(
+            f"{API}/formations/FMS-01/modules/FMS-01-M01/quiz/submit",
+            json={"module_code": "FMS-01-M01", "answers": CORRECT_ANSWERS},
+            headers=lx_headers,
+        )
+        assert r.status_code == 200, r.text
+        j = r.json()
+        assert j["passed"] is True
+        assert j["score"] >= 0.8
+        assert j["cc_earned"] > 0
+
+        # After quiz, status becomes awaiting_mini_mission (not validated yet)
+        r2 = http.get(f"{API}/modules/FMS-01/FMS-01-M01", headers=lx_headers)
+        j2 = r2.json()
+        assert j2["phase_flags"]["quiz"] is True
+        assert j2["phase_flags"]["mini_mission"] is False
+        assert j2["status"] == "awaiting_mini_mission"
+
+    def test_mini_mission_commit_validates_module(self, http, lx_headers):
+        r = http.post(f"{API}/modules/FMS-01/FMS-01-M01/mini-mission/commit",
+                      headers=lx_headers)
+        assert r.status_code == 200, r.text
+        j = r.json()
+        assert j["status"] == "validated"
+        for k in ("hook", "objectives", "course", "workshop",
+                  "deliverable", "quiz", "mini_mission"):
+            assert j["phase_flags"][k] is True, f"{k} not true"
+
+    def test_module_lock_progression_after_m01_validated(self, http, lx_headers):
+        """After M01 validated, M02 should unlock but M03 still locked."""
+        r = http.get(f"{API}/formations/FMS-01", headers=lx_headers)
+        assert r.status_code == 200
+        f = r.json()
+        by_code = {m["code"]: m for m in f["modules"]}
+        assert by_code["FMS-01-M01"]["status"] == "validated"
+        assert by_code["FMS-01-M02"]["is_unlocked"] is True
+        assert by_code["FMS-01-M03"]["is_unlocked"] is False
+
+    def test_progression_counts_validated_module(self, http, lx_headers):
+        """LX v2: progression counts only fully-validated modules."""
+        r = http.get(f"{API}/progression/summary", headers=lx_headers)
+        assert r.status_code == 200
+        j = r.json()
+        assert j["completed_modules"] >= 1
+        assert j["total_modules"] > 0
+        assert 0 <= j["global_pct"] <= 100
+
+
+class TestLXv2LearningPath:
+    """GET /api/user/learning-path — pole-first sequential ordering."""
+
+    def test_learning_path_shape_for_fresh_fms_user(self, http):
+        # Fresh onboarded FMS user (independent from lx_user which has M01 done)
+        uid = uuid.uuid4().hex[:8]
+        creds = {
+            "email": f"qa-lp+{uid}@test.com",
+            "password": "Cvln!2026",
+            "display_name": f"QA LP {uid}",
+            "lang": "fr",
+        }
+        r = http.post(f"{API}/auth/register", json=creds)
+        assert r.status_code == 200
+        headers = {"Authorization": f"Bearer {r.json()['token']}"}
+        http.post(f"{API}/onboarding/complete", headers=headers, json={
+            "lang": "fr", "metier_vise": "FMS", "territoire": "martinique",
+            "objectif_perso": "Learning path fresh test.",
+        })
+
+        r = http.get(f"{API}/user/learning-path", headers=headers)
+        assert r.status_code == 200, r.text
+        j = r.json()
+
+        assert j["metier_vise"] == "FMS"
+        # own_pole = 6 FMS formations
+        own = j["own_pole"]
+        assert len(own) == 6, f"expected 6 FMS formations, got {len(own)}"
+        for f in own:
+            assert f["pole"] == "FMS"
+            assert f["is_recommended"] is True
+        # sorted by code
+        codes = [f["code"] for f in own]
+        assert codes == sorted(codes)
+
+        # FMS-01 unlocked, FMS-02..06 locked
+        by_code = {f["code"]: f for f in own}
+        assert by_code["FMS-01"]["is_unlocked"] is True
+        for c in ("FMS-02", "FMS-03", "FMS-04", "FMS-05", "FMS-06"):
+            if c in by_code:
+                assert by_code[c]["is_unlocked"] is False, f"{c} should be locked"
+                assert "50%" in by_code[c]["lock_reason"]
+
+        # other_poles = 24 formations sorted by pole then code
+        others = j["other_poles"]
+        assert len(others) == 24, f"expected 24 other-pole formations, got {len(others)}"
+        for f in others:
+            assert f["pole"] != "FMS"
+            assert f["is_recommended"] is False
+        # First-of-each-other-pole should be locked with pole-completion msg
+        first_per_pole = {}
+        for f in others:
+            first_per_pole.setdefault(f["pole"], f)
+        for f in first_per_pole.values():
+            assert f["is_unlocked"] is False
+            assert "pôle FMS" in f["lock_reason"]
+
+        # next_action → FMS-01 / FMS-01-M01
+        na = j["next_action"]
+        assert na is not None
+        assert na["formation_code"] == "FMS-01"
+        assert na["module_code"] == "FMS-01-M01"
+        assert na["status"] == "available"
+
+
+class TestLXv2FormationLockRules:
+    """GET /api/formations/{code} respects sequential pole unlock."""
+
+    def test_fms01_unlocked_for_fms_user(self, http, lx_headers):
+        r = http.get(f"{API}/formations/FMS-01", headers=lx_headers)
+        assert r.status_code == 200
+        assert r.json()["is_unlocked"] is True
+
+    def test_fms02_locked_until_50pct_of_fms01(self, http):
+        # Fresh FMS user with 0 progress
+        uid = uuid.uuid4().hex[:8]
+        creds = {"email": f"qa-lock+{uid}@test.com", "password": "Cvln!2026",
+                 "display_name": f"QA LK {uid}", "lang": "fr"}
+        r = http.post(f"{API}/auth/register", json=creds)
+        headers = {"Authorization": f"Bearer {r.json()['token']}"}
+        http.post(f"{API}/onboarding/complete", headers=headers, json={
+            "lang": "fr", "metier_vise": "FMS", "territoire": "martinique",
+            "objectif_perso": "Lock rule test.",
+        })
+        r = http.get(f"{API}/formations/FMS-02", headers=headers)
+        assert r.status_code == 200
+        j = r.json()
+        assert j["is_unlocked"] is False
+        assert "FMS-01" in j["lock_reason"]
+
+    def test_other_pole_formation_locked_for_fms_user(self, http):
+        uid = uuid.uuid4().hex[:8]
+        creds = {"email": f"qa-otr+{uid}@test.com", "password": "Cvln!2026",
+                 "display_name": f"QA OT {uid}", "lang": "fr"}
+        r = http.post(f"{API}/auth/register", json=creds)
+        headers = {"Authorization": f"Bearer {r.json()['token']}"}
+        http.post(f"{API}/onboarding/complete", headers=headers, json={
+            "lang": "fr", "metier_vise": "FMS", "territoire": "martinique",
+            "objectif_perso": "Cross pole test.",
+        })
+        # Get any non-FMS formation code from /formations
+        forms = http.get(f"{API}/formations").json()
+        non_fms = next(f for f in forms if f["pole"] != "FMS")
+        r = http.get(f"{API}/formations/{non_fms['code']}", headers=headers)
+        assert r.status_code == 200
+        j = r.json()
+        assert j["is_unlocked"] is False
+        assert "FMS" in j["lock_reason"]
+
+
+class TestLXv2ModuleLockRulesRemoved:
+    """Merged into TestLXv2Gating to keep loadscope-safe."""
+    pass
+
+
+class TestLXv2ProgressionSummaryRemoved:
+    """Merged into TestLXv2Gating to keep loadscope-safe."""
+    pass
+

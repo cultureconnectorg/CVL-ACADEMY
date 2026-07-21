@@ -72,6 +72,18 @@ async def get_current_user(
     return User(**doc)
 
 
+async def get_current_user_optional(
+    creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer),
+) -> Optional[User]:
+    if not creds:
+        return None
+    user_id = decode_token(creds.credentials)
+    if not user_id:
+        return None
+    doc = await db.users.find_one({"id": user_id}, {"_id": 0})
+    return User(**doc) if doc else None
+
+
 def user_public(u: User) -> UserPublic:
     return UserPublic(
         id=u.id, frek_id=u.frek_id, email=u.email, display_name=u.display_name,

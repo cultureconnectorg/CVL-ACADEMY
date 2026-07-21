@@ -17,18 +17,21 @@ export default function Dashboard() {
   const [missions, setMissions] = useState([]);
   const [badges, setBadges] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [path, setPath] = useState(null);
 
   useEffect(() => {
     (async () => {
       await refreshMe();
-      const [p, m, b, s] = await Promise.all([
+      const [p, m, b, s, lp] = await Promise.all([
         api.get("/frek/profile").then(r => r.data),
         api.get("/missions").then(r => r.data),
         api.get("/badges/mine").then(r => r.data),
         api.get("/progression/summary").then(r => r.data),
+        api.get("/user/learning-path").then(r => r.data),
       ]);
-      setProf(p); setMissions(m); setBadges(b); setSummary(s);
+      setProf(p); setMissions(m); setBadges(b); setSummary(s); setPath(lp);
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const stade = user?.stade || "graine";
@@ -62,6 +65,34 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      {/* Next Action banner — LX v2 "you are here" */}
+      {path?.next_action && (
+        <div className="mb-10 cvln-card p-6 relative overflow-hidden" data-testid="next-action-card">
+          <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: path.next_action.pole_color }} />
+          <div className="flex flex-wrap items-center gap-6">
+            <div className="flex-1 min-w-0">
+              <div className="text-[10px] mono uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
+                Ta prochaine étape
+              </div>
+              <div className="font-display font-bold text-2xl md:text-3xl tracking-tight mt-2 leading-tight">
+                {path.next_action.module_name}
+              </div>
+              <div className="text-sm text-[--cvln-ink-2] mt-1">
+                {path.next_action.formation_name} · statut : {path.next_action.status}
+              </div>
+            </div>
+            <Link
+              to={`/formations/${path.next_action.formation_code}/modules/${path.next_action.module_code}`}
+              data-testid="next-action-open"
+              className="btn-primary"
+            >
+              {path.next_action.status === "available" ? "Démarrer" : "Continuer"}
+              <ArrowRight width={16} height={16} className="ml-2" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* North star + KPI bento */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 md:gap-6">
