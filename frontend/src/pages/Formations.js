@@ -18,12 +18,13 @@ export default function Formations() {
   }, []);
 
   const visible = pole === "ALL" ? formations : formations.filter(f => f.pole === pole);
+  const totalModules = formations.reduce((n, f) => n + (f.modules_count || 0), 0);
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="formations-page">
       <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">{t("formations")}</div>
       <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-2">
-        30 formations. 8 pôles. 215 modules.
+        {formations.length} formations. {poles.length} pôles. {totalModules} modules.
       </h1>
       <p className="text-[--cvln-ink-2] mt-3 max-w-2xl">
         Chaque formation applique la doctrine CVLN : Hook culturel → Théorie → Démo → Atelier → Livrable → Validation.

@@ -138,3 +138,14 @@ MISSIONS = [
     {"code": "MIS-SAY-01", "title": "Manifeste de leader culturel", "description": "Rédige et publie ton manifeste de leader culturel caribéen (1 page + vidéo 2 min).", "pole": "SAY", "cc_reward": 20, "stade_required": "pousse", "entity": "DJ SAYD", "status_type": "open"},
     {"code": "MIS-HOS-01", "title": "Concept tiers-lieu caribéen", "description": "Propose un concept complet de tiers-lieu créatif caribéen (10 pages + budget).", "pole": "HOS", "cc_reward": 35, "stade_required": "racine", "entity": "CVLN Hospitality", "status_type": "open"},
 ]
+
+
+# ------------- INJECT DETAILED MODULES INTO FORMATIONS -------------
+# 25 formations shipped as "coming_soon" get their detailed modules injected here.
+# Only fills empty `modules` lists — never overwrites existing detailed modules
+# (so FMS-01/02/03, FRK-01 and BRN-02 remain untouched).
+from seed_modules import EXTRA_MODULES  # noqa: E402
+
+for _f in FORMATIONS:
+    if not _f.get("modules") and _f["code"] in EXTRA_MODULES:
+        _f["modules"] = EXTRA_MODULES[_f["code"]]

@@ -12,15 +12,16 @@ def _pole_lookup():
 async def seed_if_empty() -> None:
     poles = _pole_lookup()
 
-    # Formations
-    if await db.formations.count_documents({}) == 0:
-        docs = []
-        for f in FORMATIONS:
-            pole = poles.get(f["pole"], {"name": f["pole"], "color": "#525252"})
-            doc = {**f, "pole_name": pole["name"], "pole_color": pole["color"]}
-            docs.append(doc)
-        if docs:
-            await db.formations.insert_many(docs)
+    # Formations — UPSERT so that content updates in seed_data propagate on restart
+    # (does NOT touch user data collections: progress, user_missions, user_badges, users).
+    for f in FORMATIONS:
+        pole = poles.get(f["pole"], {"name": f["pole"], "color": "#525252"})
+        doc = {**f, "pole_name": pole["name"], "pole_color": pole["color"]}
+        await db.formations.update_one(
+            {"code": f["code"]},
+            {"$set": doc},
+            upsert=True,
+        )
 
     # Badges
     if await db.badges.count_documents({}) == 0:

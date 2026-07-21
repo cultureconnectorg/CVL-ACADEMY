@@ -26,7 +26,15 @@ noise/texture terreuse, chips végétaux pour les stades.
   Graine → Pousse → Racine → Branches → Arbre → Forêt.
 - ✅ Trilinguisme FR/EN/KR (kréyòl).
 
-## Ce qui a été livré — 21 Feb 2026 (Iteration 1 + 2)
+## Ce qui a été livré — 21 Feb 2026 (Iteration 1 + 2 + 3)
+
+### Iteration 3 — Enrichissement contenu 24+ formations — 21 Feb 2026
+- **25 formations** ex-"coming_soon" enrichies avec **~193 modules détaillés** (hook / livrable / durée / stade / signal FREK), ancrés Caraïbe.
+- Total plateforme : **30 formations · 13 pôles · 233 modules**.
+- Seed idempotent (upsert-safe) : `seed.py` fait un `update_one({...}, {"$set": doc}, upsert=True)` par formation → chaque redémarrage backend propage les changements de contenu sans toucher aux données utilisateurs (progress, badges, missions acceptées).
+- Nouvelle organisation : `/app/backend/seed_modules.py` centralise le contenu (mergé dans FORMATIONS via `seed_data.py`) pour faciliter les prochaines révisions éditoriales.
+- Frontend : stat headline du catalogue devient dynamique (`30 formations. 13 pôles. 233 modules.`).
+- Tests backend : **27/27 pytest ✅** (régression). Quiz auto-généré + submit sur les nouveaux modules validé end-to-end.
 
 ### Iteration 2 — FREK Origin Story (onboarding) — 21 Feb 2026
 - 5-step wizard (`/onboarding`) : langue → métier visé (pôle) → territoire → objectif → récap.
@@ -78,10 +86,10 @@ noise/texture terreuse, chips végétaux pour les stades.
 
 ## Roadmap
 
-### P1 — Prochain chantier (priorité utilisateur)
-- **Compléter les modules détaillés pour les 24 formations "coming_soon"** — enrichir chaque formation avec 8 à 12 modules complets (hook / deliverable / durée / stade / frek_signal). Objectif : contenu réellement exploitable pour la bêta fermée.
+### P1 — Prochain chantier
 - **Câbler FrekCore & CVLN Agent Factory** — remplacer les fallbacks par les vraies APIs (variables d'env `FREK_CORE_BASE_URL`, `CVLN_AGENT_FACTORY_URL`) dès que fournies.
 - **Bêta fermée & métriques** — instrumenter : taux de complétion, rétention D1/D7/D30, interactions mentor, engagement missions/badges.
+- **Revue éditoriale du contenu enrichi** (25 formations × ~8 modules) par un·e directeur·rice pédagogique CVLN avant lancement bêta.
 
 ### P2
 - Quiz bank multi-questions dynamique (au lieu du template 8 questions/module).
