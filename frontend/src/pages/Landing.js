@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
-import { LeafSolid, ArrowRight } from "iconoir-react";
+import { Leaf, ArrowRight } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
@@ -40,7 +40,7 @@ export default function Landing() {
       <header className="relative z-10 flex items-center justify-between px-6 md:px-16 py-6 border-b border-black/5 bg-white/60 backdrop-blur-xl">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-full bg-[--cvln-orange] flex items-center justify-center">
-            <LeafSolid className="text-white" width={18} height={18} />
+            <Leaf className="text-white" width={18} height={18} />
           </div>
           <div className="font-display font-black tracking-tight text-lg md:text-xl">
             CVLN <span className="text-[--cvln-orange]">Academy</span>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Coin, MedalRibbons, GraduationCap, Sparks } from "iconoir-react";
+import { ArrowRight, Coins, Medal1st, GraduationCap, Sparks } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
@@ -97,7 +97,7 @@ export default function Dashboard() {
         <div className="cvln-card p-6" data-testid="card-cc">
           <div className="flex items-center justify-between">
             <div className="text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">{t("cc_credits")}</div>
-            <Coin width={18} height={18} className="text-[--cvln-orange]" />
+            <Coins width={18} height={18} className="text-[--cvln-orange]" />
           </div>
           <div className="mt-2 font-display font-black text-5xl tracking-tighter leading-none">{cc}</div>
           <div className="mt-2 text-xs text-[--cvln-ink-2]">
@@ -110,7 +110,7 @@ export default function Dashboard() {
         <div className="cvln-card p-6" data-testid="card-badges">
           <div className="flex items-center justify-between">
             <div className="text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">{t("badges_won")}</div>
-            <MedalRibbons width={18} height={18} className="text-[--cvln-orange]" />
+            <Medal1st width={18} height={18} className="text-[--cvln-orange]" />
           </div>
           <div className="mt-2 font-display font-black text-5xl tracking-tighter leading-none">{badges.length}</div>
           <Link to="/badges" className="mt-3 text-xs text-[--cvln-orange] font-semibold inline-flex items-center gap-1">

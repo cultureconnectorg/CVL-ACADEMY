@@ -1,18 +1,18 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import {
-  HomeAltSlideHoriz, Compass, GraduationCap, Bookmark, MedalRibbons,
-  Fingerprint, LogOut, LeafSolid, Language,
+  HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
+  Fingerprint, LogOut, Leaf, Language,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import MentorPanel from "@/components/MentorPanel";
 
 const NAV = [
-  { to: "/dashboard",    key: "dashboard",     Icon: HomeAltSlideHoriz },
+  { to: "/dashboard",    key: "dashboard",     Icon: HomeAlt },
   { to: "/roadmap",      key: "roadmap",       Icon: Compass },
   { to: "/formations",   key: "formations",    Icon: GraduationCap },
   { to: "/missions",     key: "missions",      Icon: Bookmark },
-  { to: "/badges",       key: "badges",        Icon: MedalRibbons },
+  { to: "/badges",       key: "badges",        Icon: Medal1st },
   { to: "/frek-profile", key: "frek_profile",  Icon: Fingerprint },
 ];
 
@@ -30,7 +30,7 @@ export default function Layout({ children }) {
       >
         <div className="flex items-center gap-2 mb-10">
           <div className="w-9 h-9 rounded-full bg-[--cvln-orange] flex items-center justify-center">
-            <LeafSolid className="text-white" width={18} height={18} />
+            <Leaf className="text-white" width={18} height={18} />
           </div>
           <div className="font-display font-black text-[19px] tracking-tight leading-none">
             CVLN <span className="text-[--cvln-orange]">Academy</span>

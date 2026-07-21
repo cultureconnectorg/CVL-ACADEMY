@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { NavArrowLeft, PlayOutline, Book, Trophy, MediaVideo, Coin } from "iconoir-react";
+import { NavArrowLeft, Play, Book, Trophy, MediaVideo, Coins } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
 import { useAuth } from "@/lib/auth.jsx";
@@ -80,7 +80,7 @@ export default function FormationDetail() {
 
         <div className="cvln-card p-6 space-y-3">
           <Row icon={<Book width={16} height={16} />} label={t("duration")} value={`${f.duration_h}h`} />
-          <Row icon={<Coin width={16} height={16} />} label={t("cc_credits")} value={`${f.cc} CC`} />
+          <Row icon={<Coins width={16} height={16} />} label={t("cc_credits")} value={`${f.cc} CC`} />
           <Row icon={<Trophy width={16} height={16} />} label="Badge" value={f.badge_name} />
           <Row icon={<MediaVideo width={16} height={16} />} label="Stades" value={
             <span>{STADE_EMOJI[f.stades[0]]} → {STADE_EMOJI[f.stades[f.stades.length - 1]]}</span>
@@ -132,7 +132,7 @@ export default function FormationDetail() {
                   onClick={() => openQuiz(m)}
                   className="btn-primary text-sm"
                 >
-                  <PlayOutline width={16} height={16} className="mr-1.5" />
+                  <Play width={16} height={16} className="mr-1.5" />
                   {t("quiz_open")}
                 </button>
               </div>
