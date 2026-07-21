@@ -7,6 +7,7 @@ import { I18nProvider } from "@/lib/i18n.jsx";
 import { Toaster } from "@/components/ui/sonner";
 
 import Landing from "@/pages/Landing";
+import Onboarding from "@/pages/Onboarding";
 import Dashboard from "@/pages/Dashboard";
 import Formations from "@/pages/Formations";
 import FormationDetail from "@/pages/FormationDetail";
@@ -20,6 +21,7 @@ function Protected({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
+  if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
   return <Layout>{children}</Layout>;
 }
 
@@ -30,6 +32,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Landing />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
             <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
             <Route path="/formations" element={<Protected><Formations /></Protected>} />

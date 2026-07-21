@@ -29,6 +29,11 @@ class User(BaseModel):
     lang: str = "fr"  # fr | en | kr
     stade: str = "graine"  # graine | pousse | racine | branches | arbre | foret
     cc_credits: int = 0
+    # Onboarding — FREK Origin Story
+    onboarding_completed: bool = False
+    metier_vise: Optional[str] = None      # pole code (FMS / KOR / KLT / FRK / ...)
+    territoire: Optional[str] = None        # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre
+    objectif_perso: Optional[str] = None    # free text (≤ 240 chars)
     signals: Dict[str, int] = Field(default_factory=lambda: {
         "FREK-TIME": 0, "FREK-WORK": 0, "FREK-SCORE": 0,
         "FREK-LINK": 0, "FREK-CERT": 0, "FREK-CONTRIB": 0
@@ -46,6 +51,10 @@ class UserPublic(BaseModel):
     cc_credits: int
     signals: Dict[str, int]
     created_at: str
+    onboarding_completed: bool = False
+    metier_vise: Optional[str] = None
+    territoire: Optional[str] = None
+    objectif_perso: Optional[str] = None
 
 
 class RegisterInput(BaseModel):
@@ -202,3 +211,19 @@ class MentorConversation(BaseModel):
 class MentorChatInput(BaseModel):
     message: str
     session_id: Optional[str] = None
+
+
+# ---------------- ONBOARDING (FREK Origin Story) ----------------
+class OnboardingInput(BaseModel):
+    lang: str  # fr | en | kr
+    metier_vise: str  # pole code
+    territoire: str  # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre
+    objectif_perso: str = Field(min_length=3, max_length=240)
+
+
+class OnboardingResult(BaseModel):
+    user: UserPublic
+    recommended_formation: Optional[Dict[str, Any]] = None
+    recommended_mission: Optional[Dict[str, Any]] = None
+    badge_earned: Optional[Dict[str, Any]] = None
+    signals_emitted: List[str] = Field(default_factory=list)

@@ -1,0 +1,27 @@
+{
+  "summary": "Iteration 2 — full regression + FREK Origin Story (onboarding) E2E. Backend pytest expanded to 27 tests (all passed): 7 new onboarding tests (options shape, auth gate, invalid lang/metier/territoire, full-flow success with 3xFREK-TIME + BADGE-DECOUVERTE + FMS-01 reco + MIS-FMS-01 auto-accept, idempotent badge) + existing 20 regression tests (auth, formations, quiz, missions, badges, progression, FREK profile, mentor). Frontend Playwright covers: fresh register → /onboarding redirect, protected route gate (7 routes all redirect to /onboarding for non-onboarded users), 5-step wizard (3 langs / 13 metiers / 7 territoires / textarea min 3 chars / recap), next-button disabled logic, submit → result screen with reco-formation (FMS-01 Artist Development, pole chip, 12 modules, Ouvrir la formation) + reco-mission (MIS-FMS-01 Prod caribéenne pour KORA · +15 CC · déjà acceptée) + goto-dashboard CTA, dashboard reached, /missions shows accepted mission, and onboarded user visiting /onboarding is redirected to /dashboard.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "routes.py TERRITOIRES constant duplicates the source-of-truth for territories that the /onboarding/options endpoint returns. Consider exposing this as a single module-level list (or moving to db/seed) so future territory additions don't drift between the endpoint payload and the validation guard.",
+    "onboarding_complete calls _award_threshold_badges(current.cc_credits) using the STALE cc_credits from get_current_user (pre-onboarding). This works today because BADGE-DECOUVERTE has cc_threshold=0, but if a threshold badge (e.g. 5 CC) were reset to include profile-creation CC, higher-threshold badges could be missed. Reload user before calling, or pass a computed cc.",
+    "Onboarding.js relies on i18n LANGS but hard-codes French copy throughout ('Retour', 'Continuer', 'Ta première mission', 'déjà acceptée', 'Aller au dashboard'). If the wizard is meant to be the moment where the user chooses lang, at least the result screen strings should be translated via i18n once the language switches.",
+    "Onboarding.js useEffect nav('/dashboard') fires on ANY user change while onboarding_completed=true and !result — including the moment refreshMe() lands after submit (result is set first, but there's a brief race). The current implementation is safe (setResult before refreshMe), but a defensive check on a submittedAt flag would be more robust to future refactors.",
+    "Frontend Protected() unconditionally renders null while loading — no skeleton — this is acceptable for a fast auth check but produces a brief flash of blank page on hard reloads. Consider a small spinner."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py"
+  ],
+  "success_rate": {"backend": "100% (27/27)", "frontend": "100% (all onboarding + regression flows passed)"},
+  "test_credentials": "Auto-generated qa-ob+<uuid>@test.com / Cvln!2026 per session. Sample created FREK-012 during this run.",
+  "seed_data_creation": "None (backend seed idempotent — 30 formations, 8 badges, 8 missions, 13 poles, 7 territoires). Test users registered on the fly.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Onboarding fixture uses class-scoped fresh user (`onboarding_user`). MIS-FMS-01 is titled 'Prod caribéenne pour KORA' (entity=KORA) — visible in reco-mission card as 'FMS · KORA · Prod caribéenne pour KORA'. Formation FMS-01 = 'Artist Development' with 12 modules is auto-selected as recommendation because it has modules (sorted first). Idempotency: BADGE-DECOUVERTE is not duplicated on repeat submit; missions are not duplicated either (existing check on user_missions). No auth-gated onboarding regression risk — /auth/register now returns onboarding_completed=false, verified in test_register_new_user.",
+  "rca of the issue": "N/A — no bugs found. Feature ships as specified."
+}

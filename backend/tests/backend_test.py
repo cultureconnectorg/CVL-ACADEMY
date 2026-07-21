@@ -101,6 +101,8 @@ class TestAuth:
         assert u["stade"] == "graine"
         assert isinstance(u["signals"], dict)
         assert registered["token"] and isinstance(registered["token"], str)
+        # New: onboarding must be false on fresh register
+        assert u["onboarding_completed"] is False
 
     def test_register_duplicate_email(self, http, registered):
         r = http.post(f"{API}/auth/register", json=registered["creds"])
@@ -131,6 +133,7 @@ class TestAuth:
         assert j["frek_id"] == registered["user"]["frek_id"]
         assert j["email"] == registered["creds"]["email"]
         assert "cc_credits" in j and "stade" in j and "signals" in j
+        assert j["onboarding_completed"] is False
 
     def test_me_requires_auth(self, http):
         r = http.get(f"{API}/auth/me")
@@ -316,3 +319,134 @@ class TestMentor:
         assert len(msgs) >= 2
         assert msgs[0]["role"] == "user"
         assert msgs[1]["role"] == "assistant"
+
+
+
+# ---------------- ONBOARDING (FREK Origin Story) ----------------
+@pytest.fixture(scope="class")
+def onboarding_user(http):
+    """Fresh user just for onboarding tests (never onboarded)."""
+    uid = uuid.uuid4().hex[:8]
+    creds = {
+        "email": f"qa-ob+{uid}@test.com",
+        "password": "Cvln!2026",
+        "display_name": f"QA OB {uid}",
+        "lang": "fr",
+    }
+    r = http.post(f"{API}/auth/register", json=creds)
+    assert r.status_code == 200, r.text
+    data = r.json()
+    return {"token": data["token"], "user": data["user"], "creds": creds}
+
+
+@pytest.fixture(scope="class")
+def ob_headers(onboarding_user):
+    return {"Authorization": f"Bearer {onboarding_user['token']}"}
+
+
+class TestOnboarding:
+    def test_options_shape(self, http):
+        r = http.get(f"{API}/onboarding/options")
+        assert r.status_code == 200
+        j = r.json()
+        assert len(j["langs"]) == 3
+        codes = {l["code"] for l in j["langs"]}
+        assert codes == {"fr", "en", "kr"}
+        assert len(j["metiers"]) == 13, f"expected 13 poles, got {len(j['metiers'])}"
+        assert len(j["territoires"]) == 7
+        terr_codes = {t["code"] for t in j["territoires"]}
+        assert "martinique" in terr_codes
+
+    def test_complete_requires_auth(self, http):
+        r = http.post(f"{API}/onboarding/complete", json={
+            "lang": "fr", "metier_vise": "FMS",
+            "territoire": "martinique", "objectif_perso": "test",
+        })
+        assert r.status_code == 401
+
+    def test_complete_invalid_lang(self, http, ob_headers):
+        r = http.post(f"{API}/onboarding/complete", headers=ob_headers, json={
+            "lang": "xx", "metier_vise": "FMS",
+            "territoire": "martinique", "objectif_perso": "Faire un EP",
+        })
+        assert r.status_code == 400
+
+    def test_complete_invalid_metier(self, http, ob_headers):
+        r = http.post(f"{API}/onboarding/complete", headers=ob_headers, json={
+            "lang": "fr", "metier_vise": "ZZZ",
+            "territoire": "martinique", "objectif_perso": "Faire un EP",
+        })
+        assert r.status_code == 400
+
+    def test_complete_invalid_territoire(self, http, ob_headers):
+        r = http.post(f"{API}/onboarding/complete", headers=ob_headers, json={
+            "lang": "fr", "metier_vise": "FMS",
+            "territoire": "atlantis", "objectif_perso": "Faire un EP",
+        })
+        assert r.status_code == 400
+
+    def test_complete_success_full_flow(self, http, ob_headers, onboarding_user):
+        # snapshot user before
+        me_before = http.get(f"{API}/auth/me", headers=ob_headers).json()
+        time_before = me_before["signals"].get("FREK-TIME", 0)
+
+        payload = {
+            "lang": "fr",
+            "metier_vise": "FMS",
+            "territoire": "martinique",
+            "objectif_perso": "Sortir mon premier EP et gagner 500 auditeurs mensuels.",
+        }
+        r = http.post(f"{API}/onboarding/complete", headers=ob_headers, json=payload)
+        assert r.status_code == 200, r.text
+        j = r.json()
+
+        # user updated
+        assert j["user"]["onboarding_completed"] is True
+        assert j["user"]["metier_vise"] == "FMS"
+        assert j["user"]["territoire"] == "martinique"
+        assert j["user"]["objectif_perso"].startswith("Sortir mon premier EP")
+
+        # 3 FREK-TIME signals emitted
+        assert j["signals_emitted"] == ["FREK-TIME", "FREK-TIME", "FREK-TIME"]
+        # signals counter incremented by 3
+        assert j["user"]["signals"]["FREK-TIME"] == time_before + 3
+
+        # badge earned
+        assert j["badge_earned"] is not None
+        assert j["badge_earned"]["code"] == "BADGE-DECOUVERTE"
+
+        # recommended formation matches pole
+        assert j["recommended_formation"] is not None
+        assert j["recommended_formation"]["pole"] == "FMS"
+        # FMS-01 has modules, should be preferred
+        assert j["recommended_formation"]["code"] == "FMS-01"
+        assert j["recommended_formation"]["modules_count"] > 0
+
+        # recommended mission matches pole
+        assert j["recommended_mission"] is not None
+        assert j["recommended_mission"]["pole"] == "FMS"
+
+        # /auth/me confirms onboarding_completed=true
+        me_after = http.get(f"{API}/auth/me", headers=ob_headers).json()
+        assert me_after["onboarding_completed"] is True
+
+        # /missions/mine shows auto-accepted mission with source=onboarding
+        mine = http.get(f"{API}/missions/mine", headers=ob_headers).json()
+        assert any(
+            m.get("source") == "onboarding" and m.get("status") == "accepted"
+            for m in mine
+        ), f"expected onboarding-sourced accepted mission in {mine}"
+
+    def test_complete_idempotent_badge(self, http, ob_headers):
+        """Re-submitting shouldn't duplicate badge, but endpoint still 200."""
+        payload = {
+            "lang": "fr", "metier_vise": "FMS",
+            "territoire": "martinique",
+            "objectif_perso": "Nouvel objectif après update",
+        }
+        r = http.post(f"{API}/onboarding/complete", headers=ob_headers, json=payload)
+        assert r.status_code == 200
+        # user still has BADGE-DECOUVERTE only once
+        badges = http.get(f"{API}/badges/mine", headers=ob_headers).json()
+        codes = [b["code"] for b in badges]
+        assert codes.count("BADGE-DECOUVERTE") == 1

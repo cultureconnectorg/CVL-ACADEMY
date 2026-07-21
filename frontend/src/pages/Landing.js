@@ -14,7 +14,9 @@ export default function Landing() {
   const [busy, setBusy] = useState(false);
 
   if (loading) return null;
-  if (user) return <Navigate to="/dashboard" replace />;
+  if (user) {
+    return <Navigate to={user.onboarding_completed ? "/dashboard" : "/onboarding"} replace />;
+  }
 
   const submit = async (e) => {
     e.preventDefault();
@@ -23,10 +25,11 @@ export default function Landing() {
       if (mode === "register") {
         const u = await register({ ...form, lang });
         toast.success(`FREK-ID généré : ${u.frek_id}`);
+        nav("/onboarding");
       } else {
-        await login(form.email, form.password);
+        const u = await login(form.email, form.password);
+        nav(u.onboarding_completed ? "/dashboard" : "/onboarding");
       }
-      nav("/dashboard");
     } catch (err) {
       toast.error(err?.response?.data?.detail || "Erreur d'authentification");
     } finally {

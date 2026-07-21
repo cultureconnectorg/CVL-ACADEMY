@@ -77,4 +77,6 @@ def user_public(u: User) -> UserPublic:
         id=u.id, frek_id=u.frek_id, email=u.email, display_name=u.display_name,
         lang=u.lang, stade=u.stade, cc_credits=u.cc_credits, signals=u.signals,
         created_at=u.created_at,
+        onboarding_completed=u.onboarding_completed,
+        metier_vise=u.metier_vise, territoire=u.territoire, objectif_perso=u.objectif_perso,
     )
