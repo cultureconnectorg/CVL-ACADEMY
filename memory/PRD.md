@@ -26,7 +26,20 @@ noise/texture terreuse, chips végétaux pour les stades.
   Graine → Pousse → Racine → Branches → Arbre → Forêt.
 - ✅ Trilinguisme FR/EN/KR (kréyòl).
 
-## Ce qui a été livré — 21 Feb 2026 (Iteration 1)
+## Ce qui a été livré — 21 Feb 2026 (Iteration 1 + 2)
+
+### Iteration 2 — FREK Origin Story (onboarding) — 21 Feb 2026
+- 5-step wizard (`/onboarding`) : langue → métier visé (pôle) → territoire → objectif → récap.
+- Backend `POST /api/onboarding/complete` :
+  - Émet **3 signaux FREK-TIME** (langue, territoire, objectif).
+  - Attribue le **badge Découverte** (idempotent).
+  - Recommande une **première formation** matchée au pôle choisi (préfère celles avec modules détaillés).
+  - **Auto-accepte** la première mission du pôle (source="onboarding").
+- Backend `GET /api/onboarding/options` : 3 langues, 13 pôles, 7 territoires.
+- Gate frontend : tout utilisateur sans `onboarding_completed=true` redirige vers `/onboarding`.
+- Tests : backend pytest **27/27** ✅, frontend Playwright ✅ (register → wizard → recos → dashboard).
+
+### Iteration 1 — MVP core
 
 ### Backend (FastAPI + MongoDB)
 - Auth JWT bcrypt (`/api/auth/register|login|me`) avec FREK-ID auto-généré
@@ -65,14 +78,13 @@ noise/texture terreuse, chips végétaux pour les stades.
 
 ## Roadmap
 
-### P1 (dès que APIs fournies)
-- Câbler `FREK_CORE_BASE_URL` + clé → Academy switch automatiquement.
-- Câbler `CVLN_AGENT_FACTORY_URL` + clé pour le mentor + futurs agents pôles.
-- Enrichir modules "coming_soon" (24 formations sans modules détaillés).
+### P1 — Prochain chantier (priorité utilisateur)
+- **Compléter les modules détaillés pour les 24 formations "coming_soon"** — enrichir chaque formation avec 8 à 12 modules complets (hook / deliverable / durée / stade / frek_signal). Objectif : contenu réellement exploitable pour la bêta fermée.
+- **Câbler FrekCore & CVLN Agent Factory** — remplacer les fallbacks par les vraies APIs (variables d'env `FREK_CORE_BASE_URL`, `CVLN_AGENT_FACTORY_URL`) dès que fournies.
+- **Bêta fermée & métriques** — instrumenter : taux de complétion, rétention D1/D7/D30, interactions mentor, engagement missions/badges.
 
 ### P2
-- Quiz : bank multi-questions dynamique (au lieu du template 8 questions/module).
-- Marketplace missions (statuts avancés : review, paiement CC, etc.).
+- Quiz bank multi-questions dynamique (au lieu du template 8 questions/module).
 - Certificats FREK exportables (PDF signé) via `frek_core.issue_proof`.
 - Timeline stades animée + célébrations de palier.
 - Ombré diaspora : carte interactive des apprenants.
