@@ -1,11 +1,12 @@
-"""Seed data extracted from CVLN Academy Master OS v3.0 (30 formations, 8 poles).
+"""Seed data extracted from CVLN Academy Master OS v3.0 (30 formations, 13 poles).
 
 Each formation has code, pole, hours, stages, cc credits, badge name.
 A subset of formations includes detailed modules; others are marked "coming_soon"
 with module count only. Missions and badges are also defined here.
 """
+from copy import deepcopy
 
-# 8 poles with their canonical colors (aligned with Caribbean Futurism palette)
+# 13 poles with their canonical colors (aligned with Caribbean Futurism palette)
 POLES = [
     {"code": "FMS", "name": "Factory Maker Studio",  "color": "#E05A33"},
     {"code": "KOR", "name": "KORA",                  "color": "#F59E0B"},
@@ -24,6 +25,62 @@ POLES = [
 
 STADES = ["graine", "pousse", "racine", "branches", "arbre", "foret"]
 
+
+# Academy OS cartography contexts and audience levels.
+# These metadata make the legacy catalogue explicit without deleting or flattening
+# the CVLN vision: a formation can be market-facing, internal, and/or a bridge
+# toward missions in the META-CVLN ecosystem.
+CONTEXTS = ["INTERNAL", "EXTERNAL", "BRIDGE"]
+AUDIENCE_LEVELS = ["DEBUTANT", "INTERMEDIAIRE", "AVANCE", "PROFESSIONNEL", "INSTITUTIONNEL"]
+
+DEFAULT_ECONOMICS = {
+    "public_price_eur": None,
+    "company_price_eur": None,
+    "funding_options": [],
+    "pedagogical_cost_eur": None,
+    "instructors_cost_eur": None,
+    "production_cost_eur": None,
+    "studio_or_venue_cost_eur": None,
+    "tech_cost_eur": None,
+    "acquisition_cost_eur": None,
+    "administration_cost_eur": None,
+    "reinvestment_rate": None,
+    "margin_target": None,
+}
+
+DEFAULT_CALIBRATION_SOURCES = [
+    "France Travail / ROME",
+    "France compétences",
+    "Marché réel",
+    "Formation existante",
+    "Financement",
+    "Qualiopi",
+]
+
+JOB_TRUTH_TEMPLATE = {
+    "market_name": None,
+    "cvln_name": None,
+    "rome_refs": [],
+    "external_certification_refs": [],
+    "level": None,
+    "sectors": [],
+    "real_missions": [],
+    "technical_skills": [],
+    "behavioral_skills": [],
+    "tools": [],
+    "deliverables": [],
+    "evidence": [],
+    "prerequisites": [],
+    "outcomes": [],
+    "market_salary_or_economics": None,
+    "market_need": None,
+    "job_evolution": None,
+    "internal_version": {"context": None, "tools": [], "methods": [], "missions": []},
+    "external_version": {"transferable_skills": [], "market_tools": [], "market_practices": [], "outcomes": []},
+    "bridge": {"cvln_entities": [], "missions": [], "opportunities": [], "contribution": None},
+}
+
+
 # 30 formations — condensed
 FORMATIONS = [
     # POLE 1 — FMS (Factory Maker Studio)
@@ -35,6 +92,20 @@ FORMATIONS = [
         "debouches": "Artiste FMS, signing potentiel, développement long terme",
         "description": "Former tout être humain avec envie de créer. Identifier leadership artistique, identité forte, régularité.",
         "objective_strategic": "Détecter les talents et leur donner une identité artistique caribéenne solide.",
+        "contexts": ["INTERNAL", "EXTERNAL", "BRIDGE"],
+        "audience_levels": ["DEBUTANT", "INTERMEDIAIRE", "AVANCE"],
+        "positioning_note": "Couche professionnelle universelle de développement artistique, avec couche écosystème vers FMS pour les talents qui veulent contribuer.",
+        "bridge_entities": ["FMS"],
+        "job_truth": {
+            **JOB_TRUTH_TEMPLATE,
+            "market_name": "Artiste interprète / artiste entrepreneur",
+            "cvln_name": "Artiste FMS",
+            "sectors": ["musique", "spectacle vivant", "contenu culturel"],
+            "evidence": ["kit presse", "bio trilingue", "showcase", "plan de sortie"],
+            "bridge": {"cvln_entities": ["FMS"], "missions": ["showcase", "développement catalogue"], "opportunities": ["signature", "résidence", "collaboration"], "contribution": "Produire une identité artistique prouvable et activable dans FMS."},
+        },
+        "economics": {**deepcopy(DEFAULT_ECONOMICS)},
+        "calibration_sources": DEFAULT_CALIBRATION_SOURCES,
         "modules": [
             {"code": "FMS-01-M01", "name": "Identité artistique et culturelle", "duration_h": 6, "stade": "graine", "hook": "Extrait artiste martiniquais inconnu", "deliverable": "Carte identité artistique trilingue + photo", "frek_signal": "FREK-WORK"},
             {"code": "FMS-01-M02", "name": "Mon univers sonore — références et influences", "duration_h": 5, "stade": "graine", "hook": "Blind test 5 sons caribéens", "deliverable": "Moodboard sonore + note intention 300 mots", "frek_signal": "FREK-WORK"},
@@ -58,6 +129,22 @@ FORMATIONS = [
         "debouches": "Label manager CVLN, A&R, coordinateur LabelOS",
         "description": "Comprendre l'écosystème du business musical caribéen. Zouk, gwo-ka, reggae, marchés antillais, guyanais et diaspora.",
         "objective_strategic": "Combler le manque de connaissance des mécanismes économiques musicaux dans la diaspora.",
+        "contexts": ["EXTERNAL", "BRIDGE"],
+        "audience_levels": ["INTERMEDIAIRE", "AVANCE", "PROFESSIONNEL"],
+        "positioning_note": "Formation professionnelle valable sans CVLN, puis passerelle vers LabelOS, FMS, KORA et missions de contribution.",
+        "bridge_entities": ["LabelOS", "FMS", "KORA"],
+        "job_truth": {
+            **JOB_TRUTH_TEMPLATE,
+            "market_name": "Chargé de production / label manager musique",
+            "cvln_name": "Label manager CVLN / coordinateur LabelOS",
+            "sectors": ["industrie musicale", "édition", "distribution", "export culturel"],
+            "technical_skills": ["droits musicaux", "distribution digitale", "contrats", "financement", "export"],
+            "evidence": ["note marché", "stratégie distribution", "analyse contrats", "dossier financement", "plan export"],
+            "external_version": {"transferable_skills": ["structuration label", "gestion catalogue", "négociation", "modèles économiques"], "market_tools": ["DSP", "agrégateurs", "SACEM", "SCPP", "ADAMI"], "market_practices": ["release planning", "gestion des droits", "export"], "outcomes": ["A&R", "label manager", "coordinateur distribution"]},
+            "bridge": {"cvln_entities": ["LabelOS", "FMS", "KORA"], "missions": ["audit catalogue", "plan export", "coordination sortie"], "opportunities": ["mission LabelOS", "contribution FMS", "production KORA"], "contribution": "Transformer les compétences marché en preuves puis en missions CVLN."},
+        },
+        "economics": {**deepcopy(DEFAULT_ECONOMICS), "public_price_eur": 1400, "funding_options": ["entreprise", "OPCO/CPF à confirmer selon montage", "partenaire organisme de formation"]},
+        "calibration_sources": DEFAULT_CALIBRATION_SOURCES,
         "modules": [
             {"code": "FMS-02-M01", "name": "Cartographie industrie musicale mondiale 2025", "duration_h": 5, "stade": "pousse", "hook": "Chiffres 2024 chocs", "deliverable": "Mind map annotée de l'industrie", "frek_signal": "FREK-WORK"},
             {"code": "FMS-02-M02", "name": "Spécificités caribéennes — Zouk, Reggae, Gwo-ka", "duration_h": 6, "stade": "pousse", "hook": "3 succès caribéens décortiqués", "deliverable": "Note marché 2 pages Caraïbe", "frek_signal": "FREK-WORK"},
@@ -114,6 +201,26 @@ FORMATIONS = [
 ]
 
 
+
+def _apply_academy_os_defaults() -> None:
+    for formation in FORMATIONS:
+        formation.setdefault("contexts", ["INTERNAL", "BRIDGE"] if "CVLN" in formation.get("debouches", "") else ["EXTERNAL", "BRIDGE"])
+        formation.setdefault("audience_levels", ["INTERMEDIAIRE"])
+        formation.setdefault("positioning_note", "Legacy intelligent à recalibrer : conserver la vision CVLN et expliciter versions interne, externe et passerelle.")
+        formation.setdefault("bridge_entities", [formation.get("pole")])
+        formation.setdefault("job_truth", {**deepcopy(JOB_TRUTH_TEMPLATE), "cvln_name": formation.get("debouches"), "outcomes": [formation.get("debouches", "")]})
+        formation.setdefault("economics", {**deepcopy(DEFAULT_ECONOMICS)})
+        formation.setdefault("calibration_sources", list(DEFAULT_CALIBRATION_SOURCES))
+        formation["reconciliation_flags"] = []
+        if formation.get("duration_h") != formation.get("cc"):
+            formation["reconciliation_flags"].append({
+                "type": "HOURS_CC_MISMATCH",
+                "message": f"{formation['code']} affiche {formation.get('duration_h')} h pour {formation.get('cc')} CC : à qualifier comme bonus, intensif ou correction."
+            })
+
+
+_apply_academy_os_defaults()
+
 # ------------- BADGES -------------
 BADGES = [
     {"code": "BADGE-DECOUVERTE", "name": "Découverte", "tier": "decouverte", "color": "#A37D62", "description": "Entrée écosystème, FREK-ID créé, communauté CVLN.", "cc_threshold": 0, "pole": None, "icon": "sparks"},
@@ -145,7 +252,12 @@ MISSIONS = [
 # Only fills empty `modules` lists — never overwrites existing detailed modules
 # (so FMS-01/02/03, FRK-01 and BRN-02 remain untouched).
 from seed_modules import EXTRA_MODULES  # noqa: E402
+from catalog_cartography import apply_catalog_cartography  # noqa: E402
+from external_calibration import apply_external_calibration  # noqa: E402
 
 for _f in FORMATIONS:
     if not _f.get("modules") and _f["code"] in EXTRA_MODULES:
         _f["modules"] = EXTRA_MODULES[_f["code"]]
+
+apply_catalog_cartography(FORMATIONS)
+apply_external_calibration(FORMATIONS)

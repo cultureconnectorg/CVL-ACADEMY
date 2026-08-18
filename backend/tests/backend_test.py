@@ -151,8 +151,74 @@ class TestFormations:
         # summary shape
         sample = arr[0]
         for k in ("code", "name", "pole", "pole_name", "pole_color",
-                  "duration_h", "stades", "cc", "badge_name", "modules_count"):
+                  "duration_h", "stades", "cc", "badge_name", "modules_count",
+                  "contexts", "audience_levels", "bridge_entities",
+                  "positioning_note", "reconciliation_flags", "primary_job",
+                  "reconstruction_status", "needs_external_calibration",
+                  "delivery_formats", "market_job_title",
+                  "calibration_confidence", "calibration_date"):
             assert k in sample
+
+    def test_music_business_cartography_positioning(self, http):
+        r = http.get(f"{API}/formations/FMS-02")
+        assert r.status_code == 200
+        f = r.json()
+        assert f["contexts"] == ["EXTERNAL", "BRIDGE"]
+        assert "PROFESSIONNEL" in f["audience_levels"]
+        assert f["economics"]["public_price_eur"] == 1400
+        assert "LabelOS" in f["bridge_entities"]
+        assert f["job_truth"]["market_name"] == "Chargé de production / label manager musique"
+        assert f["cartography"]["primary_job"] == "Chargé de production / label manager musique"
+        assert f["cartography"]["needs_external_calibration"] is True
+        assert "HYBRIDE" in f["cartography"]["delivery_formats"]
+
+    def test_catalogue_cartography_complete_for_all_formations(self, http):
+        r = http.get(f"{API}/formations")
+        assert r.status_code == 200
+        formations = r.json()
+        assert len(formations) == 30
+        for formation in formations:
+            assert formation["primary_job"]
+            assert formation["contexts"]
+            assert formation["audience_levels"]
+            assert formation["bridge_entities"]
+            assert formation["delivery_formats"]
+            assert formation["needs_external_calibration"] is True
+            assert formation["reconstruction_status"] in {"MAPPED_FROM_SEED", "NEEDS_RECONSTRUCTION"}
+
+    def test_external_calibration_complete_for_all_formations(self, http):
+        r = http.get(f"{API}/formations")
+        assert r.status_code == 200
+        formations = r.json()
+        assert len(formations) == 30
+        for formation in formations:
+            assert formation["market_job_title"]
+            assert formation["calibration_date"] == "2026-08-18"
+            assert formation["calibration_confidence"] in {"low", "medium", "high"}
+
+    def test_external_calibration_separates_states(self, http):
+        r = http.get(f"{API}/formations/GMD-01")
+        assert r.status_code == 200
+        calibration = r.json()["external_calibration"]
+        assert set(calibration) >= {
+            "current_cvln_state",
+            "external_market_state",
+            "recommended_future_state",
+            "calibration_confidence",
+            "calibration_date",
+        }
+        external = calibration["external_market_state"]
+        assert external["market_job_title"] == "Chef de projet événementiel"
+        assert external["external_job_references"]
+        assert external["certification_references"]
+        assert external["market_price_range"]["status"] == "needs_benchmark"
+        assert calibration["recommended_future_state"]["gaps"]
+
+    def test_reconciliation_flags_preserve_doctrine_drift(self, http):
+        r = http.get(f"{API}/formations/FMS-06")
+        assert r.status_code == 200
+        flags = r.json().get("reconciliation_flags", [])
+        assert any(flag["type"] == "HOURS_CC_MISMATCH" for flag in flags)
 
     def test_fms01_detail_has_12_modules(self, http):
         r = http.get(f"{API}/formations/FMS-01")
