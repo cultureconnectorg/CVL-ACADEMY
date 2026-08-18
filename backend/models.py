@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, Literal
 
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
 
@@ -15,6 +15,106 @@ def _uid() -> str:
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
+
+
+AcademyContext = Literal["INTERNAL", "EXTERNAL", "BRIDGE"]
+AudienceLevel = Literal["DEBUTANT", "INTERMEDIAIRE", "AVANCE", "PROFESSIONNEL", "INSTITUTIONNEL"]
+
+
+class InternalJobVersion(BaseModel):
+    context: Optional[str] = None
+    tools: List[str] = Field(default_factory=list)
+    methods: List[str] = Field(default_factory=list)
+    missions: List[str] = Field(default_factory=list)
+
+
+class ExternalJobVersion(BaseModel):
+    transferable_skills: List[str] = Field(default_factory=list)
+    market_tools: List[str] = Field(default_factory=list)
+    market_practices: List[str] = Field(default_factory=list)
+    outcomes: List[str] = Field(default_factory=list)
+
+
+class BridgeJobVersion(BaseModel):
+    cvln_entities: List[str] = Field(default_factory=list)
+    missions: List[str] = Field(default_factory=list)
+    opportunities: List[str] = Field(default_factory=list)
+    contribution: Optional[str] = None
+
+
+class JobTruth(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    market_name: Optional[str] = None
+    cvln_name: Optional[str] = None
+    rome_refs: List[str] = Field(default_factory=list)
+    external_certification_refs: List[str] = Field(default_factory=list)
+    level: Optional[str] = None
+    sectors: List[str] = Field(default_factory=list)
+    real_missions: List[str] = Field(default_factory=list)
+    technical_skills: List[str] = Field(default_factory=list)
+    behavioral_skills: List[str] = Field(default_factory=list)
+    tools: List[str] = Field(default_factory=list)
+    deliverables: List[str] = Field(default_factory=list)
+    evidence: List[str] = Field(default_factory=list)
+    prerequisites: List[str] = Field(default_factory=list)
+    outcomes: List[str] = Field(default_factory=list)
+    market_salary_or_economics: Optional[str] = None
+    market_need: Optional[str] = None
+    job_evolution: Optional[str] = None
+    internal_version: InternalJobVersion = Field(default_factory=InternalJobVersion)
+    external_version: ExternalJobVersion = Field(default_factory=ExternalJobVersion)
+    bridge: BridgeJobVersion = Field(default_factory=BridgeJobVersion)
+
+
+class FormationEconomics(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    public_price_eur: Optional[float] = None
+    company_price_eur: Optional[float] = None
+    funding_options: List[str] = Field(default_factory=list)
+    pedagogical_cost_eur: Optional[float] = None
+    instructors_cost_eur: Optional[float] = None
+    production_cost_eur: Optional[float] = None
+    studio_or_venue_cost_eur: Optional[float] = None
+    tech_cost_eur: Optional[float] = None
+    acquisition_cost_eur: Optional[float] = None
+    administration_cost_eur: Optional[float] = None
+    reinvestment_rate: Optional[float] = None
+    margin_target: Optional[float] = None
+
+
+class ReconciliationFlag(BaseModel):
+    type: str
+    message: str
+
+
+class FormationCartography(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    primary_job: str
+    secondary_jobs: List[str] = Field(default_factory=list)
+    contexts: List[AcademyContext] = Field(default_factory=list)
+    audience: List[AudienceLevel] = Field(default_factory=list)
+    level: str
+    competencies: List[str] = Field(default_factory=list)
+    professional_activities: List[str] = Field(default_factory=list)
+    tools: List[str] = Field(default_factory=list)
+    deliverables: List[str] = Field(default_factory=list)
+    evidence: List[str] = Field(default_factory=list)
+    outcomes: List[str] = Field(default_factory=list)
+    meta_entities: List[str] = Field(default_factory=list)
+    bridges: List[str] = Field(default_factory=list)
+    delivery_formats: List[str] = Field(default_factory=list)
+    duration_h: int
+    cc: int
+    current_price_eur: Optional[float] = None
+    provisional_economics: Dict[str, Any] = Field(default_factory=dict)
+    calibration_sources: List[str] = Field(default_factory=list)
+    needs_external_calibration: bool = True
+    inconsistencies: List[ReconciliationFlag] = Field(default_factory=list)
+    reconstruction_status: str
+    source: str
 
 # ---------------- USERS (FREK-ID) ----------------
 class User(BaseModel):
@@ -102,6 +202,21 @@ class Formation(BaseModel):
     description: str
     objective_strategic: str
     modules: List[Module]
+    contexts: List[AcademyContext] = Field(default_factory=list)
+    audience_levels: List[AudienceLevel] = Field(default_factory=list)
+    positioning_note: Optional[str] = None
+    bridge_entities: List[str] = Field(default_factory=list)
+    job_truth: JobTruth = Field(default_factory=JobTruth)
+    economics: FormationEconomics = Field(default_factory=FormationEconomics)
+    calibration_sources: List[str] = Field(default_factory=list)
+    reconciliation_flags: List[ReconciliationFlag] = Field(default_factory=list)
+    needs_external_calibration: bool = True
+    reconstruction_status: str = "NEEDS_RECONSTRUCTION"
+    cartography: Optional[FormationCartography] = None
+    external_calibration: Optional[Dict[str, Any]] = None
+    market_job_title: Optional[str] = None
+    calibration_confidence: Optional[str] = None
+    calibration_date: Optional[str] = None
 
 
 # ---------------- BADGES ----------------

@@ -215,6 +215,18 @@ async def list_formations():
         "duration_h": d["duration_h"], "stades": d["stades"],
         "cc": d["cc"], "badge_name": d["badge_name"],
         "description": d.get("description", ""),
+        "contexts": d.get("contexts", []),
+        "audience_levels": d.get("audience_levels", []),
+        "bridge_entities": d.get("bridge_entities", []),
+        "positioning_note": d.get("positioning_note", ""),
+        "primary_job": (d.get("cartography") or {}).get("primary_job"),
+        "reconstruction_status": d.get("reconstruction_status"),
+        "needs_external_calibration": d.get("needs_external_calibration", True),
+        "delivery_formats": (d.get("cartography") or {}).get("delivery_formats", []),
+        "market_job_title": d.get("market_job_title"),
+        "calibration_confidence": d.get("calibration_confidence"),
+        "calibration_date": d.get("calibration_date"),
+        "reconciliation_flags": d.get("reconciliation_flags", []),
         "modules_count": len(d.get("modules", [])),
     } for d in docs]
 
