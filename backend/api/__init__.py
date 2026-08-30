@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from . import (
     auth,
     badges,
+    fms,
     formations,
     health,
     learning,
@@ -37,5 +38,6 @@ for module in (
     missions,
     progression,
     mentor,
+    fms,
 ):
     router.include_router(module.router)

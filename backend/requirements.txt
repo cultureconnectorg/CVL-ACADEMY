@@ -13,6 +13,7 @@ anthropic>=0.69.0               # Mentor IA local fallback (Agent Factory not ye
 httpx>=0.27.0                   # FrekCore / Agent Factory remote HTTP calls
 reportlab>=4.2.0                # certification attestation PDF export
 python-docx>=1.1.2              # template DOCX export
+pyyaml>=6.0.1                   # FMS resource Markdown frontmatter
 
 # --- dev / test / lint ---
 pytest>=8.0.0
