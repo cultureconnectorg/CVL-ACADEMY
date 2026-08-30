@@ -26,6 +26,56 @@ noise/texture terreuse, chips végétaux pour les stades.
   Graine → Pousse → Racine → Branches → Arbre → Forêt.
 - ✅ Trilinguisme FR/EN/KR (kréyòl).
 
+## Ce qui a été livré — 30 août 2026 (Production Hardening Mission)
+
+Mission de mise en production : audit zéro-dette + architecture entreprise +
+8 nouveaux moteurs/domaines, sur la base du MVP livré en février. Détail
+complet dans `docs/AUDIT_REPORT.md`, `docs/INTEGRATIONS_REPORT.md`,
+`docs/DEVELOPER_GUIDE.md` — résumé ici pour l'historique produit :
+
+- **Zéro dette technique** : `emergentintegrations` (non installable hors
+  Emergent) remplacé par le SDK Anthropic officiel ; bug de stub motor
+  3.3.1 corrigé (bump vers 3.7.x) qui masquait ~20 faux positifs mypy ;
+  10 dépendances Python mortes supprimées ; install frontend cassée
+  (peer-dep date-fns/react-day-picker) réparée ; toast dupliqué (100%
+  mort) supprimé ; branding Emergent par défaut (`index.html`, analytics
+  PostHog sous compte Emergent) remplacé par la marque CVLN.
+- **Architecture** : `routes.py` (817 lignes, 9 responsabilités) éclaté en
+  routeurs par domaine (`backend/api/*.py`) ; 8 nouveaux packages métier
+  (`fms_import/`, `certification/`, `skills/`, `template_engine/`,
+  `wallet/`, `services/integrations/`, `services/ai_assistant.py`,
+  `services/events.py`).
+- **Auth & rôles** : 7 rôles, organisations/cohortes/invitations, refresh
+  tokens rotatifs, reset mot de passe, vérification email, OAuth/2FA
+  prêts (501 tant que non configurés).
+- **Moteur d'import ZIP FMS** : parseur Markdown+YAML tolérant aux erreurs,
+  validation référentielle, recherche indexée, sommaire auto-généré,
+  graphe de prérequis — la plateforme est prête à recevoir FMS-01 à
+  FMS-06 (voir `docs/DEVELOPER_GUIDE.md` §3 pour la convention de fichiers).
+- **Certification Engine** : N1/N2/A01, rubriques versionnées, notation
+  jury signée (hash SHA-256), attestations PDF, reprise d'examen.
+- **Skill Engine** : Skill IDs, registre d'évidence hashé (FREK-ready),
+  progression automatique.
+- **Template Engine** : 6 types (Diagnostic/Univers/Positionnement/
+  Storytelling/Roadmap/Dossier), autosave versionné, export MD/PDF/DOCX.
+- **Écosystème CVLN** : 9 interfaces génériques (Intelligence OS, Brain,
+  Command Center, Laurent.ia, KORA, Factory Maker Studio, Good Mood,
+  Culture Connect, Kiltikonet) + bus d'événements in-process.
+- **CVLN Wallet** : grand livre JCC/tokens actif, crédité par badges et
+  certifications ; payloads Apple/Google Wallet (non signés — voir
+  rapport d'intégrations).
+- **Assistant IA commun** : 4 personas (student/trainer/jury/corrector)
+  définis comme données au-dessus d'un seul transport partagé.
+- **Dashboards par rôle** : Wallet, Skills, Certifications (étudiant) ;
+  Admin CMS (import FMS, statut intégrations, orgs/cohortes/invitations,
+  publication catalogue) ; Trainer (cohortes) ; Jury (file de correction
+  + notation).
+- **Performance** : code-splitting (React.lazy, bundle -11%), PWA
+  (service worker + manifest maison), index Mongo sur toutes les
+  collections à volumétrie utilisateur.
+- **Tests** : 29 tests unitaires sans dépendance base de données (avant :
+  0, seule une suite E2E nécessitant un Mongo live existait).
+
 ## Ce qui a été livré — 21 Feb 2026 (Iteration 1 + 2 + 3)
 
 ### Iteration 3 — Enrichissement contenu 24+ formations — 21 Feb 2026
