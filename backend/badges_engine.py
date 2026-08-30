@@ -11,6 +11,9 @@ import uuid
 
 from db import db, utc_now_iso
 from services.frek_core import frek_core
+from wallet import credit as wallet_credit
+
+BADGE_JCC_REWARD = 10.0
 
 
 async def award_threshold_badges(user_id: str, cc: int) -> None:
@@ -31,3 +34,12 @@ async def award_threshold_badges(user_id: str, cc: int) -> None:
                 }
             )
             await frek_core.emit_signal(user_id, "FREK-CERT", {"badge": b["code"]})
+            await wallet_credit(
+                user_id,
+                "badge_earned",
+                BADGE_JCC_REWARD,
+                currency="jcc",
+                ref=b["code"],
+                description=f"Badge « {b.get('name', b['code'])} » débloqué",
+                badge_code=b["code"],
+            )

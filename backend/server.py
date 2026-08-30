@@ -11,6 +11,9 @@ from starlette.middleware.cors import CORSMiddleware
 from api import router
 from db import client, db  # noqa
 from seed import seed_if_empty
+from services.integrations.subscribers import (
+    register as register_integration_subscribers,
+)
 from template_engine import seed_default_definitions
 
 app = FastAPI(title="CVLN Academy OS", version="0.1")
@@ -35,6 +38,7 @@ logger = logging.getLogger("cvln")
 
 @app.on_event("startup")
 async def on_startup():
+    register_integration_subscribers()
     try:
         await seed_if_empty()
         await seed_default_definitions()

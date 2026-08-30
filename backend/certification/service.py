@@ -13,12 +13,16 @@ from typing import Dict, List, Optional
 from fastapi import HTTPException
 
 from db import db, utc_now_iso
+from services.events import events
 from services.frek_core import frek_core
 from skills.progression import record_evidence
+from wallet import credit as wallet_credit
 
 from .attestation import make_jury_signature
 from .models import CertificationAttempt, GradeInput, Rubric
 from .scoring import compute_scores
+
+CERTIFICATION_JCC_REWARD = 50.0
 
 
 async def get_rubric(certification_code: str) -> Rubric:
@@ -122,6 +126,24 @@ async def grade_attempt(
             attempt.user_id,
             "FREK-CERT",
             {"certification": attempt.certification_code, "score": score_global},
+        )
+        await events.publish(
+            "academy.certification.passed",
+            {
+                "user_id": attempt.user_id,
+                "certification_code": attempt.certification_code,
+                "formation_code": attempt.formation_code,
+                "score_global": score_global,
+                "attempt_id": attempt_id,
+            },
+        )
+        await wallet_credit(
+            attempt.user_id,
+            "jcc_earned",
+            CERTIFICATION_JCC_REWARD,
+            currency="jcc",
+            ref=attempt.certification_code,
+            description=f"Certification {attempt.certification_code} réussie",
         )
 
     return await _get_attempt(attempt_id)
