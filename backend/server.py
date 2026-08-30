@@ -8,8 +8,8 @@ import os
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+from api import router
 from db import client, db  # noqa
-from routes import router
 from seed import seed_if_empty
 
 app = FastAPI(title="CVLN Academy OS", version="0.1")
