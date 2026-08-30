@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { api } from "./api";
+import { api, getToken, setSession, clearSession } from "./api";
 
 const AuthCtx = createContext(null);
 
@@ -8,15 +8,17 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   const refreshMe = useCallback(async () => {
-    const token = localStorage.getItem("cvln_token");
+    const token = getToken();
     if (!token) {
-      setUser(null); setLoading(false); return;
+      setUser(null);
+      setLoading(false);
+      return;
     }
     try {
       const { data } = await api.get("/auth/me");
       setUser(data);
     } catch {
-      localStorage.removeItem("cvln_token");
+      clearSession();
       setUser(null);
     } finally {
       setLoading(false);
@@ -27,20 +29,21 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const { data } = await api.post("/auth/login", { email, password });
-    localStorage.setItem("cvln_token", data.token);
+    setSession(data);
     setUser(data.user);
     return data.user;
   };
 
   const register = async (payload) => {
     const { data } = await api.post("/auth/register", payload);
-    localStorage.setItem("cvln_token", data.token);
+    setSession(data);
     setUser(data.user);
     return data.user;
   };
 
   const logout = () => {
-    localStorage.removeItem("cvln_token");
+    api.post("/auth/logout").catch(() => {});
+    clearSession();
     setUser(null);
   };
 

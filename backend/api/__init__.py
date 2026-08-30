@@ -18,6 +18,7 @@ from . import (
     mentor,
     missions,
     onboarding,
+    orgs,
     progression,
     quizzes,
 )
@@ -28,6 +29,7 @@ for module in (
     health,
     auth,
     onboarding,
+    orgs,
     formations,
     learning,
     quizzes,

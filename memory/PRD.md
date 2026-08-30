@@ -111,13 +111,18 @@ noise/texture terreuse, chips végétaux pour les stades.
 
 ## Env vars
 
+Full reference with defaults/comments: `backend/.env.example`, `frontend/.env.example`.
+
 ```env
 # backend/.env (obligatoire)
 MONGO_URL, DB_NAME
 JWT_SECRET
-ANTHROPIC_API_KEY  # (mentor fallback, official Anthropic SDK)
 
-# backend/.env (optionnel — plug remote quand prêt)
+# backend/.env (optionnel)
+JWT_EXPIRE_MINUTES, REFRESH_TOKEN_EXPIRE_DAYS, CORS_ORIGINS, APP_PUBLIC_URL
+ANTHROPIC_API_KEY  # (mentor fallback, official Anthropic SDK)
+OAUTH_{GOOGLE,APPLE,GITHUB,MICROSOFT}_CLIENT_ID / _CLIENT_SECRET
+NOTIFICATIONS_PROVIDER_URL, NOTIFICATIONS_API_KEY
 FREK_CORE_BASE_URL, FREK_CORE_API_KEY
 CVLN_AGENT_FACTORY_URL, CVLN_AGENT_FACTORY_API_KEY
 

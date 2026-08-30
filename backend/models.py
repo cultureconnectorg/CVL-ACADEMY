@@ -120,6 +120,24 @@ class FormationCartography(BaseModel):
 
 
 # ---------------- USERS (FREK-ID) ----------------
+Role = Literal[
+    "student", "trainer", "corrector", "jury", "admin", "super_admin", "founder"
+]
+
+# Roles with elevated / staff-level access — used by permission checks that
+# should accept "any staff role" rather than one specific role.
+STAFF_ROLES: tuple = ("trainer", "corrector", "jury", "admin", "super_admin", "founder")
+ADMIN_ROLES: tuple = ("admin", "super_admin", "founder")
+
+
+class OAuthAccount(BaseModel):
+    """One linked external identity (Google / Apple / GitHub / Microsoft)."""
+
+    provider: Literal["google", "apple", "github", "microsoft"]
+    provider_user_id: str
+    linked_at: str = Field(default_factory=_now)
+
+
 class User(BaseModel):
     """A CVLN Academy learner identified by their FREK-ID."""
 
@@ -130,6 +148,9 @@ class User(BaseModel):
     email: EmailStr
     display_name: str
     password_hash: str
+    role: Role = "student"
+    org_id: Optional[str] = None
+    cohort_id: Optional[str] = None
     lang: str = "fr"  # fr | en | kr
     stade: str = "graine"  # graine | pousse | racine | branches | arbre | foret
     cc_credits: int = 0
@@ -150,6 +171,11 @@ class User(BaseModel):
             "FREK-CONTRIB": 0,
         }
     )
+    # Auth hardening
+    email_verified: bool = False
+    oauth_accounts: List[OAuthAccount] = Field(default_factory=list)
+    totp_secret: Optional[str] = None  # set once 2FA is enrolled; None = 2FA off
+    totp_enabled: bool = False
     created_at: str = Field(default_factory=_now)
 
 
@@ -158,6 +184,9 @@ class UserPublic(BaseModel):
     frek_id: str
     email: EmailStr
     display_name: str
+    role: Role = "student"
+    org_id: Optional[str] = None
+    cohort_id: Optional[str] = None
     lang: str
     stade: str
     cc_credits: int
@@ -167,6 +196,8 @@ class UserPublic(BaseModel):
     metier_vise: Optional[str] = None
     territoire: Optional[str] = None
     objectif_perso: Optional[str] = None
+    email_verified: bool = False
+    totp_enabled: bool = False
 
 
 class RegisterInput(BaseModel):
@@ -174,6 +205,7 @@ class RegisterInput(BaseModel):
     password: str = Field(min_length=6)
     display_name: str = Field(min_length=1, max_length=80)
     lang: str = "fr"
+    invite_code: Optional[str] = None  # accepts an org/cohort invitation at signup
 
 
 class LoginInput(BaseModel):
@@ -183,7 +215,77 @@ class LoginInput(BaseModel):
 
 class AuthResponse(BaseModel):
     token: str
+    refresh_token: str
     user: UserPublic
+
+
+class RefreshTokenInput(BaseModel):
+    refresh_token: str
+
+
+class ForgotPasswordInput(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordInput(BaseModel):
+    token: str
+    new_password: str = Field(min_length=6)
+
+
+class VerifyEmailInput(BaseModel):
+    token: str
+
+
+# ---------------- ORGANISATIONS / COHORTS / INVITATIONS ----------------
+class Organisation(BaseModel):
+    id: str = Field(default_factory=_uid)
+    name: str
+    slug: str
+    created_at: str = Field(default_factory=_now)
+
+
+class OrganisationInput(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    slug: str = Field(min_length=1, max_length=60)
+
+
+class Cohort(BaseModel):
+    id: str = Field(default_factory=_uid)
+    org_id: str
+    name: str
+    pole: Optional[str] = None  # optional metier/pole focus for this cohort
+    starts_at: Optional[str] = None
+    ends_at: Optional[str] = None
+    created_at: str = Field(default_factory=_now)
+
+
+class CohortInput(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    pole: Optional[str] = None
+    starts_at: Optional[str] = None
+    ends_at: Optional[str] = None
+
+
+class Invitation(BaseModel):
+    id: str = Field(default_factory=_uid)
+    code: str  # opaque, shareable invite code
+    email: Optional[str] = None  # optional — set to restrict to one address
+    role: Role = "student"
+    org_id: Optional[str] = None
+    cohort_id: Optional[str] = None
+    invited_by: str  # user id
+    used_by: Optional[str] = None
+    used_at: Optional[str] = None
+    expires_at: Optional[str] = None
+    created_at: str = Field(default_factory=_now)
+
+
+class InvitationInput(BaseModel):
+    email: Optional[EmailStr] = None
+    role: Role = "student"
+    org_id: Optional[str] = None
+    cohort_id: Optional[str] = None
+    expires_in_days: int = 14
 
 
 # ---------------- FORMATIONS ----------------
