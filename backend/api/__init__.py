@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from . import (
     auth,
     badges,
+    certification,
     fms,
     formations,
     health,
@@ -22,6 +23,7 @@ from . import (
     orgs,
     progression,
     quizzes,
+    skills,
 )
 
 router = APIRouter(prefix="/api")
@@ -39,5 +41,7 @@ for module in (
     progression,
     mentor,
     fms,
+    skills,
+    certification,
 ):
     router.include_router(module.router)
