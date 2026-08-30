@@ -6,6 +6,7 @@ from .models import CertificationAttempt, GradeInput, Rubric, RubricInput
 from .service import (
     get_rubric,
     grade_attempt,
+    list_pending_attempts,
     list_user_attempts,
     start_attempt,
     submit_attempt,
@@ -17,6 +18,7 @@ __all__ = [
     "submit_attempt",
     "grade_attempt",
     "list_user_attempts",
+    "list_pending_attempts",
     "generate_attestation_pdf",
     "Rubric",
     "RubricInput",

@@ -158,6 +158,16 @@ async def list_user_attempts(user_id: str) -> List[CertificationAttempt]:
     return [CertificationAttempt(**d) for d in docs]
 
 
+async def list_pending_attempts() -> List[CertificationAttempt]:
+    """The jury/corrector grading queue — every attempt awaiting a grade."""
+    docs = (
+        await db.certification_attempts.find({"status": "submitted"}, {"_id": 0})
+        .sort("submitted_at", 1)
+        .to_list(200)
+    )
+    return [CertificationAttempt(**d) for d in docs]
+
+
 async def get_user_display_info(user_id: str) -> Optional[Dict[str, str]]:
     doc = await db.users.find_one(
         {"id": user_id}, {"_id": 0, "display_name": 1, "frek_id": 1}
