@@ -21,13 +21,18 @@ A module is `validated` only when ALL phases are completed:
   - quiz_passed = True (score >= 0.8)
   - mini_mission_committed_at set
 """
+
 from __future__ import annotations
 
 from typing import Dict, List, Optional, Tuple
 
 STADE_LABEL = {
-    "graine": "🌱 Graine", "pousse": "🌿 Pousse", "racine": "🌳 Racine",
-    "branches": "🌲 Branches", "arbre": "🦅 Arbre", "foret": "🌳🌳 Forêt",
+    "graine": "🌱 Graine",
+    "pousse": "🌿 Pousse",
+    "racine": "🌳 Racine",
+    "branches": "🌲 Branches",
+    "arbre": "🦅 Arbre",
+    "foret": "🌳🌳 Forêt",
 }
 
 DELIVERABLE_MIN_CHARS = 250
@@ -87,16 +92,37 @@ donne le savoir-faire réel."""
 def _workshop_steps(mod: Dict) -> List[Dict]:
     deliverable = mod.get("deliverable", "livrable prévu")
     return [
-        {"n": 1, "action": "Préparer ton espace de travail",
-         "detail": "5 min — ferme les distractions, ouvre un doc vierge, note la date et le code du module en en-tête."},
-        {"n": 2, "action": "Reformuler l'objectif du livrable dans tes mots",
-         "detail": f"10 min — écris en 3 lignes ce que « {deliverable} » signifie POUR TOI, dans ton contexte."},
-        {"n": 3, "action": "Structurer le squelette",
-         "detail": "15 min — pose 3 à 5 sections claires, sans encore rédiger le contenu détaillé."},
-        {"n": 4, "action": "Produire une première version brute",
-         "detail": "30-60 min — remplis chaque section sans t'auto-censurer. C'est ton V0."},
-        {"n": 5, "action": "Prendre du recul et itérer",
-         "detail": "15 min — relis à voix haute, corrige uniquement ce qui te choque, garde les imperfections mineures."},
+        {
+            "n": 1,
+            "action": "Préparer ton espace de travail",
+            "detail": (
+                "5 min — ferme les distractions, ouvre un doc vierge, "
+                "note la date et le code du module en en-tête."
+            ),
+        },
+        {
+            "n": 2,
+            "action": "Reformuler l'objectif du livrable dans tes mots",
+            "detail": f"10 min — écris en 3 lignes ce que « {deliverable} » signifie POUR TOI, dans ton contexte.",
+        },
+        {
+            "n": 3,
+            "action": "Structurer le squelette",
+            "detail": "15 min — pose 3 à 5 sections claires, sans encore rédiger le contenu détaillé.",
+        },
+        {
+            "n": 4,
+            "action": "Produire une première version brute",
+            "detail": "30-60 min — remplis chaque section sans t'auto-censurer. C'est ton V0.",
+        },
+        {
+            "n": 5,
+            "action": "Prendre du recul et itérer",
+            "detail": (
+                "15 min — relis à voix haute, corrige uniquement ce qui te choque, "
+                "garde les imperfections mineures."
+            ),
+        },
     ]
 
 
@@ -223,8 +249,11 @@ def compute_status(progress: Optional[Dict]) -> str:
     if ready:
         return "ready_for_quiz"
     # Any activity started?
-    if (progress.get("hook_viewed_at") or progress.get("objectives_viewed_at")
-            or int(progress.get("course_progress_pct", 0)) > 0):
+    if (
+        progress.get("hook_viewed_at")
+        or progress.get("objectives_viewed_at")
+        or int(progress.get("course_progress_pct", 0)) > 0
+    ):
         return "in_progress"
     return "available"
 
@@ -244,8 +273,10 @@ def phase_completion_flags(progress: Optional[Dict]) -> Dict[str, bool]:
 
 # ---------------- UNLOCK RULES ----------------
 
-def is_module_unlocked(formation_doc: Dict, module_code: str,
-                       user_progress_by_module: Dict[str, Dict]) -> bool:
+
+def is_module_unlocked(
+    formation_doc: Dict, module_code: str, user_progress_by_module: Dict[str, Dict]
+) -> bool:
     """A module is unlocked if it's the first one OR the previous one is validated."""
     modules = formation_doc.get("modules", [])
     codes = [m["code"] for m in modules]
@@ -259,9 +290,12 @@ def is_module_unlocked(formation_doc: Dict, module_code: str,
     return compute_status(prev_progress) == "validated"
 
 
-def is_formation_unlocked(user_metier_vise: Optional[str], formation_doc: Dict,
-                          all_pole_formations: List[Dict],
-                          user_progress_by_module: Dict[str, Dict]) -> Tuple[bool, str]:
+def is_formation_unlocked(
+    user_metier_vise: Optional[str],
+    formation_doc: Dict,
+    all_pole_formations: List[Dict],
+    user_progress_by_module: Dict[str, Dict],
+) -> Tuple[bool, str]:
     """A formation is unlocked if:
       - it belongs to the user's chosen pole (metier_vise), sequentially: first
         of the pole is open; next ones open when the prior one is >=50% validated.
@@ -292,15 +326,18 @@ def is_formation_unlocked(user_metier_vise: Optional[str], formation_doc: Dict,
         if not prev_mods:
             return (True, "")
         validated = sum(
-            1 for c in prev_mods
+            1
+            for c in prev_mods
             if compute_status(user_progress_by_module.get(c)) == "validated"
         )
         pct = validated / len(prev_mods)
         if pct >= 0.5:
             return (True, "")
-        return (False,
-                f"Débloquée quand tu auras validé 50% de {prev['code']} "
-                f"({validated}/{len(prev_mods)} modules à ce jour).")
+        return (
+            False,
+            f"Débloquée quand tu auras validé 50% de {prev['code']} "
+            f"({validated}/{len(prev_mods)} modules à ce jour).",
+        )
     else:
         # Other poles — first formation of each other pole unlocks when the
         # user has fully validated one of their own pole's formations.
@@ -311,17 +348,20 @@ def is_formation_unlocked(user_metier_vise: Optional[str], formation_doc: Dict,
             mods = [m["code"] for m in f.get("modules", [])]
             if not mods:
                 continue
-            if all(compute_status(user_progress_by_module.get(c)) == "validated"
-                   for c in mods):
+            if all(
+                compute_status(user_progress_by_module.get(c)) == "validated"
+                for c in mods
+            ):
                 has_any_full = True
                 break
         if idx == 0 and has_any_full:
             return (True, "")
         if idx == 0:
-            return (False,
-                    f"Termine 1 formation de ton pôle {user_metier_vise} pour "
-                    "débloquer les autres pôles.")
+            return (
+                False,
+                f"Termine 1 formation de ton pôle {user_metier_vise} pour "
+                "débloquer les autres pôles.",
+            )
         # Non-first of other pole: needs the previous one in same pole
         prev_code = pole_codes[idx - 1]
-        prev_status = "validated"  # placeholder, would require full check
         return (False, f"Débloquée après {prev_code}.")

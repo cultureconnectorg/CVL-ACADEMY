@@ -18,8 +18,8 @@ noise/texture terreuse, chips végétaux pour les stades.
 - ❌ Ne pas construire FrekCore ni CVLN Agent Factory from scratch. Academy expose
   uniquement des **couches d'abstraction** (`backend/services/frek_core.py`,
   `backend/services/agent_factory.py`).
-- ✅ Mentor IA : passer par Agent Factory. Fallback local temporaire → Emergent LLM
-  Claude Sonnet 4.6.
+- ✅ Mentor IA : passer par Agent Factory. Fallback local temporaire → Anthropic SDK
+  officiel, Claude Sonnet 5.
 - ✅ FREK-ID (identifiant culturel unique séquentiel) délivré par FrekCore. Fallback
   local temporaire → compteur Mongo.
 - ✅ 30 formations, 8 pôles principaux (+13 avec extensions), stades végétaux
@@ -60,7 +60,7 @@ noise/texture terreuse, chips végétaux pour les stades.
 - 8 missions seedées (`/api/missions`, `/accept`, `/submit`) — CC + signal FREK-WORK.
 - Progression (`/api/progression/summary`) + FREK profile (`/api/frek/profile`).
 - Mentor IA (`/api/mentor/agents`, `/api/mentor/chat`) — Claude Sonnet 4.6 via
-  Emergent LLM Key, en attendant Agent Factory.
+  Anthropic SDK officiel (Claude Sonnet 5), en attendant Agent Factory.
 - Couches d'abstraction propres → **basculement remote sans toucher aux routes**.
 
 ### Frontend (React + Tailwind + shadcn)
@@ -115,7 +115,7 @@ noise/texture terreuse, chips végétaux pour les stades.
 # backend/.env (obligatoire)
 MONGO_URL, DB_NAME
 JWT_SECRET
-EMERGENT_LLM_KEY  # (mentor fallback)
+ANTHROPIC_API_KEY  # (mentor fallback, official Anthropic SDK)
 
 # backend/.env (optionnel — plug remote quand prêt)
 FREK_CORE_BASE_URL, FREK_CORE_API_KEY

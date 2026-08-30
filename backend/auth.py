@@ -4,6 +4,7 @@ The `frek_id` field is a stable, unique cultural identifier assigned at registra
 This module is designed to be extended: `_generate_frek_id` and `frek_core` integration
 should later delegate to the external FrekCore service.
 """
+
 from __future__ import annotations
 
 import os
@@ -12,7 +13,7 @@ from typing import Optional
 
 import bcrypt
 import jwt
-from fastapi import HTTPException, Depends
+from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from db import db
@@ -86,9 +87,17 @@ async def get_current_user_optional(
 
 def user_public(u: User) -> UserPublic:
     return UserPublic(
-        id=u.id, frek_id=u.frek_id, email=u.email, display_name=u.display_name,
-        lang=u.lang, stade=u.stade, cc_credits=u.cc_credits, signals=u.signals,
+        id=u.id,
+        frek_id=u.frek_id,
+        email=u.email,
+        display_name=u.display_name,
+        lang=u.lang,
+        stade=u.stade,
+        cc_credits=u.cc_credits,
+        signals=u.signals,
         created_at=u.created_at,
         onboarding_completed=u.onboarding_completed,
-        metier_vise=u.metier_vise, territoire=u.territoire, objectif_perso=u.objectif_perso,
+        metier_vise=u.metier_vise,
+        territoire=u.territoire,
+        objectif_perso=u.objectif_perso,
     )

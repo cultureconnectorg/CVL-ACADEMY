@@ -1,31 +1,48 @@
 """All CVLN Academy API routes, prefixed by /api at server level."""
+
 from __future__ import annotations
 
 import uuid
 from typing import Dict, List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from db import db, utc_now_iso
-from models import (
-    User, UserPublic, RegisterInput, LoginInput, AuthResponse,
-    Formation, Badge, Mission, QuizSubmission, QuizResult,
-    MentorChatInput, OnboardingInput, OnboardingResult,
-)
 from auth import (
-    hash_password, verify_password, make_token,
-    get_current_user, get_current_user_optional, next_frek_id, user_public,
+    get_current_user,
+    get_current_user_optional,
+    hash_password,
+    make_token,
+    next_frek_id,
+    user_public,
+    verify_password,
 )
-from services.frek_core import frek_core
-from services.agent_factory import agent_factory
-from quiz import build_quiz, evaluate
+from db import db, utc_now_iso
 from lx import (
-    enrich_module, EMPTY_PROGRESS, prereqs_before_quiz_ready, compute_status,
-    phase_completion_flags, is_module_unlocked, is_formation_unlocked,
     DELIVERABLE_MIN_CHARS,
+    EMPTY_PROGRESS,
+    compute_status,
+    enrich_module,
+    is_formation_unlocked,
+    is_module_unlocked,
+    phase_completion_flags,
+    prereqs_before_quiz_ready,
 )
-
+from models import (
+    AuthResponse,
+    LoginInput,
+    MentorChatInput,
+    OnboardingInput,
+    OnboardingResult,
+    QuizResult,
+    QuizSubmission,
+    RegisterInput,
+    User,
+    UserPublic,
+)
+from quiz import build_quiz, evaluate
+from services.agent_factory import agent_factory
+from services.frek_core import frek_core
 
 router = APIRouter(prefix="/api")
 
@@ -94,9 +111,11 @@ async def onboarding_options():
     """Returns available options for the FREK Origin Story wizard."""
     poles = await db.poles.find({}, {"_id": 0}).to_list(50)
     return {
-        "langs": [{"code": "fr", "name": "Français"},
-                  {"code": "en", "name": "English"},
-                  {"code": "kr", "name": "Kreyòl"}],
+        "langs": [
+            {"code": "fr", "name": "Français"},
+            {"code": "en", "name": "English"},
+            {"code": "kr", "name": "Kreyòl"},
+        ],
         "metiers": poles,  # each pole = career direction
         "territoires": TERRITOIRES,
     }
@@ -104,7 +123,8 @@ async def onboarding_options():
 
 @router.post("/onboarding/complete", response_model=OnboardingResult)
 async def onboarding_complete(
-    inp: OnboardingInput, current: User = Depends(get_current_user),
+    inp: OnboardingInput,
+    current: User = Depends(get_current_user),
 ):
     # 1) Validate pole
     pole = await db.poles.find_one({"code": inp.metier_vise}, {"_id": 0})
@@ -118,26 +138,32 @@ async def onboarding_complete(
     # 2) Persist onboarding data
     await db.users.update_one(
         {"id": current.id},
-        {"$set": {
-            "lang": inp.lang,
-            "metier_vise": inp.metier_vise,
-            "territoire": inp.territoire,
-            "objectif_perso": inp.objectif_perso.strip(),
-            "onboarding_completed": True,
-        }},
+        {
+            "$set": {
+                "lang": inp.lang,
+                "metier_vise": inp.metier_vise,
+                "territoire": inp.territoire,
+                "objectif_perso": inp.objectif_perso.strip(),
+                "onboarding_completed": True,
+            }
+        },
     )
 
     # 3) Emit 3 FREK-TIME signals (language / territory / objective)
     signals_emitted: List[str] = []
     for reason in ("language_selected", "territory_selected", "objective_set"):
-        await frek_core.emit_signal(current.id, "FREK-TIME", {
-            "onboarding_step": reason,
-            "value": {
-                "language_selected": inp.lang,
-                "territory_selected": inp.territoire,
-                "objective_set": inp.objectif_perso[:60],
-            }[reason],
-        })
+        await frek_core.emit_signal(
+            current.id,
+            "FREK-TIME",
+            {
+                "onboarding_step": reason,
+                "value": {
+                    "language_selected": inp.lang,
+                    "territory_selected": inp.territoire,
+                    "objective_set": inp.objectif_perso[:60],
+                }[reason],
+            },
+        )
         signals_emitted.append("FREK-TIME")
 
     # 4) Auto-award BADGE-DECOUVERTE (threshold=0) — user has 5 CC already from register
@@ -146,7 +172,9 @@ async def onboarding_complete(
 
     # 5) Recommend a first formation matching the pole (prefer one with modules,
     #    else fall back to any formation of this pole)
-    formations = await db.formations.find({"pole": inp.metier_vise}, {"_id": 0}).to_list(50)
+    formations = await db.formations.find(
+        {"pole": inp.metier_vise}, {"_id": 0}
+    ).to_list(50)
     formations.sort(key=lambda f: (0 if f.get("modules") else 1, f.get("code", "")))
     recommended_formation = formations[0] if formations else None
     if recommended_formation:
@@ -164,38 +192,55 @@ async def onboarding_complete(
 
     # 6) Recommend + auto-accept a first mission matching the pole (any stade,
     #    prefer 'featured', else 'open'). Falls back to any mission if pole has none.
-    missions_pool = await db.missions.find({"pole": inp.metier_vise}, {"_id": 0}).to_list(50)
+    missions_pool = await db.missions.find(
+        {"pole": inp.metier_vise}, {"_id": 0}
+    ).to_list(50)
     if not missions_pool:
         missions_pool = await db.missions.find({}, {"_id": 0}).to_list(50)
-    missions_pool.sort(key=lambda m: (0 if m.get("status_type") == "featured" else 1, m.get("cc_reward", 0)))
+    missions_pool.sort(
+        key=lambda m: (
+            0 if m.get("status_type") == "featured" else 1,
+            m.get("cc_reward", 0),
+        )
+    )
     recommended_mission = missions_pool[0] if missions_pool else None
     if recommended_mission:
-        existing = await db.user_missions.find_one({
-            "user_id": current.id, "mission_code": recommended_mission["code"],
-        })
-        if not existing:
-            await db.user_missions.insert_one({
-                "id": str(uuid.uuid4()),
+        existing = await db.user_missions.find_one(
+            {
                 "user_id": current.id,
                 "mission_code": recommended_mission["code"],
-                "status": "accepted",
-                "accepted_at": utc_now_iso(),
-                "source": "onboarding",
-            })
-            await frek_core.emit_signal(current.id, "FREK-MISSION", {
-                "mission": recommended_mission["code"], "source": "onboarding",
-            })
+            }
+        )
+        if not existing:
+            await db.user_missions.insert_one(
+                {
+                    "id": str(uuid.uuid4()),
+                    "user_id": current.id,
+                    "mission_code": recommended_mission["code"],
+                    "status": "accepted",
+                    "accepted_at": utc_now_iso(),
+                    "source": "onboarding",
+                }
+            )
+            await frek_core.emit_signal(
+                current.id,
+                "FREK-MISSION",
+                {
+                    "mission": recommended_mission["code"],
+                    "source": "onboarding",
+                },
+            )
 
     # 7) Reload user for accurate public payload
     doc = await db.users.find_one({"id": current.id}, {"_id": 0})
+    reloaded = User(**doc) if doc else current
     return OnboardingResult(
-        user=user_public(User(**doc)),
+        user=user_public(reloaded),
         recommended_formation=recommended_formation,
         recommended_mission=recommended_mission,
         badge_earned=badge_earned,
         signals_emitted=signals_emitted,
     )
-
 
 
 # ============ POLES + FORMATIONS ============
@@ -209,30 +254,42 @@ async def list_poles():
 async def list_formations():
     docs = await db.formations.find({}, {"_id": 0}).to_list(200)
     # Return summary shape (no modules for the list)
-    return [{
-        "code": d["code"], "name": d["name"], "pole": d["pole"],
-        "pole_name": d.get("pole_name"), "pole_color": d.get("pole_color"),
-        "duration_h": d["duration_h"], "stades": d["stades"],
-        "cc": d["cc"], "badge_name": d["badge_name"],
-        "description": d.get("description", ""),
-        "contexts": d.get("contexts", []),
-        "audience_levels": d.get("audience_levels", []),
-        "bridge_entities": d.get("bridge_entities", []),
-        "positioning_note": d.get("positioning_note", ""),
-        "primary_job": (d.get("cartography") or {}).get("primary_job"),
-        "reconstruction_status": d.get("reconstruction_status"),
-        "needs_external_calibration": d.get("needs_external_calibration", True),
-        "delivery_formats": (d.get("cartography") or {}).get("delivery_formats", []),
-        "market_job_title": d.get("market_job_title"),
-        "calibration_confidence": d.get("calibration_confidence"),
-        "calibration_date": d.get("calibration_date"),
-        "reconciliation_flags": d.get("reconciliation_flags", []),
-        "modules_count": len(d.get("modules", [])),
-    } for d in docs]
+    return [
+        {
+            "code": d["code"],
+            "name": d["name"],
+            "pole": d["pole"],
+            "pole_name": d.get("pole_name"),
+            "pole_color": d.get("pole_color"),
+            "duration_h": d["duration_h"],
+            "stades": d["stades"],
+            "cc": d["cc"],
+            "badge_name": d["badge_name"],
+            "description": d.get("description", ""),
+            "contexts": d.get("contexts", []),
+            "audience_levels": d.get("audience_levels", []),
+            "bridge_entities": d.get("bridge_entities", []),
+            "positioning_note": d.get("positioning_note", ""),
+            "primary_job": (d.get("cartography") or {}).get("primary_job"),
+            "reconstruction_status": d.get("reconstruction_status"),
+            "needs_external_calibration": d.get("needs_external_calibration", True),
+            "delivery_formats": (d.get("cartography") or {}).get(
+                "delivery_formats", []
+            ),
+            "market_job_title": d.get("market_job_title"),
+            "calibration_confidence": d.get("calibration_confidence"),
+            "calibration_date": d.get("calibration_date"),
+            "reconciliation_flags": d.get("reconciliation_flags", []),
+            "modules_count": len(d.get("modules", [])),
+        }
+        for d in docs
+    ]
 
 
 @router.get("/formations/{code}")
-async def get_formation(code: str, current: Optional[User] = Depends(get_current_user_optional)):
+async def get_formation(
+    code: str, current: Optional[User] = Depends(get_current_user_optional)
+):
     doc = await db.formations.find_one({"code": code}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Formation introuvable")
@@ -248,20 +305,25 @@ async def get_formation(code: str, current: Optional[User] = Depends(get_current
         return doc
 
     # User is authenticated → compute lock/status per module
-    progress_docs = await db.progress.find(
-        {"user_id": current.id}, {"_id": 0}
-    ).to_list(1000)
+    progress_docs = await db.progress.find({"user_id": current.id}, {"_id": 0}).to_list(
+        1000
+    )
     prog_by_mod: Dict[str, Dict] = {p["module_code"]: p for p in progress_docs}
 
     all_formations = await db.formations.find({}, {"_id": 0}).to_list(200)
     is_unlocked, reason = is_formation_unlocked(
-        current.metier_vise, doc, all_formations, prog_by_mod,
+        current.metier_vise,
+        doc,
+        all_formations,
+        prog_by_mod,
     )
     doc["is_unlocked"] = is_unlocked
     doc["lock_reason"] = reason
 
     for m in doc.get("modules", []):
-        m["is_unlocked"] = is_unlocked and is_module_unlocked(doc, m["code"], prog_by_mod)
+        m["is_unlocked"] = is_unlocked and is_module_unlocked(
+            doc, m["code"], prog_by_mod
+        )
         p = prog_by_mod.get(m["code"])
         m["status"] = compute_status(p)
         m["phase_flags"] = phase_completion_flags(p)
@@ -274,7 +336,8 @@ async def get_formation(code: str, current: Optional[User] = Depends(get_current
 # ============ LX v2 — MODULE JOURNEY ============
 @router.get("/modules/{formation_code}/{module_code}")
 async def get_module_journey(
-    formation_code: str, module_code: str,
+    formation_code: str,
+    module_code: str,
     current: User = Depends(get_current_user),
 ):
     """Full learning-journey payload for one module — phases + user progress."""
@@ -286,31 +349,45 @@ async def get_module_journey(
         raise HTTPException(status_code=404, detail="Module introuvable")
 
     # Check lock
-    progress_docs = await db.progress.find(
-        {"user_id": current.id}, {"_id": 0}
-    ).to_list(500)
+    progress_docs = await db.progress.find({"user_id": current.id}, {"_id": 0}).to_list(
+        500
+    )
     prog_by_mod = {p["module_code"]: p for p in progress_docs}
 
     all_forms = await db.formations.find({}, {"_id": 0}).to_list(200)
     form_unlocked, form_reason = is_formation_unlocked(
-        current.metier_vise, form, all_forms, prog_by_mod,
+        current.metier_vise,
+        form,
+        all_forms,
+        prog_by_mod,
     )
     mod_unlocked = form_unlocked and is_module_unlocked(form, module_code, prog_by_mod)
 
-    progress = prog_by_mod.get(module_code, {**EMPTY_PROGRESS,
-                                             "user_id": current.id,
-                                             "formation_code": formation_code,
-                                             "module_code": module_code})
+    progress = prog_by_mod.get(
+        module_code,
+        {
+            **EMPTY_PROGRESS,
+            "user_id": current.id,
+            "formation_code": formation_code,
+            "module_code": module_code,
+        },
+    )
 
     enriched = enrich_module(mod)
     return {
-        "formation": {"code": form["code"], "name": form["name"],
-                      "pole": form["pole"], "pole_name": form.get("pole_name"),
-                      "pole_color": form.get("pole_color")},
+        "formation": {
+            "code": form["code"],
+            "name": form["name"],
+            "pole": form["pole"],
+            "pole_name": form.get("pole_name"),
+            "pole_color": form.get("pole_color"),
+        },
         "module": enriched,
         "is_unlocked": mod_unlocked,
-        "lock_reason": form_reason if not form_unlocked else (
-            "" if mod_unlocked else "Termine le module précédent d'abord."
+        "lock_reason": (
+            form_reason
+            if not form_unlocked
+            else ("" if mod_unlocked else "Termine le module précédent d'abord.")
         ),
         "progress": {
             **{k: progress.get(k, v) for k, v in EMPTY_PROGRESS.items()},
@@ -327,8 +404,10 @@ class PhaseTickInput(BaseModel):
 
 @router.post("/modules/{formation_code}/{module_code}/phase")
 async def tick_phase(
-    formation_code: str, module_code: str,
-    inp: PhaseTickInput, current: User = Depends(get_current_user),
+    formation_code: str,
+    module_code: str,
+    inp: PhaseTickInput,
+    current: User = Depends(get_current_user),
 ):
     if inp.key not in ("hook", "objectives", "course", "workshop"):
         raise HTTPException(status_code=400, detail="Phase inconnue")
@@ -356,11 +435,17 @@ async def tick_phase(
         {"$set": set_fields},
         upsert=True,
     )
-    await frek_core.emit_signal(current.id, "FREK-TIME", {
-        "module": module_code, "phase": inp.key,
-    })
+    await frek_core.emit_signal(
+        current.id,
+        "FREK-TIME",
+        {
+            "module": module_code,
+            "phase": inp.key,
+        },
+    )
     updated = await db.progress.find_one(
-        {"user_id": current.id, "module_code": module_code}, {"_id": 0},
+        {"user_id": current.id, "module_code": module_code},
+        {"_id": 0},
     )
     return {
         "ok": True,
@@ -375,8 +460,10 @@ class DeliverableInput(BaseModel):
 
 @router.post("/modules/{formation_code}/{module_code}/deliverable")
 async def submit_deliverable(
-    formation_code: str, module_code: str,
-    inp: DeliverableInput, current: User = Depends(get_current_user),
+    formation_code: str,
+    module_code: str,
+    inp: DeliverableInput,
+    current: User = Depends(get_current_user),
 ):
     text = (inp.text or "").strip()
     if len(text) < DELIVERABLE_MIN_CHARS:
@@ -394,21 +481,29 @@ async def submit_deliverable(
     now = utc_now_iso()
     await db.progress.update_one(
         {"user_id": current.id, "module_code": module_code},
-        {"$set": {
-            "user_id": current.id,
-            "formation_code": formation_code,
-            "module_code": module_code,
-            "deliverable_text": text,
-            "deliverable_submitted_at": now,
-        }},
+        {
+            "$set": {
+                "user_id": current.id,
+                "formation_code": formation_code,
+                "module_code": module_code,
+                "deliverable_text": text,
+                "deliverable_submitted_at": now,
+            }
+        },
         upsert=True,
     )
     signal = mod.get("frek_signal", "FREK-WORK").split(" ")[0]
-    await frek_core.emit_signal(current.id, signal, {
-        "module": module_code, "phase": "deliverable",
-    })
+    await frek_core.emit_signal(
+        current.id,
+        signal,
+        {
+            "module": module_code,
+            "phase": "deliverable",
+        },
+    )
     updated = await db.progress.find_one(
-        {"user_id": current.id, "module_code": module_code}, {"_id": 0},
+        {"user_id": current.id, "module_code": module_code},
+        {"_id": 0},
     )
     return {
         "ok": True,
@@ -419,7 +514,8 @@ async def submit_deliverable(
 
 @router.post("/modules/{formation_code}/{module_code}/mini-mission/commit")
 async def commit_mini_mission(
-    formation_code: str, module_code: str,
+    formation_code: str,
+    module_code: str,
     current: User = Depends(get_current_user),
 ):
     form = await db.formations.find_one({"code": formation_code}, {"_id": 0})
@@ -431,7 +527,8 @@ async def commit_mini_mission(
 
     # mini-mission requires quiz already passed
     p = await db.progress.find_one(
-        {"user_id": current.id, "module_code": module_code}, {"_id": 0},
+        {"user_id": current.id, "module_code": module_code},
+        {"_id": 0},
     )
     if not p or not p.get("quiz_passed"):
         raise HTTPException(
@@ -442,18 +539,26 @@ async def commit_mini_mission(
     now = utc_now_iso()
     await db.progress.update_one(
         {"user_id": current.id, "module_code": module_code},
-        {"$set": {
-            "mini_mission_committed_at": now,
-            "completed": True,
-            "completed_at": now,
-        }},
+        {
+            "$set": {
+                "mini_mission_committed_at": now,
+                "completed": True,
+                "completed_at": now,
+            }
+        },
         upsert=True,
     )
-    await frek_core.emit_signal(current.id, "FREK-MISSION", {
-        "module": module_code, "mini_mission": True,
-    })
+    await frek_core.emit_signal(
+        current.id,
+        "FREK-MISSION",
+        {
+            "module": module_code,
+            "mini_mission": True,
+        },
+    )
     updated = await db.progress.find_one(
-        {"user_id": current.id, "module_code": module_code}, {"_id": 0},
+        {"user_id": current.id, "module_code": module_code},
+        {"_id": 0},
     )
     return {
         "ok": True,
@@ -467,7 +572,8 @@ async def user_learning_path(current: User = Depends(get_current_user)):
     """Personalized sequential learning path — pole-first, then others."""
     all_forms = await db.formations.find({}, {"_id": 0}).to_list(200)
     progress_docs = await db.progress.find(
-        {"user_id": current.id}, {"_id": 0},
+        {"user_id": current.id},
+        {"_id": 0},
     ).to_list(1000)
     prog_by_mod = {p["module_code"]: p for p in progress_docs}
 
@@ -475,16 +581,22 @@ async def user_learning_path(current: User = Depends(get_current_user)):
         mods = f.get("modules", [])
         total = len(mods)
         validated = sum(
-            1 for m in mods
-            if compute_status(prog_by_mod.get(m["code"])) == "validated"
+            1 for m in mods if compute_status(prog_by_mod.get(m["code"])) == "validated"
         )
         unlocked, reason = is_formation_unlocked(
-            current.metier_vise, f, all_forms, prog_by_mod,
+            current.metier_vise,
+            f,
+            all_forms,
+            prog_by_mod,
         )
         return {
-            "code": f["code"], "name": f["name"], "pole": f["pole"],
-            "pole_name": f.get("pole_name"), "pole_color": f.get("pole_color"),
-            "duration_h": f["duration_h"], "cc": f["cc"],
+            "code": f["code"],
+            "name": f["name"],
+            "pole": f["pole"],
+            "pole_name": f.get("pole_name"),
+            "pole_color": f.get("pole_color"),
+            "duration_h": f["duration_h"],
+            "cc": f["cc"],
             "modules_count": total,
             "validated_count": validated,
             "progress_pct": int((validated / total) * 100) if total else 0,
@@ -506,14 +618,18 @@ async def user_learning_path(current: User = Depends(get_current_user)):
         if not s["is_unlocked"]:
             continue
         f_doc = next((f for f in all_forms if f["code"] == s["code"]), None)
-        for m in f_doc.get("modules", []) if f_doc else []:
+        if f_doc is None:
+            continue
+        for m in f_doc.get("modules", []):
             if not is_module_unlocked(f_doc, m["code"], prog_by_mod):
                 continue
             status = compute_status(prog_by_mod.get(m["code"]))
             if status != "validated":
                 next_action = {
-                    "formation_code": s["code"], "formation_name": s["name"],
-                    "module_code": m["code"], "module_name": m["name"],
+                    "formation_code": s["code"],
+                    "formation_name": s["name"],
+                    "module_code": m["code"],
+                    "module_name": m["name"],
                     "status": status,
                     "pole_color": s["pole_color"],
                 }
@@ -544,7 +660,9 @@ async def get_module_quiz(formation_code: str, module_code: str):
         "module": mod,
         "quiz": [
             {
-                "n": q["n"], "type": q["type"], "question": q["question"],
+                "n": q["n"],
+                "type": q["type"],
+                "question": q["question"],
                 "choices": [{"id": c["id"], "text": c["text"]} for c in q["choices"]],
             }
             for q in quiz
@@ -552,10 +670,15 @@ async def get_module_quiz(formation_code: str, module_code: str):
     }
 
 
-@router.post("/formations/{formation_code}/modules/{module_code}/quiz/submit", response_model=QuizResult)
+@router.post(
+    "/formations/{formation_code}/modules/{module_code}/quiz/submit",
+    response_model=QuizResult,
+)
 async def submit_module_quiz(
-    formation_code: str, module_code: str,
-    submission: QuizSubmission, current: User = Depends(get_current_user),
+    formation_code: str,
+    module_code: str,
+    submission: QuizSubmission,
+    current: User = Depends(get_current_user),
 ):
     doc = await db.formations.find_one({"code": formation_code}, {"_id": 0})
     if not doc:
@@ -567,7 +690,8 @@ async def submit_module_quiz(
     # LX v2 gate — quiz is a validation step, not a shortcut. All learning
     # phases must be done first.
     p = await db.progress.find_one(
-        {"user_id": current.id, "module_code": module_code}, {"_id": 0},
+        {"user_id": current.id, "module_code": module_code},
+        {"_id": 0},
     )
     ready, missing = prereqs_before_quiz_ready(p or {})
     if not ready:
@@ -585,28 +709,47 @@ async def submit_module_quiz(
     # Increment attempts always
     await db.progress.update_one(
         {"user_id": current.id, "module_code": module_code},
-        {"$inc": {"quiz_attempts": 1},
-         "$set": {"user_id": current.id, "formation_code": formation_code,
-                  "module_code": module_code, "quiz_score": result["score"]}},
+        {
+            "$inc": {"quiz_attempts": 1},
+            "$set": {
+                "user_id": current.id,
+                "formation_code": formation_code,
+                "module_code": module_code,
+                "quiz_score": result["score"],
+            },
+        },
         upsert=True,
     )
 
     if result["passed"]:
         cc_earned = int(mod.get("duration_h", 4))
-        await frek_core.emit_signal(current.id, signal, {
-            "formation": formation_code, "module": module_code, "score": result["score"],
-        })
-        await frek_core.emit_signal(current.id, "FREK-SCORE", {
-            "score": result["score"], "module": module_code,
-        })
+        await frek_core.emit_signal(
+            current.id,
+            signal,
+            {
+                "formation": formation_code,
+                "module": module_code,
+                "score": result["score"],
+            },
+        )
+        await frek_core.emit_signal(
+            current.id,
+            "FREK-SCORE",
+            {
+                "score": result["score"],
+                "module": module_code,
+            },
+        )
         # Mark quiz passed — BUT module isn't "completed" until mini-mission committed.
         await db.progress.update_one(
             {"user_id": current.id, "module_code": module_code},
-            {"$set": {
-                "quiz_passed": True,
-                "quiz_score": result["score"],
-                "quiz_passed_at": utc_now_iso(),
-            }},
+            {
+                "$set": {
+                    "quiz_passed": True,
+                    "quiz_score": result["score"],
+                    "quiz_passed_at": utc_now_iso(),
+                }
+            },
             upsert=True,
         )
         new_cc = current.cc_credits + cc_earned
@@ -618,23 +761,32 @@ async def submit_module_quiz(
         await _award_threshold_badges(current.id, new_cc)
 
     return QuizResult(
-        score=result["score"], passed=result["passed"],
-        correct=result["correct"], total=result["total"],
-        cc_earned=cc_earned, signal_emitted=signal if result["passed"] else "",
+        score=result["score"],
+        passed=result["passed"],
+        correct=result["correct"],
+        total=result["total"],
+        cc_earned=cc_earned,
+        signal_emitted=signal if result["passed"] else "",
     )
 
 
 async def _award_threshold_badges(user_id: str, cc: int) -> None:
-    badges = await db.badges.find({"cc_threshold": {"$lte": cc}}, {"_id": 0}).to_list(200)
+    badges = await db.badges.find({"cc_threshold": {"$lte": cc}}, {"_id": 0}).to_list(
+        200
+    )
     for b in badges:
-        exists = await db.user_badges.find_one({"user_id": user_id, "badge_code": b["code"]})
+        exists = await db.user_badges.find_one(
+            {"user_id": user_id, "badge_code": b["code"]}
+        )
         if not exists:
-            await db.user_badges.insert_one({
-                "id": str(uuid.uuid4()),
-                "user_id": user_id,
-                "badge_code": b["code"],
-                "earned_at": utc_now_iso(),
-            })
+            await db.user_badges.insert_one(
+                {
+                    "id": str(uuid.uuid4()),
+                    "user_id": user_id,
+                    "badge_code": b["code"],
+                    "earned_at": utc_now_iso(),
+                }
+            )
             await frek_core.emit_signal(user_id, "FREK-CERT", {"badge": b["code"]})
 
 
@@ -652,7 +804,8 @@ async def my_badges(current: User = Depends(get_current_user)):
     by_code = {b["code"]: b for b in all_badges}
     return [
         {**by_code[m["badge_code"]], "earned_at": m["earned_at"]}
-        for m in mine if m["badge_code"] in by_code
+        for m in mine
+        if m["badge_code"] in by_code
     ]
 
 
@@ -672,30 +825,37 @@ async def accept_mission(mission_code: str, current: User = Depends(get_current_
     )
     if existing:
         return {"ok": True, "status": existing.get("status", "accepted")}
-    await db.user_missions.insert_one({
-        "id": str(uuid.uuid4()),
-        "user_id": current.id,
-        "mission_code": mission_code,
-        "status": "accepted",
-        "accepted_at": utc_now_iso(),
-    })
+    await db.user_missions.insert_one(
+        {
+            "id": str(uuid.uuid4()),
+            "user_id": current.id,
+            "mission_code": mission_code,
+            "status": "accepted",
+            "accepted_at": utc_now_iso(),
+        }
+    )
     await frek_core.emit_signal(current.id, "FREK-MISSION", {"mission": mission_code})
     return {"ok": True, "status": "accepted"}
 
 
 @router.post("/missions/{mission_code}/submit")
 async def submit_mission(
-    mission_code: str, current: User = Depends(get_current_user),
+    mission_code: str,
+    current: User = Depends(get_current_user),
 ):
     mission = await db.missions.find_one({"code": mission_code}, {"_id": 0})
     if not mission:
         raise HTTPException(status_code=404, detail="Mission introuvable")
     await db.user_missions.update_one(
         {"user_id": current.id, "mission_code": mission_code},
-        {"$set": {
-            "user_id": current.id, "mission_code": mission_code,
-            "status": "validated", "submitted_at": utc_now_iso(),
-        }},
+        {
+            "$set": {
+                "user_id": current.id,
+                "mission_code": mission_code,
+                "status": "validated",
+                "submitted_at": utc_now_iso(),
+            }
+        },
         upsert=True,
     )
     reward = int(mission.get("cc_reward", 0))
@@ -711,33 +871,41 @@ async def submit_mission(
 
 @router.get("/missions/mine")
 async def my_missions(current: User = Depends(get_current_user)):
-    return await db.user_missions.find(
-        {"user_id": current.id}, {"_id": 0}
-    ).to_list(200)
+    return await db.user_missions.find({"user_id": current.id}, {"_id": 0}).to_list(200)
 
 
 # ============ FREK PROFILE + PROGRESSION ============
 @router.get("/frek/profile")
 async def frek_profile(current: User = Depends(get_current_user)):
-    signals = await db.frek_signals.find(
-        {"user_id": current.id}, {"_id": 0}
-    ).sort("ts", -1).to_list(200)
+    signals = (
+        await db.frek_signals.find({"user_id": current.id}, {"_id": 0})
+        .sort("ts", -1)
+        .to_list(200)
+    )
 
     progress = await db.progress.find(
         {"user_id": current.id, "completed": True}, {"_id": 0}
     ).to_list(500)
 
-    badges = await db.user_badges.find(
-        {"user_id": current.id}, {"_id": 0}
-    ).to_list(50)
+    badges = await db.user_badges.find({"user_id": current.id}, {"_id": 0}).to_list(50)
 
     # stage progression: percentage inside current stade band
-    stade_bands = [("graine", 0), ("pousse", 10), ("racine", 50),
-                   ("branches", 100), ("arbre", 150), ("foret", 300)]
+    stade_bands = [
+        ("graine", 0),
+        ("pousse", 10),
+        ("racine", 50),
+        ("branches", 100),
+        ("arbre", 150),
+        ("foret", 300),
+    ]
     idx = next((i for i, (n, _) in enumerate(stade_bands) if n == current.stade), 0)
     lo = stade_bands[idx][1]
     hi = stade_bands[idx + 1][1] if idx + 1 < len(stade_bands) else lo + 200
-    pct = 100 if hi <= lo else max(0, min(100, int((current.cc_credits - lo) * 100 / (hi - lo))))
+    pct = (
+        100
+        if hi <= lo
+        else max(0, min(100, int((current.cc_credits - lo) * 100 / (hi - lo))))
+    )
     return {
         "user": user_public(current).model_dump(),
         "stade_progress_pct": pct,
@@ -752,14 +920,18 @@ async def frek_profile(current: User = Depends(get_current_user)):
 @router.get("/progression/summary")
 async def progression_summary(current: User = Depends(get_current_user)):
     # LX v2: only count modules that are FULLY validated (quiz passed + mini-mission committed)
-    completed = await db.progress.count_documents({
-        "user_id": current.id,
-        "completed": True,
-    })
-    total_modules_doc = await db.formations.aggregate([
-        {"$project": {"count": {"$size": {"$ifNull": ["$modules", []]}}}},
-        {"$group": {"_id": None, "total": {"$sum": "$count"}}},
-    ]).to_list(1)
+    completed = await db.progress.count_documents(
+        {
+            "user_id": current.id,
+            "completed": True,
+        }
+    )
+    total_modules_doc = await db.formations.aggregate(
+        [
+            {"$project": {"count": {"$size": {"$ifNull": ["$modules", []]}}}},
+            {"$group": {"_id": None, "total": {"$sum": "$count"}}},
+        ]
+    ).to_list(1)
     total = (total_modules_doc[0]["total"] if total_modules_doc else 0) or 0
     global_pct = int((completed / total) * 100) if total else 0
     return {
@@ -808,10 +980,14 @@ async def mentor_chat(inp: MentorChatInput, current: User = Depends(get_current_
     ]
     await db.mentor_conversations.update_one(
         {"user_id": current.id, "session_id": session_id},
-        {"$set": {
-            "user_id": current.id, "session_id": session_id,
-            "messages": new_messages, "updated_at": utc_now_iso(),
-        }},
+        {
+            "$set": {
+                "user_id": current.id,
+                "session_id": session_id,
+                "messages": new_messages,
+                "updated_at": utc_now_iso(),
+            }
+        },
         upsert=True,
     )
     return {"session_id": session_id, "reply": reply}

@@ -1,11 +1,12 @@
 """Pydantic models for CVLN Academy OS."""
+
 from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Optional, List, Dict, Any, Literal
+from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 def _uid() -> str:
@@ -16,9 +17,10 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-
 AcademyContext = Literal["INTERNAL", "EXTERNAL", "BRIDGE"]
-AudienceLevel = Literal["DEBUTANT", "INTERMEDIAIRE", "AVANCE", "PROFESSIONNEL", "INSTITUTIONNEL"]
+AudienceLevel = Literal[
+    "DEBUTANT", "INTERMEDIAIRE", "AVANCE", "PROFESSIONNEL", "INSTITUTIONNEL"
+]
 
 
 class InternalJobVersion(BaseModel):
@@ -116,9 +118,11 @@ class FormationCartography(BaseModel):
     reconstruction_status: str
     source: str
 
+
 # ---------------- USERS (FREK-ID) ----------------
 class User(BaseModel):
     """A CVLN Academy learner identified by their FREK-ID."""
+
     model_config = ConfigDict(extra="ignore")
 
     id: str = Field(default_factory=_uid)
@@ -131,13 +135,21 @@ class User(BaseModel):
     cc_credits: int = 0
     # Onboarding — FREK Origin Story
     onboarding_completed: bool = False
-    metier_vise: Optional[str] = None      # pole code (FMS / KOR / KLT / FRK / ...)
-    territoire: Optional[str] = None        # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre
-    objectif_perso: Optional[str] = None    # free text (≤ 240 chars)
-    signals: Dict[str, int] = Field(default_factory=lambda: {
-        "FREK-TIME": 0, "FREK-WORK": 0, "FREK-SCORE": 0,
-        "FREK-LINK": 0, "FREK-CERT": 0, "FREK-CONTRIB": 0
-    })
+    metier_vise: Optional[str] = None  # pole code (FMS / KOR / KLT / FRK / ...)
+    territoire: Optional[str] = (
+        None  # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre
+    )
+    objectif_perso: Optional[str] = None  # free text (≤ 240 chars)
+    signals: Dict[str, int] = Field(
+        default_factory=lambda: {
+            "FREK-TIME": 0,
+            "FREK-WORK": 0,
+            "FREK-SCORE": 0,
+            "FREK-LINK": 0,
+            "FREK-CERT": 0,
+            "FREK-CONTRIB": 0,
+        }
+    )
     created_at: str = Field(default_factory=_now)
 
 
@@ -332,7 +344,9 @@ class MentorChatInput(BaseModel):
 class OnboardingInput(BaseModel):
     lang: str  # fr | en | kr
     metier_vise: str  # pole code
-    territoire: str  # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre
+    territoire: (
+        str  # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre
+    )
     objectif_perso: str = Field(min_length=3, max_length=240)
 
 

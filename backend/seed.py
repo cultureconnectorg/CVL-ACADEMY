@@ -1,8 +1,9 @@
 """Idempotent seed for CVLN Academy formations, badges and missions."""
+
 from __future__ import annotations
 
 from db import db
-from seed_data import FORMATIONS, BADGES, MISSIONS, POLES
+from seed_data import BADGES, FORMATIONS, MISSIONS, POLES
 
 
 def _pole_lookup():

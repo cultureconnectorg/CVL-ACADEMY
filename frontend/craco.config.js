@@ -128,7 +128,10 @@ webpackConfig.devServer = (devServerConfig) => {
   return devServerConfig;
 };
 
-// Wrap with visual edits (automatically adds babel plugin, dev server, and overlay in dev mode)
+// Optional: Emergent platform's live visual-edit overlay. Not a project
+// dependency (it's only fetchable from Emergent's own asset host), so it is
+// intentionally NOT listed in package.json — this stays a no-op everywhere
+// else and only activates if a developer installs it manually on Emergent.
 if (isDevServer) {
   try {
     const { withVisualEdits } = require("@emergentbase/visual-edits/craco");

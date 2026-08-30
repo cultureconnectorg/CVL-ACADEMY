@@ -33,10 +33,11 @@ export default function ModuleJourney() {
   const load = useCallback(async () => {
     const { data } = await api.get(`/modules/${fc}/${mc}`);
     setData(data);
-    if (!openPhase) setOpenPhase("hook");
-  }, [fc, mc, openPhase]);
+  }, [fc, mc]);
 
-  useEffect(() => { load(); /* eslint-disable-next-line */ }, [fc, mc]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (!data) return <div className="p-10 text-[--cvln-ink-2]">…</div>;
 
@@ -139,7 +140,7 @@ export default function ModuleJourney() {
         {module.name}
       </h1>
       <div className="text-sm text-[--cvln-ink-2] mt-2">
-        {module.duration_h}h · {phases.workshop.estimated_min}min d'atelier · stade {module.stade}
+        {module.duration_h}h · {phases.workshop.estimated_min}min d&apos;atelier · stade {module.stade}
       </div>
 
       {/* Progress banner */}
@@ -352,7 +353,7 @@ function PhaseCourse({ phase, progressPct, onProgress }) {
 
       {/* Reading */}
       <div className="text-xs mono text-[--cvln-ink-2] mt-6 mb-2">
-        Lecture · ~{phase.reading_min} min · défile jusqu'à 80% pour débloquer
+        Lecture · ~{phase.reading_min} min · défile jusqu&apos;à 80% pour débloquer
       </div>
       <div
         onScroll={onScroll}
@@ -520,7 +521,7 @@ function PhaseMiniMission({ phase, done, quizPassed, onCommit }) {
   if (!quizPassed) {
     return (
       <div className="text-sm text-[--cvln-ink-2]">
-        Passe d'abord le quiz de validation avant d'engager la mini-mission.
+        Passe d&apos;abord le quiz de validation avant d&apos;engager la mini-mission.
       </div>
     );
   }
