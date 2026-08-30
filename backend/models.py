@@ -331,6 +331,15 @@ class Formation(BaseModel):
     market_job_title: Optional[str] = None
     calibration_confidence: Optional[str] = None
     calibration_date: Optional[str] = None
+    # Admin CMS lifecycle (rule 14). Default "published" — every formation
+    # seeded before this field existed is already live; new ones (FMS
+    # import, manual creation) start "draft" explicitly.
+    content_status: Literal["draft", "published", "archived"] = "published"
+    content_version: str = "1.0"
+
+
+class ContentStatusInput(BaseModel):
+    content_status: Literal["draft", "published", "archived"]
 
 
 # ---------------- BADGES ----------------

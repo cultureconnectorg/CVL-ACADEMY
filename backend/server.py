@@ -10,6 +10,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from api import router
 from db import client, db  # noqa
+from infra_indexes import ensure_indexes
 from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
@@ -40,6 +41,7 @@ logger = logging.getLogger("cvln")
 async def on_startup():
     register_integration_subscribers()
     try:
+        await ensure_indexes()
         await seed_if_empty()
         await seed_default_definitions()
         logger.info("Seed done.")

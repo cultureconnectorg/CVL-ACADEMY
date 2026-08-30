@@ -205,6 +205,52 @@ function OrgsPanel() {
   );
 }
 
+function CataloguePanel() {
+  const [formations, setFormations] = useState([]);
+
+  const load = () => api.get("/formations").then((r) => setFormations(r.data));
+
+  useEffect(() => {
+    load().catch(() => {});
+  }, []);
+
+  const setStatus = async (code, content_status) => {
+    try {
+      await api.patch(`/admin/formations/${code}/status`, { content_status });
+      toast.success(`${code} → ${content_status}`);
+      await load();
+    } catch {
+      toast.error("Impossible de mettre à jour le statut.");
+    }
+  };
+
+  return (
+    <div className="cvln-card p-6" data-testid="catalogue-panel">
+      <h3 className="font-display font-bold text-xl tracking-tight mb-4">Catalogue — statut de publication</h3>
+      <div className="max-h-96 overflow-y-auto space-y-1.5">
+        {formations.map((f) => (
+          <div key={f.code} className="flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-[--cvln-bg-warm]">
+            <div className="text-sm min-w-0 truncate">
+              <span className="mono text-xs text-[--cvln-ink-2] mr-2">{f.code}</span>
+              {f.name}
+            </div>
+            <select
+              className="text-xs border-2 border-black/10 rounded-lg px-2 py-1"
+              value={f.content_status}
+              onChange={(e) => setStatus(f.code, e.target.value)}
+              data-testid={`status-${f.code}`}
+            >
+              <option value="draft">draft</option>
+              <option value="published">published</option>
+              <option value="archived">archived</option>
+            </select>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   return (
     <div className="px-6 md:px-12 py-10 max-w-6xl" data-testid="admin-dashboard-page">
@@ -215,8 +261,9 @@ export default function AdminDashboard() {
         <ImportPanel />
         <IntegrationsPanel />
       </div>
-      <div className="mt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <OrgsPanel />
+        <CataloguePanel />
       </div>
     </div>
   );
