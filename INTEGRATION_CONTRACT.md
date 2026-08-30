@@ -22,7 +22,7 @@ FREK_CORE_BASE_URL=https://frekcore.cvln.io       # optionnel : si vide → fall
 FREK_CORE_API_KEY=xxxx
 
 # CVLN Agent Factory
-CVLN_AGENT_FACTORY_URL=https://agents.cvln.io     # optionnel : si vide → fallback Emergent LLM
+CVLN_AGENT_FACTORY_URL=https://agents.cvln.io     # optionnel : si vide → fallback Anthropic SDK
 CVLN_AGENT_FACTORY_API_KEY=xxxx
 ```
 
@@ -65,7 +65,7 @@ Réponse attendue :
     "code": "mentor-cvln",
     "name": "Mentor CVLN",
     "description": "Guide de parcours…",
-    "model": "anthropic/claude-sonnet-4-6",
+    "model": "claude-sonnet-5",
     "status": "active"
   }
 ]
@@ -97,7 +97,7 @@ Réponse attendue :
 ```
 
 Comportement fallback : si `CVLN_AGENT_FACTORY_URL` vide → Academy appelle directement
-Claude Sonnet 4.6 via `emergentintegrations` avec le prompt système Mentor CVLN.
+Claude Sonnet 5 via le SDK officiel `anthropic` avec le prompt système Mentor CVLN.
 
 ---
 

@@ -10,7 +10,7 @@ const STEPS = ["lang", "metier", "territoire", "objectif", "recap"];
 
 export default function Onboarding() {
   const { user, loading, refreshMe } = useAuth();
-  const { lang, setLang, t } = useI18n();
+  const { lang, setLang } = useI18n();
   const nav = useNavigate();
 
   const [step, setStep] = useState(0);

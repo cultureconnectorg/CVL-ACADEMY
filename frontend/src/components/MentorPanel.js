@@ -28,7 +28,7 @@ export default function MentorPanel() {
     try {
       const { data } = await api.post("/mentor/chat", { message: text, session_id: sessionId });
       setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
-    } catch (e) {
+    } catch {
       toast.error("Mentor CVLN indisponible pour l'instant.");
     } finally {
       setSending(false);
@@ -50,8 +50,10 @@ export default function MentorPanel() {
       {/* Panel */}
       {open && (
         <div className="fixed inset-0 z-50 flex justify-end" data-testid="mentor-panel">
-          <div
-            className="absolute inset-0 bg-black/20"
+          <button
+            type="button"
+            aria-label="Fermer le Mentor CVLN"
+            className="absolute inset-0 bg-black/20 cursor-default"
             onClick={() => setOpen(false)}
           />
           <div className="relative h-full w-full max-w-md glass flex flex-col fade-in">
