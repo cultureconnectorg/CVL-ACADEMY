@@ -11,6 +11,7 @@ from starlette.middleware.cors import CORSMiddleware
 from api import router
 from db import client, db  # noqa
 from seed import seed_if_empty
+from template_engine import seed_default_definitions
 
 app = FastAPI(title="CVLN Academy OS", version="0.1")
 
@@ -36,6 +37,7 @@ logger = logging.getLogger("cvln")
 async def on_startup():
     try:
         await seed_if_empty()
+        await seed_default_definitions()
         logger.info("Seed done.")
     except Exception as e:  # noqa: BLE001
         logger.exception("Seed failed: %s", e)

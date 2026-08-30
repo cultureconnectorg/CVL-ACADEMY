@@ -24,6 +24,7 @@ from . import (
     progression,
     quizzes,
     skills,
+    templates,
 )
 
 router = APIRouter(prefix="/api")
@@ -43,5 +44,6 @@ for module in (
     fms,
     skills,
     certification,
+    templates,
 ):
     router.include_router(module.router)

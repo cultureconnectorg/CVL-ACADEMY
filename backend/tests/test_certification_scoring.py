@@ -13,9 +13,15 @@ def _rubric(pass_threshold_pct: float = 80.0) -> Rubric:
         formation_code="FMS-01",
         pass_threshold_pct=pass_threshold_pct,
         criteria=[
-            RubricCriterion(id="C1", label="Univers artistique", bloc="B1", max_score=10, weight=1),
-            RubricCriterion(id="C2", label="Storytelling", bloc="B1", max_score=10, weight=2),
-            RubricCriterion(id="C3", label="Plan marketing", bloc="B2", max_score=20, weight=1),
+            RubricCriterion(
+                id="C1", label="Univers artistique", bloc="B1", max_score=10, weight=1
+            ),
+            RubricCriterion(
+                id="C2", label="Storytelling", bloc="B1", max_score=10, weight=2
+            ),
+            RubricCriterion(
+                id="C3", label="Plan marketing", bloc="B2", max_score=20, weight=1
+            ),
         ],
     )
 
