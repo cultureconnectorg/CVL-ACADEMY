@@ -10,8 +10,11 @@ cette mission").
 (`backend/fms_import/`) contre la structure **réelle** de ce premier ZIP,
 et sa réconciliation avec la convention qui avait dû être inventée avant
 qu'aucun ZIP réel n'existe (voir `docs/DEVELOPER_GUIDE.md` §3, ancienne
-version). Ce n'est **pas** un rapport d'import en base — voir la section
-"Ce qui n'a pas pu être fait ici" plus bas.
+version). Ce rapport couvre **deux niveaux de validation** : la partie
+pure du pipeline (§3-4), et le chemin d'écriture réel en base
+(`import_fms_zip`, upsert, index, navigation, graphe — §5), exécuté contre
+une base MongoDB **en mémoire, non persistante**, faute d'accès à une
+vraie instance dans cet environnement d'exécution (voir §6).
 
 ---
 
@@ -132,21 +135,44 @@ document ne le déclare pas irait à l'encontre du principe "jamais
 fabriquer" qui structure tout ce chantier — mieux vaut un graphe
 incomplet et vrai qu'un graphe complet et inventé.
 
-## 5. Ce qui n'a pas pu être fait ici
+## 5. Validation du chemin d'écriture en base — `import_fms_zip()` réel
 
-Aucune instance MongoDB n'est disponible dans cet environnement
-d'exécution (`backend/.env.example` documente `MONGO_URL` comme
-obligatoire ; aucune valeur réelle n'est configurée ici). Par conséquent :
+Aucune instance MongoDB n'est joignable depuis cet environnement
+d'exécution (voir §6 pour le pourquoi exact). Pour valider malgré tout le
+code qui écrit réellement en base — pas seulement la partie pure — le
+pipeline complet (`import_fms_zip`, upsert, `ensure_search_index`,
+`build_navigation`, `build_dependency_graph`) a tourné contre l'archive
+réelle avec `db.db` substitué par une base Motor-compatible **en
+mémoire** (`mongomock-motor`, PyPI — disponible car `pypi.org` est
+accessible depuis ce sandbox, contrairement aux hôtes MongoDB officiels).
+**Ce n'est pas un import persistant** — tout disparaît à la fin du
+process — mais c'est exactement le même code que `POST /api/fms/import`
+exécute sur une vraie base, jusqu'au dernier appel.
 
-- **L'import réel en base n'a pas été exécuté** — seule la partie pure du
-  pipeline (extraction → parsing → dérivation des prérequis → validation)
-  a tourné, ce qui couvre tout ce qui peut échouer avant l'écriture en
-  base.
-- La reconstruction de l'index de recherche Mongo (`ensure_search_index`)
-  et l'upsert dans `db.fms_resources` n'ont donc pas été exercés contre ce
-  ZIP réel — seulement contre les fixtures synthétiques des tests
-  unitaires (`backend/tests/test_fms_import.py`), qui reprennent
-  maintenant la convention réelle (nom de fichier, pas de frontmatter).
+Résultat, contre les 223 fichiers réels :
+
+```
+ImportReport.status            = "success"
+ImportReport.resources_created = 223
+ImportReport.issues            = []
+db.fms_resources.count()       = 223
+
+GET .../formations/FMS-01/navigation      -> 51 ressources, 22 sections
+GET .../formations/FMS-01/dependency-graph -> 51 nœuds, 21 arêtes
+  (dont FMS-01-M07/M08/M09/M10 -> FMS-01-M11 -> FMS-01-M12,
+   exactement le cas fil rouge cumulatif décrit par le Master Module Map)
+```
+
+Seule la recherche plein-texte (`$text` + tri par `$meta: "textScore"`)
+n'a pas pu être vérifiée par ce chemin : `mongomock` n'émule pas
+complètement cet opérateur (limite connue de la librairie, pas de notre
+code) — une requête équivalente sans scoring (`$regex` sur
+`body_markdown`) a confirmé que le filtrage par `formation_code` et la
+recherche dans le corps fonctionnent ; le scoring `$text` réel dépend
+d'un vrai moteur MongoDB (§6).
+
+Restent, eux, non exécutés — nécessitent une vraie base persistante :
+
 - **Aucune synthèse `Formation`/`Module` de catalogue** n'a été tentée
   depuis ces ressources (`db.formations` reste le catalogue existant,
   séparé) — cette synthèse était explicitement différée dans
@@ -157,10 +183,53 @@ obligatoire ; aucune valeur réelle n'est configurée ici). Par conséquent :
   champ du Master Module Map devient quel champ de `Module`, et comment
   les 26 types de ressources FMS s'articulent avec la fiche `Formation`
   existante).
+- La recherche `$text` scorée (voir ci-dessus).
 
-## 6. Pour lancer l'import réel
+## 6. Pourquoi aucun vrai MongoDB n'est joignable ici, et comment en obtenir un
 
-Une fois `MONGO_URL` configuré vers une instance réelle :
+Cet environnement d'exécution est un conteneur éphémère avec un accès
+réseau sortant filtré par une politique d'allowlist. Concrètement, pour
+MongoDB :
+
+- **Installation locale via un gestionnaire de paquets** : impossible —
+  Ubuntu (comme Debian) a retiré `mongodb-server` de ses dépôts officiels
+  depuis des années (changement de licence SSPL côté MongoDB Inc.) ;
+  `apt-cache search mongo` ne retourne que des pilotes clients
+  (`python3-pymongo`, `python3-motor`, ...), jamais le serveur.
+- **Téléchargement direct depuis MongoDB Inc.** (`repo.mongodb.org`,
+  `www.mongodb.org`, `pgp.mongodb.com`) : bloqué par la politique réseau
+  de cette session (`x-deny-reason: host_not_allowed`) — ces hôtes ne
+  sont pas sur la liste blanche.
+- **Une instance distante/cloud** (MongoDB Atlas ou autre) : le protocole
+  MongoDB natif (`mongodb://`, `mongodb+srv://`) est un protocole TCP
+  brut, pas du HTTP — explicitement listé comme non supporté par le proxy
+  réseau de cette session, quelle que soit l'allowlist d'hôtes.
+
+**Pour un import réellement persistant**, il faut donc l'exécuter en
+dehors de ce sandbox, là où `MONGO_URL` peut pointer vers une vraie
+instance :
+
+```bash
+# Option A — Docker (le plus rapide en local ou sur un serveur de déploiement)
+docker run -d --name cvln-mongo -p 27017:27017 -v cvln_mongo_data:/data/db mongo:7
+
+# backend/.env
+MONGO_URL=mongodb://localhost:27017
+DB_NAME=cvln_academy
+
+cd backend && uvicorn server:app --port 8000
+```
+
+```bash
+# Option B — MongoDB Atlas (cloud, gratuit en tier M0) : créer un cluster
+# sur cloud.mongodb.com, autoriser l'IP du serveur qui lance le backend,
+# puis :
+# backend/.env
+MONGO_URL=mongodb+srv://<user>:<password>@<cluster>.mongodb.net
+DB_NAME=cvln_academy
+```
+
+Puis, une fois le backend démarré contre cette vraie base :
 
 ```bash
 curl -X POST http://localhost:8000/api/fms/import \
@@ -170,5 +239,7 @@ curl -X POST http://localhost:8000/api/fms/import \
 
 ou via le bouton "Importer un métier FMS" du CMS admin
 (`frontend/src/pages/admin/AdminDashboard.js`). Le rapport JSON retourné
-(`ImportReport`) reprendra exactement les chiffres de la section 3 —
-`resources_created: 223`, `resources_by_type` identique, `issues: []`.
+(`ImportReport`) reprendra exactement les chiffres validés en §3 et §5 —
+`resources_created: 223`, `resources_by_type` identique, `issues: []` —
+avec, cette fois, une recherche plein-texte réellement scorée et des
+données qui survivent au redémarrage.
