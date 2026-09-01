@@ -199,13 +199,51 @@ mise en production.
   ressources FMS importées** : `fms_import` construit une couche de
   ressources recherchable/navigable (`fms_resources`, sommaire,
   graphe de dépendances) mais ne transforme pas encore ça en objets
-  `Formation` du catalogue. Sans un vrai ZIP FMS pour valider le mapping
-  (le brief indique explicitly qu'aucun ZIP n'existe encore), tenter cette
-  synthèse aurait été une supposition non testable. Voir
-  `docs/DEVELOPER_GUIDE.md` pour la convention de fichiers documentée à
-  l'intention de qui préparera les ZIP FMS-01 à FMS-06.
+  `Formation` du catalogue. Le premier ZIP FMS réel est arrivé le 1er
+  septembre 2026 (voir §9) et a permis de valider tout le reste du
+  pipeline contre du contenu réel — mais cette synthèse spécifique reste
+  différée volontairement : elle mérite qu'un humain CVLN valide le
+  mapping exact plutôt qu'un choix unilatéral. Voir
+  `docs/FMS_IMPORT_VALIDATION_REPORT.md` §5.
 - **Pas d'intégrations écosystème réellement branchées** (Brain, Command
   Center, KORA, Laurent.ia, Wallet externe, etc.) : aucun identifiant
   n'existe. Chaque interface est réelle, typée, et répond honnêtement
   "non configuré" — voir `docs/INTEGRATIONS_REPORT.md`.
 - **Pas de test de charge**, pas d'audit Lighthouse complet (§5, §6).
+
+## 9. Réconciliation contre le premier ZIP FMS réel (1er septembre 2026)
+
+Le premier ZIP FMS réel (`FMS_Chantier_Complet_20260822.zip`, 223
+fichiers, FMS-01→06 + référentiels FMS-A→F) est arrivé après cette
+mission, comme annoncé dans le brief. Sa structure réelle différait de la
+convention frontmatter documentée au moment du build initial (aucun
+fichier réel n'en porte). Réconciliation effectuée :
+
+- **`fms_import/`** entièrement réécrit pour classifier depuis le nom de
+  fichier réel (26 types reconnus, contre 10 inventés), dériver le
+  `formation_code` (y compris la correspondance lettre de référentiel →
+  métier), et extraire les prérequis de module depuis le
+  `Master_Module_Map` de chaque métier (`module_map.py`, nouveau — gère
+  les deux mises en page réelles observées selon le métier).
+- **`certification/`** étendu (pas cassé) : `RubricCriterion.is_eliminatory`,
+  `Rubric.cap_rules`/`mention_thresholds` — le modèle pondéré existant
+  encaisse tel quel l'échelle 0-4 "Rubric Master" réelle de FMS-01 ; seuls
+  les critères éliminatoires et le plafonnement de mention étaient
+  vraiment nouveaux face à la doctrine réelle.
+- **`template_engine/`** : 7ᵉ type `pitch` ajouté (confirmé par les
+  `Templates_Etudiants.md` réels — chaque métier se termine par un pitch
+  oral, distinct du dossier écrit).
+- **`skills/`** : docstring/exemples alignés sur la forme canonique réelle
+  (`FMS01-A1`), qui remplace la forme inventée (`FMS.N1.B1.S1`).
+- Validation : voir `docs/FMS_IMPORT_VALIDATION_REPORT.md` pour le détail
+  chiffré (223/223 fichiers classifiés, 0 erreur, 0 avertissement après
+  correction d'une seule collision de code détectée pendant la
+  validation) et pour ce qui reste honnêtement incomplet (graphe de
+  prérequis partiel pour FMS-04/05/06, synthèse `Formation` différée).
+  L'import réel en base n'a pas pu être exécuté dans cet environnement
+  (aucune instance MongoDB disponible) — seule la partie pure du
+  pipeline, qui couvre tout ce qui peut échouer avant l'écriture en base,
+  a été validée.
+- Tests : 40/40 (29 → 40, `test_fms_import.py` et
+  `test_certification_scoring.py` réécrits contre la convention et la
+  doctrine réelles) ; `black`/`isort`/`flake8`/`mypy` toujours propres.

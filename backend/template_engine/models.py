@@ -15,7 +15,17 @@ from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 TemplateType = Literal[
-    "diagnostic", "univers", "positionnement", "storytelling", "roadmap", "dossier"
+    "diagnostic",
+    "univers",
+    "positionnement",
+    "storytelling",
+    "roadmap",
+    "dossier",
+    # 7th type, confirmed by the real FMS ZIP's Templates_Etudiants files
+    # (e.g. 53_FMS01_Templates_Etudiants.md, Template 7 — "Pitch oral") —
+    # every métier's parcours ends with a spoken pitch, distinct enough
+    # from "dossier" (the written assembly) to warrant its own type.
+    "pitch",
 ]
 FieldType = Literal["text", "textarea", "number", "select", "list"]
 DocumentStatus = Literal["draft", "final"]

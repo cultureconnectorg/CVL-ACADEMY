@@ -26,6 +26,42 @@ noise/texture terreuse, chips végétaux pour les stades.
   Graine → Pousse → Racine → Branches → Arbre → Forêt.
 - ✅ Trilinguisme FR/EN/KR (kréyòl).
 
+## Ce qui a été livré — 1er septembre 2026 (Réconciliation contre le premier ZIP FMS réel)
+
+Le premier ZIP FMS réel (`FMS_Chantier_Complet_20260822.zip`, 223
+fichiers, FMS-01→06 verrouillés) est arrivé après la mission du 30 août —
+exactement comme annoncé dans le brief initial. Détail complet dans
+`docs/FMS_IMPORT_VALIDATION_REPORT.md` et `docs/AUDIT_REPORT.md` §9 ;
+résumé produit ici :
+
+- **Moteur d'import FMS réécrit** contre la structure réelle (fichiers
+  numérotés, sans frontmatter — la convention frontmatter documentée le
+  30 août avait dû être inventée faute de ZIP réel à l'époque) : 26 types
+  de ressources réels reconnus (contre 10 inventés), dérivation du
+  `formation_code` et du graphe de prérequis de module directement depuis
+  le contenu réel (`fms_import/module_map.py`, nouveau).
+- **Moteur de certification étendu** (sans rien casser) pour la doctrine
+  de notation réelle : critères éliminatoires ("verrous doctrinaux"),
+  plafonnement de mention indépendant du score — le modèle pondéré
+  existant encaissait déjà nativement l'échelle 0-4 "Rubric Master" du
+  ZIP réel.
+- **Template Engine** : 7ᵉ type `pitch` ajouté (confirmé par le contenu
+  réel — chaque métier se termine par un pitch oral).
+- **Validation** : 223/223 fichiers réels classifiés sans erreur ni
+  avertissement (une collision de code détectée et corrigée pendant la
+  validation). L'import réel en base n'a pas pu être exécuté dans cet
+  environnement (pas de MongoDB disponible) — seule la partie pure du
+  pipeline (couvre tout ce qui peut échouer avant l'écriture en base) a
+  été validée contre l'archive réelle.
+- Tests unitaires : 29 → 40 (réécrits contre la convention et la doctrine
+  réelles, pas de simple ajout par-dessus l'ancien modèle inventé) ;
+  qualité (`black`/`isort`/`flake8`/`mypy`) toujours propre.
+- **Volontairement pas fait** : synthèse `Formation`/`Module` depuis les
+  ressources importées (mérite une validation humaine CVLN du mapping) ;
+  graphe de prérequis complet pour FMS-04/05/06 (leur Master Module Map
+  ne déclare pas de prérequis module par module pour la majorité de leurs
+  modules — un ordre séquentiel implicite aurait été fabriqué, pas lu).
+
 ## Ce qui a été livré — 30 août 2026 (Production Hardening Mission)
 
 Mission de mise en production : audit zéro-dette + architecture entreprise +

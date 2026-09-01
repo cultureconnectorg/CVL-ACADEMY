@@ -75,6 +75,10 @@ def generate_attestation_pdf(
         f"Titulaire : {user_display_name} ({user_frek_id})",
         f"Score global : {attempt.score_global}%",
         f"Statut : {'RÉUSSI' if attempt.passed else 'NON RÉUSSI'}",
+    ]
+    if attempt.mention:
+        lines.append(f"Mention : {attempt.mention}")
+    lines += [
         f"Version du référentiel : {attempt.rubric_version}",
         f"Délivré le : {attempt.graded_at}",
     ]
@@ -111,6 +115,7 @@ def attestation_export_metadata(attempt: CertificationAttempt) -> Dict[str, Any]
         "attempt_id": attempt.id,
         "certification_code": attempt.certification_code,
         "score_global": attempt.score_global,
+        "mention": attempt.mention,
         "jury_signature_sha256": (
             attempt.jury_signature.sha256 if attempt.jury_signature else None
         ),

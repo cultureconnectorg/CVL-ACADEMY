@@ -87,9 +87,15 @@ async def grade_attempt(
         )
     rubric = await get_rubric(attempt.certification_code)
 
-    score_by_competency, score_by_bloc, score_global, passed = compute_scores(
-        rubric, grade.scores
-    )
+    (
+        score_by_competency,
+        score_by_bloc,
+        score_global,
+        passed,
+        eliminated,
+        eliminated_reason,
+        mention,
+    ) = compute_scores(rubric, grade.scores)
     signed_at = utc_now_iso()
     signature = make_jury_signature(attempt_id, jury_id, score_by_competency, signed_at)
 
@@ -103,6 +109,9 @@ async def grade_attempt(
                 "score_by_bloc": score_by_bloc,
                 "score_global": score_global,
                 "passed": passed,
+                "eliminated": eliminated,
+                "eliminated_reason": eliminated_reason,
+                "mention": mention,
                 "jury_signature": signature.model_dump(),
                 "comments": grade.comments,
                 "graded_at": signed_at,

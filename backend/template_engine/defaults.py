@@ -1,4 +1,7 @@
-"""Default field definitions for the 6 template types (rule 8).
+"""Default field definitions for the 7 template types (rule 8): the 6 from
+the original brief plus "pitch", added once the real FMS ZIP confirmed
+every métier's parcours ends in a spoken pitch distinct from the written
+dossier (see models.py).
 
 v1 content, editable later via the Admin CMS (rule 14) without a code
 change — these are seeded once at startup (see seed.py) so every
@@ -148,6 +151,40 @@ DEFAULT_DEFINITIONS: List[TemplateDefinition] = [
             TemplateFieldDef(
                 key="prochaines_etapes",
                 label="Prochaines étapes",
+                field_type="textarea",
+            ),
+        ],
+    ),
+    TemplateDefinition(
+        type="pitch",
+        title="Pitch",
+        description="Préparer une présentation orale courte — pas un script à lire.",
+        fields=[
+            TemplateFieldDef(
+                key="positionnement_une_phrase",
+                label="Qui je suis, en une phrase",
+                field_type="text",
+                required=True,
+            ),
+            TemplateFieldDef(
+                key="forces_cles",
+                label="Forces clés (sourcées)",
+                field_type="list",
+                required=True,
+            ),
+            TemplateFieldDef(
+                key="tensions_assumees",
+                label="Tensions assumées (axes de travail, pas des faiblesses cachées)",
+                field_type="list",
+            ),
+            TemplateFieldDef(
+                key="trajectoire_proposee",
+                label="Trajectoire proposée",
+                field_type="list",
+            ),
+            TemplateFieldDef(
+                key="reste_a_faire",
+                label="Ce qui reste à faire (avec le mentor/jury)",
                 field_type="textarea",
             ),
         ],

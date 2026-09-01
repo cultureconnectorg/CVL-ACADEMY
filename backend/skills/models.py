@@ -1,10 +1,13 @@
 """Skill Engine — Skill IDs, evidence, progression.
 
-A Skill ID looks like `FMS.N1.B1.S1` — <métier>.<niveau>.<bloc>.<compétence>.
-Skills are registered either by an FMS import (a module's `skill_ids:`
-frontmatter) or directly by the Admin CMS; a user's progress on each skill
-is derived from the evidence attached to it (deliverables, quiz passes,
-mini-missions, certification attempts).
+A Skill ID looks like `FMS01-A1` — <métier><n>-<bloc><compétence-n> — the
+canonical form each métier's own `Skill_IDs_Registry.md` declares in the
+real FMS ZIP (e.g. `27_FMS01_Skill_IDs_Registry.md`: "FMS01-A1 est
+l'identifiant canonique"). Skills are registered either by an FMS import
+(every Skill ID a resource's body mentions — see
+`fms_import/parser.py::extract_skill_ids`) or directly by the Admin CMS; a
+user's progress on each skill is derived from the evidence attached to it
+(deliverables, quiz passes, mini-missions, certification attempts).
 """
 
 from __future__ import annotations
@@ -30,7 +33,7 @@ def _now() -> str:
 class Skill(BaseModel):
     """A skill definition — the registry entry, not a user's progress."""
 
-    id: str  # the Skill ID itself, e.g. "FMS.N1.B1.S1" — used as the Mongo key
+    id: str  # the Skill ID itself, e.g. "FMS01-A1" — used as the Mongo key
     metier: str  # pole code, e.g. "FMS"
     niveau: str  # "N1" | "N2" | "A01" | ...
     bloc: str  # e.g. "B1"

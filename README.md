@@ -38,6 +38,7 @@ yarn start
 | [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md) | Architecture, convention de fichiers FMS, moteur de certification, permissions, référence API |
 | [docs/AUDIT_REPORT.md](docs/AUDIT_REPORT.md) | Audit complet : dette technique supprimée, bugs corrigés, sécurité, performance, accessibilité, tests |
 | [docs/INTEGRATIONS_REPORT.md](docs/INTEGRATIONS_REPORT.md) | Statut réel de chaque intégration écosystème CVLN |
+| [docs/FMS_IMPORT_VALIDATION_REPORT.md](docs/FMS_IMPORT_VALIDATION_REPORT.md) | Validation du moteur d'import contre le premier ZIP FMS réel (223 fichiers, FMS-01→06) |
 | [INTEGRATION_CONTRACT.md](INTEGRATION_CONTRACT.md) | Contrat REST exact attendu par FrekCore et CVLN Agent Factory |
 | [memory/PRD.md](memory/PRD.md) | Historique produit (décisions, itérations livrées) |
 

@@ -21,18 +21,37 @@ from .models import RESOURCE_TYPE_LABELS
 
 _TEXT_INDEX_ENSURED = False
 
-# Sommaire order: conceptual before applied, applied before evaluated.
+# Sommaire order: conceptual before applied, applied before evaluated —
+# mirrors the gabarit's own 10-step construction sequence (see
+# 00_GABARIT_Construction_Metier.md §1).
 TYPE_ORDER = [
     "referentiel",
+    "matrice_pedagogique",
     "learning_map",
     "module_map",
+    "cas_fil_rouge",
+    "competency_matrix",
+    "matrice_tracabilite",
+    "infrastructure",
+    "evidence_registry",
+    "skill_ids_registry",
+    "rubric_master",
     "blueprint",
     "module",
+    "guide_formateur",
+    "guide_correcteur",
+    "guide_candidat",
+    "templates_etudiants",
+    "banque_n1",
+    "banque_n2",
+    "cas_inedit",
+    "sujet_officiel",
+    "grille_certificative",
+    "guide_jury",
+    "note_harmonisation",
     "guide",
-    "template",
-    "qcm",
-    "cas_n2",
-    "assessment",
+    "gabarit",
+    "index",
 ]
 
 

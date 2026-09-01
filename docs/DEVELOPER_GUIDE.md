@@ -42,7 +42,7 @@ backend/
   fms_import/         # §3 — moteur d'import ZIP FMS
   certification/       # §4 — moteur de certification N1/N2/A01
   skills/              # Skill Engine (Skill IDs, evidence, progression)
-  template_engine/     # Diagnostic/Univers/Positionnement/Storytelling/Roadmap/Dossier
+  template_engine/     # Diagnostic/Univers/Positionnement/Storytelling/Roadmap/Dossier/Pitch
   wallet/               # grand livre JCC/tokens, passes Apple/Google Wallet
 
   services/
@@ -64,34 +64,65 @@ données.
 
 ## 3. Le moteur d'import ZIP FMS (règles 5 et 15)
 
-**Aucun ZIP FMS réel n'existe encore** (il arrive après cette mission) — ce
-qui suit est la convention qu'Academy définit pour ces ZIP, documentée ici
-précisément pour que quiconque prépare les archives FMS-01 à FMS-06 sache
-quel format produire.
+**Réconcilié contre le premier ZIP FMS réel** (`FMS_Chantier_Complet_20260822.zip`,
+223 fichiers, FMS-01 à FMS-06 + leurs référentiels FMS-A à FMS-F,
+verrouillés) — voir `docs/FMS_IMPORT_VALIDATION_REPORT.md` pour le rapport
+de validation complet. La convention initialement documentée ici
+(frontmatter YAML) avait dû être inventée avant qu'aucun ZIP réel
+n'existe ; elle ne correspondait à aucun des 223 fichiers réels. Ce qui
+suit est la convention réelle, extraite de l'archive elle-même et de son
+propre gabarit de construction (`00_GABARIT_Construction_Metier.md` dans
+l'archive source — les auteurs FMS l'appellent exactement ainsi : un
+squelette figé, extrait de FMS-01, appliqué à l'identique à FMS-02→06).
 
-### Format attendu
+### Format réel
 
-Chaque fichier est du Markdown avec un bloc frontmatter YAML :
+Chaque fichier est du Markdown pur (prose + tableaux Markdown pour les
+champs structurés) — **aucun frontmatter**. Ce qui porte l'information de
+classification est le **nom de fichier**, numéroté et systématique :
 
-```markdown
----
-type: module
-code: FMS-01-M03
-formation_code: FMS-01
-title: Poser son univers artistique
-prerequisites: [FMS-01-M02]
-skill_ids: [FMS.N1.B2.S3]
-version: "1.0"
----
-# Corps du document en Markdown...
+```
+13_FMS01_M01_Blueprint.md                       -> blueprint, FMS-01-M01-BLUEPRINT
+14_FMS01_M01_Contenu_Complet.md                  -> module,    FMS-01-M01
+01_FMS-A_Referentiel_Artist_Development.md       -> referentiel (métier A -> FMS-01)
+09_FMS01_Master_Module_Map.md                    -> module_map, FMS-01-MODULE-MAP
+49_FMS01_A01_Grille_Certificative_V1.md          -> grille_certificative, FMS-01-A01-GRILLE-CERTIFICATIVE
+00_INDEX.md / 00_GABARIT_Construction_Metier.md  -> index/gabarit (transverses, sans formation_code)
 ```
 
-`type` accepte : `referentiel`, `learning_map`, `module_map`, `blueprint`,
-`module`, `qcm`, `cas_n2`, `assessment`, `template`, `guide` — la liste
-exacte du brief. Si `type:` est omis, le nom de fichier est inspecté pour
-un indice (`FILENAME_TYPE_HINTS` dans `fms_import/models.py` — ex. un
-fichier contenant "qcm" dans son nom sera classé `qcm`). Si `code:` est
-omis, il est dérivé du nom de fichier.
+26 types réels sont reconnus (`FmsResourceType` dans `fms_import/models.py`
+— référentiel, learning_map, module_map, cas_fil_rouge, competency_matrix,
+matrice_tracabilite, infrastructure, evidence_registry, skill_ids_registry,
+rubric_master, blueprint, module, cas_inedit, sujet_officiel,
+grille_certificative, guide_jury, banque_n1, banque_n2,
+templates_etudiants, guide_formateur, guide_correcteur, guide_candidat,
+note_harmonisation, matrice_pedagogique, gabarit, index, guide), classés
+par indice de nom de fichier (`FILENAME_TYPE_HINTS`). Le `formation_code`
+est dérivé du nom (`FMS01` -> `FMS-01`) ou, pour un référentiel, de la
+table de correspondance lettre → métier que le gabarit lui-même documente
+(`FMS-A` -> `FMS-01` ... `FMS-F` -> `FMS-06`,
+`METIER_LETTER_TO_FORMATION`). Le `title` est pris sur la première ligne
+`# ...` du corps. Les Skill IDs mentionnés dans le corps (forme
+canonique `FMS0<n>-<Bloc><n°>`, ex. `FMS01-B2`) sont indexés pour la
+recherche via une simple capture de sous-chaîne littérale — jamais
+inventés.
+
+Un frontmatter YAML reste supporté s'il est présent (aucun fichier réel
+n'en a besoin) — ses champs (`type:`, `code:`, `formation_code:`, ...)
+gagnent alors sur l'inférence par nom de fichier, pour ne rien casser si
+un futur fichier en porte un.
+
+### Prérequis entre modules (`fms_import/module_map.py`)
+
+Les prérequis d'un module ne sont **pas** dans le fichier du module
+lui-même — ils sont déclarés dans le `Master_Module_Map.md` de son
+métier, module par module. Deux mises en page réelles coexistent selon le
+métier (un champ par ligne pour FMS-01/02/03, une ligne compacte par
+module séparée par « · » pour FMS-04/05/06) ; `module_map.py` gère les
+deux. La ligne de certification (`A0n`) n'est **jamais** interprétée comme
+un prérequis de module — son champ mélange prérequis obligatoire et
+modules seulement recommandés/jamais requis en prose libre, qu'aplatir en
+liste déformerait la doctrine.
 
 ### Comportement du parseur (`fms_import/parser.py`)
 
@@ -99,13 +130,17 @@ Le parseur ne lève jamais d'exception : un fichier qu'il n'arrive pas à
 classer devient un **avertissement**, pas une erreur bloquante — pour
 qu'un ZIP de 200 fichiers avec 3 fichiers mal formés importe quand même les
 197 autres. Seules deux choses bloquent tout l'import : une archive
-corrompue, ou une archive sans aucun fichier `.md`.
+corrompue, ou une archive sans aucun fichier `.md`. Sur le ZIP réel :
+223/223 fichiers classifiés, 0 avertissement de parsing (détail dans
+`docs/FMS_IMPORT_VALIDATION_REPORT.md`).
 
 ### Pipeline complet (`fms_import/importer.py`)
 
 ```
 extraire les .md du ZIP
   → parser chaque fichier (parser.py)
+  → dériver les prérequis de module depuis tout Master Module Map du lot
+    (module_map.py, appliqué uniquement aux ressources de type "module")
   → valider le lot (validators.py — codes dupliqués, prérequis pendants,
     modules sans formation_code)
   → upserter chaque ressource valide dans db.fms_resources
@@ -132,24 +167,51 @@ c'est le bouton "Importer un métier FMS" du CMS admin
 Le pipeline ne transforme pas automatiquement les ressources importées en
 objets `Formation`/`Module` du catalogue public (`db.formations`) — il
 construit une couche de ressources parallèle, recherchable et navigable.
-Faire cette synthèse sans un vrai ZIP pour valider le mapping aurait été une
-supposition non vérifiable. À la réception des premiers ZIP FMS réels,
-étendre `importer.py` avec une étape de synthèse `Formation` est le point
-d'extension naturel.
+Cette synthèse reste un point d'extension volontairement pas improvisé :
+elle mérite qu'un humain CVLN valide le mapping exact (quel champ du
+Master Module Map devient quel champ de `Module`) plutôt qu'un choix
+unilatéral — voir `docs/FMS_IMPORT_VALIDATION_REPORT.md` §5.
+
+Le graphe de prérequis lui-même reste **partiel** pour FMS-04/05/06 : leur
+Master Module Map n'exprime pas de `**Prérequis**` module par module pour
+la majorité de leurs modules (constat honnête, pas corrigé — fabriquer un
+ordre séquentiel implicite là où le document source ne le déclare pas
+irait à l'encontre du principe "jamais fabriquer" de ce chantier).
 
 ## 4. Le moteur de certification (règle 6)
 
 ```
 Rubric (par certification_code, versionnée)
-  └── RubricCriterion[]  (bloc, poids, score max, skill_id optionnel)
+  └── RubricCriterion[]  (bloc, poids, score max, skill_id optionnel,
+                           is_eliminatory)
+  └── cap_rules[]         (plafond de mention indépendant du score)
+  └── mention_thresholds[] (bandes numériques -> mention, ex. Passable/Bien/...)
 
 CertificationAttempt : in_progress → submitted → graded (passed|failed)
   attempt_number permet la reprise d'examen (retake)
+  eliminated / eliminated_reason / mention — voir plus bas
 ```
+
+Un `RubricCriterion` avec `max_score=4` **est** un critère "Rubric
+Master" — la grille de certification réelle de FMS-01
+(`49_FMS01_A01_Grille_Certificative_V1.md`) note chaque Skill ID officiel
+de 0 à 4 ; ça rentre dans le modèle pondéré sans rien changer. Deux
+comportements réels de cette grille, absents du modèle pondéré simple,
+ont été ajoutés en réconciliant contre elle :
+
+- **Critères éliminatoires** (`is_eliminatory=True`) : un score brut de 0
+  sur ce critère échoue la tentative, indépendamment du score total (ex.
+  FMS-01 : un niveau 0 sur un Skill ID rattaché à un "verrou doctrinal").
+- **Plafonnement de mention** (`cap_rules`) : un score bas sur un critère
+  précis plafonne la mention atteignable, jamais ne la relève (ex. FMS-01
+  §3-4 : un niveau ≤1 sur le Skill ID de "cohérence globale" plafonne à
+  "Passable" quel que soit le score par ailleurs).
 
 - `certification/scoring.py` — **pur, sans I/O** : score par compétence →
   score par bloc (moyenne pondérée) → score global → pass/fail contre
-  `pass_threshold_pct`. Testé isolément (`tests/test_certification_scoring.py`).
+  `pass_threshold_pct`, **et** élimination + mention (voir ci-dessus).
+  Testé isolément (`tests/test_certification_scoring.py`, y compris les
+  cas éliminatoires/plafond).
 - `certification/service.py::grade_attempt` — orchestration : note, signe
   (hash SHA-256 sur `{attempt_id, jury_id, scores, signed_at}`), pousse les
   critères réussis vers le Skill Engine comme `evidence_type="certification"`,
