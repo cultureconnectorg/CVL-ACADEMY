@@ -94,7 +94,7 @@ export default function Onboarding() {
               subtitle="Tu pourras la changer à tout moment depuis ta sidebar."
               testId="step-lang"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
                 {LANGS.map((l) => (
                   <button
                     key={l.code}
@@ -109,11 +109,7 @@ export default function Onboarding() {
                         : "border-black/10 hover:border-black/25"}`}
                   >
                     <div className="text-2xl font-display font-black">{l.label}</div>
-                    <div className="text-sm text-[--cvln-ink-2] mt-1">
-                      {l.code === "fr" && "Français"}
-                      {l.code === "en" && "English"}
-                      {l.code === "kr" && "Kreyòl"}
-                    </div>
+                    <div className="text-sm text-[--cvln-ink-2] mt-1">{l.name}</div>
                   </button>
                 ))}
               </div>

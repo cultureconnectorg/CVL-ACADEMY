@@ -26,6 +26,33 @@ noise/texture terreuse, chips végétaux pour les stades.
   Graine → Pousse → Racine → Branches → Arbre → Forêt.
 - ✅ Trilinguisme FR/EN/KR (kréyòl).
 
+## Ce qui a été livré — 1er septembre 2026 (Audit des langues + ajout de l'espagnol)
+
+Demande explicite : auditer honnêtement la couverture multilingue
+(le PRD/README affirmaient "trilingue FR/EN/Kreyòl") et ajouter l'espagnol.
+Détail complet dans `docs/I18N_AUDIT_REPORT.md` ; résumé ici :
+
+- **Audit** : sur 19 fichiers frontend, seuls 9 utilisent réellement le
+  dictionnaire i18n (`frontend/src/lib/i18n.jsx`) — 8 fichiers (~1 370
+  lignes) livrés lors du chantier du 30 août (Certifications, Skills,
+  Wallet, ModuleJourney, dashboards trainer/jury/admin) sont 100% français
+  en dur. Même parmi les fichiers "câblés", des fuites existent (messages
+  toast, et surtout `Onboarding.js` dont tout le texte des étapes reste
+  français malgré le choix de langue à l'étape 1). Contenu pédagogique
+  (formations, modules, FMS) : aucune traduction, aucune infra pour ça.
+- **Espagnol ajouté** au même niveau que EN/KR existants — pas plus :
+  4ᵉ entrée du dictionnaire frontend (53 clés), `LANGS` avec un champ `name`
+  générique (fin des `if`/`else` par langue codés en dur page par page),
+  `GET /api/onboarding/options` (4 langues), validation backend, prompt
+  système du Mentor IA, question méta du quiz, test E2E.
+- **Réserve** : traductions kreyòl et espagnol produites par Claude, non
+  relues par un locuteur natif ni un·e pédagogue CVLN — recommandé avant
+  lancement public (variantes régionales du kreyòl, registre Espagne vs
+  Amérique latine pour l'espagnol).
+- **Volontairement pas fait** : câbler les 8 fichiers à 0% de couverture,
+  traduire le contenu pédagogique — chantiers identifiés dans le rapport,
+  pas silencieusement ignorés, mais hors périmètre de cette demande.
+
 ## Ce qui a été livré — 1er septembre 2026 (Réconciliation contre le premier ZIP FMS réel)
 
 Le premier ZIP FMS réel (`FMS_Chantier_Complet_20260822.zip`, 223

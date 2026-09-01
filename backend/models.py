@@ -151,7 +151,7 @@ class User(BaseModel):
     role: Role = "student"
     org_id: Optional[str] = None
     cohort_id: Optional[str] = None
-    lang: str = "fr"  # fr | en | kr
+    lang: str = "fr"  # fr | en | kr | es
     stade: str = "graine"  # graine | pousse | racine | branches | arbre | foret
     cc_credits: int = 0
     # Onboarding — FREK Origin Story
@@ -453,7 +453,7 @@ class MentorChatInput(BaseModel):
 
 # ---------------- ONBOARDING (FREK Origin Story) ----------------
 class OnboardingInput(BaseModel):
-    lang: str  # fr | en | kr
+    lang: str  # fr | en | kr | es
     metier_vise: str  # pole code
     territoire: (
         str  # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre

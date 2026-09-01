@@ -1,7 +1,9 @@
 # CVLN Academy — Guide développeur
 
 Stack : **FastAPI + Motor (MongoDB)** côté backend, **React 19 (CRA via
-craco) + Tailwind + shadcn/ui** côté frontend. Trilingue FR/EN/Kreyòl.
+craco) + Tailwind + shadcn/ui** côté frontend. 4 langues : FR/EN/Kreyòl/ES
+(voir `docs/I18N_AUDIT_REPORT.md` pour la couverture réelle par écran —
+inégale, documentée honnêtement plutôt que survendue).
 
 ## 1. Démarrer en local
 

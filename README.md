@@ -1,7 +1,7 @@
 # CVLN Academy
 
 Plateforme d'apprentissage progressive du groupe CVLN — formations, missions,
-certifications, culture caribéenne. FR / EN / Kreyòl.
+certifications, culture caribéenne. FR / EN / Kreyòl / ES.
 
 30 formations · 13 pôles · 233 modules · stades végétaux (Graine → Pousse →
 Racine → Branches → Arbre → Forêt).
@@ -39,6 +39,7 @@ yarn start
 | [docs/AUDIT_REPORT.md](docs/AUDIT_REPORT.md) | Audit complet : dette technique supprimée, bugs corrigés, sécurité, performance, accessibilité, tests |
 | [docs/INTEGRATIONS_REPORT.md](docs/INTEGRATIONS_REPORT.md) | Statut réel de chaque intégration écosystème CVLN |
 | [docs/FMS_IMPORT_VALIDATION_REPORT.md](docs/FMS_IMPORT_VALIDATION_REPORT.md) | Validation du moteur d'import contre le premier ZIP FMS réel (223 fichiers, FMS-01→06) |
+| [docs/I18N_AUDIT_REPORT.md](docs/I18N_AUDIT_REPORT.md) | Audit réel de la couverture multilingue (FR/EN/Kreyòl/ES) — ce qui est traduit, ce qui ne l'est pas |
 | [INTEGRATION_CONTRACT.md](INTEGRATION_CONTRACT.md) | Contrat REST exact attendu par FrekCore et CVLN Agent Factory |
 | [memory/PRD.md](memory/PRD.md) | Historique produit (décisions, itérations livrées) |
 
