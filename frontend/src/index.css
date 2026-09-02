@@ -155,3 +155,18 @@ body {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
+
+/* Spatial Learning W1-A — accessibility safety baseline.
+   Neutralizes every animation/transition duration (the existing hover
+   transforms above, .fade-in) for anyone with the OS-level "reduce
+   motion" preference set — never removes functionality, only timing.
+   This is the floor every future motion primitive (W1-B onward) must
+   also respect; it isn't itself a new visible behavior. */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}

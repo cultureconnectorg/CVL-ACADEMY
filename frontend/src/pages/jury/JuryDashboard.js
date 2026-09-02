@@ -5,7 +5,7 @@ import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
 
 const inputCls =
-  "w-24 bg-white border-2 border-black/10 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[--cvln-orange]";
+  "w-24 bg-white border-2 border-black/10 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-[--cvln-orange] focus:ring-2 focus:ring-[--cvln-orange]/30";
 
 function GradeForm({ attempt, onGraded }) {
   const { t } = useI18n();
@@ -60,7 +60,7 @@ function GradeForm({ attempt, onGraded }) {
       <textarea
         rows={2}
         placeholder={t("jury_p.comment_placeholder")}
-        className="w-full bg-white border-2 border-black/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[--cvln-orange]"
+        className="w-full bg-white border-2 border-black/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-[--cvln-orange] focus:ring-2 focus:ring-[--cvln-orange]/30"
         value={comments}
         onChange={(e) => setComments(e.target.value)}
       />

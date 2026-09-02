@@ -192,7 +192,7 @@ export default function Onboarding() {
                 value={choices.objectif_perso}
                 onChange={(e) => setChoices({ ...choices, objectif_perso: e.target.value })}
                 placeholder={t("onboarding_p.step4_placeholder")}
-                className="mt-8 w-full bg-white border-2 border-black/10 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-[--cvln-orange]"
+                className="mt-8 w-full bg-white border-2 border-black/10 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-[--cvln-orange] focus:ring-2 focus:ring-[--cvln-orange]/30"
               />
               <div className="mt-2 text-xs text-[--cvln-ink-2]">
                 {choices.objectif_perso.length}/240

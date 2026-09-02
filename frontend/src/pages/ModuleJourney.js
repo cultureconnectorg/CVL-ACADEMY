@@ -437,7 +437,7 @@ function PhaseDeliverable({ phase, done, text, setText, onSubmit }) {
         placeholder={t("module_journey.deliverable_placeholder")}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="w-full border-2 border-black/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-[--cvln-orange] disabled:bg-black/[0.02]"
+        className="w-full border-2 border-black/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-[--cvln-orange] focus:ring-2 focus:ring-[--cvln-orange]/30 disabled:bg-black/[0.02]"
       />
       <div className="mt-1 text-xs text-[--cvln-ink-2]">
         {text.length}/{min} {t("module_journey.min_chars")} {text.length >= min ? "· ✓" : ""}
