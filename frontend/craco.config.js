@@ -79,6 +79,16 @@ let webpackConfig = {
       },
     },
   },
+  // Mirrors the webpack `@` alias below for `craco test` (CRA's bundled
+  // Jest doesn't see webpack config, so it needs its own mapping). Added
+  // in W1-D for the first frontend test file (spatial-state.test.js).
+  jest: {
+    configure: {
+      moduleNameMapper: {
+        "^@/(.*)$": "<rootDir>/src/$1",
+      },
+    },
+  },
   webpack: {
     alias: {
       '@': path.resolve(__dirname, 'src'),

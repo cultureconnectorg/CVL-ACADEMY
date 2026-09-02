@@ -46,6 +46,17 @@ module.exports = [
     },
   },
   {
+    // Jest test files (react-scripts/craco test) — first one added in W1-D
+    // (frontend/src/lib/spatial-state.test.js). describe/test/expect are
+    // Jest globals, not browser/node ones.
+    files: ["src/**/*.test.{js,jsx}"],
+    languageOptions: {
+      globals: {
+        ...globals.jest,
+      },
+    },
+  },
+  {
     // shadcn/ui generated primitives: thin, content-less wrappers around
     // Radix/cmdk that always forward `{...props}`/children from the caller.
     // The a11y "no content" rules and cmdk's own data-attribute convention
