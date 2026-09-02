@@ -10,6 +10,7 @@ import { useI18n } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import { JourneyPhaseShell } from "@/lib/JourneyHierarchy";
+import { ContextFrame, useContextEntry } from "@/lib/ContextFrame";
 
 const PHASE_KEYS = [
   { key: "hook",          labelKey: "phase_hook",         icon: Sparks },
@@ -479,8 +480,27 @@ function PhaseQuiz({ canOpen, done, quiz, answers, setAnswers, result, onOpen, o
   if (done && !quiz) {
     return <div className="text-sm text-[--cvln-orange] font-semibold">{t("module_journey.quiz_already_passed")}</div>;
   }
+  return <PhaseQuizContext quiz={quiz} answers={answers} setAnswers={setAnswers} result={result} onSubmit={onSubmit} />;
+}
+
+// ACTIVE -> CONTEXT (W3-B): reaching this component means the quiz has
+// just been started (PhaseQuiz's earlier branches cover "not started"/
+// "already passed") — entering it is the CONTEXT transition. "Leaving"
+// happens the same way any accordion phase closes (W3-A's
+// JourneyPhaseShell + the phase-toggle button one level up in
+// ModuleJourney) — this component doesn't need its own dismiss control,
+// so `leaveContext` is intentionally unused here.
+function PhaseQuizContext({ quiz, answers, setAnswers, result, onSubmit }) {
+  const { t } = useI18n();
+  const { isContext, enterContext } = useContextEntry();
+
+  useEffect(() => {
+    enterContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div>
+    <ContextFrame show={isContext}>
       <div className="space-y-4" data-testid="phase-quiz-questions">
         {quiz.quiz.map((q) => (
           <div key={q.n} data-testid={`quiz-q-${q.n}`}>
@@ -529,12 +549,19 @@ function PhaseQuiz({ canOpen, done, quiz, answers, setAnswers, result, onOpen, o
       >
         {t("quiz_submit")}
       </button>
-    </div>
+    </ContextFrame>
   );
 }
 
 function PhaseMiniMission({ phase, done, quizPassed, onCommit }) {
   const { t } = useI18n();
+  const { isContext, enterContext } = useContextEntry();
+
+  useEffect(() => {
+    if (quizPassed) enterContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizPassed]);
+
   if (!quizPassed) {
     return (
       <div className="text-sm text-[--cvln-ink-2]">
@@ -543,7 +570,7 @@ function PhaseMiniMission({ phase, done, quizPassed, onCommit }) {
     );
   }
   return (
-    <div>
+    <ContextFrame show={isContext}>
       <div className="p-4 rounded-2xl bg-[--cvln-bg-warm] border border-[--cvln-orange]/20">
         <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-orange] font-bold">
           {t("module_journey.mini_mission_field_title")}
@@ -558,6 +585,6 @@ function PhaseMiniMission({ phase, done, quizPassed, onCommit }) {
       >
         {done ? t("module_journey.mini_mission_engaged") : t("module_journey.mini_mission_commit")}
       </button>
-    </div>
+    </ContextFrame>
   );
 }

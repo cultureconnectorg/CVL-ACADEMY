@@ -130,6 +130,46 @@ const FIXTURE_MODULE = {
   progress: { course_progress_pct: 0 },
 };
 
+// W3-B variant: deliverable done, quiz the reachable frontier, mini_mission
+// still locked until the quiz is passed — a separate module object (not a
+// mutation of FIXTURE_MODULE above) so W3-A's existing role-derivation
+// tests keep asserting against the exact state they were written for.
+const FIXTURE_MODULE_QUIZ_READY = {
+  ...FIXTURE_MODULE,
+  phase_flags: {
+    hook: true,
+    objectives: true,
+    course: true,
+    workshop: true,
+    deliverable: true,
+    quiz: false,
+    mini_mission: false,
+  },
+};
+
+const FIXTURE_QUIZ = {
+  quiz: [
+    {
+      n: 1,
+      type: "qcm",
+      question: "Fixture question one?",
+      choices: [
+        { id: "a", text: "Fixture choice A" },
+        { id: "b", text: "Fixture choice B" },
+      ],
+    },
+  ],
+};
+
+const FIXTURE_QUIZ_RESULT_PASSED = {
+  passed: true,
+  score: 1,
+  correct: 1,
+  total: 1,
+  cc_earned: 5,
+  signal_emitted: "FMS-01-M01-QUIZ",
+};
+
 /**
  * Installs the fixture for one Playwright `page`: a fake but internally
  * consistent authenticated session, entirely intercepted at the network
@@ -186,16 +226,45 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   // fetches on load. Deliberately does NOT match the 3+-segment mutating
   // endpoints (…/phase, …/deliverable, …/mini-mission/commit), which stay
   // on the generic `{}` catch-all above unless a later tranche needs them.
+  // Stateful within this one browser context only (reset per test, never
+  // persisted): after a passing quiz/submit, the module-GET route below
+  // starts reporting phase_flags.quiz = true, exactly as a real backend
+  // would post-submit — ModuleJourney.js's own submitQuiz() reloads via
+  // GET after a pass, and that reload needs to reflect it for the
+  // mini_mission context to become reachable. Not FAKE_PRODUCTION_DATA:
+  // this is in-memory only, discarded when the test ends.
+  let quizJustPassed = false;
   await page.route("**/api/modules/*/*", (route) => {
     if (route.request().method() !== "GET") return route.fallback();
+    const body = quizJustPassed
+      ? { ...moduleData, phase_flags: { ...moduleData.phase_flags, quiz: true } }
+      : moduleData;
+    return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
+  });
+  // W3-B: quiz fetch/submit + mentor chat, only reached once a spec
+  // actually drives those flows (module-journey-context.spec.js).
+  const quiz = overrides.quiz || FIXTURE_QUIZ;
+  const quizResult = overrides.quizResult || FIXTURE_QUIZ_RESULT_PASSED;
+  await page.route("**/api/formations/*/modules/*/quiz", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(quiz) })
+  );
+  await page.route("**/api/formations/*/modules/*/quiz/submit", (route) => {
+    if (quizResult.passed) quizJustPassed = true;
     return route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(moduleData),
+      body: JSON.stringify(quizResult),
     });
   });
+  await page.route("**/api/mentor/chat", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ reply: "Fixture mentor reply." }),
+    })
+  );
 
-  return { user, poles, learningPath, moduleData };
+  return { user, poles, learningPath, moduleData, quiz, quizResult };
 }
 
 module.exports = {
@@ -204,4 +273,7 @@ module.exports = {
   FIXTURE_POLES,
   FIXTURE_LEARNING_PATH,
   FIXTURE_MODULE,
+  FIXTURE_MODULE_QUIZ_READY,
+  FIXTURE_QUIZ,
+  FIXTURE_QUIZ_RESULT_PASSED,
 };
