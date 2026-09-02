@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
   Fingerprint, LogOut, Leaf, Language, Wallet as WalletIcon,
@@ -7,6 +7,7 @@ import {
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import MentorPanel from "@/components/MentorPanel";
+import { isPedagogicalContext } from "@/lib/mentorPresence";
 
 const STUDENT_NAV = [
   { to: "/dashboard",       key: "dashboard",       Icon: HomeAlt },
@@ -30,7 +31,13 @@ export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const { t, lang, setLang } = useI18n();
   const nav = useNavigate();
+  const location = useLocation();
   const NAV = [...STUDENT_NAV, ...STAFF_NAV.filter((item) => item.roles.includes(user?.role))];
+  // MENTOR = CONTEXTUAL_PRESENCE (W3-C): the FAB/panel only mounts where a
+  // pedagogical context justifies it — never a permanent floating chatbot
+  // on every screen. See mentorPresence.js for the exact, deliberately
+  // conservative scope.
+  const mentorAvailable = isPedagogicalContext(location.pathname);
 
   return (
     <div className="min-h-screen flex" data-testid="app-layout">
@@ -110,7 +117,7 @@ export default function Layout({ children }) {
         <div className="fade-in">{children}</div>
       </main>
 
-      <MentorPanel />
+      {mentorAvailable && <MentorPanel />}
     </div>
   );
 }

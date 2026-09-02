@@ -98,10 +98,14 @@ test.describe("quiz context (W3-B)", () => {
   });
 });
 
-test.describe("mentor contextual panel (W3-B)", () => {
+// W3-C moved the Mentor's mount point from "every authenticated screen" to
+// "only inside an actual module" (mentorPresence.js) — these specs use
+// MODULE_URL, the one screen where it's now actually reachable, rather
+// than /formations (see mentor-presence.spec.js for the gating itself).
+test.describe("mentor contextual panel (W3-B/W3-C)", () => {
   test("opening the mentor enters CONTEXT and closing it returns to ACTIVE", async ({ page }) => {
     await mockAuthenticatedSession(page);
-    await page.goto("/formations");
+    await page.goto(MODULE_URL);
     const panel = page.getByTestId("mentor-panel");
     await expect(panel).toHaveAttribute("data-context-state", "active");
 
@@ -114,28 +118,28 @@ test.describe("mentor contextual panel (W3-B)", () => {
     await expect(panel).toHaveAttribute("aria-hidden", "true");
   });
 
-  test("RETURN_POSITION_PRESERVED: opening/closing the mentor never navigates or changes the underlying page", async ({
+  test("RETURN_POSITION_PRESERVED: opening/closing the mentor never navigates or changes the module journey underneath", async ({
     page,
   }) => {
     await mockAuthenticatedSession(page);
-    await page.goto("/formations");
-    await page.getByTestId("pole-FMS").click();
+    await page.goto(MODULE_URL);
+    // hook is the default-open phase (CURRENT) per FIXTURE_MODULE — see
+    // module-journey-hierarchy.spec.js (W3-A).
+    const hookWrapper = page.locator('[data-testid="phase-hook"]').locator("..");
+    await expect(hookWrapper).toHaveAttribute("data-journey-role", "current");
 
     await page.getByTestId("mentor-fab").click();
     await page.getByTestId("mentor-close").click();
 
-    await expect(page).toHaveURL(/\/formations$/);
-    await expect(page.locator('[data-testid="pole-FMS"]').locator("..")).toHaveAttribute(
-      "data-focus-role",
-      "target"
-    );
+    await expect(page).toHaveURL(new RegExp(`${MODULE_URL}$`));
+    await expect(hookWrapper).toHaveAttribute("data-journey-role", "current");
   });
 
   test("closed mentor panel is not keyboard-reachable (no focus trap on hidden controls)", async ({
     page,
   }) => {
     await mockAuthenticatedSession(page);
-    await page.goto("/formations");
+    await page.goto(MODULE_URL);
     await expect(page.getByTestId("mentor-input")).toHaveAttribute("tabindex", "-1");
     await expect(page.getByTestId("mentor-close")).toHaveAttribute("tabindex", "-1");
 
@@ -153,7 +157,7 @@ test.describe("mentor contextual panel (W3-B)", () => {
         mutations.push(`${req.method()} ${req.url()}`);
       }
     });
-    await page.goto("/formations");
+    await page.goto(MODULE_URL);
     await page.getByTestId("mentor-fab").click();
     await page.getByTestId("mentor-close").click();
     expect(mutations).toEqual([]);
@@ -162,7 +166,7 @@ test.describe("mentor contextual panel (W3-B)", () => {
   test("REDUCED_MOTION: the mentor context still settles fully visible", async ({ page }) => {
     await mockAuthenticatedSession(page);
     await page.emulateMedia({ reducedMotion: "reduce" });
-    await page.goto("/formations");
+    await page.goto(MODULE_URL);
     await page.getByTestId("mentor-fab").click();
     const panel = page.getByTestId("mentor-panel");
     await expect(panel).toHaveAttribute("data-context-state", "context");

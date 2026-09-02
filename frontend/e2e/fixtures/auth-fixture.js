@@ -170,6 +170,29 @@ const FIXTURE_QUIZ_RESULT_PASSED = {
   signal_emitted: "FMS-01-M01-QUIZ",
 };
 
+// FormationDetail.js fixture (reachable via ModuleJourney's BackButton,
+// e.g. mentor-presence.spec.js's "navigating out of a module" test). Kept
+// minimal — `modules: []` is valid (every access is `(f.modules || [])`)
+// and `stades` must be non-empty since STADE_EMOJI[f.stades[0]] is read
+// unconditionally once `f` loads.
+const FIXTURE_FORMATION_DETAIL = {
+  code: "FMS-01",
+  name: "Fixture Formation One",
+  pole_color: "#D9631E",
+  pole_name: "FMS",
+  description: "Fixture description.",
+  objective_strategic: "Fixture objective.",
+  duration_h: 12,
+  cc: 4,
+  badge_name: "Fixture Badge",
+  debouches: "Fixture débouchés.",
+  prerequisites: "Fixture prerequisites.",
+  stades: ["graine", "pousse"],
+  is_unlocked: true,
+  lock_reason: "",
+  modules: [],
+};
+
 /**
  * Installs the fixture for one Playwright `page`: a fake but internally
  * consistent authenticated session, entirely intercepted at the network
@@ -263,8 +286,16 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       body: JSON.stringify({ reply: "Fixture mentor reply." }),
     })
   );
+  const formationDetail = overrides.formationDetail || FIXTURE_FORMATION_DETAIL;
+  await page.route("**/api/formations/*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(formationDetail),
+    })
+  );
 
-  return { user, poles, learningPath, moduleData, quiz, quizResult };
+  return { user, poles, learningPath, moduleData, quiz, quizResult, formationDetail };
 }
 
 module.exports = {
@@ -276,4 +307,5 @@ module.exports = {
   FIXTURE_MODULE_QUIZ_READY,
   FIXTURE_QUIZ,
   FIXTURE_QUIZ_RESULT_PASSED,
+  FIXTURE_FORMATION_DETAIL,
 };
