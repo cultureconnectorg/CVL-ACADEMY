@@ -217,7 +217,7 @@ const DICT = {
     roadmap_p: {
       hero_title_pre: "Du", hero_title_post: "à la Forêt.",
       hero_p: "6 stades végétaux. Chaque seuil de Crédits CC franchi débloque un signal FREK, un badge et une opportunité concrète dans l'écosystème CVLN.",
-      level_word: "Niveau", crossed: "Franchi", you_are_here: "Tu es ici",
+      crossed: "Franchi", you_are_here: "Tu es ici",
       stage_desc_graine: "Découvrir les bases culturelles et numériques. FREK-TIME s'active.",
       stage_desc_pousse: "Premières productions, engagement, livrables archivés dans FREK.",
       stage_desc_racine: "Autonomie partielle, projets réels, première mission CVLN.",
@@ -450,7 +450,7 @@ const DICT = {
     roadmap_p: {
       hero_title_pre: "From", hero_title_post: "to the Forest.",
       hero_p: "6 plant stages. Every CC Credit threshold crossed unlocks a FREK signal, a badge, and a concrete opportunity in the CVLN ecosystem.",
-      level_word: "Level", crossed: "Crossed", you_are_here: "You are here",
+      crossed: "Crossed", you_are_here: "You are here",
       stage_desc_graine: "Discover the cultural and digital basics. FREK-TIME activates.",
       stage_desc_pousse: "First productions, engagement, deliverables archived in FREK.",
       stage_desc_racine: "Partial autonomy, real projects, first CVLN mission.",
@@ -683,7 +683,7 @@ const DICT = {
     roadmap_p: {
       hero_title_pre: "Dépi", hero_title_post: "jouk Forè a.",
       hero_p: "6 etap végétal. Chak sèy Kredi CC franchi ka débloké yon sinyal FREK, yon badj é yon opòtinité konkrèt an ekosistèm CVLN an.",
-      level_word: "Nivo", crossed: "Franchi", you_are_here: "Ou la",
+      crossed: "Franchi", you_are_here: "Ou la",
       stage_desc_graine: "Dékouvè baz kiltirèl é nimérik yo. FREK-TIME ka aktivé.",
       stage_desc_pousse: "Prèmyé pwodiksyon, angajman, livrab achivé an FREK.",
       stage_desc_racine: "Otonomi pasyèl, pwojé réèl, prèmyé misyon CVLN.",
@@ -916,7 +916,7 @@ const DICT = {
     roadmap_p: {
       hero_title_pre: "De la", hero_title_post: "al Bosque.",
       hero_p: "6 etapas vegetales. Cada umbral de Créditos CC superado desbloquea una señal FREK, una insignia y una oportunidad concreta en el ecosistema CVLN.",
-      level_word: "Nivel", crossed: "Superada", you_are_here: "Estás aquí",
+      crossed: "Superada", you_are_here: "Estás aquí",
       stage_desc_graine: "Descubrir las bases culturales y digitales. FREK-TIME se activa.",
       stage_desc_pousse: "Primeras producciones, compromiso, entregables archivados en FREK.",
       stage_desc_racine: "Autonomía parcial, proyectos reales, primera misión CVLN.",

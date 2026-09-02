@@ -1,5 +1,6 @@
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
+import { FocusFieldItem } from "@/lib/CvlnFocusField";
 
 const STAGE_CODES = ["graine", "pousse", "racine", "branches", "arbre", "foret"];
 const STAGE_EMOJI = { graine: "🌱", pousse: "🌿", racine: "🌳", branches: "🌲", arbre: "🦅", foret: "🌳🌳" };
@@ -14,10 +15,15 @@ export default function Roadmap() {
   const { t } = useI18n();
   const currentIdx = STAGE_CODES.indexOf(user?.stade);
 
-  const STAGES = STAGE_CODES.map((code, level) => ({
-    code, emoji: STAGE_EMOJI[code], level: level + 1, cc: STAGE_CC[code],
+  const STAGES = STAGE_CODES.map((code) => ({
+    code, emoji: STAGE_EMOJI[code], cc: STAGE_CC[code],
     desc: t(`roadmap_p.stage_desc_${code}`), signal: STAGE_SIGNAL[code],
   }));
+  // W3-D: progression is felt spatially (the current stage stands
+  // forward, every other stage recedes) rather than through a "Level N"
+  // counter — GRAINE_POUSSE_RACINE_BRANCHES_ARBRE_FORET stays an
+  // environmental transformation, never a level/XP readout.
+  const currentStageCode = STAGE_CODES[currentIdx];
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="roadmap-page">
@@ -34,15 +40,17 @@ export default function Roadmap() {
           const active = i === currentIdx;
           const done = i < currentIdx;
           return (
-            <div
+            <FocusFieldItem
               key={s.code}
+              id={s.code}
+              focusedId={currentStageCode}
               data-testid={`stage-${s.code}`}
               className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col
                 ${active ? "border-2 border-[--cvln-orange]" : ""}`}
             >
               <div className="text-6xl mb-4">{s.emoji}</div>
               <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">
-                {t("roadmap_p.level_word")} {s.level} · {s.cc}+ CC
+                {s.cc}+ CC
               </div>
               <h3 className="font-display font-bold text-2xl tracking-tight mt-2">{t(`stades.${s.code}`)}</h3>
               <p className="text-sm text-[--cvln-ink-2] mt-3">{s.desc}</p>
@@ -51,7 +59,7 @@ export default function Roadmap() {
                 {done && <div className="text-xs mt-2 text-[--cvln-forest] font-bold">✓ {t("roadmap_p.crossed")}</div>}
                 {active && <div className="text-xs mt-2 text-[--cvln-orange] font-bold">{t("roadmap_p.you_are_here")}</div>}
               </div>
-            </div>
+            </FocusFieldItem>
           );
         })}
       </div>
