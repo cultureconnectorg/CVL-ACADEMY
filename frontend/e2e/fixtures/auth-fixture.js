@@ -85,6 +85,51 @@ const FIXTURE_LEARNING_PATH = {
   },
 };
 
+// ModuleJourney.js fixture (W3-A/B). One module with a realistic mixed
+// state so all four JourneyHierarchy roles are exercised at once:
+//   hook       -> done AND the default open phase -> CURRENT (revisit case)
+//   objectives -> done, not open                  -> ACQUIRED
+//   course     -> not done, reachable (prev done)  -> NEXT (the frontier)
+//   workshop/deliverable/quiz/mini_mission         -> LOCKED (prev not done)
+const FIXTURE_MODULE = {
+  formation: { code: "FMS-01", name: "Fixture Formation One", pole_color: "#D9631E", pole_name: "FMS" },
+  module: {
+    code: "FMS-01-M01",
+    name: "Fixture Module One",
+    duration_h: 2,
+    stade: "pousse",
+    course_progress_pct: 0,
+    phases: {
+      hook: { narrative: "Fixture hook narrative." },
+      objectives: { items: ["Fixture objective 1", "Fixture objective 2"] },
+      course: {
+        content_md: "## Fixture course\nSome fixture reading content.",
+        reading_min: 5,
+        video_placeholder: { duration_min: 10 },
+      },
+      workshop: {
+        estimated_min: 15,
+        steps: [{ n: 1, action: "Fixture step", detail: "Fixture detail" }],
+      },
+      deliverable: { spec_md: "Fixture deliverable spec.", min_chars: 20 },
+      mini_mission: { brief: "Fixture mini-mission brief." },
+    },
+  },
+  is_unlocked: true,
+  lock_reason: "",
+  status: "in_progress",
+  phase_flags: {
+    hook: true,
+    objectives: true,
+    course: false,
+    workshop: false,
+    deliverable: false,
+    quiz: false,
+    mini_mission: false,
+  },
+  progress: { course_progress_pct: 0 },
+};
+
 /**
  * Installs the fixture for one Playwright `page`: a fake but internally
  * consistent authenticated session, entirely intercepted at the network
@@ -97,6 +142,7 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   const user = { ...FIXTURE_USER, ...(overrides.user || {}) };
   const poles = overrides.poles || FIXTURE_POLES;
   const learningPath = overrides.learningPath || FIXTURE_LEARNING_PATH;
+  const moduleData = overrides.moduleData || FIXTURE_MODULE;
 
   // Runs before any app script on every subsequent navigation in this
   // page — avoids the goto-then-evaluate race where AuthProvider's mount
@@ -136,8 +182,26 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   await page.route("**/api/badges/mine", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
+  // GET /api/modules/:fc/:mc only — the exact 2-segment shape ModuleJourney
+  // fetches on load. Deliberately does NOT match the 3+-segment mutating
+  // endpoints (…/phase, …/deliverable, …/mini-mission/commit), which stay
+  // on the generic `{}` catch-all above unless a later tranche needs them.
+  await page.route("**/api/modules/*/*", (route) => {
+    if (route.request().method() !== "GET") return route.fallback();
+    return route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(moduleData),
+    });
+  });
 
-  return { user, poles, learningPath };
+  return { user, poles, learningPath, moduleData };
 }
 
-module.exports = { mockAuthenticatedSession, FIXTURE_USER, FIXTURE_POLES, FIXTURE_LEARNING_PATH };
+module.exports = {
+  mockAuthenticatedSession,
+  FIXTURE_USER,
+  FIXTURE_POLES,
+  FIXTURE_LEARNING_PATH,
+  FIXTURE_MODULE,
+};

@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
+import { JourneyPhaseShell } from "@/lib/JourneyHierarchy";
 
 const PHASE_KEYS = [
   { key: "hook",          labelKey: "phase_hook",         icon: Sparks },
@@ -184,80 +185,85 @@ export default function ModuleJourney() {
           const prev = idx === 0 ? true : phase_flags[PHASE_META[idx - 1].key];
           const canOpen = done || prev;
           return (
-            <div
-              key={p.key}
-              data-testid={`phase-${p.key}`}
-              className={`cvln-card overflow-hidden transition ${isOpen ? "ring-2 ring-[--cvln-orange]/40" : ""}`}
-            >
-              <button
-                data-testid={`phase-toggle-${p.key}`}
-                disabled={!canOpen}
-                onClick={() => setOpenPhase(isOpen ? null : p.key)}
-                className={`w-full p-5 flex items-center gap-4 text-left transition
-                  ${!canOpen ? "opacity-50 cursor-not-allowed" : "hover:bg-black/[0.02]"}`}
+            // CURRENT -> FOREGROUND, ACQUIRED -> BEHIND_BUT_ACCESSIBLE,
+            // NEXT -> HORIZON, LOCKED -> DISTANT_SUBDUED. Purely visual:
+            // isOpen/done/canOpen are exactly what this loop already
+            // computed above — no new rule, no new data.
+            <JourneyPhaseShell key={p.key} isOpen={isOpen} done={done} canOpen={canOpen}>
+              <div
+                data-testid={`phase-${p.key}`}
+                className={`cvln-card overflow-hidden transition ${isOpen ? "ring-2 ring-[--cvln-orange]/40" : ""}`}
               >
-                <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                     style={{ background: done ? "#15803D" : "#F3F4F6", color: done ? "white" : "#525252" }}>
-                  {done ? <CheckCircle width={18} height={18} /> : <Circle width={18} height={18} />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2] font-semibold">
-                    {t("module_journey.phase_label")} {idx + 1} / 7
+                <button
+                  data-testid={`phase-toggle-${p.key}`}
+                  disabled={!canOpen}
+                  onClick={() => setOpenPhase(isOpen ? null : p.key)}
+                  className={`w-full p-5 flex items-center gap-4 text-left transition
+                    ${!canOpen ? "opacity-50 cursor-not-allowed" : "hover:bg-black/[0.02]"}`}
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                       style={{ background: done ? "#15803D" : "#F3F4F6", color: done ? "white" : "#525252" }}>
+                    {done ? <CheckCircle width={18} height={18} /> : <Circle width={18} height={18} />}
                   </div>
-                  <div className="font-semibold text-lg">{p.label}{done ? ` · ${t("module_journey.validated_suffix")}` : ""}</div>
-                </div>
-                <ArrowRight
-                  width={18} height={18}
-                  className={`transition ${isOpen ? "rotate-90" : ""} text-[--cvln-ink-2]`}
-                />
-              </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2] font-semibold">
+                      {t("module_journey.phase_label")} {idx + 1} / 7
+                    </div>
+                    <div className="font-semibold text-lg">{p.label}{done ? ` · ${t("module_journey.validated_suffix")}` : ""}</div>
+                  </div>
+                  <ArrowRight
+                    width={18} height={18}
+                    className={`transition ${isOpen ? "rotate-90" : ""} text-[--cvln-ink-2]`}
+                  />
+                </button>
 
-              {isOpen && (
-                <div className="px-5 pb-5 -mt-1 border-t border-black/5">
-                  <div className="pt-5">
-                    {p.key === "hook" && (
-                      <PhaseHook phase={phases.hook} done={done} onValidate={() => tickPhase("hook")} />
-                    )}
-                    {p.key === "objectives" && (
-                      <PhaseObjectives phase={phases.objectives} done={done} onValidate={() => tickPhase("objectives")} />
-                    )}
-                    {p.key === "course" && (
-                      <PhaseCourse
-                        phase={phases.course}
-                        progressPct={module.course_progress_pct || data.progress?.course_progress_pct || 0}
-                        onProgress={(pct) => tickPhase("course", { progress_pct: pct })}
-                      />
-                    )}
-                    {p.key === "workshop" && (
-                      <PhaseWorkshop phase={phases.workshop} done={done} onValidate={() => tickPhase("workshop")} />
-                    )}
-                    {p.key === "deliverable" && (
-                      <PhaseDeliverable
-                        phase={phases.deliverable} done={done}
-                        text={deliverableText} setText={setDeliverableText}
-                        onSubmit={submitDeliverable}
-                      />
-                    )}
-                    {p.key === "quiz" && (
-                      <PhaseQuiz
-                        canOpen={phase_flags.deliverable}
-                        done={done}
-                        quiz={quiz} answers={answers} setAnswers={setAnswers}
-                        result={quizResult}
-                        onOpen={openQuiz} onSubmit={submitQuiz}
-                      />
-                    )}
-                    {p.key === "mini_mission" && (
-                      <PhaseMiniMission
-                        phase={phases.mini_mission} done={done}
-                        quizPassed={phase_flags.quiz}
-                        onCommit={commitMiniMission}
-                      />
-                    )}
+                {isOpen && (
+                  <div className="px-5 pb-5 -mt-1 border-t border-black/5">
+                    <div className="pt-5">
+                      {p.key === "hook" && (
+                        <PhaseHook phase={phases.hook} done={done} onValidate={() => tickPhase("hook")} />
+                      )}
+                      {p.key === "objectives" && (
+                        <PhaseObjectives phase={phases.objectives} done={done} onValidate={() => tickPhase("objectives")} />
+                      )}
+                      {p.key === "course" && (
+                        <PhaseCourse
+                          phase={phases.course}
+                          progressPct={module.course_progress_pct || data.progress?.course_progress_pct || 0}
+                          onProgress={(pct) => tickPhase("course", { progress_pct: pct })}
+                        />
+                      )}
+                      {p.key === "workshop" && (
+                        <PhaseWorkshop phase={phases.workshop} done={done} onValidate={() => tickPhase("workshop")} />
+                      )}
+                      {p.key === "deliverable" && (
+                        <PhaseDeliverable
+                          phase={phases.deliverable} done={done}
+                          text={deliverableText} setText={setDeliverableText}
+                          onSubmit={submitDeliverable}
+                        />
+                      )}
+                      {p.key === "quiz" && (
+                        <PhaseQuiz
+                          canOpen={phase_flags.deliverable}
+                          done={done}
+                          quiz={quiz} answers={answers} setAnswers={setAnswers}
+                          result={quizResult}
+                          onOpen={openQuiz} onSubmit={submitQuiz}
+                        />
+                      )}
+                      {p.key === "mini_mission" && (
+                        <PhaseMiniMission
+                          phase={phases.mini_mission} done={done}
+                          quizPassed={phase_flags.quiz}
+                          onCommit={commitMiniMission}
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </JourneyPhaseShell>
           );
         })}
       </div>
