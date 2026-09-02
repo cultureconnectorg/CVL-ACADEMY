@@ -7,6 +7,20 @@ précédents : la **coquille UI** (menus, boutons, libellés de navigation) et l
 **contenu réel** (formations, modules, FMS, quiz) — leur niveau de couverture
 linguistique est très différent, et le mélanger aurait été trompeur.
 
+> **Mise à jour (même jour) :** suite à cet audit, la demande explicite a été
+> de combler l'écart plutôt que de le laisser en l'état — "pousse les
+> traductions que ça soit traduit dès que l'apprenant choisit la langue".
+> **Les §2 et §6 ci-dessous sont donc désormais résolus** : les 8 fichiers à
+> 0% et toutes les fuites identifiées (§2) ont été câblés au dictionnaire
+> i18n, qui compte maintenant 320 clés × 4 langues (vérifié par script :
+> parité stricte des clés entre les 4 langues, et chaque appel `t()` du
+> code source résolu contre une clé réelle — aucune ne manque, aucune ne
+> traîne). Le reste du rapport est laissé tel quel pour l'historique — il
+> documente fidèlement l'état constaté au moment de l'audit, avant cette
+> correction. Le contenu pédagogique (§3, dernier point) reste, lui,
+> non traduit — c'est un chantier de contenu séparé, hors du périmètre
+> de cette correction (voir §6 point 5, toujours valable).
+
 ---
 
 ## 1. Résumé
@@ -137,6 +151,11 @@ c'est-à-dire la coquille UI + le tag backend, pas la résolution des gaps du
 sans que ce soit demandé) : câbler les 8 fichiers à 0% de couverture (§2) au
 dictionnaire i18n, ni traduire le contenu pédagogique. Les deux restent des
 chantiers identifiés, pas silencieusement ignorés.
+
+> **Mise à jour :** le premier point (câbler les 8 fichiers + les fuites) a
+> été fait dans la foulée, le même jour, sur demande explicite — voir la
+> note en tête de document. Seule la traduction du contenu pédagogique
+> reste hors périmètre.
 
 ---
 

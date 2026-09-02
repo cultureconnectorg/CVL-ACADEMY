@@ -2,19 +2,21 @@ import { useEffect, useState } from "react";
 import { Medal1st, Download } from "iconoir-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-
-const STATUS_LABELS = {
-  in_progress: "En cours",
-  submitted: "Soumise",
-  graded: "Notée",
-  passed: "Réussie",
-  failed: "Non réussie",
-};
+import { useI18n } from "@/lib/i18n.jsx";
 
 export default function Certifications() {
+  const { t } = useI18n();
   const [attempts, setAttempts] = useState([]);
   const [rubrics, setRubrics] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const STATUS_LABELS = {
+    in_progress: t("certifications_p.status_in_progress"),
+    submitted: t("certifications_p.status_submitted"),
+    graded: t("certifications_p.status_graded"),
+    passed: t("certifications_p.status_passed"),
+    failed: t("certifications_p.status_failed"),
+  };
 
   const load = async () => {
     const [a, r] = await Promise.all([
@@ -28,18 +30,19 @@ export default function Certifications() {
 
   useEffect(() => {
     load().catch(() => {
-      toast.error("Impossible de charger les certifications.");
+      toast.error(t("certifications_p.load_error"));
       setLoading(false);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const startAttempt = async (code) => {
     try {
       await api.post(`/certifications/${code}/attempts`);
-      toast.success("Tentative créée.");
+      toast.success(t("certifications_p.created"));
       await load();
     } catch {
-      toast.error("Impossible de démarrer cette certification.");
+      toast.error(t("certifications_p.start_error"));
     }
   };
 
@@ -52,7 +55,7 @@ export default function Certifications() {
         const url = URL.createObjectURL(res.data);
         window.open(url, "_blank");
       })
-      .catch(() => toast.error("Attestation indisponible."));
+      .catch(() => toast.error(t("certifications_p.attestation_unavailable")));
   };
 
   if (loading) return <div className="p-10 text-[--cvln-ink-2]">…</div>;
@@ -61,11 +64,11 @@ export default function Certifications() {
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-5xl" data-testid="certifications-page">
-      <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">Certification Engine</div>
-      <h1 className="font-display font-black text-4xl tracking-tighter mt-2">Mes certifications</h1>
+      <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">{t("certifications_p.eyebrow")}</div>
+      <h1 className="font-display font-black text-4xl tracking-tighter mt-2">{t("certifications_p.title")}</h1>
 
       {attempts.length === 0 && (
-        <div className="cvln-card p-6 mt-8 text-sm text-[--cvln-ink-2]">Aucune tentative pour l&apos;instant.</div>
+        <div className="cvln-card p-6 mt-8 text-sm text-[--cvln-ink-2]">{t("certifications_p.none")}</div>
       )}
 
       <div className="space-y-3 mt-6">
@@ -75,11 +78,11 @@ export default function Certifications() {
               <Medal1st width={22} height={22} className="text-[--cvln-orange] shrink-0" />
               <div className="min-w-0">
                 <div className="font-semibold truncate">
-                  {a.certification_code} · {a.level} — tentative #{a.attempt_number}
+                  {a.certification_code} · {a.level} — {t("certifications_p.attempt")} #{a.attempt_number}
                 </div>
                 <div className="text-xs text-[--cvln-ink-2]">
                   {STATUS_LABELS[a.status]}
-                  {a.status !== "in_progress" && a.status !== "submitted" ? ` · score ${a.score_global}%` : ""}
+                  {a.status !== "in_progress" && a.status !== "submitted" ? ` · ${t("certifications_p.score")} ${a.score_global}%` : ""}
                 </div>
               </div>
             </div>
@@ -89,7 +92,7 @@ export default function Certifications() {
                 data-testid={`download-attestation-${a.id}`}
                 onClick={() => downloadAttestation(a.id)}
               >
-                <Download width={16} height={16} className="mr-2" /> Attestation
+                <Download width={16} height={16} className="mr-2" /> {t("certifications_p.attestation")}
               </button>
             )}
           </div>
@@ -98,7 +101,7 @@ export default function Certifications() {
 
       {rubrics.length > 0 && (
         <>
-          <h3 className="font-display font-bold text-xl tracking-tight mt-10 mb-4">Certifications disponibles</h3>
+          <h3 className="font-display font-bold text-xl tracking-tight mt-10 mb-4">{t("certifications_p.available_title")}</h3>
           <div className="space-y-3">
             {rubrics
               .filter((r) => !startedCodes.has(r.certification_code))
@@ -110,10 +113,10 @@ export default function Certifications() {
                 >
                   <div>
                     <div className="font-semibold">{r.certification_code} · {r.level}</div>
-                    <div className="text-xs text-[--cvln-ink-2]">Seuil de réussite : {r.pass_threshold_pct}%</div>
+                    <div className="text-xs text-[--cvln-ink-2]">{t("certifications_p.pass_threshold")} : {r.pass_threshold_pct}%</div>
                   </div>
                   <button className="btn-primary" onClick={() => startAttempt(r.certification_code)}>
-                    Démarrer
+                    {t("common.start")}
                   </button>
                 </div>
               ))}

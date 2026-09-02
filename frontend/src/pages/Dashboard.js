@@ -47,7 +47,7 @@ export default function Dashboard() {
             {t("dashboard")}
           </div>
           <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-2">
-            Bonjour {user?.display_name?.split(" ")[0]}.
+            {t("dashboard_p.greeting")} {user?.display_name?.split(" ")[0]}.
           </h1>
           <p className="text-[--cvln-ink-2] mt-3 max-w-lg">
             {t("current_stage")} : <strong className="text-[--cvln-ink]">
@@ -73,7 +73,7 @@ export default function Dashboard() {
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex-1 min-w-0">
               <div className="text-[10px] mono uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
-                Ta prochaine étape
+                {t("dashboard_p.next_step")}
               </div>
               <div className="font-display font-bold text-2xl md:text-3xl tracking-tight mt-2 leading-tight">
                 {path.next_action.module_name}
@@ -87,7 +87,7 @@ export default function Dashboard() {
               data-testid="next-action-open"
               className="btn-primary"
             >
-              {path.next_action.status === "available" ? "Démarrer" : "Continuer"}
+              {path.next_action.status === "available" ? t("common.start") : t("common.continue_")}
               <ArrowRight width={16} height={16} className="ml-2" />
             </Link>
           </div>
@@ -145,7 +145,7 @@ export default function Dashboard() {
           </div>
           <div className="mt-2 font-display font-black text-5xl tracking-tighter leading-none">{badges.length}</div>
           <Link to="/badges" className="mt-3 text-xs text-[--cvln-orange] font-semibold inline-flex items-center gap-1">
-            Voir tout <ArrowRight width={12} height={12} />
+            {t("common.see_all")} <ArrowRight width={12} height={12} />
           </Link>
         </div>
       </div>
@@ -202,7 +202,7 @@ export default function Dashboard() {
         </div>
         {badges.length === 0 ? (
           <div className="text-sm text-[--cvln-ink-2]">
-            {"Aucun badge pour l'instant. Complète un module ou une mission pour en gagner."}
+            {t("dashboard_p.no_badges")}
           </div>
         ) : (
           <div className="flex flex-wrap gap-4">

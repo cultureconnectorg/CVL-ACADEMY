@@ -29,7 +29,7 @@ export default function MentorPanel() {
       const { data } = await api.post("/mentor/chat", { message: text, session_id: sessionId });
       setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
     } catch {
-      toast.error("Mentor CVLN indisponible pour l'instant.");
+      toast.error(t("mentor_p.unavailable"));
     } finally {
       setSending(false);
     }
@@ -42,7 +42,7 @@ export default function MentorPanel() {
         data-testid="mentor-fab"
         onClick={() => setOpen(true)}
         className="fixed bottom-6 right-6 z-40 rounded-full w-14 h-14 bg-[--cvln-orange] text-white flex items-center justify-center shadow-lg hover:scale-110 hover:-translate-y-1 transition"
-        aria-label="Ouvrir le Mentor CVLN"
+        aria-label={t("mentor_p.open_aria")}
       >
         <SparksSolid width={22} height={22} />
       </button>
@@ -52,7 +52,7 @@ export default function MentorPanel() {
         <div className="fixed inset-0 z-50 flex justify-end" data-testid="mentor-panel">
           <button
             type="button"
-            aria-label="Fermer le Mentor CVLN"
+            aria-label={t("mentor_p.close_aria")}
             className="absolute inset-0 bg-black/20 cursor-default"
             onClick={() => setOpen(false)}
           />
@@ -60,8 +60,8 @@ export default function MentorPanel() {
             {/* header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-black/5">
               <div>
-                <div className="font-display font-bold text-lg tracking-tight">Mentor CVLN</div>
-                <div className="text-xs text-[--cvln-ink-2]">Premier agent · CVLN Agent Factory</div>
+                <div className="font-display font-bold text-lg tracking-tight">{t("mentor")}</div>
+                <div className="text-xs text-[--cvln-ink-2]">{t("mentor_p.subtitle")}</div>
               </div>
               <button
                 data-testid="mentor-close"

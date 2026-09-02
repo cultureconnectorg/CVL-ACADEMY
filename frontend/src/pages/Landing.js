@@ -24,14 +24,14 @@ export default function Landing() {
     try {
       if (mode === "register") {
         const u = await register({ ...form, lang });
-        toast.success(`FREK-ID généré : ${u.frek_id}`);
+        toast.success(`${t("landing_p.frek_id_generated")} ${u.frek_id}`);
         nav("/onboarding");
       } else {
         const u = await login(form.email, form.password);
         nav(u.onboarding_completed ? "/dashboard" : "/onboarding");
       }
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Erreur d'authentification");
+      toast.error(err?.response?.data?.detail || t("landing_p.auth_error"));
     } finally {
       setBusy(false);
     }
@@ -68,7 +68,7 @@ export default function Landing() {
         {/* Left: manifesto */}
         <div className="flex flex-col justify-center">
           <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange] mb-6">
-            CVLN Group · Martinique · 2026
+            {t("landing_p.brand_line")}
           </div>
           <h1 className="font-display font-black text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tighter">
             {t("tagline")}<br/>
@@ -78,15 +78,15 @@ export default function Landing() {
             {t("tagline_p")}
           </p>
           <div className="mt-10 flex flex-wrap gap-3 items-center">
-            <span className="stade-chip">🌱 Graine</span>
-            <span className="stade-chip">🌿 Pousse</span>
-            <span className="stade-chip">🌳 Racine</span>
-            <span className="stade-chip">🌲 Branches</span>
-            <span className="stade-chip">🦅 Arbre</span>
-            <span className="stade-chip">🌳🌳 Forêt</span>
+            <span className="stade-chip">🌱 {t("stades.graine")}</span>
+            <span className="stade-chip">🌿 {t("stades.pousse")}</span>
+            <span className="stade-chip">🌳 {t("stades.racine")}</span>
+            <span className="stade-chip">🌲 {t("stades.branches")}</span>
+            <span className="stade-chip">🦅 {t("stades.arbre")}</span>
+            <span className="stade-chip">🌳🌳 {t("stades.foret")}</span>
           </div>
           <div className="mt-10 text-xs mono text-[--cvln-ink-2]">
-            30 formations · 215 modules · 8 pôles · {t("trilingual")}
+            30 {t("landing_p.stat_formations")} · 215 {t("landing_p.stat_modules")} · 8 {t("landing_p.stat_poles")} · {t("trilingual")}
           </div>
         </div>
 
@@ -97,7 +97,7 @@ export default function Landing() {
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-1">
                 <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
-                  {mode === "register" ? "FrekCore · New identity" : "FrekCore · Sign in"}
+                  {mode === "register" ? t("landing_p.new_identity") : t("landing_p.sign_in")}
                 </div>
               </div>
               <h2 className="font-display font-bold text-3xl tracking-tight">
@@ -156,8 +156,8 @@ export default function Landing() {
                 className="mt-6 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition"
               >
                 {mode === "register"
-                  ? "Déjà un FREK-ID ? Se connecter"
-                  : "Nouveau ? Créer mon FREK-ID"}
+                  ? t("landing_p.toggle_to_login")
+                  : t("landing_p.toggle_to_register")}
               </button>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function Landing() {
       </section>
 
       <footer className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-10 border-t border-black/5 text-sm text-[--cvln-ink-2]">
-        CVLN Academy OS — Learning Infrastructure for Future Cultural &amp; Technology Industries · Martinique · Diaspora
+        {t("landing_p.footer")}
       </footer>
     </div>
   );

@@ -22,10 +22,10 @@ export default function Badges() {
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="badges-page">
       <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">{t("badges")}</div>
       <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-2">
-        Preuves publiques, portables.
+        {t("badges_p.hero_title")}
       </h1>
       <p className="text-[--cvln-ink-2] mt-3 max-w-2xl">
-        {"Chaque badge est un signal d'appartenance CVLN et une compétence prouvée, valable dans tout l'écosystème et au-delà."}
+        {t("badges_p.hero_p")}
       </p>
 
       <div className="mt-10 grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -47,7 +47,7 @@ export default function Badges() {
                 ✦
                 {owned && (
                   <div className="absolute -bottom-1 -right-1 bg-[--cvln-forest] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                    Obtenu
+                    {t("badges_p.obtained")}
                   </div>
                 )}
               </div>
@@ -58,7 +58,7 @@ export default function Badges() {
               <div className="text-xs text-[--cvln-ink-2] mt-3">{b.description}</div>
               {!owned && (
                 <div className="mt-3 text-xs font-semibold text-[--cvln-orange]">
-                  {reachable ? "Débloqué au prochain rafraîchissement" : `${b.cc_threshold - (user?.cc_credits ?? 0)} CC restants`}
+                  {reachable ? t("badges_p.unlock_next_refresh") : `${b.cc_threshold - (user?.cc_credits ?? 0)} ${t("badges_p.cc_remaining")}`}
                 </div>
               )}
             </div>

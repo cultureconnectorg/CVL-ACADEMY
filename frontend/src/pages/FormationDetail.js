@@ -10,18 +10,18 @@ const STADE_EMOJI = {
   branches: "🌲", arbre: "🦅", foret: "🌳🌳",
 };
 
-const STATUS_META = {
-  available:              { label: "Disponible",           color: "#E05A33", bg: "#FFF3EC" },
-  in_progress:            { label: "En cours",             color: "#B45309", bg: "#FEF3C7" },
-  ready_for_quiz:         { label: "Prêt pour le quiz",    color: "#0F4E33", bg: "#E7F5EF" },
-  awaiting_mini_mission:  { label: "Mini-mission requise", color: "#7C2D12", bg: "#FEE7DF" },
-  validated:              { label: "Validé",               color: "#15803D", bg: "#DCFCE7" },
-};
-
 export default function FormationDetail() {
   const { code } = useParams();
   const { t } = useI18n();
   const [f, setF] = useState(null);
+
+  const STATUS_META = {
+    available:              { label: t("formation_detail_p.status_available"),             color: "#E05A33", bg: "#FFF3EC" },
+    in_progress:            { label: t("formation_detail_p.status_in_progress"),            color: "#B45309", bg: "#FEF3C7" },
+    ready_for_quiz:         { label: t("formation_detail_p.status_ready_for_quiz"),         color: "#0F4E33", bg: "#E7F5EF" },
+    awaiting_mini_mission:  { label: t("formation_detail_p.status_awaiting_mini_mission"),  color: "#7C2D12", bg: "#FEE7DF" },
+    validated:              { label: t("formation_detail_p.status_validated"),              color: "#15803D", bg: "#DCFCE7" },
+  };
 
   useEffect(() => {
     api.get(`/formations/${code}`).then(r => setF(r.data));
@@ -42,7 +42,7 @@ export default function FormationDetail() {
         <div className="mb-6 p-4 rounded-2xl bg-[#FFF3EC] border border-[--cvln-orange]/30 flex gap-3 items-start" data-testid="formation-lock-banner">
           <Lock className="text-[--cvln-orange] flex-shrink-0 mt-0.5" width={22} height={22} />
           <div>
-            <div className="font-semibold text-[--cvln-ink]">Formation verrouillée</div>
+            <div className="font-semibold text-[--cvln-ink]">{t("formation_detail_p.locked_title")}</div>
             <div className="text-sm text-[--cvln-ink-2] mt-1">{f.lock_reason}</div>
           </div>
         </div>
@@ -64,7 +64,7 @@ export default function FormationDetail() {
             {f.description}
           </p>
           <div className="mt-4 text-sm text-[--cvln-ink-2] max-w-2xl">
-            <strong className="text-[--cvln-ink]">Objectif stratégique — </strong>
+            <strong className="text-[--cvln-ink]">{t("formation_detail_p.strategic_objective")}</strong>
             {f.objective_strategic}
           </div>
 
@@ -72,7 +72,7 @@ export default function FormationDetail() {
           {f.modules && f.modules.length > 0 && (
             <div className="mt-6 max-w-2xl">
               <div className="flex items-center justify-between text-xs mono uppercase tracking-wider text-[--cvln-ink-2] mb-2">
-                <span>Progression formation</span>
+                <span>{t("formation_detail_p.formation_progress")}</span>
                 <span>{validatedCount} / {f.modules.length} · {pct}%</span>
               </div>
               <div className="h-2 bg-black/5 rounded-full overflow-hidden">
@@ -85,8 +85,8 @@ export default function FormationDetail() {
         <div className="cvln-card p-6 space-y-3">
           <Row icon={<Book width={16} height={16} />} label={t("duration")} value={`${f.duration_h}h`} />
           <Row icon={<Coins width={16} height={16} />} label={t("cc_credits")} value={`${f.cc} CC`} />
-          <Row icon={<Trophy width={16} height={16} />} label="Badge" value={f.badge_name} />
-          <Row icon={<MediaVideo width={16} height={16} />} label="Stades" value={
+          <Row icon={<Trophy width={16} height={16} />} label={t("formation_detail_p.badge_label")} value={f.badge_name} />
+          <Row icon={<MediaVideo width={16} height={16} />} label={t("formation_detail_p.stades_label")} value={
             <span>{STADE_EMOJI[f.stades[0]]} → {STADE_EMOJI[f.stades[f.stades.length - 1]]}</span>
           } />
           <div className="pt-3 border-t border-black/5 text-xs">
@@ -104,7 +104,7 @@ export default function FormationDetail() {
       <div className="mt-12">
         <h2 className="font-display font-bold text-2xl md:text-3xl tracking-tight">{t("modules")}</h2>
         <div className="text-sm text-[--cvln-ink-2] mt-1">
-          Doctrine CVLN — chaque module se termine par un livrable et une mini-mission.
+          {t("formation_detail_p.modules_doctrine")}
         </div>
 
         <div className="mt-6 grid gap-3">
@@ -166,7 +166,7 @@ export default function FormationDetail() {
                     disabled
                     className="btn-outline text-sm opacity-60 cursor-not-allowed"
                   >
-                    <Lock width={16} height={16} className="mr-1.5" /> Verrouillé
+                    <Lock width={16} height={16} className="mr-1.5" /> {t("common.locked")}
                   </button>
                 ) : (
                   <Link
@@ -174,10 +174,10 @@ export default function FormationDetail() {
                     data-testid={`module-open-${m.code}`}
                     className="btn-primary text-sm"
                   >
-                    {status === "validated" ? "Revoir" : status === "available" ? (
-                      <>Démarrer <ArrowRight width={16} height={16} className="ml-1.5" /></>
+                    {status === "validated" ? t("common.review") : status === "available" ? (
+                      <>{t("common.start")} <ArrowRight width={16} height={16} className="ml-1.5" /></>
                     ) : (
-                      <>Continuer <PlaySolid width={16} height={16} className="ml-1.5" /></>
+                      <>{t("common.continue_")} <PlaySolid width={16} height={16} className="ml-1.5" /></>
                     )}
                   </Link>
                 )}

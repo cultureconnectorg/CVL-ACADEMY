@@ -2,23 +2,26 @@ import { useEffect, useState } from "react";
 import { Sparks } from "iconoir-react";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
-
-const STATE_LABELS = {
-  not_started: "Non commencé",
-  in_progress: "En cours",
-  acquired: "Acquis",
-};
+import { useI18n } from "@/lib/i18n.jsx";
 
 export default function Skills() {
+  const { t } = useI18n();
   const [skills, setSkills] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const STATE_LABELS = {
+    not_started: t("skills_p.state_not_started"),
+    in_progress: t("skills_p.state_in_progress"),
+    acquired: t("skills_p.state_acquired"),
+  };
 
   useEffect(() => {
     api
       .get("/skills/mine")
       .then((r) => setSkills(r.data))
-      .catch(() => toast.error("Impossible de charger tes compétences."))
+      .catch(() => toast.error(t("skills_p.load_error")))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (loading) return <div className="p-10 text-[--cvln-ink-2]">…</div>;
@@ -32,18 +35,17 @@ export default function Skills() {
   return (
     <div className="px-6 md:px-12 py-10 max-w-5xl" data-testid="skills-page">
       <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">Skill Engine</div>
-      <h1 className="font-display font-black text-4xl tracking-tighter mt-2">Mes compétences</h1>
+      <h1 className="font-display font-black text-4xl tracking-tighter mt-2">{t("skills_p.title")}</h1>
 
       {skills.length === 0 ? (
         <div className="cvln-card p-6 mt-8 text-sm text-[--cvln-ink-2]">
-          Aucune compétence référencée pour l&apos;instant — elles apparaissent au fur et à mesure de tes
-          modules, quiz et certifications.
+          {t("skills_p.empty")}
         </div>
       ) : (
         Object.entries(byBloc).map(([bloc, list]) => (
           <div key={bloc} className="cvln-card p-6 mt-6" data-testid={`skills-bloc-${bloc}`}>
             <h3 className="font-display font-bold text-xl tracking-tight mb-4 flex items-center gap-2">
-              <Sparks width={18} height={18} className="text-[--cvln-orange]" /> Bloc {bloc}
+              <Sparks width={18} height={18} className="text-[--cvln-orange]" /> {t("skills_p.bloc")} {bloc}
             </h3>
             <div className="space-y-3">
               {list.map((s) => (

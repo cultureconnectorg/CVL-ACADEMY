@@ -26,6 +26,36 @@ noise/texture terreuse, chips végétaux pour les stades.
   Graine → Pousse → Racine → Branches → Arbre → Forêt.
 - ✅ Trilinguisme FR/EN/KR (kréyòl).
 
+## Ce qui a été livré — 1er septembre 2026 (Couverture i18n complète)
+
+Suite directe de l'audit ci-dessous, même jour : demande explicite de
+combler l'écart plutôt que de le documenter et s'arrêter là — "traduit dès
+que l'apprenant choisit la langue". Les 8 fichiers frontend à 0% de
+couverture i18n (Certifications, Skills, Wallet, ModuleJourney — le plus
+gros composant du frontend —, dashboards trainer/jury/admin, BackButton)
+et toutes les fuites identifiées dans les fichiers déjà câblés (en premier
+lieu `Onboarding.js`, dont tout le texte des étapes restait français) sont
+maintenant intégralement raccordés au dictionnaire i18n.
+
+- Dictionnaire étendu de 53 à **320 clés × 4 langues** (`frontend/src/lib/i18n.jsx`),
+  organisées par namespace par page (`skills_p`, `wallet_p`, `certifications_p`,
+  `jury_p`, `trainer_p`, `admin_p`, `module_journey`, `onboarding_p`,
+  `missions_p`, `mentor_p`, `dashboard_p`, `formation_detail_p`, `badges_p`,
+  `frek_profile_p`, `roadmap_p`, `landing_p`, plus un petit namespace
+  `common` pour les actions dupliquées verbatim entre pages).
+- Validé par script (pas seulement à l'œil) : parité stricte des 320 clés
+  entre les 4 langues (aucune clé manquante dans aucune langue) et chaque
+  appel `t()` du code source résolu contre une clé réelle du dictionnaire
+  (aucune clé fantôme, aucun appel cassé).
+- ESLint propre, build de production compile sans warning.
+- **Toujours volontairement pas fait** : traduire le contenu pédagogique
+  (formations, modules, FMS) — chantier de contenu séparé, pas une
+  extension du système i18n actuel (voir le rapport d'audit §6).
+
+Détail complet, y compris la réserve sur la qualité des traductions kreyòl
+et espagnol (non relues par un locuteur natif), dans
+`docs/I18N_AUDIT_REPORT.md`.
+
 ## Ce qui a été livré — 1er septembre 2026 (Audit des langues + ajout de l'espagnol)
 
 Demande explicite : auditer honnêtement la couverture multilingue

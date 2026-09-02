@@ -10,7 +10,7 @@ const STEPS = ["lang", "metier", "territoire", "objectif", "recap"];
 
 export default function Onboarding() {
   const { user, loading, refreshMe } = useAuth();
-  const { lang, setLang } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const nav = useNavigate();
 
   const [step, setStep] = useState(0);
@@ -50,9 +50,9 @@ export default function Onboarding() {
       const { data } = await api.post("/onboarding/complete", choices);
       setResult(data);
       await refreshMe();
-      toast.success("Ton FREK Origin Story est lancé.");
+      toast.success(t("onboarding_p.success_toast"));
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Erreur d'onboarding.");
+      toast.error(e?.response?.data?.detail || t("onboarding_p.error_toast"));
     } finally {
       setSubmitting(false);
     }
@@ -71,7 +71,7 @@ export default function Onboarding() {
           FREK Origin Story · <span className="text-[--cvln-ink-2]">{user.frek_id}</span>
         </div>
         <div className="text-xs mono text-[--cvln-ink-2]">
-          Étape {step + 1} / {STEPS.length}
+          {t("onboarding_p.step_label")} {step + 1} / {STEPS.length}
         </div>
       </header>
 
@@ -89,9 +89,9 @@ export default function Onboarding() {
           {/* STEP 0 — Language */}
           {step === 0 && (
             <StepShell
-              kicker="Étape 1"
-              title="Dans quelle langue veux-tu apprendre ?"
-              subtitle="Tu pourras la changer à tout moment depuis ta sidebar."
+              kicker={t("onboarding_p.step1_kicker")}
+              title={t("onboarding_p.step1_title")}
+              subtitle={t("onboarding_p.step1_subtitle")}
               testId="step-lang"
             >
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-8">
@@ -119,9 +119,9 @@ export default function Onboarding() {
           {/* STEP 1 — Métier visé */}
           {step === 1 && (
             <StepShell
-              kicker="Étape 2"
-              title="Vers quel métier tu veux avancer ?"
-              subtitle="Choisis le pôle CVLN qui te parle le plus. On adaptera ton parcours."
+              kicker={t("onboarding_p.step2_kicker")}
+              title={t("onboarding_p.step2_title")}
+              subtitle={t("onboarding_p.step2_subtitle")}
               testId="step-metier"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-8 max-h-[52vh] overflow-y-auto pr-1">
@@ -154,9 +154,9 @@ export default function Onboarding() {
           {/* STEP 2 — Territoire */}
           {step === 2 && (
             <StepShell
-              kicker="Étape 3"
-              title="Où tu es basé ?"
-              subtitle="Ton territoire nourrit les recommandations locales du Mentor CVLN."
+              kicker={t("onboarding_p.step3_kicker")}
+              title={t("onboarding_p.step3_title")}
+              subtitle={t("onboarding_p.step3_subtitle")}
               testId="step-territoire"
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-8">
@@ -180,9 +180,9 @@ export default function Onboarding() {
           {/* STEP 3 — Objectif */}
           {step === 3 && (
             <StepShell
-              kicker="Étape 4"
-              title="Quel est ton objectif à 6 mois ?"
-              subtitle="Une phrase concrète et personnelle. C'est ton étoile polaire."
+              kicker={t("onboarding_p.step4_kicker")}
+              title={t("onboarding_p.step4_title")}
+              subtitle={t("onboarding_p.step4_subtitle")}
               testId="step-objectif"
             >
               <textarea
@@ -191,7 +191,7 @@ export default function Onboarding() {
                 maxLength={240}
                 value={choices.objectif_perso}
                 onChange={(e) => setChoices({ ...choices, objectif_perso: e.target.value })}
-                placeholder="Ex: Sortir mon premier EP et gagner 500 auditeurs mensuels."
+                placeholder={t("onboarding_p.step4_placeholder")}
                 className="mt-8 w-full bg-white border-2 border-black/10 rounded-2xl px-5 py-4 text-base focus:outline-none focus:border-[--cvln-orange]"
               />
               <div className="mt-2 text-xs text-[--cvln-ink-2]">
@@ -203,22 +203,22 @@ export default function Onboarding() {
           {/* STEP 4 — Récap + submit */}
           {step === 4 && !result && (
             <StepShell
-              kicker="Étape 5"
-              title="Prêt à générer ton FREK Origin Story ?"
-              subtitle="On émet tes premiers signaux FREK-TIME, on te délivre le badge Découverte, et on t'attribue une première mission."
+              kicker={t("onboarding_p.step5_kicker")}
+              title={t("onboarding_p.step5_title")}
+              subtitle={t("onboarding_p.step5_subtitle")}
               testId="step-recap"
             >
               <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <Recap label="Langue" value={LANGS.find(l => l.code === choices.lang)?.label} />
+                <Recap label={t("onboarding_p.recap_lang")} value={LANGS.find(l => l.code === choices.lang)?.label} />
                 <Recap
-                  label="Métier visé"
+                  label={t("onboarding_p.recap_metier")}
                   value={options.metiers.find(m => m.code === choices.metier_vise)?.name}
                 />
                 <Recap
-                  label="Territoire"
+                  label={t("onboarding_p.recap_territoire")}
                   value={options.territoires.find(tr => tr.code === choices.territoire)?.name}
                 />
-                <Recap label="Objectif" value={choices.objectif_perso} />
+                <Recap label={t("onboarding_p.recap_objectif")} value={choices.objectif_perso} />
               </div>
             </StepShell>
           )}
@@ -227,21 +227,21 @@ export default function Onboarding() {
           {result && (
             <div data-testid="onboarding-result" className="fade-in">
               <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
-                Ton FREK Origin Story est lancé
+                {t("onboarding_p.launched_eyebrow")}
               </div>
               <h2 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-3">
-                Bienvenue, {user.display_name.split(" ")[0]}.
+                {t("onboarding_p.welcome")} {user.display_name.split(" ")[0]}.
               </h2>
               <p className="text-[--cvln-ink-2] mt-3 max-w-xl">
-                {result.signals_emitted.length} signaux FREK-TIME émis · Badge{" "}
-                <strong className="text-[--cvln-ink]">{result.badge_earned?.name}</strong> délivré.
+                {result.signals_emitted.length} {t("onboarding_p.signals_emitted")}{" "}
+                <strong className="text-[--cvln-ink]">{result.badge_earned?.name}</strong> {t("onboarding_p.delivered")}
               </p>
 
               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
                 {result.recommended_formation && (
                   <div className="cvln-card p-6" data-testid="reco-formation">
                     <div className="text-[11px] mono uppercase tracking-[0.2em] font-bold text-[--cvln-orange]">
-                      Formation recommandée
+                      {t("onboarding_p.recommended_formation")}
                     </div>
                     <div
                       className="inline-flex items-center gap-2 px-2 py-1 rounded-full text-[10px] font-bold text-white mt-3"
@@ -256,21 +256,21 @@ export default function Onboarding() {
                       {result.recommended_formation.description}
                     </div>
                     <div className="text-xs mono text-[--cvln-ink-2] mt-3">
-                      {result.recommended_formation.duration_h}h · {result.recommended_formation.cc} CC · {result.recommended_formation.modules_count} modules
+                      {result.recommended_formation.duration_h}h · {result.recommended_formation.cc} CC · {result.recommended_formation.modules_count} {t("modules").toLowerCase()}
                     </div>
                     <button
                       data-testid="reco-formation-start"
                       onClick={() => nav(`/formations/${result.recommended_formation.code}`)}
                       className="btn-primary mt-5"
                     >
-                      Ouvrir la formation <ArrowRight width={16} height={16} className="ml-2" />
+                      {t("onboarding_p.open_formation")} <ArrowRight width={16} height={16} className="ml-2" />
                     </button>
                   </div>
                 )}
                 {result.recommended_mission && (
                   <div className="cvln-card p-6" data-testid="reco-mission">
                     <div className="text-[11px] mono uppercase tracking-[0.2em] font-bold text-[--cvln-orange]">
-                      Ta première mission
+                      {t("onboarding_p.first_mission")}
                     </div>
                     <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2] mt-3">
                       {result.recommended_mission.pole} · {result.recommended_mission.entity}
@@ -282,14 +282,14 @@ export default function Onboarding() {
                       {result.recommended_mission.description}
                     </div>
                     <div className="text-xs mono text-[--cvln-orange] font-bold mt-3">
-                      +{result.recommended_mission.cc_reward} CC · déjà acceptée
+                      +{result.recommended_mission.cc_reward} CC · {t("onboarding_p.already_accepted")}
                     </div>
                     <button
                       data-testid="reco-mission-open"
                       onClick={() => nav("/missions")}
                       className="btn-outline mt-5"
                     >
-                      Voir mes missions
+                      {t("onboarding_p.see_my_missions")}
                     </button>
                   </div>
                 )}
@@ -301,7 +301,7 @@ export default function Onboarding() {
                   onClick={() => nav("/dashboard")}
                   className="btn-primary"
                 >
-                  Aller au dashboard <ArrowRight width={16} height={16} className="ml-2" />
+                  {t("onboarding_p.goto_dashboard")} <ArrowRight width={16} height={16} className="ml-2" />
                 </button>
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function Onboarding() {
                 disabled={step === 0}
                 className="btn-outline text-sm disabled:opacity-40"
               >
-                <NavArrowLeft width={16} height={16} className="mr-1" /> Retour
+                <NavArrowLeft width={16} height={16} className="mr-1" /> {t("onboarding_p.back")}
               </button>
               {step < STEPS.length - 1 ? (
                 <button
@@ -325,7 +325,7 @@ export default function Onboarding() {
                   disabled={!canNext}
                   className="btn-primary disabled:opacity-40"
                 >
-                  Continuer <ArrowRight width={16} height={16} className="ml-2" />
+                  {t("onboarding_p.continue_btn")} <ArrowRight width={16} height={16} className="ml-2" />
                 </button>
               ) : (
                 <button
@@ -334,7 +334,7 @@ export default function Onboarding() {
                   disabled={submitting}
                   className="btn-primary disabled:opacity-40"
                 >
-                  {submitting ? "Génération…" : "Lancer mon FREK Origin Story"}
+                  {submitting ? t("onboarding_p.generating") : t("onboarding_p.launch")}
                   <Sparks width={16} height={16} className="ml-2" />
                 </button>
               )}
