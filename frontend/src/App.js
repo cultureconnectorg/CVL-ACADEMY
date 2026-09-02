@@ -7,6 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth.jsx";
 import { I18nProvider } from "@/lib/i18n.jsx";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
+import { RouteTransition } from "@/lib/RouteTransition";
 
 const Landing = lazy(() => import("@/pages/Landing"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
@@ -48,34 +49,36 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Suspense fallback={<PageFallback />}>
-            <Routes>
-              <Route path="/" element={<Landing />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-              <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
-              <Route path="/formations" element={<Protected><Formations /></Protected>} />
-              <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
-              <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
-              <Route path="/missions" element={<Protected><Missions /></Protected>} />
-              <Route path="/badges" element={<Protected><Badges /></Protected>} />
-              <Route path="/frek-profile" element={<Protected><FrekProfile /></Protected>} />
-              <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
-              <Route path="/skills" element={<Protected><Skills /></Protected>} />
-              <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
-              <Route
-                path="/trainer"
-                element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
-              />
-              <Route
-                path="/jury"
-                element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
-              />
-              <Route
-                path="/admin"
-                element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
-              />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+            <RouteTransition>
+              <Routes>
+                <Route path="/" element={<Landing />} />
+                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+                <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
+                <Route path="/formations" element={<Protected><Formations /></Protected>} />
+                <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
+                <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
+                <Route path="/missions" element={<Protected><Missions /></Protected>} />
+                <Route path="/badges" element={<Protected><Badges /></Protected>} />
+                <Route path="/frek-profile" element={<Protected><FrekProfile /></Protected>} />
+                <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
+                <Route path="/skills" element={<Protected><Skills /></Protected>} />
+                <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
+                <Route
+                  path="/trainer"
+                  element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
+                />
+                <Route
+                  path="/jury"
+                  element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
+                />
+                <Route
+                  path="/admin"
+                  element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
+                />
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </RouteTransition>
           </Suspense>
         </BrowserRouter>
         <Toaster position="top-right" richColors />

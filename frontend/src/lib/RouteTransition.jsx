@@ -1,5 +1,9 @@
 /**
- * Spatial Learning — route transition wrapper (W1-C, foundation only).
+ * Spatial Learning — route transition wrapper.
+ *
+ * Built as unmounted infrastructure in W1-C; mounted in App.js in W2-A
+ * (MOT-013 "continuous route transition" — see docs/SPATIAL_LEARNING_
+ * W2A_ROUTE_CONTINUITY_REPORT.md for the runtime proof this wave adds).
  *
  * Purely presentational: it re-keys a `motion.div` by `location.pathname`
  * so a mounted route can crossfade instead of hard-cutting, using the
@@ -31,8 +35,7 @@
  *   `Protected` (e.g. to `/onboarding` or `/dashboard`) crossfades exactly
  *   like any other route change, it is never suppressed or intercepted.
  *
- * **Intended integration point** (not wired in this wave —
- * VISIBLE_SPATIAL_LEARNING is NOT_AUTHORIZED, so App.js is unmodified):
+ * **Integration point** (frontend/src/App.js, since W2-A):
  *
  *   <Suspense fallback={<PageFallback />}>
  *     <RouteTransition>
@@ -40,8 +43,8 @@
  *     </RouteTransition>
  *   </Suspense>
  *
- * placed exactly where `<Routes>` already sits in App.js, no other
- * change required.
+ * placed exactly where `<Routes>` used to sit directly under `Suspense`,
+ * no other change to App.js's routing/auth structure.
  */
 
 import { AnimatePresence, motion } from "framer-motion";
