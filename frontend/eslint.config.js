@@ -46,6 +46,23 @@ module.exports = [
     },
   },
   {
+    // Playwright E2E specs + config (W1-E) — plain CommonJS, run by Node
+    // directly (not webpack/babel), so they need `require`/`module` from
+    // the node globals rather than the browser-focused src/** block above.
+    files: ["e2e/**/*.js", "playwright.config.js"],
+    languageOptions: {
+      ecmaVersion: 2021,
+      sourceType: "commonjs",
+      globals: {
+        ...globals.node,
+        // Specs pass callbacks to `page.evaluate()` that actually execute
+        // in the browser at runtime, referencing document/getComputedStyle
+        // even though the file itself is a plain Node/CommonJS module.
+        ...globals.browser,
+      },
+    },
+  },
+  {
     // Jest test files (react-scripts/craco test) — first one added in W1-D
     // (frontend/src/lib/spatial-state.test.js). describe/test/expect are
     // Jest globals, not browser/node ones.
