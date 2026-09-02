@@ -4,6 +4,7 @@ import { Leaf, ArrowRight } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
+import { Focus, Enter } from "@/lib/motion-primitives";
 
 export default function Landing() {
   const { user, login, register, loading } = useAuth();
@@ -51,15 +52,19 @@ export default function Landing() {
         </div>
         <div className="flex items-center gap-1" data-testid="landing-lang-toggle">
           {LANGS.map((l) => (
-            <button
-              key={l.code}
-              data-testid={`landing-lang-${l.code}`}
-              onClick={() => setLang(l.code)}
-              className={`text-xs px-3 py-1.5 rounded-full font-semibold transition
-                ${lang === l.code ? "bg-[--cvln-forest] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
-            >
-              {l.label}
-            </button>
+            // FOCUS: marks the one language that is actually active —
+            // "make one object primary" per the primitive's own contract,
+            // not a decorative hover effect (see motion-primitives.jsx).
+            <Focus key={l.code} active={lang === l.code} className="inline-block">
+              <button
+                data-testid={`landing-lang-${l.code}`}
+                onClick={() => setLang(l.code)}
+                className={`text-xs px-3 py-1.5 rounded-full font-semibold transition
+                  ${lang === l.code ? "bg-[--cvln-forest] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
+              >
+                {l.label}
+              </button>
+            </Focus>
           ))}
         </div>
       </header>
@@ -95,21 +100,35 @@ export default function Landing() {
           <div className="w-full cvln-card p-8 md:p-10 relative overflow-hidden">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[--cvln-orange]/10" />
             <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
-                  {mode === "register" ? t("landing_p.new_identity") : t("landing_p.sign_in")}
+              {/* ENTER, keyed by mode: the auth mode the visitor just picked
+                  (register vs. login) becomes their destination for this
+                  interaction — a calm crossfade instead of the instant text
+                  swap this block had before (CONTINUITY_OVER_PAGE_CUT
+                  applied within the component, not just at route level). */}
+              <Enter key={mode} show>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
+                    {mode === "register" ? t("landing_p.new_identity") : t("landing_p.sign_in")}
+                  </div>
                 </div>
-              </div>
-              <h2 className="font-display font-bold text-3xl tracking-tight">
-                {mode === "register" ? t("register") : t("welcome_back")}
-              </h2>
-              {mode === "register" && (
-                <p className="mt-2 text-sm text-[--cvln-ink-2]">{t("signup_hint")}</p>
-              )}
+                <h2 className="font-display font-bold text-3xl tracking-tight">
+                  {mode === "register" ? t("register") : t("welcome_back")}
+                </h2>
+                {mode === "register" && (
+                  <p className="mt-2 text-sm text-[--cvln-ink-2]">{t("signup_hint")}</p>
+                )}
+              </Enter>
 
               <form onSubmit={submit} className="mt-6 space-y-4" data-testid="auth-form">
                 {mode === "register" && (
-                  <div>
+                  // ENTER on mount only — this field appearing is a real
+                  // state change (register mode was just chosen), so it
+                  // enters smoothly rather than popping in. Kept as a plain
+                  // conditional render (not REVEAL-while-hidden) so the
+                  // field is fully removed from the DOM in login mode:
+                  // no stray `required` validation on a hidden input, no
+                  // keyboard-focus trap on an invisible field.
+                  <Enter show>
                     <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("display_name")}</label>
                     <input
                       required minLength={1} maxLength={80}
@@ -118,7 +137,7 @@ export default function Landing() {
                       onChange={(e) => setForm({ ...form, display_name: e.target.value })}
                       className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
                     />
-                  </div>
+                  </Enter>
                 )}
                 <div>
                   <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("email")}</label>
