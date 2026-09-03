@@ -63,3 +63,30 @@ async def ensure_indexes() -> None:
     # Catalogue
     await db.formations.create_index("code", unique=True)
     await db.formations.create_index("content_status")
+
+    # ACA-0005 — Module Lineage (legacy<->canonical FMS mapping, additive
+    # only, never touches db.formations/db.progress — see fms_lineage/).
+    await db.module_lineage.create_index("lineage_id", unique=True)
+    # Refuses an exact duplicate pair (same legacy module, same canonical
+    # target, same archive version) while still allowing a legacy module
+    # to hold several distinct RELATED records against different
+    # canonical modules (they differ on canonical_module_code, so the
+    # compound key differs too).
+    await db.module_lineage.create_index(
+        [
+            ("legacy_formation_code", 1),
+            ("legacy_module_code", 1),
+            ("canonical_formation_code", 1),
+            ("canonical_module_code", 1),
+            ("canonical_version", 1),
+        ],
+        unique=True,
+        name="module_lineage_pair_unique",
+    )
+    await db.module_lineage.create_index(
+        [("legacy_formation_code", 1), ("legacy_module_code", 1)]
+    )
+    await db.module_lineage.create_index(
+        [("canonical_formation_code", 1), ("canonical_module_code", 1)]
+    )
+    await db.module_lineage.create_index("status")

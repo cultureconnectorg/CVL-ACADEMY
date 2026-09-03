@@ -211,3 +211,46 @@ conditions réelles. Chaque stratégie la supporte différemment :
 
 `FMS_CANONICAL_MIGRATION` reste un workstream séparé de W1 tant qu'une
 stratégie n'a pas été choisie explicitement par le demandeur.
+
+---
+
+## Addendum — DEC-003 (2026-09-03), ACA-0005/G2
+
+**Ceci est un ajout, pas une réécriture** : tout ce qui précède reste
+l'analyse originale, non modifiée, telle que produite avant que le
+Founder ne tranche. Rien ci-dessus n'a été corrigé ou retiré.
+
+Le Founder a tranché : **`DEC-003 = MAPPING_TABLE + LEGACY_READ_ONLY_FREEZE`**
+— c'est la **Stratégie 3** ci-dessus (table de correspondance), avec la
+sous-décision transverse résolue en **"préserver telle quelle"** (jamais
+"migrer avec mapping implicite", jamais réattribution silencieuse).
+
+Ce que `G2 = AUTHORIZED` a effectivement permis de construire, sous
+`ACA-0005` (implémentation complète :
+`docs/ACADEMY_FMS_CANONICAL_LINEAGE_IMPLEMENTATION_REPORT.md`) :
+
+- La collection `module_lineage` (`backend/fms_lineage/`) **est**
+  exactement la "table de correspondance" décrite en Stratégie 3 —
+  `{legacy_formation_code, legacy_module_code, canonical_formation_code,
+  canonical_module_code, canonical_version, relation, status}` — jamais
+  de mutation de `db.formations`/`db.progress`.
+- Relation par défaut `NO_EQUIVALENCE` partout (jamais une équivalence
+  positionnelle implicite) — plus stricte que ce que Stratégie 3
+  décrivait initialement, précisément pour honorer
+  `POSITIONAL_EQUIVALENCE_INFERENCE = FORBIDDEN` posé dans le mandat
+  `ACA-0005`.
+- `SUPERSEDED_BY` et `MANUAL_EQUIVALENCE` existent dans le modèle pour
+  supporter une future transition pilotée module par module — mais
+  **aucune progression `db.progress` n'a été migrée ni réattribuée par
+  ce chantier**. La question "que devient une ligne `db.progress`
+  existante" reste répondue par **"préserver telle quelle"** : rien ne
+  la touche, `module_lineage` est une couche de lecture additionnelle,
+  jamais une réécriture.
+
+**Ce que `G3 = NOT_AUTHORIZED` signifie concrètement** : la table de
+correspondance existe et peut déjà être interrogée/enrichie par un
+humain (API `POST/PATCH /api/fms/lineage`), mais **rien ne la consulte
+encore pour changer ce qu'un apprenant voit ou peut faire** — le
+"branchement du corpus réel sur le runtime" (`ACA-0006`) reste une
+étape séparée, non commencée, qui devra elle-même être explicitement
+autorisée.
