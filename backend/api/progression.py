@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends
 
 from auth import get_current_user, user_public
 from db import db
+from lifecycle import is_returning_session
 from models import User
 
 router = APIRouter(tags=["progression"])
@@ -41,6 +42,18 @@ async def frek_profile(current: User = Depends(get_current_user)):
         if hi <= lo
         else max(0, min(100, int((current.cc_credits - lo) * 100 / (hi - lo))))
     )
+
+    # RETURNING (W-FUNNEL-1, docs/ACADEMY_LIFECYCLE_STATE_MODEL.md): a
+    # derived read-time signal, not a stored field — see lifecycle.py's
+    # own module docstring for why no schema change was needed.
+    refresh_stamps = [
+        r.get("created_at")
+        for r in await db.refresh_tokens.find(
+            {"user_id": current.id}, {"_id": 0, "created_at": 1}
+        ).to_list(200)
+    ]
+    returning = is_returning_session(current.created_at, refresh_stamps)
+
     return {
         "user": user_public(current).model_dump(),
         "stade_progress_pct": pct,
@@ -49,6 +62,7 @@ async def frek_profile(current: User = Depends(get_current_user)):
         "badges_count": len(badges),
         "signals": current.signals,
         "recent_signals": signals[:20],
+        "returning": returning,
     }
 
 

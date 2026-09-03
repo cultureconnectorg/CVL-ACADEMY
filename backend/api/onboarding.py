@@ -35,6 +35,7 @@ async def onboarding_options():
             {"code": "fr", "name": "Français"},
             {"code": "en", "name": "English"},
             {"code": "kr", "name": "Kreyòl"},
+            {"code": "es", "name": "Español"},
         ],
         "metiers": poles,  # each pole = career direction
         "territoires": TERRITOIRES,
@@ -50,7 +51,7 @@ async def onboarding_complete(
     pole = await db.poles.find_one({"code": inp.metier_vise}, {"_id": 0})
     if not pole:
         raise HTTPException(status_code=400, detail="Métier visé inconnu")
-    if inp.lang not in ("fr", "en", "kr"):
+    if inp.lang not in ("fr", "en", "kr", "es"):
         raise HTTPException(status_code=400, detail="Langue invalide")
     if not any(t["code"] == inp.territoire for t in TERRITOIRES):
         raise HTTPException(status_code=400, detail="Territoire invalide")

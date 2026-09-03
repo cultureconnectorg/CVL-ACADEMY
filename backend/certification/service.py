@@ -13,12 +13,16 @@ from typing import Dict, List, Optional
 from fastapi import HTTPException
 
 from db import db, utc_now_iso
+from services.events import events
 from services.frek_core import frek_core
 from skills.progression import record_evidence
+from wallet import credit as wallet_credit
 
 from .attestation import make_jury_signature
 from .models import CertificationAttempt, GradeInput, Rubric
 from .scoring import compute_scores
+
+CERTIFICATION_JCC_REWARD = 50.0
 
 
 async def get_rubric(certification_code: str) -> Rubric:
@@ -83,9 +87,15 @@ async def grade_attempt(
         )
     rubric = await get_rubric(attempt.certification_code)
 
-    score_by_competency, score_by_bloc, score_global, passed = compute_scores(
-        rubric, grade.scores
-    )
+    (
+        score_by_competency,
+        score_by_bloc,
+        score_global,
+        passed,
+        eliminated,
+        eliminated_reason,
+        mention,
+    ) = compute_scores(rubric, grade.scores)
     signed_at = utc_now_iso()
     signature = make_jury_signature(attempt_id, jury_id, score_by_competency, signed_at)
 
@@ -99,6 +109,9 @@ async def grade_attempt(
                 "score_by_bloc": score_by_bloc,
                 "score_global": score_global,
                 "passed": passed,
+                "eliminated": eliminated,
+                "eliminated_reason": eliminated_reason,
+                "mention": mention,
                 "jury_signature": signature.model_dump(),
                 "comments": grade.comments,
                 "graded_at": signed_at,
@@ -123,6 +136,24 @@ async def grade_attempt(
             "FREK-CERT",
             {"certification": attempt.certification_code, "score": score_global},
         )
+        await events.publish(
+            "academy.certification.passed",
+            {
+                "user_id": attempt.user_id,
+                "certification_code": attempt.certification_code,
+                "formation_code": attempt.formation_code,
+                "score_global": score_global,
+                "attempt_id": attempt_id,
+            },
+        )
+        await wallet_credit(
+            attempt.user_id,
+            "jcc_earned",
+            CERTIFICATION_JCC_REWARD,
+            currency="jcc",
+            ref=attempt.certification_code,
+            description=f"Certification {attempt.certification_code} réussie",
+        )
 
     return await _get_attempt(attempt_id)
 
@@ -131,6 +162,16 @@ async def list_user_attempts(user_id: str) -> List[CertificationAttempt]:
     docs = (
         await db.certification_attempts.find({"user_id": user_id}, {"_id": 0})
         .sort("created_at", -1)
+        .to_list(200)
+    )
+    return [CertificationAttempt(**d) for d in docs]
+
+
+async def list_pending_attempts() -> List[CertificationAttempt]:
+    """The jury/corrector grading queue — every attempt awaiting a grade."""
+    docs = (
+        await db.certification_attempts.find({"status": "submitted"}, {"_id": 0})
+        .sort("submitted_at", 1)
         .to_list(200)
     )
     return [CertificationAttempt(**d) for d in docs]

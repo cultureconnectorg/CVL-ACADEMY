@@ -151,7 +151,7 @@ class User(BaseModel):
     role: Role = "student"
     org_id: Optional[str] = None
     cohort_id: Optional[str] = None
-    lang: str = "fr"  # fr | en | kr
+    lang: str = "fr"  # fr | en | kr | es
     stade: str = "graine"  # graine | pousse | racine | branches | arbre | foret
     cc_credits: int = 0
     # Onboarding — FREK Origin Story
@@ -331,6 +331,15 @@ class Formation(BaseModel):
     market_job_title: Optional[str] = None
     calibration_confidence: Optional[str] = None
     calibration_date: Optional[str] = None
+    # Admin CMS lifecycle (rule 14). Default "published" — every formation
+    # seeded before this field existed is already live; new ones (FMS
+    # import, manual creation) start "draft" explicitly.
+    content_status: Literal["draft", "published", "archived"] = "published"
+    content_version: str = "1.0"
+
+
+class ContentStatusInput(BaseModel):
+    content_status: Literal["draft", "published", "archived"]
 
 
 # ---------------- BADGES ----------------
@@ -444,7 +453,7 @@ class MentorChatInput(BaseModel):
 
 # ---------------- ONBOARDING (FREK Origin Story) ----------------
 class OnboardingInput(BaseModel):
-    lang: str  # fr | en | kr
+    lang: str  # fr | en | kr | es
     metier_vise: str  # pole code
     territoire: (
         str  # martinique | guadeloupe | guyane | france | caraibe | diaspora | autre

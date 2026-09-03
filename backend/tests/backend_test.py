@@ -516,9 +516,9 @@ class TestOnboarding:
         r = http.get(f"{API}/onboarding/options")
         assert r.status_code == 200
         j = r.json()
-        assert len(j["langs"]) == 3
+        assert len(j["langs"]) == 4
         codes = {lang["code"] for lang in j["langs"]}
-        assert codes == {"fr", "en", "kr"}
+        assert codes == {"fr", "en", "kr", "es"}
         assert len(j["metiers"]) == 13, f"expected 13 poles, got {len(j['metiers'])}"
         assert len(j["territoires"]) == 7
         terr_codes = {t["code"] for t in j["territoires"]}

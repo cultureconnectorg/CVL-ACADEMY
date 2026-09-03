@@ -24,12 +24,12 @@ export default function Missions() {
 
   const accept = async (code) => {
     await api.post(`/missions/${code}/accept`);
-    toast.success("Mission acceptée. Livre-la pour gagner tes CC.");
+    toast.success(t("missions_p.accepted_toast"));
     load();
   };
   const submit = async (code) => {
     const { data } = await api.post(`/missions/${code}/submit`);
-    toast.success(`+${data.cc_earned} CC — stade actuel : ${data.new_stade}`);
+    toast.success(`+${data.cc_earned} CC — ${t("current_stage").toLowerCase()} : ${data.new_stade}`);
     await refreshMe();
     load();
   };
@@ -38,10 +38,10 @@ export default function Missions() {
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="missions-page">
       <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">{t("missions")}</div>
       <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-2">
-        Défis réels. Preuves de compétence.
+        {t("missions_p.hero_title")}
       </h1>
       <p className="text-[--cvln-ink-2] mt-3 max-w-2xl">
-        {"Chaque mission accomplie génère un signal FREK et alimente une entité concrète de l'écosystème CVLN."}
+        {t("missions_p.hero_p")}
       </p>
 
       <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -59,12 +59,12 @@ export default function Missions() {
                 </div>
                 {m.status_type === "urgent" && (
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-[#FEE7DF] text-[#7B1D0D]">
-                    Urgent
+                    {t("missions_p.urgent")}
                   </span>
                 )}
                 {m.status_type === "featured" && (
                   <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-[#FFF3D6] text-[#7A4A0E]">
-                    À la une
+                    {t("missions_p.featured")}
                   </span>
                 )}
               </div>
@@ -72,7 +72,7 @@ export default function Missions() {
               <p className="text-sm text-[--cvln-ink-2] mt-2 leading-relaxed">{m.description}</p>
 
               <div className="mt-5 flex items-center justify-between text-xs mono text-[--cvln-ink-2]">
-                <span>Stade min : <strong>{m.stade_required}</strong></span>
+                <span>{t("missions_p.stade_min")} <strong>{m.stade_required}</strong></span>
                 <span className="text-[--cvln-orange] font-bold text-sm">+{m.cc_reward} CC</span>
               </div>
 
@@ -96,7 +96,7 @@ export default function Missions() {
                   </button>
                 )}
                 {s === "validated" && (
-                  <span className="text-sm text-[--cvln-forest] font-bold">✓ Livrée · CC créditée</span>
+                  <span className="text-sm text-[--cvln-forest] font-bold">✓ {t("missions_p.delivered_credited")}</span>
                 )}
               </div>
             </div>

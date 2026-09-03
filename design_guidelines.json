@@ -112,7 +112,7 @@
     "You are building 'CVLN Academy OS', a futuristic Caribbean learning platform.",
     "CRITICAL: Do NOT use a fully transparent background on headers or overlays. Always use at least bg-white/70 with backdrop-blur-xl.",
     "CRITICAL: Output all React components in `.js` files, not `.tsx` files.",
-    "Implement a trilingual toggle (FR/EN/KR) prominently in the header or sidebar (FR is default).",
+    "Implement a language toggle (FR/EN/KR/ES) prominently in the header or sidebar (FR is default).",
     "Do not center-align the app container. Respect optical alignment.",
     "Always apply data-testid to buttons, form inputs, navigation links, and major display panels.",
     "Use standard Shadcn components for complex logic (Select, Dialog, Tabs) but customize their Tailwind classes to match the 'Caribbean Futurism' aesthetic.",

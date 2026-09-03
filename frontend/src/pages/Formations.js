@@ -3,12 +3,17 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Lock, CheckCircle } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
+import { FocusFieldItem, useFocusField } from "@/lib/CvlnFocusField";
 
 export default function Formations() {
   const { t } = useI18n();
   const [path, setPath] = useState(null);
   const [poles, setPoles] = useState([]);
   const [pole, setPole] = useState("ALL");
+  // Which formation card currently has DOM focus (keyboard tab or click)
+  // — never hover. TARGET -> APPROACH, everything else -> RECEDE, nothing
+  // focused -> CALM. See CvlnFocusField.jsx / W2-C for the contract.
+  const cardFocus = useFocusField();
 
   useEffect(() => {
     Promise.all([
@@ -60,27 +65,31 @@ export default function Formations() {
         </div>
       )}
 
-      {/* Poles filter */}
+      {/* Poles filter — the already-existing `pole` selection state is
+          reused directly as the field's focusedId, no new state added. */}
       <div className="mt-8 flex flex-wrap gap-2" data-testid="pole-filter">
-        <button
-          data-testid="pole-ALL"
-          onClick={() => setPole("ALL")}
-          className={`px-4 py-2 rounded-full text-sm font-semibold transition
-            ${pole === "ALL" ? "bg-[--cvln-forest] text-white" : "bg-white text-[--cvln-ink-2] border border-black/10 hover:border-[--cvln-orange]/50"}`}
-        >
-          Tous les pôles
-        </button>
-        {poles.map((p) => (
+        <FocusFieldItem id="ALL" focusedId={pole} className="inline-block">
           <button
-            key={p.code}
-            data-testid={`pole-${p.code}`}
-            onClick={() => setPole(p.code)}
+            data-testid="pole-ALL"
+            onClick={() => setPole("ALL")}
             className={`px-4 py-2 rounded-full text-sm font-semibold transition
-              ${pole === p.code ? "text-white" : "bg-white text-[--cvln-ink-2] border border-black/10 hover:border-[--cvln-orange]/50"}`}
-            style={pole === p.code ? { background: p.color } : {}}
+              ${pole === "ALL" ? "bg-[--cvln-forest] text-white" : "bg-white text-[--cvln-ink-2] border border-black/10 hover:border-[--cvln-orange]/50"}`}
           >
-            {p.code} · {p.name}
+            Tous les pôles
           </button>
+        </FocusFieldItem>
+        {poles.map((p) => (
+          <FocusFieldItem key={p.code} id={p.code} focusedId={pole} className="inline-block">
+            <button
+              data-testid={`pole-${p.code}`}
+              onClick={() => setPole(p.code)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition
+                ${pole === p.code ? "text-white" : "bg-white text-[--cvln-ink-2] border border-black/10 hover:border-[--cvln-orange]/50"}`}
+              style={pole === p.code ? { background: p.color } : {}}
+            >
+              {p.code} · {p.name}
+            </button>
+          </FocusFieldItem>
         ))}
       </div>
 
@@ -94,7 +103,16 @@ export default function Formations() {
             </span>
           </div>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {visible.filter(f => f.is_recommended).map(f => <FormationCard key={f.code} f={f} t={t} />)}
+            {visible.filter(f => f.is_recommended).map(f => (
+              <FormationCard
+                key={f.code}
+                f={f}
+                t={t}
+                focusedId={cardFocus.focusedId}
+                onCardFocus={cardFocus.focus}
+                onCardBlur={cardFocus.clear}
+              />
+            ))}
           </div>
         </>
       )}
@@ -109,7 +127,16 @@ export default function Formations() {
             </span>
           </div>
           <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {visible.filter(f => !f.is_recommended).map(f => <FormationCard key={f.code} f={f} t={t} />)}
+            {visible.filter(f => !f.is_recommended).map(f => (
+              <FormationCard
+                key={f.code}
+                f={f}
+                t={t}
+                focusedId={cardFocus.focusedId}
+                onCardFocus={cardFocus.focus}
+                onCardBlur={cardFocus.clear}
+              />
+            ))}
           </div>
         </>
       )}
@@ -117,65 +144,72 @@ export default function Formations() {
   );
 }
 
-function FormationCard({ f, t }) {
+function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur }) {
   const locked = !f.is_unlocked;
   const validated = f.validated_count > 0 && f.validated_count === f.modules_count;
   return (
-    <Link
-      to={`/formations/${f.code}`}
-      data-testid={`formation-${f.code}`}
-      className={`cvln-card p-6 group flex flex-col relative overflow-hidden ${locked ? "opacity-75" : ""}`}
-    >
-      {locked && (
-        <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 flex items-center justify-center text-white" data-testid={`lock-${f.code}`}>
-          <Lock width={14} height={14} />
-        </div>
-      )}
-      {validated && (
-        <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#15803D] flex items-center justify-center text-white">
-          <CheckCircle width={16} height={16} />
-        </div>
-      )}
-      <div className="flex items-center justify-between pr-10">
-        <div
-          className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-          style={{ background: f.pole_color }}
-        >
-          {f.pole} · {f.code}
-        </div>
-        <div className="text-xs mono text-[--cvln-ink-2]">{f.duration_h}h · {f.cc} CC</div>
-      </div>
-      <h3 className="font-display font-bold text-xl tracking-tight mt-4 leading-tight">
-        {f.name}
-      </h3>
-
-      {/* Progress bar */}
-      {f.modules_count > 0 && !locked && (
-        <div className="mt-4">
-          <div className="h-1.5 bg-black/5 rounded-full overflow-hidden">
-            <div className="h-full bg-[--cvln-orange]" style={{ width: `${f.progress_pct}%` }} />
+    // TARGET -> APPROACH, other cards -> RECEDE, nothing focused -> CALM.
+    // Driven by real DOM focus (keyboard tab or the click that's about to
+    // navigate) on the Link below, never by :hover — NO_GENERIC_SCALE_HOVER.
+    <FocusFieldItem id={f.code} focusedId={focusedId} className="h-full">
+      <Link
+        to={`/formations/${f.code}`}
+        data-testid={`formation-${f.code}`}
+        onFocus={() => onCardFocus?.(f.code)}
+        onBlur={() => onCardBlur?.()}
+        className={`h-full cvln-card p-6 group flex flex-col relative overflow-hidden ${locked ? "opacity-75" : ""}`}
+      >
+        {locked && (
+          <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 flex items-center justify-center text-white" data-testid={`lock-${f.code}`}>
+            <Lock width={14} height={14} />
           </div>
-          <div className="mt-1.5 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
-            {f.validated_count}/{f.modules_count} modules · {f.progress_pct}%
+        )}
+        {validated && (
+          <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#15803D] flex items-center justify-center text-white">
+            <CheckCircle width={16} height={16} />
+          </div>
+        )}
+        <div className="flex items-center justify-between pr-10">
+          <div
+            className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-bold text-white"
+            style={{ background: f.pole_color }}
+          >
+            {f.pole} · {f.code}
+          </div>
+          <div className="text-xs mono text-[--cvln-ink-2]">{f.duration_h}h · {f.cc} CC</div>
+        </div>
+        <h3 className="font-display font-bold text-xl tracking-tight mt-4 leading-tight">
+          {f.name}
+        </h3>
+
+        {/* Progress bar */}
+        {f.modules_count > 0 && !locked && (
+          <div className="mt-4">
+            <div className="h-1.5 bg-black/5 rounded-full overflow-hidden">
+              <div className="h-full bg-[--cvln-orange]" style={{ width: `${f.progress_pct}%` }} />
+            </div>
+            <div className="mt-1.5 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
+              {f.validated_count}/{f.modules_count} modules · {f.progress_pct}%
+            </div>
+          </div>
+        )}
+
+        {/* Lock reason */}
+        {locked && (
+          <div className="mt-4 text-xs text-[--cvln-ink-2] leading-relaxed">
+            {f.lock_reason}
+          </div>
+        )}
+
+        <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
+          <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
+            {f.modules_count} {t("modules")}
+          </div>
+          <div className="text-[--cvln-orange] group-hover:translate-x-1 transition">
+            <ArrowRight width={16} height={16} />
           </div>
         </div>
-      )}
-
-      {/* Lock reason */}
-      {locked && (
-        <div className="mt-4 text-xs text-[--cvln-ink-2] leading-relaxed">
-          {f.lock_reason}
-        </div>
-      )}
-
-      <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
-        <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
-          {f.modules_count} {t("modules")}
-        </div>
-        <div className="text-[--cvln-orange] group-hover:translate-x-1 transition">
-          <ArrowRight width={16} height={16} />
-        </div>
-      </div>
-    </Link>
+      </Link>
+    </FocusFieldItem>
   );
 }

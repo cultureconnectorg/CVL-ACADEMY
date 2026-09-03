@@ -6,29 +6,35 @@ import {
 } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
+import { useI18n } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
+import { JourneyPhaseShell } from "@/lib/JourneyHierarchy";
+import { ContextFrame, useContextEntry } from "@/lib/ContextFrame";
 
-const PHASE_META = [
-  { key: "hook",          label: "Le déclencheur", icon: Sparks },
-  { key: "objectives",    label: "Objectifs",       icon: BookmarkBook },
-  { key: "course",        label: "Cours",           icon: MediaVideo },
-  { key: "workshop",      label: "Atelier",         icon: Bookmark },
-  { key: "deliverable",   label: "Livrable",        icon: EmojiTalkingHappy },
-  { key: "quiz",          label: "Quiz",            icon: PlaySolid },
-  { key: "mini_mission",  label: "Mini-mission",    icon: Medal1st },
+const PHASE_KEYS = [
+  { key: "hook",          labelKey: "phase_hook",         icon: Sparks },
+  { key: "objectives",    labelKey: "phase_objectives",   icon: BookmarkBook },
+  { key: "course",        labelKey: "phase_course",       icon: MediaVideo },
+  { key: "workshop",      labelKey: "phase_workshop",     icon: Bookmark },
+  { key: "deliverable",   labelKey: "phase_deliverable",  icon: EmojiTalkingHappy },
+  { key: "quiz",          labelKey: "phase_quiz",         icon: PlaySolid },
+  { key: "mini_mission",  labelKey: "phase_mini_mission", icon: Medal1st },
 ];
 
 export default function ModuleJourney() {
   const { fc, mc } = useParams();
   const nav = useNavigate();
   const { refreshMe } = useAuth();
+  const { t } = useI18n();
   const [data, setData] = useState(null);
   const [openPhase, setOpenPhase] = useState("hook");
   const [deliverableText, setDeliverableText] = useState("");
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});
   const [quizResult, setQuizResult] = useState(null);
+
+  const PHASE_META = PHASE_KEYS.map((p) => ({ ...p, label: t(`module_journey.${p.labelKey}`) }));
 
   const load = useCallback(async () => {
     const { data } = await api.get(`/modules/${fc}/${mc}`);
@@ -53,16 +59,16 @@ export default function ModuleJourney() {
     try {
       const { data: r } = await api.post(`/modules/${fc}/${mc}/deliverable`, { text: deliverableText });
       setData((prev) => ({ ...prev, ...r, module: prev.module, formation: prev.formation }));
-      toast.success("Livrable enregistré · signal FREK émis.");
+      toast.success(t("module_journey.deliverable_saved"));
       setOpenPhase("quiz");
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Livrable trop court.");
+      toast.error(e?.response?.data?.detail || t("module_journey.deliverable_too_short"));
     }
   };
 
   const openQuiz = async () => {
     if (!phase_flags.deliverable) {
-      toast.error("Complète le livrable avant le quiz.");
+      toast.error(t("module_journey.complete_deliverable_first"));
       return;
     }
     setQuizResult(null); setAnswers({});
@@ -84,21 +90,21 @@ export default function ModuleJourney() {
         await load();
         setOpenPhase("mini_mission");
       } else {
-        toast.error("Il faut 80% pour valider. Reprends les phases précédentes.");
+        toast.error(t("module_journey.need_80_retry"));
       }
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Erreur quiz.");
+      toast.error(e?.response?.data?.detail || t("module_journey.quiz_error"));
     }
   };
 
   const commitMiniMission = async () => {
     try {
       await api.post(`/modules/${fc}/${mc}/mini-mission/commit`);
-      toast.success("Module validé — mini-mission engagée !");
+      toast.success(t("module_journey.module_validated_toast"));
       await refreshMe();
       await load();
     } catch (e) {
-      toast.error(e?.response?.data?.detail || "Erreur mini-mission.");
+      toast.error(e?.response?.data?.detail || t("module_journey.mini_mission_error"));
     }
   };
 
@@ -109,14 +115,14 @@ export default function ModuleJourney() {
         <BackButton to={`/formations/${fc}`} label={formation.name} testId="back-to-formation" />
         <div className="cvln-card p-10 text-center">
           <Lock width={40} height={40} className="mx-auto text-[--cvln-ink-2]" />
-          <h2 className="font-display font-bold text-3xl tracking-tight mt-4">Ce module est verrouillé</h2>
+          <h2 className="font-display font-bold text-3xl tracking-tight mt-4">{t("module_journey.locked_title")}</h2>
           <p className="text-[--cvln-ink-2] mt-3 max-w-md mx-auto">{lock_reason}</p>
           <button
             data-testid="back-to-formation-btn"
             onClick={() => nav(`/formations/${fc}`)}
             className="btn-primary mt-6"
           >
-            Retour à la formation
+            {t("module_journey.back_to_formation")}
           </button>
         </div>
       </div>
@@ -140,17 +146,17 @@ export default function ModuleJourney() {
         {module.name}
       </h1>
       <div className="text-sm text-[--cvln-ink-2] mt-2">
-        {module.duration_h}h · {phases.workshop.estimated_min}min d&apos;atelier · stade {module.stade}
+        {module.duration_h}h · {phases.workshop.estimated_min}min {t("module_journey.workshop_suffix")} · {t("module_journey.stade_word")} {module.stade}
       </div>
 
       {/* Progress banner */}
       <div className="mt-8 cvln-card p-5 flex flex-col md:flex-row md:items-center gap-4" data-testid="journey-progress">
         <div className="flex-1">
           <div className="text-[10px] mono uppercase tracking-wider font-bold text-[--cvln-orange]">
-            Ton avancée
+            {t("module_journey.your_progress")}
           </div>
           <div className="font-display font-bold text-xl mt-1">
-            {doneCount} / 7 phases · statut : <span className="text-[--cvln-orange]">{statusLabel(status)}</span>
+            {doneCount} / 7 {t("module_journey.phases_word")} · {t("module_journey.status_word")} : <span className="text-[--cvln-orange]">{statusLabel(status, t)}</span>
           </div>
         </div>
         <div className="flex gap-1">
@@ -180,80 +186,85 @@ export default function ModuleJourney() {
           const prev = idx === 0 ? true : phase_flags[PHASE_META[idx - 1].key];
           const canOpen = done || prev;
           return (
-            <div
-              key={p.key}
-              data-testid={`phase-${p.key}`}
-              className={`cvln-card overflow-hidden transition ${isOpen ? "ring-2 ring-[--cvln-orange]/40" : ""}`}
-            >
-              <button
-                data-testid={`phase-toggle-${p.key}`}
-                disabled={!canOpen}
-                onClick={() => setOpenPhase(isOpen ? null : p.key)}
-                className={`w-full p-5 flex items-center gap-4 text-left transition
-                  ${!canOpen ? "opacity-50 cursor-not-allowed" : "hover:bg-black/[0.02]"}`}
+            // CURRENT -> FOREGROUND, ACQUIRED -> BEHIND_BUT_ACCESSIBLE,
+            // NEXT -> HORIZON, LOCKED -> DISTANT_SUBDUED. Purely visual:
+            // isOpen/done/canOpen are exactly what this loop already
+            // computed above — no new rule, no new data.
+            <JourneyPhaseShell key={p.key} isOpen={isOpen} done={done} canOpen={canOpen}>
+              <div
+                data-testid={`phase-${p.key}`}
+                className={`cvln-card overflow-hidden transition ${isOpen ? "ring-2 ring-[--cvln-orange]/40" : ""}`}
               >
-                <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
-                     style={{ background: done ? "#15803D" : "#F3F4F6", color: done ? "white" : "#525252" }}>
-                  {done ? <CheckCircle width={18} height={18} /> : <Circle width={18} height={18} />}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2] font-semibold">
-                    Phase {idx + 1} / 7
+                <button
+                  data-testid={`phase-toggle-${p.key}`}
+                  disabled={!canOpen}
+                  onClick={() => setOpenPhase(isOpen ? null : p.key)}
+                  className={`w-full p-5 flex items-center gap-4 text-left transition
+                    ${!canOpen ? "opacity-50 cursor-not-allowed" : "hover:bg-black/[0.02]"}`}
+                >
+                  <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                       style={{ background: done ? "#15803D" : "#F3F4F6", color: done ? "white" : "#525252" }}>
+                    {done ? <CheckCircle width={18} height={18} /> : <Circle width={18} height={18} />}
                   </div>
-                  <div className="font-semibold text-lg">{p.label}{done ? " · validé" : ""}</div>
-                </div>
-                <ArrowRight
-                  width={18} height={18}
-                  className={`transition ${isOpen ? "rotate-90" : ""} text-[--cvln-ink-2]`}
-                />
-              </button>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2] font-semibold">
+                      {t("module_journey.phase_label")} {idx + 1} / 7
+                    </div>
+                    <div className="font-semibold text-lg">{p.label}{done ? ` · ${t("module_journey.validated_suffix")}` : ""}</div>
+                  </div>
+                  <ArrowRight
+                    width={18} height={18}
+                    className={`transition ${isOpen ? "rotate-90" : ""} text-[--cvln-ink-2]`}
+                  />
+                </button>
 
-              {isOpen && (
-                <div className="px-5 pb-5 -mt-1 border-t border-black/5">
-                  <div className="pt-5">
-                    {p.key === "hook" && (
-                      <PhaseHook phase={phases.hook} done={done} onValidate={() => tickPhase("hook")} />
-                    )}
-                    {p.key === "objectives" && (
-                      <PhaseObjectives phase={phases.objectives} done={done} onValidate={() => tickPhase("objectives")} />
-                    )}
-                    {p.key === "course" && (
-                      <PhaseCourse
-                        phase={phases.course}
-                        progressPct={module.course_progress_pct || data.progress?.course_progress_pct || 0}
-                        onProgress={(pct) => tickPhase("course", { progress_pct: pct })}
-                      />
-                    )}
-                    {p.key === "workshop" && (
-                      <PhaseWorkshop phase={phases.workshop} done={done} onValidate={() => tickPhase("workshop")} />
-                    )}
-                    {p.key === "deliverable" && (
-                      <PhaseDeliverable
-                        phase={phases.deliverable} done={done}
-                        text={deliverableText} setText={setDeliverableText}
-                        onSubmit={submitDeliverable}
-                      />
-                    )}
-                    {p.key === "quiz" && (
-                      <PhaseQuiz
-                        canOpen={phase_flags.deliverable}
-                        done={done}
-                        quiz={quiz} answers={answers} setAnswers={setAnswers}
-                        result={quizResult}
-                        onOpen={openQuiz} onSubmit={submitQuiz}
-                      />
-                    )}
-                    {p.key === "mini_mission" && (
-                      <PhaseMiniMission
-                        phase={phases.mini_mission} done={done}
-                        quizPassed={phase_flags.quiz}
-                        onCommit={commitMiniMission}
-                      />
-                    )}
+                {isOpen && (
+                  <div className="px-5 pb-5 -mt-1 border-t border-black/5">
+                    <div className="pt-5">
+                      {p.key === "hook" && (
+                        <PhaseHook phase={phases.hook} done={done} onValidate={() => tickPhase("hook")} />
+                      )}
+                      {p.key === "objectives" && (
+                        <PhaseObjectives phase={phases.objectives} done={done} onValidate={() => tickPhase("objectives")} />
+                      )}
+                      {p.key === "course" && (
+                        <PhaseCourse
+                          phase={phases.course}
+                          progressPct={module.course_progress_pct || data.progress?.course_progress_pct || 0}
+                          onProgress={(pct) => tickPhase("course", { progress_pct: pct })}
+                        />
+                      )}
+                      {p.key === "workshop" && (
+                        <PhaseWorkshop phase={phases.workshop} done={done} onValidate={() => tickPhase("workshop")} />
+                      )}
+                      {p.key === "deliverable" && (
+                        <PhaseDeliverable
+                          phase={phases.deliverable} done={done}
+                          text={deliverableText} setText={setDeliverableText}
+                          onSubmit={submitDeliverable}
+                        />
+                      )}
+                      {p.key === "quiz" && (
+                        <PhaseQuiz
+                          canOpen={phase_flags.deliverable}
+                          done={done}
+                          quiz={quiz} answers={answers} setAnswers={setAnswers}
+                          result={quizResult}
+                          onOpen={openQuiz} onSubmit={submitQuiz}
+                        />
+                      )}
+                      {p.key === "mini_mission" && (
+                        <PhaseMiniMission
+                          phase={phases.mini_mission} done={done}
+                          quizPassed={phase_flags.quiz}
+                          onCommit={commitMiniMission}
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </JourneyPhaseShell>
           );
         })}
       </div>
@@ -261,15 +272,15 @@ export default function ModuleJourney() {
       {status === "validated" && (
         <div className="mt-8 cvln-card p-6 bg-gradient-to-br from-[#FFF6EF] to-white border-[--cvln-orange]/40" data-testid="module-validated-banner">
           <div className="text-[11px] mono uppercase tracking-wider font-bold text-[--cvln-orange]">
-            Module validé
+            {t("module_journey.module_validated_title")}
           </div>
-          <h3 className="font-display font-bold text-2xl mt-1">Tu es prêt·e pour le prochain module.</h3>
+          <h3 className="font-display font-bold text-2xl mt-1">{t("module_journey.ready_next_module")}</h3>
           <button
             data-testid="next-module-btn"
             onClick={() => nav(`/formations/${fc}`)}
             className="btn-primary mt-4"
           >
-            Voir la formation <ArrowRight width={16} height={16} className="ml-2" />
+            {t("module_journey.see_formation")} <ArrowRight width={16} height={16} className="ml-2" />
           </button>
         </div>
       )}
@@ -277,20 +288,21 @@ export default function ModuleJourney() {
   );
 }
 
-function statusLabel(s) {
+function statusLabel(s, t) {
   return {
-    available: "disponible",
-    in_progress: "en cours",
-    ready_for_quiz: "prêt pour le quiz",
-    awaiting_mini_mission: "en attente de mini-mission",
-    validated: "validé",
-    locked: "verrouillé",
+    available: t("module_journey.status_available"),
+    in_progress: t("module_journey.status_in_progress"),
+    ready_for_quiz: t("module_journey.status_ready_for_quiz"),
+    awaiting_mini_mission: t("module_journey.status_awaiting_mini_mission"),
+    validated: t("module_journey.status_validated"),
+    locked: t("module_journey.status_locked"),
   }[s] || s;
 }
 
 /* ---------------- Phase components ---------------- */
 
 function PhaseHook({ phase, done, onValidate }) {
+  const { t } = useI18n();
   return (
     <div>
       <p className="text-base leading-relaxed text-[--cvln-ink] whitespace-pre-wrap">
@@ -302,13 +314,14 @@ function PhaseHook({ phase, done, onValidate }) {
         onClick={onValidate}
         className="btn-primary mt-5 disabled:opacity-50"
       >
-        {done ? "Validé" : "J'ai lu — continuer"}
+        {done ? t("module_journey.validated_label") : t("module_journey.read_continue")}
       </button>
     </div>
   );
 }
 
 function PhaseObjectives({ phase, done, onValidate }) {
+  const { t } = useI18n();
   return (
     <div>
       <ul className="space-y-2">
@@ -325,13 +338,14 @@ function PhaseObjectives({ phase, done, onValidate }) {
         onClick={onValidate}
         className="btn-primary mt-5 disabled:opacity-50"
       >
-        {done ? "Validé" : "J'ai compris — continuer"}
+        {done ? t("module_journey.validated_label") : t("module_journey.understood_continue")}
       </button>
     </div>
   );
 }
 
 function PhaseCourse({ phase, progressPct, onProgress }) {
+  const { t } = useI18n();
   const [scrolled80, setScrolled80] = useState(false);
   const onScroll = (e) => {
     const el = e.currentTarget;
@@ -344,16 +358,16 @@ function PhaseCourse({ phase, progressPct, onProgress }) {
       <div className="rounded-2xl overflow-hidden border border-black/10 aspect-video bg-gradient-to-br from-[#1a1a1a] to-[#0a0a0a] flex flex-col items-center justify-center text-white p-6" data-testid="video-placeholder">
         <MediaVideo width={40} height={40} className="opacity-40" />
         <div className="text-xs mono uppercase tracking-wider text-white/60 mt-4">
-          Contenu vidéo à venir
+          {t("module_journey.video_placeholder_title")}
         </div>
         <div className="text-sm text-white/80 mt-1 max-w-md text-center">
-          Production CVLN Academy Studio · {phase.video_placeholder?.duration_min || 20}min prévues
+          {t("module_journey.video_placeholder_studio")} {phase.video_placeholder?.duration_min || 20}min {t("module_journey.duration_planned_suffix")}
         </div>
       </div>
 
       {/* Reading */}
       <div className="text-xs mono text-[--cvln-ink-2] mt-6 mb-2">
-        Lecture · ~{phase.reading_min} min · défile jusqu&apos;à 80% pour débloquer
+        {t("module_journey.reading_label")} ~{phase.reading_min} min · {t("module_journey.reading_hint")}
       </div>
       <div
         onScroll={onScroll}
@@ -381,17 +395,18 @@ function PhaseCourse({ phase, progressPct, onProgress }) {
         onClick={() => onProgress(100)}
         className="btn-primary mt-4 disabled:opacity-40"
       >
-        {progressPct >= 80 ? "Cours validé" : "Marquer le cours comme lu"}
+        {progressPct >= 80 ? t("module_journey.course_validated") : t("module_journey.mark_course_read")}
       </button>
     </div>
   );
 }
 
 function PhaseWorkshop({ phase, done, onValidate }) {
+  const { t } = useI18n();
   return (
     <div>
       <div className="text-sm text-[--cvln-ink-2] mb-4">
-        Estimation : {phase.estimated_min}min · fais-le sans interruption.
+        {t("module_journey.workshop_estimate")} {phase.estimated_min}min · {t("module_journey.workshop_hint")}
       </div>
       <ol className="space-y-3">
         {phase.steps.map((s) => (
@@ -410,13 +425,14 @@ function PhaseWorkshop({ phase, done, onValidate }) {
         onClick={onValidate}
         className="btn-primary mt-5 disabled:opacity-50"
       >
-        {done ? "Atelier fait" : "J'ai fait l'atelier"}
+        {done ? t("module_journey.workshop_done") : t("module_journey.workshop_do")}
       </button>
     </div>
   );
 }
 
 function PhaseDeliverable({ phase, done, text, setText, onSubmit }) {
+  const { t } = useI18n();
   const min = phase.min_chars;
   return (
     <div>
@@ -425,13 +441,13 @@ function PhaseDeliverable({ phase, done, text, setText, onSubmit }) {
         data-testid="deliverable-textarea"
         rows={8}
         disabled={done}
-        placeholder="Décris ce que tu as produit, ta méthode, ce que tu as appris…"
+        placeholder={t("module_journey.deliverable_placeholder")}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        className="w-full border-2 border-black/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-[--cvln-orange] disabled:bg-black/[0.02]"
+        className="w-full border-2 border-black/10 rounded-2xl px-4 py-3 focus:outline-none focus:border-[--cvln-orange] focus:ring-2 focus:ring-[--cvln-orange]/30 disabled:bg-black/[0.02]"
       />
       <div className="mt-1 text-xs text-[--cvln-ink-2]">
-        {text.length}/{min} caractères minimum {text.length >= min ? "· ✓" : ""}
+        {text.length}/{min} {t("module_journey.min_chars")} {text.length >= min ? "· ✓" : ""}
       </div>
       <button
         data-testid="deliverable-submit"
@@ -439,32 +455,52 @@ function PhaseDeliverable({ phase, done, text, setText, onSubmit }) {
         onClick={onSubmit}
         className="btn-primary mt-4 disabled:opacity-40"
       >
-        {done ? "Livrable soumis" : "Soumettre mon livrable"}
+        {done ? t("module_journey.deliverable_submitted") : t("module_journey.deliverable_submit")}
       </button>
     </div>
   );
 }
 
 function PhaseQuiz({ canOpen, done, quiz, answers, setAnswers, result, onOpen, onSubmit }) {
+  const { t } = useI18n();
   if (!canOpen) {
     return (
       <div className="text-sm text-[--cvln-ink-2]">
-        Complète le livrable avant de pouvoir passer le quiz.
+        {t("module_journey.quiz_need_deliverable")}
       </div>
     );
   }
   if (!quiz && !done) {
     return (
       <button data-testid="phase-quiz-open" onClick={onOpen} className="btn-primary">
-        Passer le quiz maintenant
+        {t("module_journey.quiz_start")}
       </button>
     );
   }
   if (done && !quiz) {
-    return <div className="text-sm text-[--cvln-orange] font-semibold">Quiz réussi ✓ — passe à la mini-mission.</div>;
+    return <div className="text-sm text-[--cvln-orange] font-semibold">{t("module_journey.quiz_already_passed")}</div>;
   }
+  return <PhaseQuizContext quiz={quiz} answers={answers} setAnswers={setAnswers} result={result} onSubmit={onSubmit} />;
+}
+
+// ACTIVE -> CONTEXT (W3-B): reaching this component means the quiz has
+// just been started (PhaseQuiz's earlier branches cover "not started"/
+// "already passed") — entering it is the CONTEXT transition. "Leaving"
+// happens the same way any accordion phase closes (W3-A's
+// JourneyPhaseShell + the phase-toggle button one level up in
+// ModuleJourney) — this component doesn't need its own dismiss control,
+// so `leaveContext` is intentionally unused here.
+function PhaseQuizContext({ quiz, answers, setAnswers, result, onSubmit }) {
+  const { t } = useI18n();
+  const { isContext, enterContext } = useContextEntry();
+
+  useEffect(() => {
+    enterContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <div>
+    <ContextFrame show={isContext}>
       <div className="space-y-4" data-testid="phase-quiz-questions">
         {quiz.quiz.map((q) => (
           <div key={q.n} data-testid={`quiz-q-${q.n}`}>
@@ -497,7 +533,7 @@ function PhaseQuiz({ canOpen, done, quiz, answers, setAnswers, result, onOpen, o
           className={`mt-4 p-4 rounded-xl ${result.passed ? "bg-[#E7F5EF] text-[#0F4E33]" : "bg-[#FEE7DF] text-[#7B1D0D]"}`}
         >
           <div className="font-bold">
-            {result.passed ? "Bravo — quiz validé" : "Score insuffisant — reprends le cours"}
+            {result.passed ? t("module_journey.quiz_passed") : t("module_journey.quiz_failed")}
           </div>
           <div className="text-sm mt-1 mono">
             {Math.round(result.score * 100)}% ({result.correct}/{result.total})
@@ -511,25 +547,33 @@ function PhaseQuiz({ canOpen, done, quiz, answers, setAnswers, result, onOpen, o
         disabled={Object.keys(answers).length < quiz.quiz.length}
         className="btn-primary mt-4 disabled:opacity-40"
       >
-        Valider mes réponses
+        {t("quiz_submit")}
       </button>
-    </div>
+    </ContextFrame>
   );
 }
 
 function PhaseMiniMission({ phase, done, quizPassed, onCommit }) {
+  const { t } = useI18n();
+  const { isContext, enterContext } = useContextEntry();
+
+  useEffect(() => {
+    if (quizPassed) enterContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [quizPassed]);
+
   if (!quizPassed) {
     return (
       <div className="text-sm text-[--cvln-ink-2]">
-        Passe d&apos;abord le quiz de validation avant d&apos;engager la mini-mission.
+        {t("module_journey.mini_mission_need_quiz")}
       </div>
     );
   }
   return (
-    <div>
+    <ContextFrame show={isContext}>
       <div className="p-4 rounded-2xl bg-[--cvln-bg-warm] border border-[--cvln-orange]/20">
         <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-orange] font-bold">
-          Mission terrain — 7 jours
+          {t("module_journey.mini_mission_field_title")}
         </div>
         <div className="text-[--cvln-ink] mt-2 leading-relaxed">{phase.brief}</div>
       </div>
@@ -539,8 +583,8 @@ function PhaseMiniMission({ phase, done, quizPassed, onCommit }) {
         onClick={onCommit}
         className="btn-primary mt-4 disabled:opacity-40"
       >
-        {done ? "Mini-mission engagée ✓" : "Je m'engage à faire cette mission"}
+        {done ? t("module_journey.mini_mission_engaged") : t("module_journey.mini_mission_commit")}
       </button>
-    </div>
+    </ContextFrame>
   );
 }

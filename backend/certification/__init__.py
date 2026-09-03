@@ -2,10 +2,19 @@
 attestation export. See service.py for the orchestration entry points."""
 
 from .attestation import generate_attestation_pdf
-from .models import CertificationAttempt, GradeInput, Rubric, RubricInput
+from .models import (
+    CertificationAttempt,
+    GradeInput,
+    MentionThreshold,
+    Rubric,
+    RubricCapRule,
+    RubricCriterion,
+    RubricInput,
+)
 from .service import (
     get_rubric,
     grade_attempt,
+    list_pending_attempts,
     list_user_attempts,
     start_attempt,
     submit_attempt,
@@ -17,9 +26,13 @@ __all__ = [
     "submit_attempt",
     "grade_attempt",
     "list_user_attempts",
+    "list_pending_attempts",
     "generate_attestation_pdf",
     "Rubric",
     "RubricInput",
+    "RubricCriterion",
+    "RubricCapRule",
+    "MentionThreshold",
     "CertificationAttempt",
     "GradeInput",
 ]

@@ -4,6 +4,7 @@ import { Leaf, ArrowRight } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
+import { Focus, Enter } from "@/lib/motion-primitives";
 
 export default function Landing() {
   const { user, login, register, loading } = useAuth();
@@ -24,14 +25,14 @@ export default function Landing() {
     try {
       if (mode === "register") {
         const u = await register({ ...form, lang });
-        toast.success(`FREK-ID généré : ${u.frek_id}`);
+        toast.success(`${t("landing_p.frek_id_generated")} ${u.frek_id}`);
         nav("/onboarding");
       } else {
         const u = await login(form.email, form.password);
         nav(u.onboarding_completed ? "/dashboard" : "/onboarding");
       }
     } catch (err) {
-      toast.error(err?.response?.data?.detail || "Erreur d'authentification");
+      toast.error(err?.response?.data?.detail || t("landing_p.auth_error"));
     } finally {
       setBusy(false);
     }
@@ -51,15 +52,19 @@ export default function Landing() {
         </div>
         <div className="flex items-center gap-1" data-testid="landing-lang-toggle">
           {LANGS.map((l) => (
-            <button
-              key={l.code}
-              data-testid={`landing-lang-${l.code}`}
-              onClick={() => setLang(l.code)}
-              className={`text-xs px-3 py-1.5 rounded-full font-semibold transition
-                ${lang === l.code ? "bg-[--cvln-forest] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
-            >
-              {l.label}
-            </button>
+            // FOCUS: marks the one language that is actually active —
+            // "make one object primary" per the primitive's own contract,
+            // not a decorative hover effect (see motion-primitives.jsx).
+            <Focus key={l.code} active={lang === l.code} className="inline-block">
+              <button
+                data-testid={`landing-lang-${l.code}`}
+                onClick={() => setLang(l.code)}
+                className={`text-xs px-3 py-1.5 rounded-full font-semibold transition
+                  ${lang === l.code ? "bg-[--cvln-forest] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
+              >
+                {l.label}
+              </button>
+            </Focus>
           ))}
         </div>
       </header>
@@ -68,7 +73,7 @@ export default function Landing() {
         {/* Left: manifesto */}
         <div className="flex flex-col justify-center">
           <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange] mb-6">
-            CVLN Group · Martinique · 2026
+            {t("landing_p.brand_line")}
           </div>
           <h1 className="font-display font-black text-5xl md:text-6xl lg:text-7xl leading-[0.95] tracking-tighter">
             {t("tagline")}<br/>
@@ -78,15 +83,15 @@ export default function Landing() {
             {t("tagline_p")}
           </p>
           <div className="mt-10 flex flex-wrap gap-3 items-center">
-            <span className="stade-chip">🌱 Graine</span>
-            <span className="stade-chip">🌿 Pousse</span>
-            <span className="stade-chip">🌳 Racine</span>
-            <span className="stade-chip">🌲 Branches</span>
-            <span className="stade-chip">🦅 Arbre</span>
-            <span className="stade-chip">🌳🌳 Forêt</span>
+            <span className="stade-chip">🌱 {t("stades.graine")}</span>
+            <span className="stade-chip">🌿 {t("stades.pousse")}</span>
+            <span className="stade-chip">🌳 {t("stades.racine")}</span>
+            <span className="stade-chip">🌲 {t("stades.branches")}</span>
+            <span className="stade-chip">🦅 {t("stades.arbre")}</span>
+            <span className="stade-chip">🌳🌳 {t("stades.foret")}</span>
           </div>
           <div className="mt-10 text-xs mono text-[--cvln-ink-2]">
-            30 formations · 215 modules · 8 pôles · {t("trilingual")}
+            30 {t("landing_p.stat_formations")} · 215 {t("landing_p.stat_modules")} · 8 {t("landing_p.stat_poles")} · {t("trilingual")}
           </div>
         </div>
 
@@ -95,21 +100,35 @@ export default function Landing() {
           <div className="w-full cvln-card p-8 md:p-10 relative overflow-hidden">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[--cvln-orange]/10" />
             <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-1">
-                <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
-                  {mode === "register" ? "FrekCore · New identity" : "FrekCore · Sign in"}
+              {/* ENTER, keyed by mode: the auth mode the visitor just picked
+                  (register vs. login) becomes their destination for this
+                  interaction — a calm crossfade instead of the instant text
+                  swap this block had before (CONTINUITY_OVER_PAGE_CUT
+                  applied within the component, not just at route level). */}
+              <Enter key={mode} show>
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
+                    {mode === "register" ? t("landing_p.new_identity") : t("landing_p.sign_in")}
+                  </div>
                 </div>
-              </div>
-              <h2 className="font-display font-bold text-3xl tracking-tight">
-                {mode === "register" ? t("register") : t("welcome_back")}
-              </h2>
-              {mode === "register" && (
-                <p className="mt-2 text-sm text-[--cvln-ink-2]">{t("signup_hint")}</p>
-              )}
+                <h2 className="font-display font-bold text-3xl tracking-tight">
+                  {mode === "register" ? t("register") : t("welcome_back")}
+                </h2>
+                {mode === "register" && (
+                  <p className="mt-2 text-sm text-[--cvln-ink-2]">{t("signup_hint")}</p>
+                )}
+              </Enter>
 
               <form onSubmit={submit} className="mt-6 space-y-4" data-testid="auth-form">
                 {mode === "register" && (
-                  <div>
+                  // ENTER on mount only — this field appearing is a real
+                  // state change (register mode was just chosen), so it
+                  // enters smoothly rather than popping in. Kept as a plain
+                  // conditional render (not REVEAL-while-hidden) so the
+                  // field is fully removed from the DOM in login mode:
+                  // no stray `required` validation on a hidden input, no
+                  // keyboard-focus trap on an invisible field.
+                  <Enter show>
                     <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("display_name")}</label>
                     <input
                       required minLength={1} maxLength={80}
@@ -118,7 +137,7 @@ export default function Landing() {
                       onChange={(e) => setForm({ ...form, display_name: e.target.value })}
                       className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
                     />
-                  </div>
+                  </Enter>
                 )}
                 <div>
                   <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("email")}</label>
@@ -156,8 +175,8 @@ export default function Landing() {
                 className="mt-6 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition"
               >
                 {mode === "register"
-                  ? "Déjà un FREK-ID ? Se connecter"
-                  : "Nouveau ? Créer mon FREK-ID"}
+                  ? t("landing_p.toggle_to_login")
+                  : t("landing_p.toggle_to_register")}
               </button>
             </div>
           </div>
@@ -165,7 +184,7 @@ export default function Landing() {
       </section>
 
       <footer className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-10 border-t border-black/5 text-sm text-[--cvln-ink-2]">
-        CVLN Academy OS — Learning Infrastructure for Future Cultural &amp; Technology Industries · Martinique · Diaspora
+        {t("landing_p.footer")}
       </footer>
     </div>
   );

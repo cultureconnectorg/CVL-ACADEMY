@@ -15,6 +15,7 @@ from certification import (
     generate_attestation_pdf,
     get_rubric,
     grade_attempt,
+    list_pending_attempts,
     list_user_attempts,
     start_attempt,
     submit_attempt,
@@ -46,9 +47,20 @@ async def create_rubric(
     return rubric
 
 
+@router.get("/rubrics", response_model=List[Rubric])
+async def list_rubrics():
+    docs = await db.certification_rubrics.find({}, {"_id": 0}).to_list(200)
+    return [Rubric(**d) for d in docs]
+
+
 @router.get("/{certification_code}/rubric", response_model=Rubric)
 async def read_rubric(certification_code: str):
     return await get_rubric(certification_code)
+
+
+@router.get("/attempts/pending", response_model=List[CertificationAttempt])
+async def pending_attempts(current: User = Depends(require_role(*JURY_ROLES))):
+    return await list_pending_attempts()
 
 
 @router.post("/{certification_code}/attempts", response_model=CertificationAttempt)

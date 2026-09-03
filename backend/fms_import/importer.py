@@ -1,8 +1,9 @@
 """ZIP import orchestration — the engine behind "Importer un métier FMS".
 
-Flow: validate it's a real ZIP -> parse every .md file inside -> run
-referential validation across the batch -> upsert the resources that
-parsed cleanly -> ensure the search index -> persist + return an
+Flow: validate it's a real ZIP -> parse every .md file inside -> derive
+module prerequisites from any Master Module Map in the batch (module_map.py)
+-> run referential validation across the batch -> upsert the resources
+that parsed cleanly -> ensure the search index -> persist + return an
 ImportReport. A corrupt/empty ZIP writes nothing at all; within a valid
 ZIP, one bad resource is skipped and reported, it never blocks the rest
 of the batch.
@@ -19,6 +20,7 @@ from db import db
 
 from .indexer import ensure_search_index
 from .models import FmsResource, ImportIssue, ImportReport
+from .module_map import extract_module_prerequisites
 from .parser import parse_markdown_file
 from .validators import validate_batch
 
@@ -87,6 +89,26 @@ def _extract_markdown_files(
     return files, issues
 
 
+def _apply_module_map_dependencies(resources: List[FmsResource]) -> None:
+    """Mutates `module` resources in place: sets `.prerequisites` from
+    their métier's Master Module Map, when one was included in this batch.
+    See module_map.py for exactly what is and isn't extracted."""
+    module_maps = [r for r in resources if r.type == "module_map" and r.formation_code]
+    for module_map in module_maps:
+        deps = extract_module_prerequisites(module_map.body_markdown)
+        if not deps:
+            continue
+        formation_code = module_map.formation_code
+        for r in resources:
+            if r.type != "module" or r.formation_code != formation_code:
+                continue
+            # A module's own code is "<formation_code>-M07" — match its
+            # trailing "M07" against the map's keys.
+            module_num = r.code.rsplit("-", 1)[-1]
+            if module_num in deps:
+                r.prerequisites = [f"{formation_code}-{m}" for m in deps[module_num]]
+
+
 async def import_fms_zip(
     raw_zip: bytes, filename: str, created_by: Optional[str] = None
 ) -> ImportReport:
@@ -112,6 +134,8 @@ async def import_fms_zip(
         all_issues.extend(parse_issues)
         if resource:
             resources.append(resource)
+
+    _apply_module_map_dependencies(resources)
 
     batch_issues = validate_batch(resources)
     all_issues.extend(batch_issues)

@@ -1,25 +1,43 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
-  Fingerprint, LogOut, Leaf, Language,
+  Fingerprint, LogOut, Leaf, Language, Wallet as WalletIcon,
+  Sparks, ShieldCheck, ShieldSearch, PeopleTag, Settings,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import MentorPanel from "@/components/MentorPanel";
+import { isPedagogicalContext } from "@/lib/mentorPresence";
 
-const NAV = [
-  { to: "/dashboard",    key: "dashboard",     Icon: HomeAlt },
-  { to: "/roadmap",      key: "roadmap",       Icon: Compass },
-  { to: "/formations",   key: "formations",    Icon: GraduationCap },
-  { to: "/missions",     key: "missions",      Icon: Bookmark },
-  { to: "/badges",       key: "badges",        Icon: Medal1st },
-  { to: "/frek-profile", key: "frek_profile",  Icon: Fingerprint },
+const STUDENT_NAV = [
+  { to: "/dashboard",       key: "dashboard",       Icon: HomeAlt },
+  { to: "/roadmap",         key: "roadmap",         Icon: Compass },
+  { to: "/formations",      key: "formations",      Icon: GraduationCap },
+  { to: "/missions",        key: "missions",        Icon: Bookmark },
+  { to: "/badges",          key: "badges",          Icon: Medal1st },
+  { to: "/skills",          key: "skills",          Icon: Sparks },
+  { to: "/certifications",  key: "certifications",  Icon: ShieldCheck },
+  { to: "/wallet",          key: "wallet",          Icon: WalletIcon },
+  { to: "/frek-profile",    key: "frek_profile",    Icon: Fingerprint },
+];
+
+const STAFF_NAV = [
+  { to: "/trainer", key: "trainer_space", Icon: PeopleTag,   roles: ["trainer", "admin", "super_admin", "founder"] },
+  { to: "/jury",    key: "jury_space",    Icon: ShieldSearch, roles: ["jury", "admin", "super_admin", "founder"] },
+  { to: "/admin",   key: "admin_cms",     Icon: Settings,    roles: ["admin", "super_admin", "founder"] },
 ];
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const { t, lang, setLang } = useI18n();
   const nav = useNavigate();
+  const location = useLocation();
+  const NAV = [...STUDENT_NAV, ...STAFF_NAV.filter((item) => item.roles.includes(user?.role))];
+  // MENTOR = CONTEXTUAL_PRESENCE (W3-C): the FAB/panel only mounts where a
+  // pedagogical context justifies it — never a permanent floating chatbot
+  // on every screen. See mentorPresence.js for the exact, deliberately
+  // conservative scope.
+  const mentorAvailable = isPedagogicalContext(location.pathname);
 
   return (
     <div className="min-h-screen flex" data-testid="app-layout">
@@ -99,7 +117,7 @@ export default function Layout({ children }) {
         <div className="fade-in">{children}</div>
       </main>
 
-      <MentorPanel />
+      {mentorAvailable && <MentorPanel />}
     </div>
   );
 }

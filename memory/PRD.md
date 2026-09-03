@@ -26,6 +26,149 @@ noise/texture terreuse, chips végétaux pour les stades.
   Graine → Pousse → Racine → Branches → Arbre → Forêt.
 - ✅ Trilinguisme FR/EN/KR (kréyòl).
 
+## Ce qui a été livré — 1er septembre 2026 (Couverture i18n complète)
+
+Suite directe de l'audit ci-dessous, même jour : demande explicite de
+combler l'écart plutôt que de le documenter et s'arrêter là — "traduit dès
+que l'apprenant choisit la langue". Les 8 fichiers frontend à 0% de
+couverture i18n (Certifications, Skills, Wallet, ModuleJourney — le plus
+gros composant du frontend —, dashboards trainer/jury/admin, BackButton)
+et toutes les fuites identifiées dans les fichiers déjà câblés (en premier
+lieu `Onboarding.js`, dont tout le texte des étapes restait français) sont
+maintenant intégralement raccordés au dictionnaire i18n.
+
+- Dictionnaire étendu de 53 à **320 clés × 4 langues** (`frontend/src/lib/i18n.jsx`),
+  organisées par namespace par page (`skills_p`, `wallet_p`, `certifications_p`,
+  `jury_p`, `trainer_p`, `admin_p`, `module_journey`, `onboarding_p`,
+  `missions_p`, `mentor_p`, `dashboard_p`, `formation_detail_p`, `badges_p`,
+  `frek_profile_p`, `roadmap_p`, `landing_p`, plus un petit namespace
+  `common` pour les actions dupliquées verbatim entre pages).
+- Validé par script (pas seulement à l'œil) : parité stricte des 320 clés
+  entre les 4 langues (aucune clé manquante dans aucune langue) et chaque
+  appel `t()` du code source résolu contre une clé réelle du dictionnaire
+  (aucune clé fantôme, aucun appel cassé).
+- ESLint propre, build de production compile sans warning.
+- **Toujours volontairement pas fait** : traduire le contenu pédagogique
+  (formations, modules, FMS) — chantier de contenu séparé, pas une
+  extension du système i18n actuel (voir le rapport d'audit §6).
+
+Détail complet, y compris la réserve sur la qualité des traductions kreyòl
+et espagnol (non relues par un locuteur natif), dans
+`docs/I18N_AUDIT_REPORT.md`.
+
+## Ce qui a été livré — 1er septembre 2026 (Audit des langues + ajout de l'espagnol)
+
+Demande explicite : auditer honnêtement la couverture multilingue
+(le PRD/README affirmaient "trilingue FR/EN/Kreyòl") et ajouter l'espagnol.
+Détail complet dans `docs/I18N_AUDIT_REPORT.md` ; résumé ici :
+
+- **Audit** : sur 19 fichiers frontend, seuls 9 utilisent réellement le
+  dictionnaire i18n (`frontend/src/lib/i18n.jsx`) — 8 fichiers (~1 370
+  lignes) livrés lors du chantier du 30 août (Certifications, Skills,
+  Wallet, ModuleJourney, dashboards trainer/jury/admin) sont 100% français
+  en dur. Même parmi les fichiers "câblés", des fuites existent (messages
+  toast, et surtout `Onboarding.js` dont tout le texte des étapes reste
+  français malgré le choix de langue à l'étape 1). Contenu pédagogique
+  (formations, modules, FMS) : aucune traduction, aucune infra pour ça.
+- **Espagnol ajouté** au même niveau que EN/KR existants — pas plus :
+  4ᵉ entrée du dictionnaire frontend (53 clés), `LANGS` avec un champ `name`
+  générique (fin des `if`/`else` par langue codés en dur page par page),
+  `GET /api/onboarding/options` (4 langues), validation backend, prompt
+  système du Mentor IA, question méta du quiz, test E2E.
+- **Réserve** : traductions kreyòl et espagnol produites par Claude, non
+  relues par un locuteur natif ni un·e pédagogue CVLN — recommandé avant
+  lancement public (variantes régionales du kreyòl, registre Espagne vs
+  Amérique latine pour l'espagnol).
+- **Volontairement pas fait** : câbler les 8 fichiers à 0% de couverture,
+  traduire le contenu pédagogique — chantiers identifiés dans le rapport,
+  pas silencieusement ignorés, mais hors périmètre de cette demande.
+
+## Ce qui a été livré — 1er septembre 2026 (Réconciliation contre le premier ZIP FMS réel)
+
+Le premier ZIP FMS réel (`FMS_Chantier_Complet_20260822.zip`, 223
+fichiers, FMS-01→06 verrouillés) est arrivé après la mission du 30 août —
+exactement comme annoncé dans le brief initial. Détail complet dans
+`docs/FMS_IMPORT_VALIDATION_REPORT.md` et `docs/AUDIT_REPORT.md` §9 ;
+résumé produit ici :
+
+- **Moteur d'import FMS réécrit** contre la structure réelle (fichiers
+  numérotés, sans frontmatter — la convention frontmatter documentée le
+  30 août avait dû être inventée faute de ZIP réel à l'époque) : 26 types
+  de ressources réels reconnus (contre 10 inventés), dérivation du
+  `formation_code` et du graphe de prérequis de module directement depuis
+  le contenu réel (`fms_import/module_map.py`, nouveau).
+- **Moteur de certification étendu** (sans rien casser) pour la doctrine
+  de notation réelle : critères éliminatoires ("verrous doctrinaux"),
+  plafonnement de mention indépendant du score — le modèle pondéré
+  existant encaissait déjà nativement l'échelle 0-4 "Rubric Master" du
+  ZIP réel.
+- **Template Engine** : 7ᵉ type `pitch` ajouté (confirmé par le contenu
+  réel — chaque métier se termine par un pitch oral).
+- **Validation** : 223/223 fichiers réels classifiés sans erreur ni
+  avertissement (une collision de code détectée et corrigée pendant la
+  validation). L'import réel en base n'a pas pu être exécuté dans cet
+  environnement (pas de MongoDB disponible) — seule la partie pure du
+  pipeline (couvre tout ce qui peut échouer avant l'écriture en base) a
+  été validée contre l'archive réelle.
+- Tests unitaires : 29 → 40 (réécrits contre la convention et la doctrine
+  réelles, pas de simple ajout par-dessus l'ancien modèle inventé) ;
+  qualité (`black`/`isort`/`flake8`/`mypy`) toujours propre.
+- **Volontairement pas fait** : synthèse `Formation`/`Module` depuis les
+  ressources importées (mérite une validation humaine CVLN du mapping) ;
+  graphe de prérequis complet pour FMS-04/05/06 (leur Master Module Map
+  ne déclare pas de prérequis module par module pour la majorité de leurs
+  modules — un ordre séquentiel implicite aurait été fabriqué, pas lu).
+
+## Ce qui a été livré — 30 août 2026 (Production Hardening Mission)
+
+Mission de mise en production : audit zéro-dette + architecture entreprise +
+8 nouveaux moteurs/domaines, sur la base du MVP livré en février. Détail
+complet dans `docs/AUDIT_REPORT.md`, `docs/INTEGRATIONS_REPORT.md`,
+`docs/DEVELOPER_GUIDE.md` — résumé ici pour l'historique produit :
+
+- **Zéro dette technique** : `emergentintegrations` (non installable hors
+  Emergent) remplacé par le SDK Anthropic officiel ; bug de stub motor
+  3.3.1 corrigé (bump vers 3.7.x) qui masquait ~20 faux positifs mypy ;
+  10 dépendances Python mortes supprimées ; install frontend cassée
+  (peer-dep date-fns/react-day-picker) réparée ; toast dupliqué (100%
+  mort) supprimé ; branding Emergent par défaut (`index.html`, analytics
+  PostHog sous compte Emergent) remplacé par la marque CVLN.
+- **Architecture** : `routes.py` (817 lignes, 9 responsabilités) éclaté en
+  routeurs par domaine (`backend/api/*.py`) ; 8 nouveaux packages métier
+  (`fms_import/`, `certification/`, `skills/`, `template_engine/`,
+  `wallet/`, `services/integrations/`, `services/ai_assistant.py`,
+  `services/events.py`).
+- **Auth & rôles** : 7 rôles, organisations/cohortes/invitations, refresh
+  tokens rotatifs, reset mot de passe, vérification email, OAuth/2FA
+  prêts (501 tant que non configurés).
+- **Moteur d'import ZIP FMS** : parseur Markdown+YAML tolérant aux erreurs,
+  validation référentielle, recherche indexée, sommaire auto-généré,
+  graphe de prérequis — la plateforme est prête à recevoir FMS-01 à
+  FMS-06 (voir `docs/DEVELOPER_GUIDE.md` §3 pour la convention de fichiers).
+- **Certification Engine** : N1/N2/A01, rubriques versionnées, notation
+  jury signée (hash SHA-256), attestations PDF, reprise d'examen.
+- **Skill Engine** : Skill IDs, registre d'évidence hashé (FREK-ready),
+  progression automatique.
+- **Template Engine** : 6 types (Diagnostic/Univers/Positionnement/
+  Storytelling/Roadmap/Dossier), autosave versionné, export MD/PDF/DOCX.
+- **Écosystème CVLN** : 9 interfaces génériques (Intelligence OS, Brain,
+  Command Center, Laurent.ia, KORA, Factory Maker Studio, Good Mood,
+  Culture Connect, Kiltikonet) + bus d'événements in-process.
+- **CVLN Wallet** : grand livre JCC/tokens actif, crédité par badges et
+  certifications ; payloads Apple/Google Wallet (non signés — voir
+  rapport d'intégrations).
+- **Assistant IA commun** : 4 personas (student/trainer/jury/corrector)
+  définis comme données au-dessus d'un seul transport partagé.
+- **Dashboards par rôle** : Wallet, Skills, Certifications (étudiant) ;
+  Admin CMS (import FMS, statut intégrations, orgs/cohortes/invitations,
+  publication catalogue) ; Trainer (cohortes) ; Jury (file de correction
+  + notation).
+- **Performance** : code-splitting (React.lazy, bundle -11%), PWA
+  (service worker + manifest maison), index Mongo sur toutes les
+  collections à volumétrie utilisateur.
+- **Tests** : 29 tests unitaires sans dépendance base de données (avant :
+  0, seule une suite E2E nécessitant un Mongo live existait).
+
 ## Ce qui a été livré — 21 Feb 2026 (Iteration 1 + 2 + 3)
 
 ### Iteration 3 — Enrichissement contenu 24+ formations — 21 Feb 2026

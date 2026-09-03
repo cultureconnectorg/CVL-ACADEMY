@@ -148,7 +148,7 @@ def build_quiz(module: Dict) -> List[Dict]:
                 {"id": "B", "text": "Anglais uniquement", "correct": False},
                 {
                     "id": "C",
-                    "text": "Français, English ou Kreyòl selon le contexte",
+                    "text": "Français, English, Kreyòl ou español selon le contexte",
                     "correct": True,
                 },
                 {"id": "D", "text": "Aucune langue imposée", "correct": False},
