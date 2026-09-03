@@ -47,20 +47,51 @@
  * no other change to App.js's routing/auth structure.
  */
 
+import { useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useLocation } from "react-router-dom";
 import { MOTION_EASING, motionDuration } from "@/lib/motion-tokens";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
+import { resolveEdge } from "@/lib/spatial/topology";
+import { routeToTopologyNode } from "@/lib/spatial/routeTopologyMap";
 
+/**
+ * W-FUNNEL-1 extension: RouteTransition can now resolve which
+ * topology edge (docs/ACADEMY_SPATIAL_END_TO_END_ARCHITECTURE.md §4)
+ * a navigation crosses — infrastructure only. Per the W-FUNNEL-1
+ * authorization §10/§22: "with feature flags OFF, retain exact current
+ * production motion/navigation... do not implement major visual
+ * spatial movement yet." So the actual rendered animation below
+ * (opacity crossfade, `motionDuration("enter")`) is **unconditional
+ * and unchanged** regardless of any flag — SPATIAL_ROUTE_TRANSITIONS
+ * only gates whether the resolved edge is exposed at all (as an inert
+ * `data-topology-edge` attribute, consumed by nothing yet, visible only
+ * to future spatial work or to SPATIAL_DEBUG inspection), never
+ * whether it changes what's on screen.
+ */
 export function RouteTransition({ children }) {
   const location = useLocation();
   const reduced = useReducedMotion();
   const duration = motionDuration("enter", reduced) / 1000;
+  const previousPathnameRef = useRef(null);
+
+  let topologyEdgeAttr;
+  if (FEATURE_FLAGS.SPATIAL_ROUTE_TRANSITIONS) {
+    const fromNode = routeToTopologyNode(previousPathnameRef.current);
+    const toNode = routeToTopologyNode(location.pathname);
+    if (fromNode && toNode) {
+      const edge = resolveEdge(fromNode, toNode);
+      topologyEdgeAttr = `${fromNode}->${toNode}:${edge.spatialDirection}`;
+    }
+  }
+  previousPathnameRef.current = location.pathname;
 
   return (
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
+        data-topology-edge={topologyEdgeAttr}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
