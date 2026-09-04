@@ -12,6 +12,7 @@
 | `FAKE_OBSERVATORY` | 0 | **0** | Aucune donnée Observatory simulée pour combler M05/M06 ; `M05`/`M06` explicitement `BLOCKED`, pas construits |
 | `BLOCKED_COMPETENCY_MISREPRESENTED` (gate propre à KLT-06) | 0 | **0** | `C5`/`C6` marquées `BLOCKED` partout (référentiel, registre, evidence, certification, guides) — jamais présentées comme couvertes |
 | `PARTIAL_CERTIFICATION_DISCLOSED` (gate propre à KLT-06) | 100% | **100%** | `A01_CERTIFICATION_ASSESSMENT.md`, `CERTIFICATION_MODEL.md`, guide candidat déclarent tous explicitement la couverture partielle |
+| `FULLY_COMPLETE` | `FALSE` | **`FALSE`** | 2/7 compétences (`C5`,`C6`) `BLOCKED` — ce gate reste `FALSE` tant qu'elles ne sont pas réellement connectées à Observatory, pas seulement rédigées ; toute déclaration `TRUE` sans reconnexion réelle serait une violation de ce gate |
 
 ## Détail `ASSESSMENT_COVERAGE` (buildable)
 

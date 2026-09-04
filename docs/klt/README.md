@@ -7,6 +7,11 @@ STATUT = 5/5 formations legacy construites au niveau industriel FMS
          périmètre buildable autorisé (KLT-06→08, PARTIAL — 4
          compétences sur 21 restent BLOCKED, voir §Formations
          partielles).
+KLT-06/07/08 FULLY_COMPLETE = FALSE (2/7, 1/7, 1/7 compétences
+         bloquées — Observatory/Network/Compliance non connectés). Ce
+         champ reste FALSE tant que ces compétences ne sont pas
+         réellement connectées, pas seulement rédigées — à ne jamais
+         déclarer TRUE sans un ticket dédié qui le justifie.
 STOP = TRUE après cette livraison — intégration runtime Academy et
 tout nouveau chantier ACA restent NOT_AUTHORIZED.
 ```

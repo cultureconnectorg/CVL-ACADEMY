@@ -7,6 +7,10 @@ détaille les blueprints des 5 modules effectivement construits.
 STRUCTURAL_STATUS = PARTIAL — 5/7 compétences construites, 2/7
 (C5, C6) BLOCKED (Observatory NOT_CONNECTED). Voir modules/
 MODULES_STATUS.md.
+FULLY_COMPLETE = FALSE — reste FALSE tant que C5/C6 ne sont pas
+réellement connectées (accès Observatory réel), pas seulement rédigées.
+Ne jamais déclarer KLT-06 complet tant que ce champ n'a pas été
+explicitement repassé à TRUE par un ticket dédié.
 contexts = [EXTERNAL] (KLT-0008 §2). BRIDGE non retenu.
 ```
 

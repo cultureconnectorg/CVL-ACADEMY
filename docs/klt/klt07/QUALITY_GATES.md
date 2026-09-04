@@ -13,6 +13,7 @@
 | `GOVERNANCE_BOUNDARY_VIOLATION` (gate propre à KLT-07) | 0 | **0** | Vérifié à chaque niveau (référentiel §Frontière, M02, `RUBRIC.md` critère 2, guides) — aucune substitution à la gouvernance associative |
 | `BLOCKED_COMPETENCY_MISREPRESENTED` (gate propre à KLT-07) | 0 | **0** | `C4` marquée `BLOCKED` partout (référentiel, registre, evidence, certification, guides) |
 | `PARTIAL_CERTIFICATION_DISCLOSED` (gate propre à KLT-07) | 100% | **100%** | `A01_CERTIFICATION_ASSESSMENT.md`, `CERTIFICATION_MODEL.md`, guide candidat déclarent tous explicitement la couverture partielle |
+| `FULLY_COMPLETE` | `FALSE` | **`FALSE`** | 1/7 compétence (`C4`) `BLOCKED` — ce gate reste `FALSE` tant qu'elle n'est pas réellement connectée à Network, pas seulement rédigée ; toute déclaration `TRUE` sans reconnexion réelle serait une violation de ce gate |
 
 ## Détail `ASSESSMENT_COVERAGE` (buildable)
 

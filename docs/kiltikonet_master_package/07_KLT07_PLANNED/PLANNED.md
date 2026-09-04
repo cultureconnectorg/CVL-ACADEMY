@@ -7,6 +7,8 @@ REFERENTIAL_STATUS = FROZEN (KLT-0006)
 CONTEXT_STATUS = DECIDED (KLT-0008) — contexts = [INTERNAL]
 BUILD_STATUS = PARTIAL — 6/7 modules construits (M01-M03, M05-M07), 1/7
 BLOCKED (M04, Network non connecté).
+FULLY_COMPLETE = FALSE — verrouillé tant que M04 (C4) n'est pas
+réellement connectée à Network, pas seulement rédigée.
 ```
 
 ## Mise à jour — contenu pédagogique construit (`KLT-0010`)

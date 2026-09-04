@@ -8,6 +8,8 @@ REFERENTIAL_STATUS = FROZEN (KLT-0005)
 CONTEXT_STATUS = DECIDED (KLT-0008) — contexts = [EXTERNAL]
 BUILD_STATUS = PARTIAL — 5/7 modules construits (M01-M04, M07), 2/7
 BLOCKED (M05/M06, Observatory non connecté).
+FULLY_COMPLETE = FALSE — verrouillé tant que M05/M06 (C5/C6) ne sont
+pas réellement connectées à Observatory, pas seulement rédigées.
 ```
 
 ## Mise à jour — contenu pédagogique construit (`KLT-0009`)

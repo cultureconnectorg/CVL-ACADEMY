@@ -6,6 +6,10 @@ par KLT-0008. Ce document reprend ces décisions sans les rouvrir, et
 détaille les blueprints des 6 modules effectivement construits.
 STRUCTURAL_STATUS = PARTIAL — 6/7 compétences construites, 1/7 (C4)
 BLOCKED (Compliance NOT_IMPLEMENTED). Voir modules/MODULES_STATUS.md.
+FULLY_COMPLETE = FALSE — reste FALSE tant que C4 n'est pas réellement
+connectée (donnée Compliance structurée implémentée), pas seulement
+rédigée. Ne jamais déclarer KLT-08 complet tant que ce champ n'a pas été
+explicitement repassé à TRUE par un ticket dédié.
 contexts = [INTERNAL] (KLT-0008 §2). BRIDGE non retenu.
 ```
 

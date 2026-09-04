@@ -21,6 +21,10 @@ Point d'entrée unique pour naviguer l'intégralité du corpus Kiltikonet
 Ces trois dossiers gardent leur nom historique "_PLANNED" pour ne pas
 casser les liens déjà livrés dans le Master Package v1 — leur contenu
 n'est plus "planned" : chacune a un build PARTIAL réel (voir Modules).
+FULLY_COMPLETE = FALSE pour les 3 (2/7, 1/7, 1/7 compétences BLOCKED).
+Ne jamais déclarer une de ces formations complète tant que ses
+compétences bloquées ne sont pas réellement connectées (Observatory/
+Network/Compliance), pas seulement rédigées.
 ```
 
 | Formation | Emplacement | Référentiel | Modules construits | Cas | Assessments | Skills | Guides | `contexts` | Statut |
