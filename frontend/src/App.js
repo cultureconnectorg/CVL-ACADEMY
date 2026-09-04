@@ -25,6 +25,9 @@ const Certifications = lazy(() => import("@/pages/Certifications"));
 const CanonicalFormations = lazy(() => import("@/pages/CanonicalFormations"));
 const CanonicalFormationDetail = lazy(() => import("@/pages/CanonicalFormationDetail"));
 const CanonicalModuleView = lazy(() => import("@/pages/CanonicalModuleView"));
+const CanonicalKltFormations = lazy(() => import("@/pages/CanonicalKltFormations"));
+const CanonicalKltFormationDetail = lazy(() => import("@/pages/CanonicalKltFormationDetail"));
+const CanonicalKltModuleView = lazy(() => import("@/pages/CanonicalKltModuleView"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
@@ -72,6 +75,11 @@ function App() {
                 <Route path="/canonical" element={<Protected><CanonicalFormations /></Protected>} />
                 <Route path="/canonical/:formationCode" element={<Protected><CanonicalFormationDetail /></Protected>} />
                 <Route path="/canonical/:formationCode/:moduleCode" element={<Protected><CanonicalModuleView /></Protected>} />
+                {/* "Branchage complet de Kiltikonet" (2026-09-04) — canonical
+                    Kiltikonet runtime binding, read-only pages, separate tree. */}
+                <Route path="/kiltikonet-canonical" element={<Protected><CanonicalKltFormations /></Protected>} />
+                <Route path="/kiltikonet-canonical/:formationCode" element={<Protected><CanonicalKltFormationDetail /></Protected>} />
+                <Route path="/kiltikonet-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKltModuleView /></Protected>} />
                 <Route
                   path="/trainer"
                   element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
