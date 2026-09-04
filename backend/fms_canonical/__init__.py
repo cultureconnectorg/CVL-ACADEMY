@@ -3,6 +3,12 @@
 
 from __future__ import annotations
 
+from .delivery_architecture import (
+    DeliveryArchitecture,
+    DeliveryModeEntry,
+    derive_delivery_architecture,
+    get_delivery_architecture,
+)
 from .import_pipeline import import_canonical_fms_zip
 from .models import (
     CANONICAL_VERSION_CURRENT,
@@ -31,6 +37,10 @@ from .read_model import (
 )
 
 __all__ = [
+    "DeliveryArchitecture",
+    "DeliveryModeEntry",
+    "derive_delivery_architecture",
+    "get_delivery_architecture",
     "CANONICAL_VERSION_CURRENT",
     "LEARNER_FACING_TYPES",
     "STAFF_ONLY_TYPES",

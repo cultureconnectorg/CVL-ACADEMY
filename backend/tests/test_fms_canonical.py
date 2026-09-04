@@ -27,12 +27,17 @@ from io import BytesIO
 import pytest
 from mongomock_motor import AsyncMongoMockClient
 
+import fms_canonical.delivery_architecture as delivery_architecture_module
 import fms_canonical.import_pipeline as import_pipeline_module
 import fms_canonical.progress as progress_module
 import fms_canonical.provenance as provenance_module
 import fms_canonical.read_model as read_model_module
 import fms_import.importer as fms_importer_module
 import fms_import.indexer as fms_indexer_module
+from fms_canonical.delivery_architecture import (
+    derive_delivery_architecture,
+    get_delivery_architecture,
+)
 from fms_canonical.import_pipeline import import_canonical_fms_zip
 from fms_canonical.models import STAFF_ONLY_TYPES, is_learner_facing, resource_audience
 from fms_canonical.progress import get_user_canonical_progress, record_content_viewed
@@ -158,6 +163,7 @@ async def canon_db(monkeypatch):
         provenance_module,
         read_model_module,
         progress_module,
+        delivery_architecture_module,
     ):
         monkeypatch.setattr(module, "db", mock_db)
     return mock_db
@@ -582,3 +588,115 @@ def test_audience_classification_covers_every_real_type():
 
     for real_type in FmsResourceType.__args__:
         assert real_type in RESOURCE_AUDIENCE, f"{real_type} has no audience mapping"
+
+
+# ---------------------------------------------------------------------
+# ACA-0004 — Delivery Architecture Truth (Founder decision, 2026-09-04)
+# ---------------------------------------------------------------------
+
+
+def test_derive_internal_only_context():
+    arch = derive_delivery_architecture("X-01", ["INTERNAL"])
+    assert arch.is_bridge_entry_point is False
+    assert len(arch.delivery_modes) == 1
+    assert arch.delivery_modes[0].mode == "E_LEARNING"
+    assert arch.delivery_modes[0].channel == "INTERNAL"
+    assert arch.delivery_modes[0].status == "AVAILABLE"
+
+
+def test_derive_external_only_context_never_marks_physical_available():
+    arch = derive_delivery_architecture("X-02", ["EXTERNAL"])
+    modes_by_mode = {m.mode: m for m in arch.delivery_modes}
+    assert modes_by_mode["E_LEARNING"].channel == "EXTERNAL"
+    assert modes_by_mode["E_LEARNING"].status == "AVAILABLE"
+    assert modes_by_mode["PHYSICAL"].channel == "EXTERNAL"
+    # DELIVERY != COMMERCIAL_OFFER: PHYSICAL is never AVAILABLE, only eligible.
+    assert modes_by_mode["PHYSICAL"].status == "ELIGIBLE_PENDING_OFFER"
+
+
+def test_derive_bridge_is_not_a_delivery_mode():
+    arch = derive_delivery_architecture("X-03", ["BRIDGE"])
+    assert arch.is_bridge_entry_point is True
+    assert arch.delivery_modes == []  # BRIDGE alone grants no delivery mode at all
+
+
+def test_derive_all_three_contexts_fms01_shape():
+    # Real FMS-01 contexts, verified this session against db.formations.
+    arch = derive_delivery_architecture("FMS-01", ["INTERNAL", "EXTERNAL", "BRIDGE"])
+    assert arch.is_bridge_entry_point is True
+    modes = {(m.mode, m.channel): m.status for m in arch.delivery_modes}
+    assert modes[("E_LEARNING", "INTERNAL")] == "AVAILABLE"
+    assert modes[("E_LEARNING", "EXTERNAL")] == "AVAILABLE"
+    assert modes[("PHYSICAL", "EXTERNAL")] == "ELIGIBLE_PENDING_OFFER"
+    assert len(arch.delivery_modes) == 3
+
+
+def test_curriculum_and_delivery_sources_stay_distinct():
+    arch = derive_delivery_architecture("FMS-01", ["INTERNAL", "EXTERNAL", "BRIDGE"])
+    assert arch.curriculum_source == "FMS_ZIP"
+    assert arch.delivery_source == "ACADEMY_CARTOGRAPHY_CONTEXTS"
+    assert arch.curriculum_source != arch.delivery_source
+
+
+def test_no_delivery_mode_is_ever_available_without_a_matching_context():
+    # No context at all -> no delivery mode at all, never a fabricated default.
+    arch = derive_delivery_architecture("X-04", [])
+    assert arch.delivery_modes == []
+    assert arch.is_bridge_entry_point is False
+
+
+async def test_get_delivery_architecture_reads_real_db_formations_contexts(canon_db):
+    await canon_db.formations.insert_one(
+        {"code": "FMS-01", "contexts": ["INTERNAL", "EXTERNAL", "BRIDGE"], "name": "x"}
+    )
+    arch = await get_delivery_architecture("FMS-01")
+    assert arch is not None
+    assert arch.contexts == ["INTERNAL", "EXTERNAL", "BRIDGE"]
+    assert arch.is_bridge_entry_point is True
+
+
+async def test_get_delivery_architecture_unknown_formation_returns_none(canon_db):
+    assert await get_delivery_architecture("FMS-99") is None
+
+
+async def test_all_six_real_fms_contexts_never_yield_available_physical(canon_db):
+    """Real db.formations contexts for all 6 FMS métiers (as seeded by
+    seed_data.py + catalog_cartography.py, confirmed this session) never
+    produce PHYSICAL=AVAILABLE — only ELIGIBLE_PENDING_OFFER, for every
+    one of them."""
+    real_contexts = {
+        "FMS-01": ["INTERNAL", "EXTERNAL", "BRIDGE"],
+        "FMS-02": ["EXTERNAL", "BRIDGE"],
+        "FMS-03": ["EXTERNAL", "BRIDGE"],
+        "FMS-04": ["EXTERNAL", "BRIDGE"],
+        "FMS-05": ["EXTERNAL", "BRIDGE"],
+        "FMS-06": ["INTERNAL", "EXTERNAL", "BRIDGE"],
+    }
+    for code, contexts in real_contexts.items():
+        await canon_db.formations.insert_one(
+            {"code": code, "contexts": contexts, "name": code}
+        )
+
+    for code in real_contexts:
+        arch = await get_delivery_architecture(code)
+        physical_entries = [m for m in arch.delivery_modes if m.mode == "PHYSICAL"]
+        assert all(m.status == "ELIGIBLE_PENDING_OFFER" for m in physical_entries)
+        # E_LEARNING is always available for every real FMS métier (all
+        # six have EXTERNAL, and two also have INTERNAL).
+        assert any(
+            m.mode == "E_LEARNING" and m.status == "AVAILABLE"
+            for m in arch.delivery_modes
+        )
+
+
+def test_delivery_architecture_route_requires_real_authentication():
+    from api.canonical import router
+    from auth import get_current_user
+
+    route = next(
+        r
+        for r in router.routes
+        if r.path == "/canonical/formations/{formation_code}/delivery-architecture"
+    )
+    calls = [dep.call for dep in route.dependant.dependencies]
+    assert get_current_user in calls

@@ -20,10 +20,12 @@ from fms_canonical import (
     CanonicalModule,
     CanonicalModuleProgress,
     CanonicalSkillDefinition,
+    DeliveryArchitecture,
     FileProvenance,
     count_zip_files,
     get_canonical_formation,
     get_canonical_module,
+    get_delivery_architecture,
     get_user_canonical_progress,
     import_canonical_fms_zip,
     list_canonical_formations,
@@ -79,6 +81,23 @@ async def get_module(
 )
 async def list_skills(formation_code: str, current: User = Depends(get_current_user)):
     return await list_canonical_skill_definitions(formation_code)
+
+
+@router.get(
+    "/formations/{formation_code}/delivery-architecture",
+    response_model=DeliveryArchitecture,
+)
+async def get_formation_delivery_architecture(
+    formation_code: str, current: User = Depends(get_current_user)
+):
+    """ACA-0004 — a formation's delivery architecture (INTERNAL/EXTERNAL/
+    BRIDGE-derived), a truth distinct from its curriculum
+    (`GET /formations/{code}`, sourced from the FMS ZIP) and from any
+    future commercial offer (not built)."""
+    architecture = await get_delivery_architecture(formation_code)
+    if not architecture:
+        raise HTTPException(status_code=404, detail="Formation introuvable.")
+    return architecture
 
 
 @router.post(
