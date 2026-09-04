@@ -2,8 +2,24 @@
 
 ```
 STATUS = PLANNED
-BUILD_STATUS = NOT_STARTED — NO_KLT06_08_BUILD respecté dans ce ticket.
+REFERENTIAL_STATUS = FROZEN (KLT-0007) — compétences + structure
+indicative de modules uniquement, aucun contenu de module.
+BUILD_STATUS = NOT_STARTED — aucun module écrit.
 ```
+
+## Mise à jour — référentiel canonique livré (`KLT-0007`)
+
+Sur autorisation explicite du Founder, un référentiel canonique a été
+construit et gelé : `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_
+REFERENTIAL.md`. Il examine et résout la frontière avec `KLT-04`/M12-M13
+(audit/conformité à l'échelle d'une association vs échelle réseau —
+méthode héritée par référence, jamais dupliquée, unité d'analyse et
+compétence "formation opérateurs" distinctes) et identifie 7 compétences
+(`PROPOSED`), dont **6/7 constructibles dès aujourd'hui** et **1/7
+bloquée** (`C4` — suivi de conformité réseau agrégée réelle, `Compliance`
+`NOT_IMPLEMENTED`). `PUBLIC/EXTERNAL/BRIDGE` reste `UNRESOLVED`, avec un
+indice `INTERNAL` plus net (libellé "pro/interne"). Aucun module n'est
+écrit — le build lui-même reste `NOT_AUTHORIZED`.
 
 ## Position dans l'architecture globale
 

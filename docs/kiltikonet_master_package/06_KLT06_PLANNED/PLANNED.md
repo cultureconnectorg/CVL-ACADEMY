@@ -2,8 +2,21 @@
 
 ```
 STATUS = PLANNED
-BUILD_STATUS = NOT_STARTED — NO_KLT06_08_BUILD respecté dans ce ticket.
+REFERENTIAL_STATUS = FROZEN (KLT-0005) — compétences + structure
+indicative de modules uniquement, aucun contenu de module.
+BUILD_STATUS = NOT_STARTED — aucun module écrit.
 ```
+
+## Mise à jour — référentiel canonique livré (`KLT-0005`)
+
+Sur autorisation explicite du Founder ("un seul référentiel canonique
+d'abord"), un référentiel canonique a été construit et gelé :
+`docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md`. Il identifie 7
+compétences (`PROPOSED`, sans legacy ni détail master-plan module-par-
+module disponible), dont **5/7 constructibles dès aujourd'hui** (méthode/
+littératie/éthique) et **2/7 bloquées** (`C5`, `C6` — nécessitent un accès
+Observatory réel). `PUBLIC/EXTERNAL/BRIDGE` reste `UNRESOLVED`. Aucun
+module n'est écrit — le build lui-même reste `NOT_AUTHORIZED`.
 
 ## Position dans l'architecture globale
 

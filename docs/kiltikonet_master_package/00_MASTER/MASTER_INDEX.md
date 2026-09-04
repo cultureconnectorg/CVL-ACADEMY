@@ -17,11 +17,11 @@ Point d'entrée unique pour naviguer l'intégralité du corpus Kiltikonet
 
 ## Emplacements futurs réservés (KLT-06 → KLT-08)
 
-| Formation | Emplacement | Statut |
-|---|---|---|
-| `KLT-06` Analyste Observatory | `../06_KLT06_PLANNED/PLANNED.md` | `PLANNED` — bloqué sur accès Observatory réel |
-| `KLT-07` Déploiement territorial | `../07_KLT07_PLANNED/PLANNED.md` | `PLANNED` — bloqué sur accès Network réel |
-| `KLT-08` Qualité/conformité/audit réseau | `../08_KLT08_PLANNED/PLANNED.md` | `PLANNED` — bloqué sur accès Compliance réel + frontière `KLT-04` à clarifier |
+| Formation | Emplacement | Référentiel | Statut |
+|---|---|---|---|
+| `KLT-06` Analyste Observatory | `../06_KLT06_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md` — `FROZEN`, 5/7 compétences constructibles | `PLANNED` (modules) — référentiel gelé, 2/7 compétences bloquées sur Observatory réel |
+| `KLT-07` Déploiement territorial | `../07_KLT07_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `PLANNED` (modules) — référentiel gelé, frontière `KLT-04`/M11 résolue, 1/7 compétence bloquée sur Network réel |
+| `KLT-08` Qualité/conformité/audit réseau | `../08_KLT08_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `PLANNED` (modules) — référentiel gelé, frontière `KLT-04`/M12-M13 résolue, 1/7 compétence bloquée sur Compliance |
 
 ## Documents transversaux (ce Master Package)
 

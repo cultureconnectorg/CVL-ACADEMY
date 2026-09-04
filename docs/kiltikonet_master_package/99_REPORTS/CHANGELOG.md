@@ -12,9 +12,12 @@ Historique des tickets, du cadrage initial à ce Master Package.
 | `KLT-0004` | Build pédagogique complet `KLT-01` (27 documents) | `docs/KILTIKONET_KLT0004_KLT01_PEDAGOGICAL_BUILD_REPORT.md` + `docs/klt/klt01/` |
 | *(continuation de session)* | Build pédagogique complet `KLT-02`→`05` (112 documents) | `docs/klt/klt02/` à `klt05/` |
 | *(continuation de session)* | Export et livraison du corpus complet | `CVLN_Kiltikonet_Canonical_Corpus_KLT01-05.zip` + `docs/klt/README.md` |
-| **Ce ticket** | **Master Package v1 — consolidation, sans reconstruction** | `docs/kiltikonet_master_package/` + `docs/KILTIKONET_MASTER_PACKAGE_V1_REPORT.md` |
+| *(continuation)* | Master Package v1 — consolidation, sans reconstruction | `docs/kiltikonet_master_package/` + `docs/KILTIKONET_MASTER_PACKAGE_V1_REPORT.md` |
+| `KLT-0005` | Référentiel canonique `KLT-06` (Observatory) — compétences + structure indicative uniquement | `docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md` |
+| `KLT-0006` | Référentiel canonique `KLT-07` (déploiement territorial) — frontière `KLT-04`/M11 résolue | `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md` |
+| **Ce ticket (`KLT-0007`)** | **Référentiel canonique `KLT-08` (qualité/conformité/audit réseau) — frontière `KLT-04`/M12-M13 résolue** | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` |
 
-## Correction de cadrage explicite (ce ticket)
+## Correction de cadrage explicite (Master Package v1)
 
 Le Founder a corrigé une instruction précédente de cette même session
 qui aurait pu laisser penser que `KLT-02`→`05` restaient à construire.
@@ -27,4 +30,9 @@ consolide.
 - Validation experte/terrain (`91_VALIDATION/`) — non commencée.
 - Intégration runtime Academy — non commencée (`NO_RUNTIME_BINDING`
   respecté partout).
-- `KLT-06`/`07`/`08` — `PLANNED` uniquement, aucun contenu.
+- `KLT-06`/`07`/`08` — référentiels `FROZEN` (`KLT-0005`/`0006`/`0007`),
+  **aucun module écrit** ; build de modules toujours `NOT_AUTHORIZED`,
+  et 1 à 2 compétences par formation restent bloquées sur un accès réel
+  à Observatory/Network/Compliance.
+- `PUBLIC/EXTERNAL/BRIDGE` pour `KLT-06`/`07`/`08` — toujours
+  `UNRESOLVED`, décision Founder requise avant tout build.
