@@ -75,8 +75,12 @@ renommage de `KLT-04`/M11 nécessaire.
 
 ### 1.5 Contexte de la formation
 
-`PUBLIC/EXTERNAL/BRIDGE = UNRESOLVED` (`KLT-0001` §3), reporté tel quel —
-non tranché par ce référentiel.
+`KLT-0001` §3 avait laissé cette question `UNRESOLVED`. **`RESOLVED par
+KLT-0008`** : `contexts = [INTERNAL]` — voir `docs/KILTIKONET_KLT0008_
+KLT06_08_CONTEXT_AND_SCOPE_DECISION.md` §2. Rôle exercé pour le réseau
+Kiltikonet lui-même, pas une compétence généraliste ; regroupement
+« spécialisations avancées » de `KLT-0001` §2. `BRIDGE` non retenu
+(niveau `Avancé`).
 
 ---
 
@@ -145,12 +149,15 @@ compétence orpheline. 6/7 réellement constructibles aujourd'hui.
 
 ## 6. Ce qui devra être fait avant le build des modules
 
-1. Décision Founder sur `PUBLIC/EXTERNAL/BRIDGE` (§1.5) — `UNRESOLVED`.
-2. Décision Founder : construire 6/7 compétences (tout sauf `C4`) comme
-   premier périmètre de `KLT-07`, en laissant `M04` explicitement `À
-   produire ultérieurement` — ou attendre un accès Network réel.
-3. Confirmer la frontière `KLT-04`/M11 posée en §1.3 est celle voulue
-   par le Founder avant tout build.
+1. ~~Décision Founder sur `PUBLIC/EXTERNAL/BRIDGE`~~ — **`RESOLVED par
+   KLT-0008`** : `contexts = [INTERNAL]`.
+2. ~~Décision Founder sur le périmètre~~ — **`RESOLVED par KLT-0008`** :
+   6/7 compétences (tout sauf `C4`) autorisées ; `M04` explicitement
+   différé (`BLOCKED`, Network non connecté).
+3. La frontière `KLT-04`/M11 posée en §1.3 est retenue telle quelle
+   (`KLT-0008` ne la modifie pas).
+4. Le build effectif du contenu de ces 6 modules reste un ticket
+   distinct, à autoriser séparément (`KLT-0008` §5).
 
 ## REVIEW
 

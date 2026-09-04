@@ -17,11 +17,16 @@ Point d'entrée unique pour naviguer l'intégralité du corpus Kiltikonet
 
 ## Emplacements futurs réservés (KLT-06 → KLT-08)
 
-| Formation | Emplacement | Référentiel | Statut |
-|---|---|---|---|
-| `KLT-06` Analyste Observatory | `../06_KLT06_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md` — `FROZEN`, 5/7 compétences constructibles | `PLANNED` (modules) — référentiel gelé, 2/7 compétences bloquées sur Observatory réel |
-| `KLT-07` Déploiement territorial | `../07_KLT07_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `PLANNED` (modules) — référentiel gelé, frontière `KLT-04`/M11 résolue, 1/7 compétence bloquée sur Network réel |
-| `KLT-08` Qualité/conformité/audit réseau | `../08_KLT08_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `PLANNED` (modules) — référentiel gelé, frontière `KLT-04`/M12-M13 résolue, 1/7 compétence bloquée sur Compliance |
+| Formation | Emplacement | Référentiel | `contexts` (`KLT-0008`) | Statut |
+|---|---|---|---|---|
+| `KLT-06` Analyste Observatory | `../06_KLT06_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md` — `FROZEN`, 5/7 compétences constructibles | `EXTERNAL` | `PLANNED` (modules) — référentiel + contexte + périmètre gelés, 2/7 compétences bloquées sur Observatory réel |
+| `KLT-07` Déploiement territorial | `../07_KLT07_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `INTERNAL` | `PLANNED` (modules) — frontière `KLT-04`/M11 résolue, 1/7 compétence bloquée sur Network réel |
+| `KLT-08` Qualité/conformité/audit réseau | `../08_KLT08_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `INTERNAL` | `PLANNED` (modules) — frontière `KLT-04`/M12-M13 résolue, 1/7 compétence bloquée sur Compliance |
+
+`contexts` décidés par `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_
+SCOPE_DECISION.md` (délégation Founder du 2026-09-04, règle `ACA-0004`
+appliquée mécaniquement). `BRIDGE` non retenu pour les trois (niveau
+`Avancé`, pas un point d'entrée du parcours).
 
 ## Documents transversaux (ce Master Package)
 

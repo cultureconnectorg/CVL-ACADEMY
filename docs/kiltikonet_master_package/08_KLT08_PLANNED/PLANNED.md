@@ -17,9 +17,14 @@ méthode héritée par référence, jamais dupliquée, unité d'analyse et
 compétence "formation opérateurs" distinctes) et identifie 7 compétences
 (`PROPOSED`), dont **6/7 constructibles dès aujourd'hui** et **1/7
 bloquée** (`C4` — suivi de conformité réseau agrégée réelle, `Compliance`
-`NOT_IMPLEMENTED`). `PUBLIC/EXTERNAL/BRIDGE` reste `UNRESOLVED`, avec un
-indice `INTERNAL` plus net (libellé "pro/interne"). Aucun module n'est
-écrit — le build lui-même reste `NOT_AUTHORIZED`.
+`NOT_IMPLEMENTED`).
+
+**Mise à jour (`KLT-0008`)** : `contexts = [INTERNAL]` décidé — signal
+le plus net des trois formations (libellé "pro/interne", voir
+`docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_DECISION.md`) ;
+périmètre buildable confirmé = 6/7 compétences (M01-M03, M05-M07). Aucun
+module n'est écrit — le build de contenu reste un ticket distinct,
+`NOT_AUTHORIZED`.
 
 ## Position dans l'architecture globale
 

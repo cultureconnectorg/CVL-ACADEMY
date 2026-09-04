@@ -15,7 +15,8 @@ Historique des tickets, du cadrage initial à ce Master Package.
 | *(continuation)* | Master Package v1 — consolidation, sans reconstruction | `docs/kiltikonet_master_package/` + `docs/KILTIKONET_MASTER_PACKAGE_V1_REPORT.md` |
 | `KLT-0005` | Référentiel canonique `KLT-06` (Observatory) — compétences + structure indicative uniquement | `docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md` |
 | `KLT-0006` | Référentiel canonique `KLT-07` (déploiement territorial) — frontière `KLT-04`/M11 résolue | `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md` |
-| **Ce ticket (`KLT-0007`)** | **Référentiel canonique `KLT-08` (qualité/conformité/audit réseau) — frontière `KLT-04`/M12-M13 résolue** | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` |
+| `KLT-0007` | Référentiel canonique `KLT-08` (qualité/conformité/audit réseau) — frontière `KLT-04`/M12-M13 résolue | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` |
+| **Ce ticket (`KLT-0008`)** | **Décision déléguée : `contexts` (`EXTERNAL`/`INTERNAL`/`INTERNAL`) + périmètre buildable pour `KLT-06`/`07`/`08`** | `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_DECISION.md` |
 
 ## Correction de cadrage explicite (Master Package v1)
 
@@ -31,8 +32,7 @@ consolide.
 - Intégration runtime Academy — non commencée (`NO_RUNTIME_BINDING`
   respecté partout).
 - `KLT-06`/`07`/`08` — référentiels `FROZEN` (`KLT-0005`/`0006`/`0007`),
-  **aucun module écrit** ; build de modules toujours `NOT_AUTHORIZED`,
-  et 1 à 2 compétences par formation restent bloquées sur un accès réel
-  à Observatory/Network/Compliance.
-- `PUBLIC/EXTERNAL/BRIDGE` pour `KLT-06`/`07`/`08` — toujours
-  `UNRESOLVED`, décision Founder requise avant tout build.
+  `contexts` et périmètre buildable décidés (`KLT-0008`), **aucun module
+  écrit** ; build de contenu toujours `NOT_AUTHORIZED`, et 1 à 2
+  compétences par formation restent bloquées sur un accès réel à
+  Observatory/Network/Compliance.

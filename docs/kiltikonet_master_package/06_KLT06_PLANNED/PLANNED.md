@@ -15,8 +15,13 @@ d'abord"), un référentiel canonique a été construit et gelé :
 compétences (`PROPOSED`, sans legacy ni détail master-plan module-par-
 module disponible), dont **5/7 constructibles dès aujourd'hui** (méthode/
 littératie/éthique) et **2/7 bloquées** (`C5`, `C6` — nécessitent un accès
-Observatory réel). `PUBLIC/EXTERNAL/BRIDGE` reste `UNRESOLVED`. Aucun
-module n'est écrit — le build lui-même reste `NOT_AUTHORIZED`.
+Observatory réel).
+
+**Mise à jour (`KLT-0008`)** : `contexts = [EXTERNAL]` décidé (audit +
+rationale : `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_
+DECISION.md`) ; périmètre buildable confirmé = 5/7 compétences (M01-M04,
+M07). Aucun module n'est écrit — le build de contenu lui-même reste un
+ticket distinct, `NOT_AUTHORIZED`.
 
 ## Position dans l'architecture globale
 

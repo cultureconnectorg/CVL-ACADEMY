@@ -91,13 +91,12 @@ Cross-référencé contre `KLT-01`→`05` pour éviter le chevauchement :
 
 ### 1.5 Contexte de la formation (PUBLIC/EXTERNAL/BRIDGE)
 
-`KLT-0001` §3 a laissé cette question **explicitement `UNRESOLVED`** pour
-`KLT-06`/`07`/`08` — aucun `contexts` n'existe dans `catalog_
-cartography.py` pour ces codes, et le `Type` du master plan ("Formation /
-spécialisation") ne tranche pas clairement entre public et interne. Ce
-référentiel **ne fabrique pas** de réponse : `PUBLIC/EXTERNAL/BRIDGE =
-UNRESOLVED`, reporté tel quel, à trancher par le Founder avant tout
-build de module.
+`KLT-0001` §3 avait laissé cette question `UNRESOLVED`. **`RESOLVED par
+KLT-0008`** (décision déléguée par le Founder, 2026-09-04) :
+`contexts = [EXTERNAL]` — voir `docs/KILTIKONET_KLT0008_KLT06_08_
+CONTEXT_AND_SCOPE_DECISION.md` §2 pour l'audit et la rationale complète.
+`INTERNAL` non retenu pour l'instant (lié aux compétences `BLOCKED`
+C5/C6) ; `BRIDGE` non retenu (niveau `Avancé`, pas un point d'entrée).
 
 ---
 
@@ -169,13 +168,14 @@ compétence orpheline. 5/7 sont réellement constructibles aujourd'hui.
 
 ## 6. Ce qui devra être fait avant le build des modules
 
-1. Décision Founder sur `PUBLIC/EXTERNAL/BRIDGE` (§1.5) — toujours
-   `UNRESOLVED`.
-2. Décision Founder : construire M01-M04+M07 (5/7 compétences) comme un
-   premier périmètre réduit de `KLT-06`, en laissant M05/M06
-   explicitement `À produire ultérieurement` — ou attendre un accès
-   Observatory réel avant tout build, même partiel.
-3. Si le master plan source (fichier Excel) contient un détail
+1. ~~Décision Founder sur `PUBLIC/EXTERNAL/BRIDGE`~~ — **`RESOLVED par
+   KLT-0008`** : `contexts = [EXTERNAL]`.
+2. ~~Décision Founder sur le périmètre~~ — **`RESOLVED par KLT-0008`** :
+   M01-M04+M07 (5/7 compétences) autorisées comme premier périmètre ;
+   M05/M06 explicitement différés (`BLOCKED`, Observatory non connecté).
+3. Le build effectif du contenu de ces 5 modules reste un ticket
+   distinct, à autoriser séparément (`KLT-0008` §5).
+4. Si le master plan source (fichier Excel) contient un détail
    module-par-module pour `KLT-06` non résumé dans `KLT-0001`, le
    Founder est le seul à pouvoir le fournir — ce référentiel ne l'invente
    pas.

@@ -89,10 +89,11 @@ nécessaire.
 
 ### 1.5 Contexte de la formation
 
-`PUBLIC/EXTERNAL/BRIDGE = UNRESOLVED` (`KLT-0001` §3) — mais avec un
-indice `INTERNAL` plus net que `KLT-06`/`07` (le libellé "pro/interne"
-lui-même). Ce référentiel **ne tranche pas** : reporté `UNRESOLVED`,
-avec cet indice explicitement noté pour la décision Founder à venir.
+`KLT-0001` §3 avait laissé cette question `UNRESOLVED`, avec un indice
+`INTERNAL` net (libellé "pro/interne"). **`RESOLVED par KLT-0008`** :
+`contexts = [INTERNAL]` — voir `docs/KILTIKONET_KLT0008_KLT06_08_
+CONTEXT_AND_SCOPE_DECISION.md` §2, signal le plus net des trois
+formations. `BRIDGE` non retenu (niveau `Avancé`).
 
 ---
 
@@ -159,14 +160,15 @@ compétence orpheline. 6/7 réellement constructibles aujourd'hui.
 
 ## 6. Ce qui devra être fait avant le build des modules
 
-1. Décision Founder sur `PUBLIC/EXTERNAL/BRIDGE` (§1.5) — `UNRESOLVED`,
-   avec l'indice `INTERNAL` du libellé à trancher explicitement.
-2. Décision Founder : construire 6/7 compétences (tout sauf `C4`) comme
-   premier périmètre de `KLT-08`, en laissant `M04` explicitement `À
-   produire ultérieurement`.
-3. Confirmer que la frontière avec `KLT-04`/M12-M13 posée en §1.3 (héritage
-   de méthode, extension d'échelle, pas de duplication) est celle voulue
-   par le Founder avant tout build.
+1. ~~Décision Founder sur `PUBLIC/EXTERNAL/BRIDGE`~~ — **`RESOLVED par
+   KLT-0008`** : `contexts = [INTERNAL]`.
+2. ~~Décision Founder sur le périmètre~~ — **`RESOLVED par KLT-0008`** :
+   6/7 compétences (tout sauf `C4`) autorisées ; `M04` explicitement
+   différé (`BLOCKED`, Compliance non implémentée).
+3. La frontière avec `KLT-04`/M12-M13 posée en §1.3 est retenue telle
+   quelle (`KLT-0008` ne la modifie pas).
+4. Le build effectif du contenu de ces 6 modules reste un ticket
+   distinct, à autoriser séparément (`KLT-0008` §5).
 
 ## REVIEW
 

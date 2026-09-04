@@ -16,8 +16,14 @@ REFERENTIAL.md`. Il examine et résout la frontière avec `KLT-04`/M11
 frontière réelle, non redondante) et identifie 7 compétences
 (`PROPOSED`), dont **6/7 constructibles dès aujourd'hui** et **1/7
 bloquée** (`C4` — suivi de couverture territoriale réelle, nécessite un
-accès Network réel). `PUBLIC/EXTERNAL/BRIDGE` reste `UNRESOLVED`. Aucun
-module n'est écrit — le build lui-même reste `NOT_AUTHORIZED`.
+accès Network réel).
+
+**Mise à jour (`KLT-0008`)** : `contexts = [INTERNAL]` décidé (rôle
+exercé pour le réseau Kiltikonet lui-même, pas une compétence
+généraliste — voir `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_
+DECISION.md`) ; périmètre buildable confirmé = 6/7 compétences (M01-M03,
+M05-M07). Aucun module n'est écrit — le build de contenu reste un ticket
+distinct, `NOT_AUTHORIZED`.
 
 ## Position dans l'architecture globale
 
