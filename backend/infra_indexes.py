@@ -90,3 +90,24 @@ async def ensure_indexes() -> None:
         [("canonical_formation_code", 1), ("canonical_module_code", 1)]
     )
     await db.module_lineage.create_index("status")
+
+    # ACA-0006 — Canonical FMS runtime binding.
+    # Canonical progress: a collection *separate* from db.progress by
+    # construction, not just by convention — see fms_canonical/progress.py.
+    await db.canonical_progress.create_index(
+        [("user_id", 1), ("canonical_module_code", 1)], unique=True
+    )
+    await db.canonical_progress.create_index(
+        [("user_id", 1), ("canonical_formation_code", 1)]
+    )
+    # Source-file provenance ledger (Founder blocking correction,
+    # 2026-09-03): one row per real ZIP entry, parsed or not — see
+    # fms_canonical/provenance.py.
+    await db.fms_resource_provenance.create_index(
+        [("original_path", 1), ("canonical_version", 1)], unique=True
+    )
+    await db.fms_resource_provenance.create_index("sha256")
+    await db.fms_resource_provenance.create_index("parsing_status")
+    await db.fms_resource_provenance.create_index(
+        [("formation_code", 1), ("resource_type", 1)]
+    )

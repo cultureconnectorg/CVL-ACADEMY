@@ -22,6 +22,9 @@ const Roadmap = lazy(() => import("@/pages/Roadmap"));
 const Wallet = lazy(() => import("@/pages/Wallet"));
 const Skills = lazy(() => import("@/pages/Skills"));
 const Certifications = lazy(() => import("@/pages/Certifications"));
+const CanonicalFormations = lazy(() => import("@/pages/CanonicalFormations"));
+const CanonicalFormationDetail = lazy(() => import("@/pages/CanonicalFormationDetail"));
+const CanonicalModuleView = lazy(() => import("@/pages/CanonicalModuleView"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
@@ -64,6 +67,11 @@ function App() {
                 <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
                 <Route path="/skills" element={<Protected><Skills /></Protected>} />
                 <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
+                {/* ACA-0006 — canonical FMS runtime binding, read-only pages,
+                    separate from the legacy /formations tree above. */}
+                <Route path="/canonical" element={<Protected><CanonicalFormations /></Protected>} />
+                <Route path="/canonical/:formationCode" element={<Protected><CanonicalFormationDetail /></Protected>} />
+                <Route path="/canonical/:formationCode/:moduleCode" element={<Protected><CanonicalModuleView /></Protected>} />
                 <Route
                   path="/trainer"
                   element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}

@@ -2,9 +2,9 @@
 
 Each sub-router owns one bounded concern (auth, onboarding, formations,
 learning journey, quiz, badges, missions, progression, mentor, FMS import,
-FMS lineage, skills, certification, templates, assistants, wallet,
-integrations). This module just mounts them all under the single `/api`
-prefix used by the app.
+FMS lineage, canonical FMS runtime, skills, certification, templates,
+assistants, wallet, integrations). This module just mounts them all under
+the single `/api` prefix used by the app.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from . import (
     assistants,
     auth,
     badges,
+    canonical,
     certification,
     fms,
     fms_lineage,
@@ -49,6 +50,7 @@ for module in (
     mentor,
     fms,
     fms_lineage,
+    canonical,
     skills,
     certification,
     templates,
