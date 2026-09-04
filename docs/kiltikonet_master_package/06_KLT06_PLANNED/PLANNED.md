@@ -1,27 +1,29 @@
 # 06 — KLT-06 — Analyste Observatory / Cultural Data Analyst
 
 ```
-STATUS = PLANNED
-REFERENTIAL_STATUS = FROZEN (KLT-0005) — compétences + structure
-indicative de modules uniquement, aucun contenu de module.
-BUILD_STATUS = NOT_STARTED — aucun module écrit.
+STATUS = BUILT_PARTIAL (dossier conservé sous son nom historique
+"06_KLT06_PLANNED" pour ne pas casser les liens déjà livrés — le
+contenu réel n'est plus "planned", voir mise à jour ci-dessous).
+REFERENTIAL_STATUS = FROZEN (KLT-0005)
+CONTEXT_STATUS = DECIDED (KLT-0008) — contexts = [EXTERNAL]
+BUILD_STATUS = PARTIAL — 5/7 modules construits (M01-M04, M07), 2/7
+BLOCKED (M05/M06, Observatory non connecté).
 ```
 
-## Mise à jour — référentiel canonique livré (`KLT-0005`)
+## Mise à jour — contenu pédagogique construit (`KLT-0009`)
 
-Sur autorisation explicite du Founder ("un seul référentiel canonique
-d'abord"), un référentiel canonique a été construit et gelé :
-`docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md`. Il identifie 7
-compétences (`PROPOSED`, sans legacy ni détail master-plan module-par-
-module disponible), dont **5/7 constructibles dès aujourd'hui** (méthode/
-littératie/éthique) et **2/7 bloquées** (`C5`, `C6` — nécessitent un accès
-Observatory réel).
+Sur autorisation explicite du Founder ("Autorisation de rédigé le
+contenu"), le contenu pédagogique complet du périmètre buildable a été
+construit : `docs/klt/klt06/` (22 documents). Référentiel :
+`docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md`. Décision de
+contexte et de périmètre : `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_
+AND_SCOPE_DECISION.md`.
 
-**Mise à jour (`KLT-0008`)** : `contexts = [EXTERNAL]` décidé (audit +
-rationale : `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_
-DECISION.md`) ; périmètre buildable confirmé = 5/7 compétences (M01-M04,
-M07). Aucun module n'est écrit — le build de contenu lui-même reste un
-ticket distinct, `NOT_AUTHORIZED`.
+**5/7 compétences construites** (`C1`-`C4`, `C7`) avec modules, N1, N2,
+`KLT06-A01` (certification **partielle**), skills, guides, templates,
+certification model, quality gates. **2/7 bloquées** (`C5`, `C6`) —
+non construites, non simulées (`NO_FAKE_OBSERVATORY`), voir `docs/klt/
+klt06/modules/MODULES_STATUS.md`. **Aucun badge** — formation `NEW`.
 
 ## Position dans l'architecture globale
 
@@ -31,23 +33,9 @@ confirmé, zéro trace dans `seed_data.py`/`seed_modules.py`/`catalog_
 cartography.py`). Type `Formation / spécialisation`, priorité `P1`,
 dépendance nommée : `Observatory / data lineage / signaux`.
 
-## Blocage structurel réel
+## Blocage structurel réel (toujours d'actualité pour `M05`/`M06`)
 
-Contrairement à `KLT-01`→`05`, cette formation dépend d'**Observatory**
-comme cœur de son objet métier (pas comme une dépendance annexe qu'on
-peut contourner comme dans `KLT-01`/M10, `KLT-02`/M09, `KLT-03`/M10,
-`KLT-05`/M09). `Observatory` a un statut `NOT_CONNECTED` en Academy
-(`KLT-0001` §4) — bâtir `KLT-06` en respectant `NO_FAKE_OBSERVATORY`
-demanderait de construire un métier entier sur des capacités simulées,
-ce qu'aucune discipline de ce corpus n'autorise. Un accès Observatory
-réel (ou une décision Founder explicite sur comment traiter cette
-formation sans lui) est un préalable à toute construction.
-
-## Ce qui devra être fait avant construction
-
-1. Décision Founder : accès Observatory réel, ou périmètre alternatif
-   pour `KLT-06` qui ne dépend pas structurellement de données non
-   disponibles.
-2. Une reconciliation legacy/canonique n'est pas nécessaire (aucun
-   legacy à concilier) — mais un référentiel canonique (méthode
-   `KLT-0003`) reste requis avant tout module.
+`Observatory` reste `NOT_CONNECTED` en Academy (`KLT-0001` §4) —
+`M05`/`M06` restent non construits, sans date. Un accès Observatory réel
+(ou une décision Founder explicite alternative) reste un préalable à
+leur construction.

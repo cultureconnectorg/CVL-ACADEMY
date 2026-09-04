@@ -16,7 +16,10 @@ Historique des tickets, du cadrage initial à ce Master Package.
 | `KLT-0005` | Référentiel canonique `KLT-06` (Observatory) — compétences + structure indicative uniquement | `docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md` |
 | `KLT-0006` | Référentiel canonique `KLT-07` (déploiement territorial) — frontière `KLT-04`/M11 résolue | `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md` |
 | `KLT-0007` | Référentiel canonique `KLT-08` (qualité/conformité/audit réseau) — frontière `KLT-04`/M12-M13 résolue | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` |
-| **Ce ticket (`KLT-0008`)** | **Décision déléguée : `contexts` (`EXTERNAL`/`INTERNAL`/`INTERNAL`) + périmètre buildable pour `KLT-06`/`07`/`08`** | `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_DECISION.md` |
+| `KLT-0008` | Décision déléguée : `contexts` (`EXTERNAL`/`INTERNAL`/`INTERNAL`) + périmètre buildable pour `KLT-06`/`07`/`08` | `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_DECISION.md` |
+| `KLT-0009` | Build pédagogique partiel `KLT-06` (5/7 compétences, 22 documents) | `docs/klt/klt06/` |
+| `KLT-0010` | Build pédagogique partiel `KLT-07` (6/7 compétences, 23 documents) | `docs/klt/klt07/` |
+| **Ce ticket (`KLT-0011`)** | **Build pédagogique partiel `KLT-08` (6/7 compétences, 23 documents) + mise à jour `docs/klt/README.md` et pointeurs Master Package** | `docs/klt/klt08/` |
 
 ## Correction de cadrage explicite (Master Package v1)
 
@@ -28,11 +31,19 @@ consolide.
 
 ## Ce qui reste ouvert après ce ticket
 
-- Validation experte/terrain (`91_VALIDATION/`) — non commencée.
+- Validation experte/terrain (`91_VALIDATION/`) — non commencée, pour
+  les 8 formations.
 - Intégration runtime Academy — non commencée (`NO_RUNTIME_BINDING`
   respecté partout).
-- `KLT-06`/`07`/`08` — référentiels `FROZEN` (`KLT-0005`/`0006`/`0007`),
-  `contexts` et périmètre buildable décidés (`KLT-0008`), **aucun module
-  écrit** ; build de contenu toujours `NOT_AUTHORIZED`, et 1 à 2
-  compétences par formation restent bloquées sur un accès réel à
-  Observatory/Network/Compliance.
+- `KLT-06`/`07`/`08` — build pédagogique `PARTIAL` livré (`KLT-0009`/
+  `0010`/`0011`, 17/21 modules indicatifs construits). 4 compétences (2
+  `KLT-06`, 1 `KLT-07`, 1 `KLT-08`) restent `BLOCKED` sur un accès réel à
+  Observatory/Network/Compliance — non simulées.
+- Les documents transversaux du Master Package v1 (`KILTIKONET_MASTER_
+  PORTFOLIO_MAP.md`, `CROSS_KLT_COMPETENCY_MAP.md`, `KILTIKONET_MASTER_
+  SKILL_REGISTRY.md`, `MASTER_EVIDENCE_MODEL.md`, `CERTIFICATION_
+  ARCHITECTURE.md`, `MASTER_ASSESSMENT_ARCHITECTURE.md`, `93_QUALITY/
+  MASTER_QUALITY_GATES.md`) datent d'avant le build `KLT-06`→`08` et ne
+  reflètent pas encore les 17 nouveaux skill IDs/modules — une
+  actualisation ("Master Package v2") reste un ticket distinct, non fait
+  ici.

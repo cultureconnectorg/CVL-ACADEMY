@@ -15,18 +15,35 @@ Point d'entrée unique pour naviguer l'intégralité du corpus Kiltikonet
 | `KLT-04` Gouvernance réseaux culturels | `../04_KLT04_GOUVERNANCE_RESEAUX/INDEX.md` | `docs/klt/klt04/00_REFERENTIEL_ET_BLUEPRINTS.md` | `docs/klt/klt04/modules/` (14) | `docs/klt/klt04/case/` | `docs/klt/klt04/assessments/` | `docs/klt/klt04/skills/SKILL_ID_REGISTRY.md` | `docs/klt/klt04/skills/EVIDENCE_MODEL.md` | `docs/klt/klt04/guides/` | `docs/klt/klt04/templates/TEMPLATES.md` | `docs/klt/klt04/CERTIFICATION_MODEL.md` | `docs/klt/klt04/INTEGRATION_ACADEMY_PACKAGE_NOTE.md` | `docs/klt/klt04/QUALITY_GATES.md` | `BUILT` |
 | `KLT-05` Opérateur Kiltikonet | `../05_KLT05_OPERATEUR_KILTIKONET/INDEX.md` | `docs/klt/klt05/00_REFERENTIEL_ET_BLUEPRINTS.md` | `docs/klt/klt05/modules/` (11) | `docs/klt/klt05/case/` | `docs/klt/klt05/assessments/` | `docs/klt/klt05/skills/SKILL_ID_REGISTRY.md` | `docs/klt/klt05/skills/EVIDENCE_MODEL.md` | `docs/klt/klt05/guides/` | `docs/klt/klt05/templates/TEMPLATES.md` | `docs/klt/klt05/CERTIFICATION_MODEL.md` | `docs/klt/klt05/INTEGRATION_ACADEMY_PACKAGE_NOTE.md` | `docs/klt/klt05/QUALITY_GATES.md` | `BUILT` |
 
-## Emplacements futurs réservés (KLT-06 → KLT-08)
+## Formations construites — périmètre partiel (KLT-06 → KLT-08)
 
-| Formation | Emplacement | Référentiel | `contexts` (`KLT-0008`) | Statut |
-|---|---|---|---|---|
-| `KLT-06` Analyste Observatory | `../06_KLT06_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0005_KLT06_CANONICAL_REFERENTIAL.md` — `FROZEN`, 5/7 compétences constructibles | `EXTERNAL` | `PLANNED` (modules) — référentiel + contexte + périmètre gelés, 2/7 compétences bloquées sur Observatory réel |
-| `KLT-07` Déploiement territorial | `../07_KLT07_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `INTERNAL` | `PLANNED` (modules) — frontière `KLT-04`/M11 résolue, 1/7 compétence bloquée sur Network réel |
-| `KLT-08` Qualité/conformité/audit réseau | `../08_KLT08_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md` — `FROZEN`, 6/7 compétences constructibles | `INTERNAL` | `PLANNED` (modules) — frontière `KLT-04`/M12-M13 résolue, 1/7 compétence bloquée sur Compliance |
+```
+Ces trois dossiers gardent leur nom historique "_PLANNED" pour ne pas
+casser les liens déjà livrés dans le Master Package v1 — leur contenu
+n'est plus "planned" : chacune a un build PARTIAL réel (voir Modules).
+```
+
+| Formation | Emplacement | Référentiel | Modules construits | Cas | Assessments | Skills | Guides | `contexts` | Statut |
+|---|---|---|---|---|---|---|---|---|---|
+| `KLT-06` Analyste Observatory | `../06_KLT06_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0005_...` | `docs/klt/klt06/modules/` (5/7, 2 `BLOCKED`) | `docs/klt/klt06/case/` | `docs/klt/klt06/assessments/` | `docs/klt/klt06/skills/SKILL_ID_REGISTRY.md` | `docs/klt/klt06/guides/` | `EXTERNAL` | `BUILT_PARTIAL` |
+| `KLT-07` Déploiement territorial | `../07_KLT07_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0006_...` | `docs/klt/klt07/modules/` (6/7, 1 `BLOCKED`) | `docs/klt/klt07/case/` | `docs/klt/klt07/assessments/` | `docs/klt/klt07/skills/SKILL_ID_REGISTRY.md` | `docs/klt/klt07/guides/` | `INTERNAL` | `BUILT_PARTIAL` |
+| `KLT-08` Qualité/conformité/audit réseau | `../08_KLT08_PLANNED/PLANNED.md` | `docs/KILTIKONET_KLT0007_...` | `docs/klt/klt08/modules/` (6/7, 1 `BLOCKED`) | `docs/klt/klt08/case/` | `docs/klt/klt08/assessments/` | `docs/klt/klt08/skills/SKILL_ID_REGISTRY.md` | `docs/klt/klt08/guides/` | `INTERNAL` | `BUILT_PARTIAL` |
 
 `contexts` décidés par `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_
 SCOPE_DECISION.md` (délégation Founder du 2026-09-04, règle `ACA-0004`
 appliquée mécaniquement). `BRIDGE` non retenu pour les trois (niveau
-`Avancé`, pas un point d'entrée du parcours).
+`Avancé`, pas un point d'entrée du parcours). Aucune de ces trois
+formations n'a de badge (`NEW`, sans legacy) ; chaque certification
+(`KLTxx-A01`) est explicitement **partielle** — voir chaque
+`CERTIFICATION_MODEL.md`.
+
+**Note de cohérence Master Package** : les documents transversaux
+ci-dessous (`KILTIKONET_MASTER_PORTFOLIO_MAP.md`, `CROSS_KLT_
+COMPETENCY_MAP.md`, `KILTIKONET_MASTER_SKILL_REGISTRY.md`, etc.) datent
+du Master Package v1 et **ne reflètent pas encore** les 17 nouveaux
+skill IDs / modules de `KLT-06`→`08` — leur mise à jour reste un ticket
+distinct, non fait ici (`docs/KILTIKONET_KLT0009_KLT11_BUILD_REPORT.md`
+le documente explicitement comme point ouvert).
 
 ## Documents transversaux (ce Master Package)
 
@@ -58,6 +75,10 @@ KLT0001 = CANONICAL EDUCATION MAP
 KLT0002 = LEGACY/CANONICAL RECONCILIATION
 KLT0003 = KLT01 REFERENTIAL FREEZE
 KLT0004+ = PEDAGOGICAL BUILD (KLT-01 puis KLT-02→05 en continuation)
-docs/klt/ (139 documents) = CURRENT CONSOLIDATED PEDAGOGICAL CORPUS
+KLT0005/0006/0007 = RÉFÉRENTIELS CANONIQUES KLT-06/07/08 (FROZEN)
+KLT0008 = DÉCISION contexts + périmètre buildable KLT-06/07/08
+KLT0009/0010/0011 = PEDAGOGICAL BUILD PARTIEL KLT-06/07/08
+docs/klt/ (207 documents pédagogiques : 139 COMPLETE + 68 PARTIAL) =
+           CURRENT CONSOLIDATED PEDAGOGICAL CORPUS
 Ce Master Package = CONSOLIDATION, jamais une nouvelle version du corpus
 ```

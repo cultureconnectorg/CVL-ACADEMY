@@ -1,55 +1,40 @@
 # 08 — KLT-08 — Responsable qualité, conformité & audit réseau
 
 ```
-STATUS = PLANNED
-REFERENTIAL_STATUS = FROZEN (KLT-0007) — compétences + structure
-indicative de modules uniquement, aucun contenu de module.
-BUILD_STATUS = NOT_STARTED — aucun module écrit.
+STATUS = BUILT_PARTIAL (dossier conservé sous son nom historique
+"08_KLT08_PLANNED" pour ne pas casser les liens déjà livrés).
+REFERENTIAL_STATUS = FROZEN (KLT-0007)
+CONTEXT_STATUS = DECIDED (KLT-0008) — contexts = [INTERNAL]
+BUILD_STATUS = PARTIAL — 6/7 modules construits (M01-M03, M05-M07), 1/7
+BLOCKED (M04, Compliance non implémentée).
 ```
 
-## Mise à jour — référentiel canonique livré (`KLT-0007`)
+## Mise à jour — contenu pédagogique construit (`KLT-0011`)
 
-Sur autorisation explicite du Founder, un référentiel canonique a été
-construit et gelé : `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_
-REFERENTIAL.md`. Il examine et résout la frontière avec `KLT-04`/M12-M13
-(audit/conformité à l'échelle d'une association vs échelle réseau —
-méthode héritée par référence, jamais dupliquée, unité d'analyse et
-compétence "formation opérateurs" distinctes) et identifie 7 compétences
-(`PROPOSED`), dont **6/7 constructibles dès aujourd'hui** et **1/7
-bloquée** (`C4` — suivi de conformité réseau agrégée réelle, `Compliance`
-`NOT_IMPLEMENTED`).
+Sur autorisation explicite du Founder, le contenu pédagogique complet du
+périmètre buildable a été construit : `docs/klt/klt08/` (23 documents).
+Référentiel : `docs/KILTIKONET_KLT0007_KLT08_CANONICAL_REFERENTIAL.md`.
+Décision de contexte et de périmètre : `docs/KILTIKONET_KLT0008_KLT06_08_
+CONTEXT_AND_SCOPE_DECISION.md`.
 
-**Mise à jour (`KLT-0008`)** : `contexts = [INTERNAL]` décidé — signal
-le plus net des trois formations (libellé "pro/interne", voir
-`docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_DECISION.md`) ;
-périmètre buildable confirmé = 6/7 compétences (M01-M03, M05-M07). Aucun
-module n'est écrit — le build de contenu reste un ticket distinct,
-`NOT_AUTHORIZED`.
+**6/7 compétences construites** (`C1`-`C3`, `C5`-`C7`) avec modules, N1,
+N2, `KLT08-A01` (certification **partielle**), skills, guides,
+templates, certification model, quality gates. **1/7 bloquée** (`C4`) —
+non construite, non simulée (`NO_FAKE_COMPLIANCE`), voir `docs/klt/
+klt08/modules/MODULES_STATUS.md`. **Aucun badge** — formation `NEW`. La
+frontière avec `KLT-04`/M12-M13 (déjà résolue par `KLT-0007`) est
+appliquée aux modules M01-M02 — méthode héritée par référence, jamais
+dupliquée.
 
 ## Position dans l'architecture globale
 
 Nommé dans `KLT_MASTER_MAP_v1` comme spécialisation pro/interne `NEW`,
 priorité `P2`, dépendance nommée : `Compliance / audits / formation
-opérateurs`. Seule des trois formations planifiées dont le libellé type
-porte explicitement la mention "interne" (`KLT-0001` §3, signal réel
-retenu à l'époque).
+opérateurs`.
 
-## Recouvrement à examiner avant construction
+## Blocage structurel réel (toujours d'actualité pour `M04`)
 
-Cette formation recouvre potentiellement une compétence déjà construite
-dans `KLT-04`/`M13` (Auditer un dispositif de gouvernance — audit
-d'association) et `KLT-04`/`M12` (conformité). `KLT-08` porte
-vraisemblablement sur un audit à l'échelle **réseau** (plusieurs
-opérateurs), pas une seule association — un niveau distinct, mais le
-recouvrement de méthode (comment auditer, quelles preuves) est réel et
-devra être traité explicitement pour éviter que `KLT-08` ne réécrive
-`KLT-04`/`M13` sous un autre nom.
-
-## Ce qui devra être fait avant construction
-
-1. Décision Founder sur le périmètre exact (audit réseau vs audit
-   association — déjà couvert par `KLT-04`).
-2. Vérifier l'accès aux dépendances `Compliance`/`audits` (statut
-   `NOT_IMPLEMENTED` comme donnée structurée en Academy, `KLT-0001` §4).
-3. Cadrer explicitement la frontière avec `KLT-04`/`M12`-`M13` avant
-   tout référentiel.
+`Compliance` reste `NOT_IMPLEMENTED` comme donnée structurée en Academy
+(`KLT-0001` §4) — `M04` reste non construit, sans date. Une décision
+Founder sur l'implémentation de cette donnée reste un préalable à sa
+construction.

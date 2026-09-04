@@ -1,29 +1,29 @@
 # 07 — KLT-07 — Responsable déploiement territorial culturel
 
 ```
-STATUS = PLANNED
-REFERENTIAL_STATUS = FROZEN (KLT-0006) — compétences + structure
-indicative de modules uniquement, aucun contenu de module.
-BUILD_STATUS = NOT_STARTED — aucun module écrit.
+STATUS = BUILT_PARTIAL (dossier conservé sous son nom historique
+"07_KLT07_PLANNED" pour ne pas casser les liens déjà livrés).
+REFERENTIAL_STATUS = FROZEN (KLT-0006)
+CONTEXT_STATUS = DECIDED (KLT-0008) — contexts = [INTERNAL]
+BUILD_STATUS = PARTIAL — 6/7 modules construits (M01-M03, M05-M07), 1/7
+BLOCKED (M04, Network non connecté).
 ```
 
-## Mise à jour — référentiel canonique livré (`KLT-0006`)
+## Mise à jour — contenu pédagogique construit (`KLT-0010`)
 
-Sur autorisation explicite du Founder, un référentiel canonique a été
-construit et gelé : `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_
-REFERENTIAL.md`. Il examine et résout la frontière avec `KLT-04`/M11
-(gouvernance vue association vs déploiement opérationnel vu réseau —
-frontière réelle, non redondante) et identifie 7 compétences
-(`PROPOSED`), dont **6/7 constructibles dès aujourd'hui** et **1/7
-bloquée** (`C4` — suivi de couverture territoriale réelle, nécessite un
-accès Network réel).
+Sur autorisation explicite du Founder, le contenu pédagogique complet du
+périmètre buildable a été construit : `docs/klt/klt07/` (23 documents).
+Référentiel : `docs/KILTIKONET_KLT0006_KLT07_CANONICAL_REFERENTIAL.md`.
+Décision de contexte et de périmètre : `docs/KILTIKONET_KLT0008_KLT06_08_
+CONTEXT_AND_SCOPE_DECISION.md`.
 
-**Mise à jour (`KLT-0008`)** : `contexts = [INTERNAL]` décidé (rôle
-exercé pour le réseau Kiltikonet lui-même, pas une compétence
-généraliste — voir `docs/KILTIKONET_KLT0008_KLT06_08_CONTEXT_AND_SCOPE_
-DECISION.md`) ; périmètre buildable confirmé = 6/7 compétences (M01-M03,
-M05-M07). Aucun module n'est écrit — le build de contenu reste un ticket
-distinct, `NOT_AUTHORIZED`.
+**6/7 compétences construites** (`C1`-`C3`, `C5`-`C7`) avec modules, N1,
+N2, `KLT07-A01` (certification **partielle**), skills, guides,
+templates, certification model, quality gates. **1/7 bloquée** (`C4`) —
+non construite, non simulée (`NO_FAKE_NETWORK`), voir `docs/klt/klt07/
+modules/MODULES_STATUS.md`. **Aucun badge** — formation `NEW`. La
+frontière avec `KLT-04`/M11 (déjà résolue par `KLT-0006`) est appliquée
+au module M02.
 
 ## Position dans l'architecture globale
 
@@ -31,20 +31,8 @@ Nommé dans `KLT_MASTER_MAP_v1` comme spécialisation professionnelle
 `NEW`, priorité `P2`, dépendance nommée : `Network / territoires /
 opérateurs / licences`.
 
-## Blocage structurel réel
+## Blocage structurel réel (toujours d'actualité pour `M04`)
 
-Comme `KLT-06`, cette formation dépend structurellement d'un système
-(`Network`) `NOT_CONNECTED` en Academy (`KLT-0001` §4) — aucune donnée
-territoire/opérateur/licence réelle n'existe dans ce repo. Une relation
-plausible existe avec `KLT-04`/`M11` (Gouvernance territoriale — réseau
-multi-opérateurs), qui esquisse déjà, du point de vue gouvernance, la
-même problématique multi-opérateurs sans dépendre de `Network` — ce
-lien devra être examiné avant de cadrer `KLT-07`, pour éviter une
-duplication de compétence entre les deux formations.
-
-## Ce qui devra être fait avant construction
-
-1. Décision Founder sur l'accès `Network`, ou périmètre alternatif.
-2. Clarifier la frontière avec `KLT-04`/`M11` (gouvernance réseau vs
-   déploiement territorial opérationnel) avant de cadrer les
-   compétences propres à `KLT-07`.
+`Network` reste `NOT_CONNECTED` en Academy (`KLT-0001` §4) — `M04` reste
+non construit, sans date. Un accès Network réel (ou une décision Founder
+explicite alternative) reste un préalable à sa construction.
