@@ -33,6 +33,7 @@ preuve signée — cohérent avec le corpus KOR-01→15 déjà livré (voir
 |---|---|---|
 | KOR-01→15 | `KOR01.SKILL.*` → `KOR15.SKILL.*` | `PROPOSED`, 169 IDs, aucune collision (déjà livré) |
 | KLT-01→08 | `KLT01.SKILL.*` → `KLT08.SKILL.*` | `PROPOSED` (déjà livré) |
+| GMD-21→33 | `GMD21.SKILL.*` → `GMD33.SKILL.*` | `PROPOSED` — premier W6 Wave 1 livré (`docs/gmd/`), aucune collision avec `KOR*`/`KLT*` |
 | FMS-01→06 | espace existant (voir `backend/fms_canonical/`) | Lié au runtime |
 | Tous les domaines Master 2D réconciliés (FMS-07→18, FRK-01→75, KLT-09→20, WAL/CVE, KOR-OP/X, Agent Factory/AF-X/Laurentia/IOS/Brain/CMD, Good Mood/DJ Sayd, CyberSecure, Blockchain/Tokenomics, Gala Cook & Food, Hospitality, LabelOS, Founder/CEO, CVLN Group, Fondation Cœurvolan, Cross-CVLN/XCV — 27 domaines, 812 lignes) | à définir au niveau W6 par domaine, une fois le contenu pédagogique effectivement rédigé | `NOT_STARTED` pour tous — **aucun Skill ID n'est réservé prématurément par ce document**, y compris pour les domaines déjà réconciliés à 0 rejet. La réconciliation (`RECONCILED_NOT_BUILT`) précède et ne remplace jamais la réservation d'espace de Skill ID, qui reste un acte W6 par domaine. |
 

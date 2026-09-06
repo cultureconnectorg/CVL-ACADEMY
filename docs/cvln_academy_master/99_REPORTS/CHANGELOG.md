@@ -47,3 +47,18 @@ prérequis → objectifs → modules → outcomes → exercices → livrables �
 assessments → rubrics → evidence → certification eligibility →
 mission eligibility → internal authorization gates (si applicable),
 suivie de tests, preuve, commit, push.
+
+### Wave 1 — Good Mood internal operator corpus (`docs/gmd/`)
+
+Premier référentiel W6 réellement construit : GMD-21→33 (13
+formations, 41 modules, `MODULE_CONTENT_DRAFTED`) + GMD-34 gap
+explicitement déclaré (`gmd34/GAP.md`, `BLOCKED_PRODUCT_DEPENDENCY`,
+non simulé). Choisi en premier car meilleur cluster ancré du chantier
+(13/14 sur code réel `gmfest972/goodmooddjsayd`). Chaque
+`gmdNN/REFERENTIAL.md` couvre compétences → prérequis → objectifs →
+modules → outcomes/livrables → assessment, avec doctrine de
+certification/évaluation partagée (`CERTIFICATION_MODEL.md`) pour
+éviter la duplication. Skill IDs `GMD21.SKILL.*` → `GMD33.SKILL.*`
+réservés (`70_EVIDENCE/EVIDENCE_ARCHITECTURE.md`). `FULLY_COMPLETE`
+non déclaré — aucun candidat réel évalué encore
+(`docs/gmd/QUALITY_GATES.md`).
