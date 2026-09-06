@@ -4,7 +4,7 @@
 Structure of docs/cvln_academy_master/ — 33 files across 13 folders,
 plus 11 raw source CSVs preserved verbatim, plus 100_ECONOMY/ (economic
 model, 15 raw CSVs) and docs/gmd/, docs/wal/, docs/cve/, docs/fms/,
-docs/frk/ (W6 Waves 1-5, outside this folder proper). All 812 Master 2D rows are
+docs/frk/, docs/agf/ (W6 Waves 1-6, outside this folder proper). All 812 Master 2D rows are
 RECONCILED_NOT_BUILT (see 00_GOVERNANCE/QUALITY_GATES.md for the final
 tally). FOUNDER_DECISION_REQUIRED = 0 across all 812 rows: FD-CVE-001,
 FD-CIP-001, and FRK-71 are all CLOSED, each on a directly-verified real
