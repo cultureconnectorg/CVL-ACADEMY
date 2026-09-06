@@ -49,4 +49,9 @@ eligibility).
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD22` — full canonical package built:
+`BANQUE_N1.md`, `BANQUE_N2.md`, `ASSESSMENT_AND_RUBRIC.md`,
+`EVIDENCE_MODEL.md`, `GUIDE_CANDIDAT.md`, `GUIDE_CORRECTEUR.md`,
+`GUIDE_JURY.md`, `INTEGRATION_NOTE.md`. Not yet delivered to a real
+candidate — `FULLY_COMPLETE` still requires that verification, per
+`../QUALITY_GATES.md`.

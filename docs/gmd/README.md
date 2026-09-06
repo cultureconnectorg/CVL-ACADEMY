@@ -7,17 +7,17 @@ SOURCE OF TRUTH: docs/cvln_academy_master/20_EXTERNAL/
 GOOD_MOOD_DJ_SAYD_RECONCILIATION.md — this corpus builds exactly what
 that document already verdicted (NEW_INTERNAL, buildable now on real
 code), it does not re-audit or re-classify.
-STATUT = 1/14 formation à package canonique complet (GMD-21 :
+STATUT = 2/14 formations à package canonique complet (GMD-21, GMD-22 :
 référentiel + banque N1 + banque N2 + assessment + rubric + evidence
-model + 3 guides + integration note — niveau KOR/KLT), 12/14
-(GMD-22→33) au niveau MODULE_CONTENT_DRAFTED (référentiel + modules
+model + 3 guides + integration note — niveau KOR/KLT), 11/14
+(GMD-23→33) au niveau MODULE_CONTENT_DRAFTED (référentiel + modules
 seulement, approfondissement en cours vague par vague — ce n'est PAS
 un état final, voir Founder directive 2026-09-06), 1/14
 (GMD-34) BLOCKED_PRODUCT_DEPENDENCY (aucun mécanisme d'incident/
 rollback réel n'existe dans gmfest972/goodmooddjsayd ; non simulé,
 voir gmd34/GAP.md). Aucune formation n'est FULLY_COMPLETE — même
-GMD-21 attend un premier passage réel vérifié par un humain avant ce
-statut.
+GMD-21/22 attendent un premier passage réel vérifié par un humain
+avant ce statut.
 ```
 
 ## Pourquoi ce corpus existe

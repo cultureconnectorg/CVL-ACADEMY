@@ -28,7 +28,8 @@ claiming false completeness in the meantime:
 | Formation | Depth reached |
 |---|---|
 | GMD-21 | `PACKAGE_COMPLETE_FOR_GMD21` — full canonical package (référentiel, banque N1, banque N2, assessment + rubric, evidence model, 3 guides, integration note), matching the KOR/KLT depth standard. |
-| GMD-22→33 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening to the same standard continues in subsequent waves. |
+| GMD-22 | `PACKAGE_COMPLETE_FOR_GMD22` — same full canonical package, grounded in `Volume`/`VolumeIn` + the 4 real admin catalogue routes + the public route (`server.py:80-98`, `219-305`). |
+| GMD-23→33 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening to the same standard continues in subsequent waves. |
 | GMD-34 | `BLOCKED_PRODUCT_DEPENDENCY`, 0% built, by design — no real incident/recovery mechanism exists to teach. |
 
 ## Never claim FULLY_COMPLETE
