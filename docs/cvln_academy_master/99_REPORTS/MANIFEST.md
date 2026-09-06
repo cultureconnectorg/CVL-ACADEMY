@@ -85,6 +85,10 @@ docs/cvln_academy_master/
                                       RECONCILED_NOT_BUILT/DRAFTED/PARTIAL_PACKAGE/
                                       PACKAGE_COMPLETE/BLOCKED), re-read before each
                                       wave-selection decision
+    BILAN_CVLN_ACADEMY.md          — full inventory/status report (repos audited,
+                                      W6 waves delivered, remaining domains, and the
+                                      4 transversal workstreams: economic model,
+                                      spatial, security, runtime binding)
 ```
 
 ## Domain row accounting (812/812)
