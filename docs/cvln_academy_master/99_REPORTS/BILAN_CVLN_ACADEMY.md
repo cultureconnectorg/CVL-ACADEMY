@@ -69,16 +69,19 @@ Fondation Cœurvolan — chacun garde sa formation legacy réelle
 | **4 — FMS étendu** | `docs/fms/` | FMS-07→18 → 9 parcours après fusions (FMS-07 absorbe 14/16, FMS-18 absorbe 17) | FMS-07 `PACKAGE_COMPLETE` (flagship) ; 8/9 `MODULE_CONTENT_DRAFTED` |
 | **5 — FREK (domaine complet)** | `docs/frk/` | 75/75 comptabilisées | 54/75 `PACKAGE_COMPLETE` (passe de deepening complète Batches A→I + reclassification FRK-16 sur audit `Cvln-ios-v.1`) ; 3/75 `MODULE_CONTENT_DRAFTED` (FRK-10/14/73, `NEEDS_EXPERT_REVIEW` non levé, jamais promues sans revue humaine réelle) ; 10/75 `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, gaps produit réels, re-vérifiés) ; 8/75 `EXTEND_EXISTING` (rattachées à un sibling, sans fichier séparé) |
 | **6 — Agent Factory/IOS/Brain/CMD/Laurentia** | `docs/agf/` (séparation stricte `external/`/`internal/`) | 109/109 comptabilisées | 59/109 `PACKAGE_COMPLETE` (passe de deepening complète cette session : les 5 clusters `external/` — af01_03/af04_15/lau01_10/brn01_14/cmd01_14, 53 lignes — et les 6 formations `internal/` — CMD-15 flagship + AF-16/17/AF-X-03/BRN-15/IOS-07, 6 lignes — chaque interne grondée uniquement sur `CVLNAgentfactory`/`Cvln-ios-v.1`/`Laurent.ia`/`MetaCVLN`, jamais extrapolée, clusters externes sur disciplines marché-général réelles) ; 39/109 `BLOCKED_PRODUCT_DEPENDENCY` (repos réels non branchés à l'Academy, inchangées) ; 11/109 `EXTEND_EXISTING` (inchangées) |
+| **7 — KORA interne/cross** | `docs/kor_op/` | 19/19 comptabilisées | 1/19 `PACKAGE_COMPLETE` (KOR-OP-12, seule ligne sans ancrage 1:1, package neuf construit sur les compétences réelles KOR-03/KOR-04) ; 18/19 `EXTEND_EXISTING`/index convergé (11 notes de cadrage KOR-OP pointant vers `docs/kor/korXX/` déjà bâti, 7 ponts KOR-X convergés dont 4 identiques à un pont déjà construit sous un autre numéro de ligne — `FRK-56`/`LOS-X-03`/`WAL-X-01`) ; `docs/kor/kor01→15` non touché |
 
 **Pré-existant, jamais reconstruit** : KOR-01/02 (`PACKAGE_COMPLETE`),
 KOR-03→10 (`PARTIAL_PACKAGE`), KOR-11→15 (`DRAFTED`), KLT-01→05
 (`PACKAGE_COMPLETE`), KLT-06→08 (`PARTIAL_PACKAGE`, auto-déclaré),
 FMS-01→06 (`PACKAGE_COMPLETE`-équivalent, code réel).
 
-**Total formations à contenu réel écrit ce chantier (waves 1-6) : 161**
-(13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF à contenu construit,
-plus 11 FRK + 39 AGF déclarées `GAP.md`/`BLOCKED_CANDIDATES.md`), dont
-désormais **11 formations/clusters AGF + CMD-15 + FRK flagships**
+**Total formations à contenu réel écrit ce chantier (waves 1-7) : 162**
+(13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF + 1 KOR-OP-12 à
+contenu construit, plus 11 FRK + 39 AGF déclarées `GAP.md`/
+`BLOCKED_CANDIDATES.md`, plus 18 lignes KORA `EXTEND_EXISTING`/index
+convergé sans formation séparée), dont désormais **11 formations/
+clusters AGF + CMD-15 + FRK flagships + KOR-OP-12**
 `PACKAGE_COMPLETE` (GMD couvre 13 flagships en fait — voir détail
 `docs/gmd/QUALITY_GATES.md`) et le reste honnêtement
 `MODULE_CONTENT_DRAFTED`/`BLOCKED` selon la preuve réelle disponible —
@@ -96,7 +99,7 @@ D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
 | Agent Factory/AF-X/Laurentia/IOS/Brain/CMD | 109 | **Couverture complète (vague 6 + passe de deepening, `docs/agf/`)** — 59 `PACKAGE_COMPLETE` (5 clusters `external/` + 6 formations `internal/`, deepening achevé cette session) / 39 `BLOCKED_PRODUCT_DEPENDENCY` (inchangées) / 11 `EXTEND_EXISTING` (inchangées) — jamais résumé comme domaine `FULLY_COMPLETE` |
 | CyberSecure+Blockchain+Gala+Hospitality+LabelOS | 214 | `RECONCILED_NOT_BUILT` — 4 ancrages legacy réels (`CYB` sur `backend/auth.py`, `BCH-01`, `HOS-01`, `LOS-01`) |
 | Founder/CEO+Group+Fondation | 158 | `RECONCILED_NOT_BUILT` — ~25 lignes `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique), jamais de recette universelle |
-| KORA interne/cross | 19 | `RECONCILED_NOT_BUILT` |
+| KORA interne/cross | 19 | **Couverture complète (vague 7, `docs/kor_op/`)** — 1 `PACKAGE_COMPLETE` (KOR-OP-12) / 18 `EXTEND_EXISTING`/index convergé (aucune formation séparée, `docs/kor/kor01→15` non touché) |
 | Kiltikonet KLT-09→20 | 12 | `BLOCKED` — hérite du `STOP=TRUE` de `docs/klt/` (gate d'autorisation Founder, jamais contourné) |
 | Cross-CVLN XCV-01→56 | ~57 | `RECONCILED_NOT_BUILT` — nécessite `80_MISSIONS/MISSIONS_PIPELINES.md` comme point d'ancrage |
 | Good Mood/DJ Sayd — côté marché | ~51 | `RECONCILED_NOT_BUILT` |
