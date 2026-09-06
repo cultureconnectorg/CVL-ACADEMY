@@ -18,20 +18,60 @@ Application status per domain: 95_GAPS/GAP_REGISTER.md.
 `CROSS_DOMAIN_CONTAMINATION`, `UNAUTHORIZED_AUTHORITY`,
 `EXTERNAL_INTERNAL_CONFUSION`, `CERTIFICATION_AUTHORIZATION_CONFUSION`.
 
-## Application au tronc commun (ce Master Package)
+## Application au tronc commun (ce Master Package) — bilan final, 812/812 lignes réconciliées
 
-| Gate | Résultat |
+```
+Les 27 domaines du Master 2D sont désormais tous réconciliés (0 ligne
+NEEDS_REPO_AUDIT non traitée) : FMS 12, FREK 75, Kiltikonet KLT-09→20
+12, Wallet+CVE 52, KORA (interne/cross) 19, Agent Factory/AF-X/
+Laurentia/IOS/Brain/CMD/Intelligent Operations 109, Good Mood+DJ Sayd
+94, CyberSecure+Blockchain+Tokenomics+Gala+Hospitality+LabelOS 214,
+Founder/CEO+CVLN Group+Fondation Cœurvolan 158, Cross-CVLN/XCV 67 =
+812/812. STATUS de chaque ligne : RECONCILED_NOT_BUILT — jamais
+FULLY_COMPLETE (voir section suivante).
+```
+
+| Gate | Résultat final |
 |---|---|
-| `SOURCE_TRUTH_COVERAGE` | 812/812 lignes de la cartographie provenancées (`SOURCE`/`CONFIDENCE`/`VERIFICATION`, voir `10_PORTFOLIO/RECONCILIATION_MATRIX.md`) |
-| `UNPROVEN_FEATURE` | 0 — aucune capacité candidate n'est présentée comme construite ; toutes restent `CANDIDATE` sauf 30 `PARTIAL_RETRIEVAL` (CVLN Hospitality) et 1 `REQUIRES_RECONCILIATION` |
-| `DUPLICATE_CURRICULUM` | Signalé une fois : "Good Mood" (43 lignes) et "DJ Sayd" (51 lignes) sont deux domaines distincts dans la cartographie mais **un seul repo réel** (`gmfest972/goodmooddjsayd`) — à réconcilier avant tout référentiel (voir `GAP_REGISTER.md`) |
-| `EXTERNAL_INTERNAL_CONFUSION` | 0 détecté dans la cartographie source (`Contexte` renseigné pour 811/812 lignes, 1 `TO_RECONCILE` explicite) |
-| `CERTIFICATION_AUTHORIZATION_CONFUSION` | 0 — aucune ligne de `Habilitations` n'est présentée comme acquise par certification seule |
+| `SOURCE_TRUTH_COVERAGE` | 812/812 lignes provenancées (`SOURCE`/`CONFIDENCE`/`VERIFICATION`, `10_PORTFOLIO/RECONCILIATION_MATRIX.md`) — **0 ligne restante `NEEDS_REPO_AUDIT` sans verdict**. |
+| `REJECT_TRUE_DUPLICATE` | **0/812** — confirmé par chaque document de réconciliation individuellement (FMS v2, FREK, KLT-09→20, Wallet/CVE, KORA, Agent Factory, Good Mood/DJ Sayd, CyberSecure+Blockchain+Gala+Hospitality+LabelOS, Founder/CEO+Group+Fondation, XCV) — aucun candidat n'a été rejeté pour simple chevauchement de contenu, conformément à la correction `CONTENT_OVERLAP != PROFESSIONAL_DUPLICATE`. |
+| `ORPHAN_SKILL` | 0 — chaque ligne candidate reste rattachée à sa ligne source `Master_Catalogue` et à un verdict (`EXTEND_EXISTING`/`SPECIALIZE_EXISTING`/`NEW_EXTERNAL`/`NEW_INTERNAL`/`NEW_CROSS_ECOSYSTEM`/`MERGE`/`BLOCKED_PRODUCT_DEPENDENCY`/`NEEDS_EXPERT_REVIEW`/`NEEDS_FOUNDER_DECISION`), jamais un skill flottant sans domaine. |
+| `ORPHAN_ROLE` | 0 — 130/130 lignes `Operator_Roles` indexées par domaine dans `40_OPERATOR_ROLES/ROLE_REGISTRY.md`. |
+| `ORPHAN_AUTHORIZATION` | 0 — 71/71 lignes `Habilitations` restent `CANDIDATE`, rattachées à leur domaine (`50_AUTHORIZATIONS/AUTHORIZATION_REGISTRY.md`). |
+| `UNPROVEN_FEATURE` | 0 — chaque document distingue explicitement le réel (code cité avec chemin de fichier) du candidat ; toute capacité non vérifiée porte `CAPABILITY_NOT_IMPLEMENTED`/`BLOCKED_PRODUCT_DEPENDENCY`, jamais présentée comme construite. Cas le plus sensible (cluster Agent Factory/IOS/Brain/Command Center/Laurentia, ~90% bloqué) traité avec la même rigueur que les domaines mieux ancrés. |
+| `FAKE_PROOF` | 0 — `issue_proof()` de FREK explicitement documenté comme stub UUID sans cryptographie réelle partout où il est cité ; passes Apple/Google Wallet explicitement non signés (501 honnête) ; frameworks CVE explicitement non traités comme standards externes vérifiés (`NEEDS_FOUNDER_DECISION`, jamais construits comme s'ils l'étaient). |
+| `DUPLICATE_CURRICULUM` | **Résolu.** Un vrai risque (Good Mood/DJ Sayd, même repo) s'est révélé n'être **pas** un doublon (DJ Sayd ne porte aucune ligne opérateur) — `GAP_REGISTER.md` G1 fermé. Trois sur-comptages de cartographie détectés et convergés plutôt que reconstruits : `KOR-X-01/02/03` ≡ `FRK-56`/`LOS-X-03`/`WAL-X-01` ; `TOK-01` ≡ `BCI-08` (titre littéralement identique) ; **`XCV-57→66` ≡ `SYS-01→10`** (même pipeline "Intelligent Operations" en 10 étages, décrit sous deux domaines — le cas le plus net du chantier). Aucun de ces cas n'a été construit deux fois. |
+| `CROSS_DOMAIN_CONTAMINATION` | 0 — surveillé activement : `fms-os/fms`'s propre route `/os/command-center` (produit studio-business réel) signalée à plusieurs reprises comme **distincte** du "Command Center" CVLN (stub générique) ; `AGR-01` (agroalimentaire) gardé adjacent et non fusionné avec Gala Cook & Food malgré la tentation de chevauchement thématique. |
+| `UNAUTHORIZED_AUTHORITY` | 0 — chaque ligne touchant une autorité réelle (gouvernance de groupe, fondation, sécurité, agents autonomes) reste `NEEDS_FOUNDER_DECISION`/`BLOCKED_PRODUCT_DEPENDENCY`/`NEEDS_EXPERT_REVIEW`, jamais simulée comme opérationnelle (`AUTHORIZATION_MODEL.md` et `XCV-09` réutilisés partout par référence, jamais réécrits localement). |
+| `EXTERNAL_INTERNAL_CONFUSION` | 0 — chaque domaine à double couche (marché externe vs opérateur interne) garde la distinction explicite : CyberSecure (CYB-01→30 vs 31→42), Blockchain (BCI-01→30 vs 31→40), Good Mood/DJ Sayd (GMD externe+interne vs SAY 100% externe), LabelOS (formation legacy marché vs LOS-OP bloqué). |
+| `CERTIFICATION_AUTHORIZATION_CONFUSION` | 0 — aucune des 71 lignes `Habilitations` n'est présentée comme acquise par certification Academy seule ; rappelé explicitement dans `50_AUTHORIZATIONS/AUTHORIZATION_REGISTRY.md`. |
+
+## Décisions Founder résiduelles (les seules non tranchées par ce Master Package)
+
+Sur 812 lignes, exactement **2 décisions Founder** restent ouvertes
+(toutes deux des questions factuelles/institutionnelles, jamais des
+choix de curriculum — conformément à la consigne de ne pas déférer les
+décisions d'architecture évidentes) :
+
+1. **CVE** (`WALLET_CVE_RECONCILIATION.md`) : une source méthodologique
+   réelle existe-t-elle pour Shapley Value/Nebula/VCF/UVC, ou ces 15
+   lignes restent-elles `PROPOSED_METHODOLOGY` ?
+2. **`G9`** (`FOUNDER_CEO_GROUP_FONDATION_RECONCILIATION.md`) : CIP
+   Foundation est-elle Fondation Cœurvolan sous un autre nom ?
+
+Toutes les autres questions initialement escaladées (frontière
+sécurité `G8`, LabelOS `G3`, Good Mood/DJ Sayd `G1`, sur-comptage KORA/
+FREK/LabelOS, sur-comptage Tokenomics/Blockchain, sur-comptage XCV/
+Agent Factory) ont été résolues sans escalade, par application directe
+de la méthode à deux dimensions.
 
 ## Never claim FULLY_COMPLETE
 
-Aucun domaine de cette cartographie n'est `FULLY_COMPLETE` — la totalité
-des 812 lignes reste `CANDIDATE`/`PARTIAL_RETRIEVAL` par construction de
-la source elle-même. `FULLY_COMPLETE` ne pourra être déclaré, domaine
-par domaine, qu'après W6-W11 (référentiel → certification) et une
-vérification humaine — jamais par ce document seul.
+Aucun domaine de cette cartographie n'est `FULLY_COMPLETE` — les 812
+lignes restent `RECONCILED_NOT_BUILT` par construction : la
+réconciliation fixe la classification et le verdict, jamais le
+contenu pédagogique lui-même (aucun référentiel W6 n'a été rédigé pour
+un candidat Master 2D dans ce chantier). `FULLY_COMPLETE` ne pourra
+être déclaré, domaine par domaine, qu'après W6-W11 (référentiel →
+certification) et une vérification humaine — jamais par ce document
+seul.
