@@ -65,7 +65,7 @@ produces no verifiable artifact a mission could depend on.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED` — référentiel and module outline
-written this pass; N1/N2 banks, full assessment/rubric, evidence
-model, and the 3 guides are a future deepening pass, not performed
-here.
+`STATUS = PACKAGE_COMPLETE` — full canonical package (référentiel +
+N1/N2 + assessment/rubric + evidence model + 3 guides + integration
+note), deepened this pass. Never implies `FULLY_COMPLETE` — no real
+candidate has been assessed yet.

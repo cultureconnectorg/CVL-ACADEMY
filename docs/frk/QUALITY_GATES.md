@@ -24,8 +24,8 @@ this corpus.
 
 | Formation set | Depth reached |
 |---|---|
-| FRK-01 | `PACKAGE_COMPLETE` — full canonical package, this wave's flagship. |
-| FRK-02,03,04,06,07,08,09,10,11,12,13,14,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,56,58,59,60,61,62,63,68,69,71,72,73,74,75 (55) | `MODULE_CONTENT_DRAFTED` — full référentiel written; N1/N2 banks and full guide set are a future deepening pass, not performed here (except FRK-01's own set, already built). |
+| FRK-01, FRK-03, FRK-06, FRK-13, FRK-56, FRK-58, FRK-59, FRK-68 (8) | `PACKAGE_COMPLETE` — full canonical package (référentiel + N1/N2 + assessment/rubric + evidence model + 3 guides + integration note), deepened this pass (this is the full internal/best-grounded tier 1-3 set, FRK-01 the original flagship). |
+| FRK-02,04,07,08,09,10,11,12,14,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,60,61,62,63,69,71,72,73,74,75 (47) | `MODULE_CONTENT_DRAFTED` — full référentiel written; N1/N2 banks and full guide set are a future deepening pass, not performed here. |
 | FRK-16,19,21,22,24,39,57,64,65,66,67 (11) | `BLOCKED_PRODUCT_DEPENDENCY` — `GAP.md` declared, no content built, no capability simulated. |
 | FRK-05,45,46,48,49,50,51,70 (8) | `EXTEND_EXISTING` — no separate formation; each documented as folding into a sibling (FRK-56→60 intro, `AUTHORIZATION_MODEL.md`, or `CYB-31→42`) in `FRK_CANONICAL_EDUCATION_MAP.md`. |
 
@@ -34,7 +34,7 @@ none was built past its real evidence.
 
 ## Never claim FULLY_COMPLETE
 
-Even FRK-01, at full package depth, is not `FULLY_COMPLETE`. No
+Even the 8 `PACKAGE_COMPLETE` formations are not `FULLY_COMPLETE`. No
 formation in this corpus may ever be described as `PACKAGE_COMPLETE`
-unless its own `REFERENTIAL.md` status line says so explicitly — only
-FRK-01 does.
+unless its own `REFERENTIAL.md` status line says so explicitly — 67 of
+the 75 do not.

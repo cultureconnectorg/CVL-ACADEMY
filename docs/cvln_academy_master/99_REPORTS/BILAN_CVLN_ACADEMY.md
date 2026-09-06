@@ -67,7 +67,7 @@ Fondation Cœurvolan — chacun garde sa formation legacy réelle
 | **2 — Wallet** | `docs/wal/` | WAL-19→28 (10) | WAL-19 `PACKAGE_COMPLETE` (flagship) ; 9/10 `MODULE_CONTENT_DRAFTED` (dont WAL-22/23/25/26/27, re-vérifiées contre le vrai `djsayd/CVLN-Wallet` — checkpoint Founder G15) |
 | **3 — CVE** | `docs/cve/` | CVE-01→15 (15) | CVE-02 `PACKAGE_COMPLETE` (flagship) ; 14/15 `MODULE_CONTENT_DRAFTED` ; CVE-06/08 `FORMALIZATION_PENDING` (jamais comblées par une formule inventée) |
 | **4 — FMS étendu** | `docs/fms/` | FMS-07→18 → 9 parcours après fusions (FMS-07 absorbe 14/16, FMS-18 absorbe 17) | FMS-07 `PACKAGE_COMPLETE` (flagship) ; 8/9 `MODULE_CONTENT_DRAFTED` |
-| **5 — FREK (domaine complet)** | `docs/frk/` | 75/75 comptabilisées | FRK-01 `PACKAGE_COMPLETE` (flagship) ; 55/75 `MODULE_CONTENT_DRAFTED` (dont le cluster architecture FRK-71→75 sur `frekcoreAout2026`) ; 11/75 `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, gaps produit réels) ; 8/75 `EXTEND_EXISTING` (rattachées à un sibling, sans fichier séparé) |
+| **5 — FREK (domaine complet)** | `docs/frk/` | 75/75 comptabilisées | 8/75 `PACKAGE_COMPLETE` (FRK-01/03/06/13/56/58/59/68 — tout le palier interne/mieux ancré approfondi) ; 47/75 `MODULE_CONTENT_DRAFTED` (clusters marché-général + cluster architecture FRK-71→75 sur `frekcoreAout2026`) ; 11/75 `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, gaps produit réels) ; 8/75 `EXTEND_EXISTING` (rattachées à un sibling, sans fichier séparé) |
 | **6 — Agent Factory/IOS/Brain/CMD/Laurentia** | `docs/agf/` (séparation stricte `external/`/`internal/`) | 109/109 comptabilisées | CMD-15 `PACKAGE_COMPLETE` (flagship, grondé sur les vraies routes `/command-center/*` de `MetaCVLN`) ; 58/109 `MODULE_CONTENT_DRAFTED` (53 externes marché-général + 5 internes grondées uniquement sur `CVLNAgentfactory`/`Cvln-ios-v.1`/`Laurent.ia`/`MetaCVLN`, jamais extrapolées) ; 39/109 `BLOCKED_PRODUCT_DEPENDENCY` (repos réels non branchés à l'Academy) ; 11/109 `EXTEND_EXISTING` |
 
 **Pré-existant, jamais reconstruit** : KOR-01/02 (`PACKAGE_COMPLETE`),
@@ -92,7 +92,7 @@ D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
 
 | Domaine | Rows | État |
 |---|---|---|
-| FREK (FRK-01→75) | 75 | **Couverture 75/75 complète, corpus PAS `PACKAGE_COMPLETE`** — vague 5 complète (`docs/frk/`), aucun candidat restant `RECONCILED_NOT_BUILT`. État canonique : 1 `PACKAGE_COMPLETE` / 55 `MODULE_CONTENT_DRAFTED` / 11 `BLOCKED_PRODUCT_DEPENDENCY` / 8 `EXTEND_EXISTING` — jamais résumé autrement. |
+| FREK (FRK-01→75) | 75 | **Couverture 75/75 complète, corpus PAS `PACKAGE_COMPLETE`** — vague 5 complète (`docs/frk/`), aucun candidat restant `RECONCILED_NOT_BUILT`. État canonique : 8 `PACKAGE_COMPLETE` / 47 `MODULE_CONTENT_DRAFTED` / 11 `BLOCKED_PRODUCT_DEPENDENCY` / 8 `EXTEND_EXISTING` — jamais résumé autrement. |
 | Agent Factory/AF-X/Laurentia/IOS/Brain/CMD | 109 | **Couverture complète (vague 6, `docs/agf/`)** — 1 `PACKAGE_COMPLETE` (CMD-15) / 58 `MODULE_CONTENT_DRAFTED` / 39 `BLOCKED_PRODUCT_DEPENDENCY` / 11 `EXTEND_EXISTING` — jamais résumé comme domaine terminé |
 | CyberSecure+Blockchain+Gala+Hospitality+LabelOS | 214 | `RECONCILED_NOT_BUILT` — 4 ancrages legacy réels (`CYB` sur `backend/auth.py`, `BCH-01`, `HOS-01`, `LOS-01`) |
 | Founder/CEO+Group+Fondation | 158 | `RECONCILED_NOT_BUILT` — ~25 lignes `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique), jamais de recette universelle |
@@ -173,7 +173,7 @@ en attente d'une décision Founder explicite pour lancer cette phase.
 FREK (FRK-01→75) et Agent Factory/IOS/Brain/CMD/Laurentia (109 lignes)
 ont désormais une **couverture** complète (vagues 5 et 6) — à ne
 jamais résumer comme "terminé" ou `PACKAGE_COMPLETE` : les états
-canoniques restent respectivement 1/55/11/8 et 1/58/39/11. Par ordre de
+canoniques restent respectivement 8/47/11/8 et 1/58/39/11. Par ordre de
 solidité d'ancrage réel (`W6_GLOBAL_STATUS.md`), suite recommandée :
 CyberSecure/Blockchain/Hospitality (ancrages legacy réels), puis
 Founder/CEO. Le Spatial, le

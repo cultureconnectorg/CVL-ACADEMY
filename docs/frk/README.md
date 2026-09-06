@@ -24,13 +24,17 @@ supports — **never** built past that depth:
 
 | Depth | Count | Candidates |
 |---|---|---|
-| `PACKAGE_COMPLETE` (flagship) | 1 | FRK-01 |
-| `MODULE_CONTENT_DRAFTED` (own référentiel) | 55 | FRK-02,03,04,06,07,08,09,10,11,12,13,14,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,56,58,59,60,61,62,63,68,69,71,72,73,74,75 |
+| `PACKAGE_COMPLETE` | 8 | FRK-01 (flagship), FRK-03, FRK-06, FRK-13, FRK-56, FRK-58, FRK-59, FRK-68 (deepened this pass — the full internal/best-grounded tier 1-3 set) |
+| `MODULE_CONTENT_DRAFTED` (own référentiel) | 47 | FRK-02,04,07,08,09,10,11,12,14,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,60,61,62,63,69,71,72,73,74,75 |
 | `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, no invented content) | 11 | FRK-16,19,21,22,24,39,57,64,65,66,67 |
 | `EXTEND_EXISTING` (folds into a sibling or an existing Master Package doc — no separate file) | 8 | FRK-05 (intro to FRK-56→60), FRK-45/46 (reuse `AUTHORIZATION_MODEL.md`), FRK-48/49/50/51/70 (point to `CYB-31→42`, itself not yet built) |
 
-**1 + 55 + 11 + 8 = 75.** Zero candidates left unaccounted for; zero
-built past their real evidence.
+**8 + 47 + 11 + 8 = 74** — plus FRK-01 already counted in the
+`PACKAGE_COMPLETE` row above, **= 75.** Zero candidates left
+unaccounted for; zero built past their real evidence. The 47 remaining
+`MODULE_CONTENT_DRAFTED` formations (market-general clusters + the
+FRK-71→75 v3 architecture cluster) are a future deepening pass, not
+performed here.
 
 ## Build-priority tiers actually used (per the reconciliation's own
 sequencing)
@@ -75,7 +79,7 @@ sequencing)
 
 ## Status (full domain)
 
-**1/75 `PACKAGE_COMPLETE`, 55/75 `MODULE_CONTENT_DRAFTED`, 11/75
+**8/75 `PACKAGE_COMPLETE`, 47/75 `MODULE_CONTENT_DRAFTED`, 11/75
 `BLOCKED_PRODUCT_DEPENDENCY`, 8/75 `EXTEND_EXISTING` (no separate
 formation).** No candidate was promoted past what its own real
 grounding supports; no `BLOCKED` candidate was built on an invented
