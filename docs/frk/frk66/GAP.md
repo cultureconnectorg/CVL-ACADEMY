@@ -1,0 +1,19 @@
+# FRK-66 — Backup, Restore & Disaster Recovery — GAP
+
+```
+STATUS = BLOCKED_PRODUCT_DEPENDENCY. No content built.
+```
+
+## Why nothing is built here
+
+Same root cause as FRK-64/65: no production FREKCORE service exists to
+back up or recover.
+
+## What would need to exist first
+
+Same as FRK-64.
+
+## Status
+
+`STATUS = BLOCKED_PRODUCT_DEPENDENCY`, unchanged from the
+reconciliation layer.

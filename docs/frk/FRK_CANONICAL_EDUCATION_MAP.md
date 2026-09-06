@@ -1,4 +1,4 @@
-# FRK-01/58/03/06/13/56/59/68 — Canonical Education Map
+# FRK-01→75 — Canonical Education Map (full domain)
 
 ## Shared competency skeleton
 
@@ -68,3 +68,52 @@ Same N1/N2/assessment structure as `CERTIFICATION_MODEL.md`. No
 mission eligibility exists yet for FRK-13's proof-engine internal
 half — issuing a "proof" today produces no verifiable artifact, so no
 mission can depend on it being one.
+
+## Full-domain map (75/75)
+
+**Specialization/sequencing chains** (base → specialization, reused by
+reference, never re-authored): FRK-04→FRK-11 (Digital Provenance
+Specialist), FRK-08→FRK-09 (Identity Lifecycle), FRK-12+FRK-14→FRK-15
+(Technical Evidence Reports), FRK-26→FRK-27 (Cultural Knowledge
+Graph), FRK-29→FRK-30 (Cultural Fingerprint Engineering),
+FRK-34→FRK-35 (Versions/Derivatives), FRK-36→FRK-37→FRK-38 (media
+capture → attestation → integrity), FRK-40→FRK-41 (DAW provenance →
+music proof), FRK-43→FRK-44 (store-and-forward → recovery), FRK-52→
+FRK-53→FRK-55 (API → SDK → cross-cutting standards), FRK-61→FRK-62
+(archiving → heritage records), FRK-68→FRK-69 (auditor → evidence
+audit), FRK-71→FRK-72/73/74/75 (v3 architecture → attestation/crypto/
+DSP/verifier).
+
+**`EXTEND_EXISTING` — folds into a sibling or existing doc, no
+separate formation built:**
+- FRK-05 (FREK Ecosystem Integration) → becomes the shared
+  introduction to the FRK-56→60 bridge formations, not a 6th parallel
+  one.
+- FRK-45 (Roles/Permissions/Delegation), FRK-46 (Trust Governance) →
+  reuse `00_GOVERNANCE/AUTHORIZATION_MODEL.md` (FRK-46 also reuses
+  `docs/kor/kor11/`'s own governance-boundary language verbatim,
+  never re-derived).
+- FRK-48/49/50/51/70 (FREK Security Foundations, Zero Trust, Crypto
+  Keys, Threat Modeling, Security/Compliance Audit) → all point to
+  `CYB-31→42` (`CYBERSECURE_BLOCKCHAIN_GALA_HOSPITALITY_LABELOS_
+  RECONCILIATION.md`, real anchor `backend/auth.py`) rather than a
+  parallel generic security curriculum — itself not yet built as a
+  `docs/cyb/` corpus, so these 5 remain pointers to a future domain,
+  not present content.
+
+**`BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, no repo/spec exists):**
+FRK-16 (Digital Notary), FRK-19 (Chain Watchdog), FRK-21/22 (`.fk`
+format + packaging), FRK-24 (Registry & Object Operations, distinct
+from `services/integrations/registry.py`), FRK-39 (FREKANSLA
+Operator), FRK-57 (FREK×LabelOS, LabelOS itself unfound), FRK-64/65/
+66/67 (Production Ops/Observability/Backup/Performance — no
+production FREKCORE service to operate).
+
+**Market-general clusters, standalone (no CVLN-specific implementation
+required to teach, `CAPABILITY_NOT_IMPLEMENTED` stated where a CVLN
+claim would otherwise be implied):** FRK-02, 07, 17, 18, 20, 23, 25,
+28, 31, 32, 33, 42, 47, 54, 60, 63 and the sequencing chains above.
+
+**`NEEDS_EXPERT_REVIEW`, never resolved by this drafting pass:**
+FRK-10 (EUDI/eIDAS2 — EU jurisdiction-specific), FRK-14 (chain of
+custody — forensic/legal-adjacent), FRK-73 (applied cryptography).

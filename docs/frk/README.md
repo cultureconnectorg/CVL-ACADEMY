@@ -1,4 +1,4 @@
-# docs/frk/ — FREK Pedagogical Corpus (W6 Wave 5, first slice of FRK-01→75)
+# docs/frk/ — FREK Pedagogical Corpus (W6 Wave 5, full domain, 75/75)
 
 ```
 Domain: FREK / FREKCORE — cultural trust & provenance infrastructure
@@ -6,80 +6,94 @@ Reconciliation source: docs/cvln_academy_master/20_EXTERNAL/
                         FREK_01_75_RECONCILIATION.md (75-row candidate
                         map, 0 rejected, FRK-71 Founder decision closed)
 Repo grounding: this Academy's own backend/services/frek_core.py
-                (re-read in full this session, 142 lines), plus the
-                real FREK_PROOF_MAPPING headers already carried by
-                every docs/kor/ module, plus Good Mood's two real
-                outbox clients (frek_service.py, wallet_service.py,
-                already cited in docs/gmd/gmd31, gmd32).
+                (re-read in full this session, 142 lines); the real
+                FREK_PROOF_MAPPING headers already carried by every
+                docs/kor/ module; Good Mood's two real, unlinked outbox
+                clients (frek_service.py/wallet_service.py, already
+                cited in docs/gmd/gmd31,32); frekcoreAout2026's real
+                frek_v3/ architecture corpus + reference_verifier/
+                (already audited this session, REPO_REGISTRY.md).
 ```
 
-## Why only 8 of 75 this wave
+## Full domain accounting — 75/75
 
-`FREK_01_75_RECONCILIATION.md` explicitly sequences a 75-candidate
-domain by "solidité d'ancrage," not by code order. This wave builds
-exactly its **tier 1-3 build priority** — the formations buildable
-today on real, re-verified code, without inventing anything for the
-`CAPABILITY_NOT_IMPLEMENTED`/`BLOCKED_PRODUCT_DEPENDENCY` majority of
-the domain (`.fk` format, FREKANSLA, notary, watchdog, production ops
-— all left untouched, exactly as reconciled):
+`FREK_01_75_RECONCILIATION.md` classified all 75 candidates with 0
+rejections. This corpus now accounts for every one of them, at the
+depth its own real grounding (or genuine absence of grounding)
+supports — **never** built past that depth:
 
-| Tier | Formations | Why first |
+| Depth | Count | Candidates |
 |---|---|---|
-| 1 — best-grounded | FRK-01, FRK-58 | Entry point + the one integration that already exists in code |
-| 2 — internal operator | FRK-03, FRK-06, FRK-13 (internal half), FRK-68 | Buildable on real `frek_core.py` usage today |
-| 3 — cross-ecosystem bridges | FRK-56, FRK-59 | Partial real grounding (KOR docs, Good Mood's two outboxes) |
+| `PACKAGE_COMPLETE` (flagship) | 1 | FRK-01 |
+| `MODULE_CONTENT_DRAFTED` (own référentiel) | 55 | FRK-02,03,04,06,07,08,09,10,11,12,13,14,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,56,58,59,60,61,62,63,68,69,71,72,73,74,75 |
+| `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, no invented content) | 11 | FRK-16,19,21,22,24,39,57,64,65,66,67 |
+| `EXTEND_EXISTING` (folds into a sibling or an existing Master Package doc — no separate file) | 8 | FRK-05 (intro to FRK-56→60), FRK-45/46 (reuse `AUTHORIZATION_MODEL.md`), FRK-48/49/50/51/70 (point to `CYB-31→42`, itself not yet built) |
 
-The remaining 67 candidates (market-general clusters, the FRK-71→75
-architecture cluster, and everything `BLOCKED_PRODUCT_DEPENDENCY`)
-stay `RECONCILED_NOT_BUILT` — a future wave, not this one.
+**1 + 55 + 11 + 8 = 75.** Zero candidates left unaccounted for; zero
+built past their real evidence.
 
-## Repo-truth table
+## Build-priority tiers actually used (per the reconciliation's own
+sequencing)
 
-| Formation | Real grounding | Cited source |
-|---|---|---|
-| FRK-01 (Foundations, flagship) | `backend/services/frek_core.py` (full contract, re-read this session) | `mint_frek_id()`, `emit_signal()`/`VALID_SIGNALS` (8 types), `issue_proof()` (stub), `resolve_stade()`/`STADE_THRESHOLDS` (6 tiers), `is_remote_enabled()` |
-| FRK-58 (FREK × CVLN Academy Integration) | `backend/services/frek_core.py` — this formation **is** the entire real FREK footprint in this repo | same file, integration framing |
-| FRK-03 (FREK Operator) | Real usage of `emit_signal`/`mint_frek_id`/`resolve_stade` across FMS/KLT/KOR modules | `FREK_PROOF_MAPPING` headers in every `docs/kor/korXX/modules/*.md` |
-| FRK-06 (FREK-ID Operations) | `mint_frek_id()` — sequential counter, `db.counters`, format `FREK-042` | `frek_core.py` lines 80-95 |
-| FRK-13 (FREK Proof Engine, internal half) | `issue_proof()` — **stub only**, random UUID, no crypto, no chain-of-custody | `frek_core.py` lines 116-133 |
-| FRK-68 (FREK Auditor) | `db.frek_signals` (real, written by `emit_signal`) + Good Mood's outbox tables (`db.frek_outbox`, `db.wallet_outbox`) as real inspectable audit surfaces | `frek_core.py` + `docs/gmd/gmd31`, `gmd32` |
-| FRK-56 (FREK × KORA Integration) | Every `docs/kor/korXX/` module already carries a real `FREK_PROOF_MAPPING` header, `READY_FOR_FREK_PROOF = FALSE` everywhere (no external verifiable anchor exists) | `docs/kor/kor01/skills/EVIDENCE_MODEL.md` |
-| FRK-59 (FREK × CVLN Wallet Integration) | Good Mood's `frek_service.py` + `wallet_service.py` — **two independent, real, env-gated outbox clients, never linked to each other** | `docs/gmd/gmd31/REFERENTIAL.md`, `gmd32/REFERENTIAL.md` |
+1. Best-grounded: FRK-01, FRK-58.
+2. Internal operator (real `frek_core.py` usage): FRK-03, FRK-06,
+   FRK-13, FRK-68.
+3. Cross-ecosystem bridges (partial real grounding): FRK-56, FRK-59.
+4. Market-general clusters (real, teachable industry-standard
+   knowledge independent of any CVLN implementation gap): FRK-02, 04,
+   07-12, 14-15, 17-18, 20, 23, 25-38, 40-44, 47, 52-55, 60-63, 69.
+5. FREK v3 architecture cluster (`SOURCE_OBSERVED` on
+   `frekcoreAout2026`, `ARCHITECTURE_LEVEL_2`): FRK-71→75.
+6. `BLOCKED_PRODUCT_DEPENDENCY` (held until a real repo/spec is
+   named — never built on invention): FRK-16,19,21,22,24,39,57,
+   64-67.
 
-**Cross-domain contamination guards already in force, restated here:**
-- This Academy's `frek_core.py` (Academy-internal client) is never
-  confused with `cultureconnectorg/frekcoreAout2026`'s `frek_v3/`
-  architecture cluster (FRK-71→75, a different, more mature,
-  not-yet-production layer of the same eventual product).
-- Good Mood's `frek_service.py`/`wallet_service.py` (outbound clients
-  to an *external* FREK-ID/Wallet URL) are never confused with this
-  Academy's own `frek_core.py`/`backend/wallet/` — same *pattern*
-  (env-gated outbox, local fallback), never the same *channel*. This
-  is the single most-repeated boundary in this whole corpus.
+## Cross-domain contamination guards restated across the full domain
 
-## Status (this wave)
+- `frek_core.py` (this Academy's client) ≠ `frek_v3/` architecture
+  cluster (FRK-71→75, a different, more mature, still-not-production
+  layer of the same eventual product).
+- Good Mood's `frek_service.py`/`wallet_service.py` (outbound clients)
+  ≠ this Academy's own `frek_core.py`/`backend/wallet/` — same
+  pattern, never the same channel.
+- `services/integrations/registry.py` (this Academy's ecosystem-
+  integrations config registry) ≠ a FREK cultural-object registry
+  (FRK-24, blocked — no such registry exists anywhere).
+- `events.py` (this Academy's own in-process pub/sub) ≠ a FREK event
+  registry/bus (FRK-28, FRK-54 — used only as a real, non-FREK-branded
+  worked example, never implied to be FREK infrastructure).
+- FRK-29/30's "cultural fingerprint" (broad concept) ≠ FRK-74's "DSP
+  fingerprint" (narrow, audio-signal-processing-specific, and
+  explicitly unfinished per the v3 corpus's own `CE_QUI_MANQUE.md`).
+- The `VALID_SIGNALS` real 8-value vocabulary (`frek_core.py`) ≠
+  FRK-31/32's market-general "affinity/resonance/cadence/context/
+  device/consent" signal vocabulary — never conflated.
+- FRK-34/35/40/41's provenance-proof formations ≠ LabelOS's
+  catalog/rights record (LabelOS itself unfound, `REPO_REGISTRY.md`)
+  and ≠ FMS-03/08's production craft (Founder-gated canon, by
+  reference only).
 
-| Formation | Status |
-|---|---|
-| FRK-01 | `PACKAGE_COMPLETE` — flagship, deepened this wave |
-| FRK-03, FRK-06, FRK-13, FRK-56, FRK-58, FRK-59, FRK-68 | `MODULE_CONTENT_DRAFTED` — full référentiel written; N1/N2 banks and full guide set not yet built |
+## Status (full domain)
 
-**1/8 `PACKAGE_COMPLETE`, 7/8 `MODULE_CONTENT_DRAFTED`, 0/8
-`BLOCKED`.** No formation in this slice is blocked — every one of the
-8 has real, re-verified grounding. The other 67 FRK-01→75 candidates
-remain exactly as `FREK_01_75_RECONCILIATION.md` classified them —
-this wave neither reopens nor promotes any of them.
+**1/75 `PACKAGE_COMPLETE`, 55/75 `MODULE_CONTENT_DRAFTED`, 11/75
+`BLOCKED_PRODUCT_DEPENDENCY`, 8/75 `EXTEND_EXISTING` (no separate
+formation).** No candidate was promoted past what its own real
+grounding supports; no `BLOCKED` candidate was built on an invented
+capability.
 
 ## What this corpus does NOT do
 
 - Does not claim `issue_proof()` produces a real cryptographic proof —
-  it is a random UUID stub, taught explicitly as such (FRK-13's
-  central teaching point).
-- Does not claim any `READY_FOR_FREK_PROOF = TRUE` anywhere — no
-  external verifiable anchor exists in this repo for any formation.
-- Does not imply Good Mood's two outboxes are wired to each other or
-  to this Academy's own `frek_core.py`/`backend/wallet/` — none of
-  that integration is observed anywhere.
-- Does not touch the FRK-71→75 architecture cluster, the market-general
-  clusters, or anything `BLOCKED_PRODUCT_DEPENDENCY` — left for a
-  future wave, per the reconciliation's own sequencing.
+  stub, taught explicitly (FRK-13).
+- Does not claim any `READY_FOR_FREK_PROOF = TRUE` anywhere.
+- Does not imply Good Mood's two outboxes, or this Academy's own
+  systems, are wired to each other where no such wiring is observed.
+- Does not build FRK-16/19/21/22/24/39/57/64/65/66/67 past a declared
+  `GAP.md` — every one is a genuine product-dependency gap, not a
+  drafting oversight.
+- Does not build separate formations for FRK-05/45/46/48/49/50/51/70 —
+  each folds into a sibling or an existing Master Package document,
+  per the reconciliation's own `EXTEND_EXISTING` verdict.
+- Does not claim FRK-71→75's real architecture corpus is hardware-
+  proven or production-integrated — `ARCHITECTURE_LEVEL_2` stated
+  explicitly on every one.
