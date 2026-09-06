@@ -21,7 +21,7 @@ KLT-09→20) est un ajout, jamais un remplacement.
 
 | Domaine | Lignes candidates | Repo réel | Grounding |
 |---|---|---|---|
-| FMS-07→18 | 12 | `fms-os/fms` | FMS-07,15,16,18 groundées (projets/bookings/clients/os-layer réels) ; FMS-08→14,17 = savoir-faire créatif sans code (normal) |
+| FMS-07→18 | 12 | `fms-os/fms` + corpus canonique FMS-01→06 | **Réconcilié** (`FMS_07_18_RECONCILIATION.md`) : 5/12 candidats dupliquent un métier canonique déjà construit (refusés), 6-7/12 sont des `NEW_GAP` réels |
 | Good Mood + DJ Sayd | 94 | `gmfest972/goodmooddjsayd` | Catalogue/events/tickets/merch/orders/Stripe/FREK+Wallet outbox réels — **duplication de domaine à résoudre**, voir `95_GAPS/GAP_REGISTER.md` |
 | CVLN Wallet (WAL-01→18) | 18 | `backend/wallet/` (CVL-ACADEMY) | Ledger simple réel ; holds/cartes/marketplace/FinOps du candidat = au-delà du réel actuel |
 | LabelOS (LOS-01→14) | 14 | aucun | `CAPABILITY_NOT_IMPLEMENTED` |

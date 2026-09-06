@@ -13,7 +13,7 @@ ACTION so the next wave knows where to start.
 | CVLN Hospitality | HOS-31→50 non récupérés dans ce tour | `RECONCILE` | 50 formations comptées précédemment, 30 récupérées précisément — ne pas inventer les 20 manquants |
 | KORA | 15 formations canoniques KOR-01→15 | `SEPARATE_WORKSTREAM` | Le présent classe surtout les rôles opérateurs/cross ; KOR-01→15 doit rester synchronisé avec le repo (`docs/kor/`) — **confirmé synchronisé, corpus déjà livré** |
 | Kiltikonet | KLT-01→08 existants + KLT-09→20 candidats | `RECONCILE` | Préserver le corpus canonique existant, ajouter les candidats sans écraser — **confirmé : KLT-01→08 intacts, KLT-09→20 restent candidats non construits** |
-| FMS | FMS-01→06 existants + FMS-07→18 candidats | `RECONCILE` | Préserver les formations canoniques déjà construites — **confirmé intactes** |
+| FMS | FMS-01→06 existants + FMS-07→18 candidats | `RECONCILE` — **DONE**, voir `20_EXTERNAL/FMS_07_18_RECONCILIATION.md` | Préserver les formations canoniques déjà construites — **confirmé intactes**. Réconciliation complète des 12 candidats FMS-07→18 contre les 95 modules canoniques réels (FMS-01→06) : **5 duplications détectées et refusées** (FMS-09 ≡ FMS-03 Mixage/Mastering, FMS-11 ≡ FMS-04 Direction visuelle, FMS-14 ≡ FMS-05 Coordination, FMS-08 et FMS-17 partiellement couverts) — seuls 6-7/12 candidats restent des `NEW_GAP` légitimes (FMS-07, 10, 12, 13, 15, 16, 18). |
 | Blockchain internal | BCI-31→40 | `VERIFY_IMPLEMENTATION` | Candidats tant que l'implémentation réelle n'est pas vérifiée — **vérifié : aucune implémentation trouvée, reste candidat** |
 | Legal/fiscal | Group / Foundation / Tokenization | `EXPERT_REVIEW` | Enseignement par juridiction avec spécialistes, aucune recette universelle |
 
@@ -31,6 +31,7 @@ ACTION so the next wave knows where to start.
 
 ## Séquencement recommandé pour la prochaine vague (W1-W5 par domaine)
 
+0. **FMS-07→18** — reconciliation **FAITE** (`20_EXTERNAL/FMS_07_18_RECONCILIATION.md`). Prochaine étape directe : W4 (competency map) sur les 6-7 candidats confirmés `NEW_GAP` uniquement (FMS-07, 10, 12, 13, 15, 16, 18) — jamais sur les 5 refusés.
 1. **G1** (Good Mood/DJ Sayd reconciliation) — bloque toute construction sur ce repo, se résout en un ticket de décision (pas de code requis).
 2. **G5** (nommer le repo FREKCORE réel) — bloque toute la carte FRK-01→75 (75 lignes, le plus gros domaine).
 3. **G3 + G6** (LabelOS, Kiltikonet KLT-09→20) — décisions Founder rapides, débloquent 49 lignes.
