@@ -1,12 +1,18 @@
-# CVLN Wallet Internal Operator Corpus (WAL-19 → WAL-28)
+# CVLN Wallet Corpus (WAL-01 → WAL-28, WAL-X-01→09)
 
 ```
-WORKSTREAM = WAL (CVLN Wallet ledger, internal operator layer), W6
-Wave 2 of the CVLN Academy Master 2D reconciliation
+WORKSTREAM = WAL (CVLN Wallet), W6 Wave 2 (internal, 2026-09-06) +
+Wave 19 (external + cross-ecosystem, Rail 1 exit-gate completion,
+2026-09-06) of the CVLN Academy Master 2D reconciliation
 (docs/cvln_academy_master/). SOURCE OF TRUTH:
 docs/cvln_academy_master/20_EXTERNAL/WALLET_CVE_RECONCILIATION.md —
 this corpus builds exactly what that document already verdicted, it
-does not re-audit or re-classify.
+does not re-audit or re-classify. Full domain = 52 rows
+(WAL-01→18 external + WAL-19→28 internal + WAL-X-01→09 cross); CVE-01→15
+is a sibling corpus, see docs/cve/.
+
+## Internal layer (WAL-19→28) — Wave 2
+
 STATUT (corrected 2026-09-06, Founder checkpoint) = 1/10 formation à
 PACKAGE_COMPLETE (WAL-19, niveau KOR/KLT/GMD), 9/10 (WAL-20/21/22/23/
 24/25/26/27/28) au niveau MODULE_CONTENT_DRAFTED (référentiel +
@@ -90,6 +96,32 @@ complet, toujours pas `FULLY_COMPLETE`.
 - Chaque `REFERENTIAL.md` cite le code réel avec chemin de fichier ou
   repo — jamais de capacité "probablement présente."
 
+## External + cross-ecosystem layer (WAL-01→18, WAL-X-01→09) — Wave 19 (Rail 1 exit-gate completion)
+
+`external/wal_general/` — WAL-01→13, 16→18 (16 rows), real fintech-
+engineering career disciplines (ledger engineer, payments ops, card
+ops, embedded finance, treasury, etc.), citing real worked examples
+where they exist (this Academy's own additive ledger, `docs/gmd/
+gmd28/`'s real Stripe integration, `passes.py`'s real unsigned pass
+payloads, `api/wallet.py`'s real read-only routes) —
+`MODULE_CONTENT_DRAFTED`. `EXTEND_EXISTING_NOTE.md` resolves `WAL-14`
+(→ `docs/cyb/`, same `G8` resolution as `FRK-48-51`/`KLT-17`).
+`NEEDS_EXPERT_REVIEW.md` resolves `WAL-15` (financial compliance/audit,
+jurisdiction-specific, never a universal recipe). `WAL_X_BRIDGE_
+NOTE.md` resolves all 9 `WAL-X` cross-ecosystem rows: 4 build new
+bridge content (WAL-X-02/03/04/07, citing `FMS-07`/`docs/los/`/
+`docs/klt/`/`docs/cve/` and the real `djsayd/CVLN-Wallet` `REJECT`
+verdict on unlimited treasury bots), 2 converge to bridges already
+built elsewhere (WAL-X-01 = `KOR-X-03`, WAL-X-06 = `FRK-59`), 1
+converges to shared pipeline doctrine (WAL-X-05 →
+`MISSIONS_PIPELINES.md`), 2 are fully `BLOCKED_PRODUCT_DEPENDENCY`
+(WAL-X-08/09).
+
+**Full WAL-01→18/WAL-X domain (27 rows): 16 `MODULE_CONTENT_DRAFTED` +
+1 `EXTEND_EXISTING` (WAL-14) + 1 `NEEDS_EXPERT_REVIEW` (WAL-15) + 7
+resolved in `WAL_X_BRIDGE_NOTE.md` (4 new bridge + 3 converged) + 2
+`BLOCKED_PRODUCT_DEPENDENCY` (WAL-X-08/09). 16+1+1+7+2=27.**
+
 ## Ce que ce corpus NE fait PAS
 
 Ne modifie aucun fichier de `backend/wallet/`/`backend/api/wallet.py`
@@ -103,3 +135,11 @@ seule une certification interne (`WALxx.SKILL.*`) est en jeu.
 `FULLY_COMPLETE = FALSE` pour l'ensemble du corpus ; `PACKAGE_COMPLETE`
 n'est vrai que pour WAL-19. Aucun statut n'est remonté artificiellement
 au-delà du travail réellement produit cette session.
+
+**Canonical state, full WAL domain (52 rows):** 1 `PACKAGE_COMPLETE`
+(WAL-19) / 25 `MODULE_CONTENT_DRAFTED` (9 internal WAL-20→28 + 16
+external WAL-01→13,16-18) / 1 `EXTEND_EXISTING` (WAL-14) / 1
+`NEEDS_EXPERT_REVIEW` (WAL-15) / 7 WAL-X resolved (4 new bridge + 3
+converged) / 2 `BLOCKED_PRODUCT_DEPENDENCY` (WAL-X-08/09). Never
+summarized as `FULLY_COMPLETE` or `PACKAGE_COMPLETE` beyond WAL-19
+alone.

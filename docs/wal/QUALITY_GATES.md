@@ -1,14 +1,14 @@
-# WAL-19→28 — Quality Gates (W6 Wave 2 pass, corrected 2026-09-06)
+# WAL-01→28, WAL-X-01→09 — Quality Gates (W6 Wave 2 + Wave 19, corrected/extended 2026-09-06)
 
 ```
 Applies the same 10-gate checklist as
 docs/cvln_academy_master/00_GOVERNANCE/QUALITY_GATES.md, scoped to
-this corpus.
+this corpus. 43/43 WAL-side rows accounted for (WAL-01→28 + WAL-X-01→09).
 ```
 
 | Gate | Result |
 |---|---|
-| `SOURCE_TRUTH_COVERAGE` | 10/10 rows (WAL-19→28) map to a real file/function/route — 5 in this Academy's `backend/wallet/`/`backend/api/wallet.py`, 5 in the real external `djsayd/CVLN-Wallet` (corrected 2026-09-06, was 5 real + 5 `GAP.md`). |
+| `SOURCE_TRUTH_COVERAGE` | 43/43: 10/10 rows (WAL-19→28) map to a real file/function/route — 5 in this Academy's `backend/wallet/`/`backend/api/wallet.py`, 5 in the real external `djsayd/CVLN-Wallet`; 16/18 rows (WAL-01→13,16-18, `external/wal_general/`) real fintech-engineering disciplines citing real worked examples (this Academy's ledger, `docs/gmd/gmd28/`'s Stripe, `passes.py`, `api/wallet.py`); `WAL-14` extends to `docs/cyb/`; `WAL-15` correctly `NEEDS_EXPERT_REVIEW`; 9/9 `WAL-X` rows resolved (4 new bridge content, 3 converged elsewhere, 2 blocked). |
 | `ORPHAN_SKILL` | 0 — every module traces to a named function/route cited in `README.md`'s repo-truth table. |
 | `UNPROVEN_FEATURE` | 0 — no formation in this corpus simulates a capability; WAL-22/23/25/26/27's prior `GAP.md` declarations are retired only because the real product capability was directly verified (routes re-read, not assumed), not because the standard was relaxed. The `passes.py` "501" comment vs. real HTTP 200 behavior discrepancy stays flagged explicitly. |
 | `FAKE_PROOF` | 0 — every assessment artifact is checkable against real code (model fields, function behavior, route names), not invented facts. |
@@ -28,16 +28,37 @@ this corpus.
 | WAL-20, WAL-21, WAL-24, WAL-28 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far, grounded in this Academy's own `backend/wallet/`. Deepening continues in subsequent waves. |
 | WAL-22, WAL-23, WAL-25, WAL-26, WAL-27 | `MODULE_CONTENT_DRAFTED` (corrected 2026-09-06, was `BLOCKED_PRODUCT_DEPENDENCY`) — référentiel + modules only, grounded in the real external `djsayd/CVLN-Wallet` product (coffres/transfer/marketplace/settlement-reconciliation/kill-switch, all directly verified). Deepening to full package is a future wave, not performed here — the status correction reflects real referential work done this pass, never an artificial promotion. |
 
-**No formation in this corpus is `BLOCKED_PRODUCT_DEPENDENCY` as of
-this pass.** All 10 have real grounding; 9/10 are at referential depth,
-1/10 (WAL-19) at full package depth.
+**No formation in the WAL-19→28 internal layer is `BLOCKED_PRODUCT_
+DEPENDENCY`.** All 10 have real grounding; 9/10 are at referential
+depth, 1/10 (WAL-19) at full package depth.
+
+## External + cross-ecosystem layer (Wave 19, 2026-09-06)
+
+| Row set | Depth |
+|---|---|
+| WAL-01→13, 16→18 (16 rows, `external/wal_general/`) | `MODULE_CONTENT_DRAFTED`. |
+| WAL-14 (`EXTEND_EXISTING_NOTE.md`) | `EXTEND_EXISTING` → `docs/cyb/`. |
+| WAL-15 (`NEEDS_EXPERT_REVIEW.md`) | `NEEDS_EXPERT_REVIEW`. |
+| WAL-X-02/03/04/07 (`WAL_X_BRIDGE_NOTE.md`) | New bridge content, no separate formation. |
+| WAL-X-01/05/06 (`WAL_X_BRIDGE_NOTE.md`) | Converged elsewhere (`KOR-X-03`, `MISSIONS_PIPELINES.md`, `FRK-59`). |
+| WAL-X-08/09 (`WAL_X_BRIDGE_NOTE.md`) | `BLOCKED_PRODUCT_DEPENDENCY`. |
+
+**No capability invented for WAL-01→18/WAL-X** — every row cites real
+code, a real counterpart domain, or is honestly declared blocked/
+expert-review.
 
 ## Never claim FULLY_COMPLETE
 
-Even WAL-19, now at full package depth, is not `FULLY_COMPLETE` —
-that status requires a real candidate assessed and verified, which
-this drafting pass does not perform. No formation in this corpus may
-ever be described as `PACKAGE_COMPLETE` unless its own `REFERENTIAL.md`
-status line says so explicitly — 9 of the 10 do not, and stay
-`MODULE_CONTENT_DRAFTED` until a future deepening pass is actually
-performed.
+Even WAL-19, at full package depth, is not `FULLY_COMPLETE` — that
+status requires a real candidate assessed and verified, which this
+drafting pass does not perform. No formation in this corpus may ever
+be described as `PACKAGE_COMPLETE` unless its own `REFERENTIAL.md`
+status line says so explicitly — only WAL-19 does; every other row
+stays at its own honestly-declared depth.
+
+**Canonical state, full WAL domain (52 rows incl. WAL-X):** 1
+`PACKAGE_COMPLETE` / 25 `MODULE_CONTENT_DRAFTED` / 1 `EXTEND_EXISTING`
+/ 1 `NEEDS_EXPERT_REVIEW` / 4 new WAL-X bridge content / 3 WAL-X
+converged / 2 `BLOCKED_PRODUCT_DEPENDENCY`. 1+25+1+1+4+3+2=37 — plus
+CVE-01→15 (15 rows, sibling corpus, see `docs/cve/QUALITY_GATES.md`)
+= 52 total, matching `WALLET_CVE_RECONCILIATION.md`'s own count.
