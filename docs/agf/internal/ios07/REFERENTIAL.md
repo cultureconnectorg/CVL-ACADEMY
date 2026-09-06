@@ -52,4 +52,5 @@ is connected to `Cvln-ios-v.1`'s real governance layer.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE` — full canonical package, deepened this
+pass. Never implies `FULLY_COMPLETE`.
