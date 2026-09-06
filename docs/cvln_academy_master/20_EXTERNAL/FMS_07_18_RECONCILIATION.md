@@ -1,77 +1,225 @@
-# FMS-07→18 — Reconciliation Against Existing Canonical Corpus
+# FMS-07→18 — Reconciliation Against Existing Canonical Corpus (v2 — occupational distinctness)
 
 ```
-RULE APPLIED: UPGRADE_EXISTING = TRUE, REBUILD_FROM_ZERO = FALSE
-(Founder directive). Every Master 2D FMS-07→18 candidate classified
-against the REAL canonical FMS-01→06 corpus (95 modules, 6 métiers,
-extracted from FMS_Chantier_Complet_20260822.zip — the same archive
-already analyzed in docs/ACADEMY_FMS_CANONICAL_DELTA_MATRIX.md) and
-against fms-os/fms (real business platform, cloned this session).
+RULE APPLIED: UPGRADE_EXISTING = TRUE, REBUILD_FROM_ZERO = FALSE, and
+the correction: CONTENT_OVERLAP != PROFESSIONAL_DUPLICATE. Every
+candidate evaluated on TWO independent dimensions (curriculum coverage
++ occupational distinctness) before any action is decided — never
+rejected on curriculum overlap alone. Supersedes v1 of this document
+(which stopped at curriculum coverage only and wrongly treated 3
+candidates as flat duplicates).
 
-IMPORTANT BOUNDARY: the canonical FMS-01→06 corpus itself is under a
-prior Founder gate — docs/ACADEMY_FMS_CANONICAL_DELTA_MATRIX.md records
-G2=NOT_AUTHORIZED, G3=NOT_AUTHORIZED, STOP_AFTER_DELIVERY=TRUE for its
-integration/mutation. This document does NOT touch that corpus, its
-runtime binding, or reopen that gate — it only reads it (read-only) to
-classify NEW Master 2D candidates against it. No FMS-01→06 file is
-modified by this document.
+IMPORTANT BOUNDARY (unchanged from v1): the canonical FMS-01→06 corpus
+itself is under a prior Founder gate (docs/ACADEMY_FMS_CANONICAL_
+DELTA_MATRIX.md, G2/G3=NOT_AUTHORIZED, STOP_AFTER_DELIVERY=TRUE). This
+document reads it read-only and never reopens that gate. Existing
+modules are REUSED BY REFERENCE, never re-authored.
 ```
 
-## Canonical FMS-01→06 — verified block structure (for reference)
+## Method — 9 checks per candidate
 
-| Métier | Blocs de compétence (A→E) | Modules |
+1. Repo capability check (`fms-os/fms`, this repo)
+2. Existing curriculum check (FMS-01→06, 95 modules)
+3. Competency overlap check (which modules, how much)
+4. Occupational distinctness check (is this a real, separately-named
+   professional identity in the industry — specialization, distinct
+   profession, internal/operator role, or cross-ecosystem role?)
+5. Internal role check
+6. Operator role check
+7. Authorization check
+8. Cross-ecosystem check
+9. Mission/applied-work check
+
+## Canonical FMS-01→06 — verified block structure (unchanged reference)
+
+| Métier | Blocs de compétence | Modules |
 |---|---|---|
-| FMS-01 Artist Development | Diagnostic artistique · Identité & Univers · Positionnement stratégique · Storytelling · Roadmap & Trajectoire | 15 |
-| FMS-02 Music Business | Analyse économique & marché · Droits & Contrats · Business Model & Financement · Distribution & Stratégie de sortie · Structuration juridique | 16 |
-| FMS-03 Music Production | (DAW/composition/arrangement) · Production sonore · Enregistrement & Édition · **Mixage & Mastering** | 16 |
-| FMS-04 Artist Branding | Réception identité & Brand Platform · **Direction visuelle** · Stratégie éditoriale · Réseaux sociaux · Campagnes | 16 |
-| FMS-05 Artist Management | Réception du cadre & Planning · Négociation opérationnelle · **Coordination** · Budget opérationnel · Arbitrage d'opportunités | 16 |
-| FMS-06 Executive/Cultural Production | Conception de projet · Financement · Gouvernance · Gestion des risques · Arbitrage de portefeuille | 16 |
+| FMS-01 Artist Development | Diagnostic · Identité & Univers · Positionnement · Storytelling · Roadmap | 15 |
+| FMS-02 Music Business | Analyse marché · Droits & Contrats · Business Model · Distribution · Structuration juridique | 16 |
+| FMS-03 Music Production | DAW/composition/arrangement · Production sonore · Enregistrement & Édition · **Mixage & Mastering** | 16 |
+| FMS-04 Artist Branding | Brand Platform · **Direction visuelle** · Stratégie éditoriale · Réseaux sociaux · Campagnes | 16 |
+| FMS-05 Artist Management | Planning · Négociation · **Coordination** · Budget · Arbitrage | 16 |
+| FMS-06 Executive/Cultural Production | Conception de projet · Financement · Gouvernance · Risques · Portefeuille | 16 |
 
-None of the six métiers has a block for: studio/session logistics,
-talent scouting/A&R sourcing, business/commercial operations (clients,
-leads, quoting), booking/resource planning, or a cross-métier
-"ecosystem operations" layer. This bounds what genuinely counts as
-`NEW_GAP` below.
+## Per-candidate reconciliation (corrected)
 
-## Classification per candidate (9-way framework)
+### FMS-07 — Studio Operations & Session Management
+- **Curriculum coverage**: `NONE`. **Occupational distinctness**:
+  `DISTINCT_PROFESSION` — studio operations/session management is a
+  recognized, separately-employed role (studio manager) distinct from
+  every one of the 6 creative métiers. Grounded in `fms-os/fms`
+  (`/os/bookings`, `/os/services`).
+- **Action**: `NEW_EXTERNAL`. Becomes the umbrella formation absorbing
+  the studio-operations-adjacent candidates below (see FMS-14, FMS-16)
+  as competency blocks rather than three separate thin formations —
+  this is a `MERGE`-into-blocks decision, not a rejection of FMS-14/16
+  as professions.
 
-| Candidate | Classification | Decision |
-|---|---|---|
-| **FMS-07** Studio Operations & Session Management | `NEW_GAP` | No canonical block covers studio/session logistics. Grounded in `fms-os/fms` (`/os/bookings`, `/os/services`). **CREATE NEW**, positioned as a distinct operational métier (not a specialization of any of the 6 creative métiers). |
-| **FMS-08** Recording Engineering | `ALREADY_EXISTS_PARTIAL` — **FMS-03/M06 "Enregistrement & Édition encadrés"** (+ M11 "sous pression") already teaches this. | **DO NOT CREATE.** If a deeper standalone track is wanted, it is a **SPECIALIZE** extension of FMS-03 (an optional advanced module, same pattern as FMS-03/M14 "Mixage & Mastering avancés"), not a new formation. |
-| **FMS-09** Mixing & Mastering | `ALREADY_EXISTS_COMPLETE` — **FMS-03/M07, M12, M14** already cover this end-to-end (encadré → sous pression → avancé/optionnel). | **DO NOT CREATE.** Zero justification for a parallel formation — this is the clearest `CANDIDATE_NOT_JUSTIFIED` in the batch. |
-| **FMS-10** Audiovisual Production | `NEW_GAP` (partial) | FMS-03 is music-only (audio). Audiovisual/video production is a distinct craft. **CREATE NEW**, but cross-reference FMS-03 explicitly to avoid re-teaching audio mixing inside it (boundary, not duplication). |
-| **FMS-11** Creative Direction & Visual Production | `EXISTS_UNDER_ANOTHER_NAME` — **FMS-04/M04 "Direction visuelle encadrée"** (+ M09 "défendue"). | **DO NOT CREATE** as a separate formation. If a cross-métier "creative direction" role is genuinely distinct from Artist Branding's visual direction (e.g., direction for live events, not just brand assets), that is an **ADD BRIDGE** or **ADD INTERNAL/CROSS-ECOSYSTEM MODULE** onto FMS-04, not a new métier. |
-| **FMS-12** Event Creative Direction & Live Production | `NEW_GAP` (narrow) | Live/event creative direction is not covered by FMS-04 (brand assets) nor FMS-05 (management/logistics). Genuine gap, but **narrow** — likely a specialization module rather than a full 15-16-module formation. **CREATE NEW at reduced scope**, or fold into FMS-10 (Audiovisual Production) as a live-production block — decision needed at W4 (competency map), not here. |
-| **FMS-13** A&R & Talent Scouting | `NEW_GAP` (confirmed) | Neither FMS-01 (works with an artist who already exists) nor FMS-05 covers sourcing/discovering new talent. **CREATE NEW.** |
-| **FMS-14** Artist Project & Production Coordination | `EXISTS_UNDER_ANOTHER_NAME` — **FMS-05 Artist Management** (Coordination block, M05/M10) already covers this. | **DO NOT CREATE** as a duplicate. If "production coordination" is meaningfully distinct from "artist management" (e.g., studio-side production scheduling vs artist-side career coordination), that is an **ADD INTERNAL OPERATOR PATH** onto FMS-07 (Studio Operations) or a **SPECIALIZE** of FMS-05 — needs a W3 boundary ticket, not a new formation by default. |
-| **FMS-15** Studio Client & Commercial Operations | `NEW_GAP` | No canonical métier covers client/lead/commercial ops. Grounded in `fms-os/fms` (`/os/clients`, `/os/leads`). **CREATE NEW.** |
-| **FMS-16** Booking, Resource & Studio Planning | `NEW_GAP` | Grounded in `fms-os/fms` (`/os/bookings`, `/os/services`). **CREATE NEW**, likely merged with FMS-07 (Studio Operations) rather than a 13th separate formation — both are studio-logistics-shaped. Decision needed at W4. |
-| **FMS-17** Creative Content & Portfolio Operations | `EXISTS_UNDER_ANOTHER_NAME` (partial) — overlaps FMS-04's campaign/content blocks. | Needs a closer W3 boundary check before deciding CREATE vs EXTEND — provisionally `ALREADY_EXISTS_PARTIAL`. |
-| **FMS-18** FMS Ecosystem Operations | `NEW_GAP` | Grounded in `fms-os/fms`'s own `/os` layer (command-center, integrations, audit-log) — a real, distinct internal/cross-métier operations layer none of the 6 creative métiers cover. **CREATE NEW**, `context=INTERNAL` (this is CVLN's own FMS platform operations, not a market-transferable craft). |
+### FMS-08 — Recording Engineering
+- **Curriculum coverage**: `SUBSTANTIAL` (FMS-03/M06 "Enregistrement &
+  Édition encadrés", M11 "sous pression").
+- **Occupational distinctness**: `DISTINCT_SPECIALIZATION` — in real
+  studio practice, "Recording Engineer" (signal chain, mic technique,
+  tracking sessions) is a distinct professional specialization from
+  "Music Producer" (creative direction of a project); many working
+  producers are not skilled recording engineers and vice versa.
+- **Action**: `SPECIALIZE_EXISTING`. Build a Recording Engineering
+  specialization path anchored on FMS-03/M06,M11 **by reference**
+  (never re-authored), adding what a working recording engineer needs
+  beyond the generalist producer module: signal-chain depth, mic
+  technique library, session-under-real-constraints assessment,
+  dedicated competency profile and Skill IDs for the "Recording
+  Engineer" role.
 
-## Summary
+### FMS-09 — Mixing & Mastering
+- **Curriculum coverage**: `COMPLETE` (FMS-03/M07 encadré, M12 sous
+  pression, **M14 avancé/optionnel — already framed by the canonical
+  corpus itself as an advanced specialization module**).
+- **Occupational distinctness**: `DISTINCT_PROFESSION` — Mixing
+  Engineer and Mastering Engineer are long-established, frequently
+  fully independent careers in the real industry (freelance mastering
+  houses, dedicated mix engineers who never produce), not a mere
+  deeper reading of Music Production.
+- **Action**: `SPECIALIZE_EXISTING` — **not** a duplicate, **not** a
+  fresh 15-module formation either. FMS-03/M14 ("Mixage & Mastering
+  avancés, production multi-styles") becomes the anchor of a formal
+  Mixing & Mastering specialization/certification track: reuse
+  M07/M12/M14 by reference, add a dedicated specialization assessment
+  (own A0x-spec, own rubric), a distinct competency profile and Skill
+  IDs for "Mixing Engineer"/"Mastering Engineer", and mission/role
+  eligibility (freelance mixing gigs, mastering-for-hire) that a
+  generic Music Production certification does not confer today. This
+  corrects v1, which wrongly rejected this as `CANDIDATE_NOT_JUSTIFIED`.
 
-| Verdict | Count | Candidates |
-|---|---|---|
-| `CREATE NEW` (confirmed) | 5 | FMS-07, FMS-10, FMS-13, FMS-15, FMS-18 |
-| `CREATE NEW` (narrow/needs scoping) | 1 | FMS-12 |
-| `EXISTS_UNDER_ANOTHER_NAME` / `DO NOT CREATE` | 3 | FMS-09, FMS-11, FMS-14 |
-| `ALREADY_EXISTS_PARTIAL` (specialize instead) | 2 | FMS-08, FMS-17 |
-| `NEW_GAP`, merge candidate | 1 | FMS-16 (likely merges into FMS-07) |
+### FMS-10 — Audiovisual Production
+- **Curriculum coverage**: `NONE` (FMS-03 is audio-only).
+- **Occupational distinctness**: `DISTINCT_PROFESSION`.
+- **Action**: `NEW_EXTERNAL`. Cross-reference FMS-03 explicitly at the
+  audio-mixing boundary to avoid re-teaching audio inside it.
 
-**Result: at most 6-7 genuinely new FMS formations (not 12).** Building
-all 12 candidates as separate formations would have produced 3
-duplicate formations (FMS-09, FMS-11, FMS-14) directly re-teaching
-already-canonical FMS-03/FMS-04/FMS-05 content — exactly the mistake
-the Founder's upgrade-not-rebuild rule exists to prevent.
+### FMS-11 — Creative Direction & Visual Production
+- **Curriculum coverage**: `SUBSTANTIAL` for the brand-visual slice
+  (FMS-04/M04 "Direction visuelle encadrée", M09 "défendue") — but the
+  candidate's scope is **broader** than FMS-04's brand-asset framing:
+  it extends into video/live visual direction, which FMS-04 does not
+  cover and which touches FMS-10/FMS-12 territory.
+- **Occupational distinctness**: `DISTINCT_PROFESSION` when scoped at
+  its full breadth (a Creative Director bridging brand, video, and
+  campaign visuals is a recognized, separately-titled role distinct
+  from "Artist Branding specialist," who owns positioning/identity
+  more than visual execution across media).
+- **Action**: `EXTEND_EXISTING` + `NEW_EXTERNAL` (hybrid): reuse
+  FMS-04/M04,M09 by reference for the brand-visual-direction
+  foundation, then build the genuinely new material this candidate
+  adds beyond FMS-04's scope (directing visuals across video/campaign
+  media, briefing/managing other creative specialists). Explicitly
+  cross-referenced with FMS-10 (does not re-teach audiovisual
+  technique) and FMS-12 (does not re-teach live/event staging). This
+  corrects v1, which wrongly rejected this as a duplicate of FMS-04
+  alone.
+
+### FMS-12 — Event Creative Direction & Live Production
+- **Curriculum coverage**: `NONE`.
+- **Occupational distinctness**: `DISTINCT_SPECIALIZATION` relative to
+  FMS-11 — live/event show direction (staging, lighting, live visual
+  cues) is recognized as related to but distinct from brand/video
+  creative direction; some professionals cross over, many do not.
+- **Action**: `NEW_EXTERNAL`, kept **separate** from FMS-11 (not
+  merged) but required to cross-reference it explicitly at their
+  shared boundary (a Creative Director who also directs a live show is
+  the exception, not the assumed default — never assumed without
+  evidence in either formation's referential).
+
+### FMS-13 — A&R & Talent Scouting
+- **Curriculum coverage**: `NONE` (FMS-01 works with an artist who
+  already exists; FMS-05 does not source new talent).
+- **Occupational distinctness**: `DISTINCT_PROFESSION`.
+- **Action**: `NEW_EXTERNAL`. Unchanged from v1.
+
+### FMS-14 — Artist Project & Production Coordination
+- **Curriculum coverage**: `SUBSTANTIAL` (FMS-05 Coordination block,
+  M05/M10) — but that block teaches **artist-career-side** coordination
+  (an Artist Manager's coordination duties across an artist's career),
+  not **studio/production-project-side** coordination (a Production
+  Coordinator scheduling and tracking a specific recording project,
+  liaising engineers/artists/label for that project only).
+- **Occupational distinctness**: `DISTINCT_OPERATOR_ROLE` — Production
+  Coordinator is a recognized, separately-employed studio-side role,
+  distinct from Artist Manager even though both coordinate.
+- **Action**: `EXTEND_EXISTING` — **merged into FMS-07** (Studio
+  Operations & Session Management) as a competency block, reusing
+  FMS-05's transferable coordination pedagogy **by reference**, adding
+  the studio/production-project-specific competencies (session budget
+  tracking, cross-department liaison for one production, deliverable
+  tracking) FMS-05 does not cover. This corrects v1, which wrongly
+  rejected this as a duplicate of FMS-05 with no further action.
+
+### FMS-15 — Studio Client & Commercial Operations
+- **Curriculum coverage**: `NONE`. **Occupational distinctness**:
+  `DISTINCT_PROFESSION` (studio sales/commercial ops). Grounded in
+  `fms-os/fms` (`/os/clients`, `/os/leads`).
+- **Action**: `NEW_EXTERNAL`. Unchanged from v1.
+
+### FMS-16 — Booking, Resource & Studio Planning
+- **Curriculum coverage**: `NONE`.
+- **Occupational distinctness**: `DISTINCT_OPERATOR_ROLE`, but in real
+  small/mid studio operations this role and Session Management
+  (FMS-07) are frequently the same person — `fms-os/fms` itself serves
+  both bookings and session-adjacent services from one `/os` layer.
+- **Action**: `MERGE` into FMS-07 as a competency block (Booking &
+  Resource Planning), not a 13th separate formation. Larger operations
+  where this genuinely splits into a dedicated scheduler role are
+  served by an internal specialization/operator path within FMS-07,
+  not a parallel external formation.
+
+### FMS-17 — Creative Content & Portfolio Operations
+- **Curriculum coverage**: `PARTIAL` (overlaps FMS-04 campaign/content
+  blocks for the content-creation side).
+- **Occupational distinctness**: `DISTINCT_OPERATOR_ROLE` — managing a
+  portfolio of creative assets/content operationally across projects
+  is closer to a digital-asset/content-ops function than a campaign
+  design craft.
+- **Action**: `EXTEND_EXISTING` — folded into FMS-18 (FMS Ecosystem
+  Operations, internal) as an operator role/block, reusing FMS-04's
+  content/campaign literacy by reference rather than rebuilt as a
+  separate external formation.
+
+### FMS-18 — FMS Ecosystem Operations
+- **Curriculum coverage**: `NONE`. **Occupational distinctness**:
+  `DISTINCT_INTERNAL_ROLE`/`CROSS_ECOSYSTEM_ROLE` — grounded in
+  `fms-os/fms`'s own `/os` layer (command-center, integrations,
+  audit-log), a real, distinct internal/cross-métier operations layer.
+- **Action**: `NEW_INTERNAL`, `context=INTERNAL`. Absorbs FMS-17 as a
+  block (above).
+
+## Corrected summary
+
+| Verdict | Candidates |
+|---|---|
+| `NEW_EXTERNAL` (standalone) | FMS-10, FMS-12, FMS-13, FMS-15 |
+| `NEW_EXTERNAL` (hybrid, extends FMS-04 by reference) | FMS-11 |
+| `NEW_INTERNAL` | FMS-18 (absorbs FMS-17 as a block) |
+| `SPECIALIZE_EXISTING` (anchored on existing modules, own certification track) | FMS-08 (→ FMS-03), FMS-09 (→ FMS-03/M14) |
+| `EXTEND_EXISTING` / `MERGE` into FMS-07 as competency blocks | FMS-14, FMS-16 |
+| `EXTEND_EXISTING` / `MERGE` into FMS-18 as a block | FMS-17 |
+| `REJECT_TRUE_DUPLICATE` | **none** — v1's 3 rejections were wrong; corrected here |
+
+**Result: 12/12 candidates carry real professional weight.** None are
+discarded. What changes from a naive read of the spreadsheet: FMS-14
+and FMS-16 become blocks of FMS-07 rather than standalone formations
+(3→1), and FMS-17 becomes a block of FMS-18 rather than standalone
+(1→0 as external) — so the portfolio lands at **9 formations/paths**
+covering all 12 candidates faithfully: FMS-07 (absorbing 14, 16),
+FMS-08 (specialization), FMS-09 (specialization), FMS-10, FMS-11
+(hybrid), FMS-12, FMS-13, FMS-15, FMS-18 (absorbing 17) — richer than
+either "build all 12 separately" (inflated) or v1's "reject 5"
+(under-counted real professions).
 
 ## Status
 
-`STATUS = RECONCILED_NOT_BUILT`. This document changes no runtime
-behavior and creates no new referential/module content — it is the
-required W3 boundary-check gate that must pass before any FMS-07→18
-`W6 (référentiel)` work begins. Per `00_GOVERNANCE/BUILD_METHOD.md`,
-the next action for this domain is W4 (competency map) on the 6-7
-confirmed `NEW_GAP` items only.
+`STATUS = RECONCILED_V2`. Still `RECONCILED_NOT_BUILT` — no W6
+référentiel written yet. Next action for this domain: W4 (competency
+map) on the 9 confirmed paths above, in the order FMS-07 (umbrella,
+unblocks 14/16) → FMS-18 (unblocks 17) → FMS-08/09 (specializations,
+fastest to build given canonical anchor already exists) → FMS-10/11/
+12/13/15 (genuinely new content).

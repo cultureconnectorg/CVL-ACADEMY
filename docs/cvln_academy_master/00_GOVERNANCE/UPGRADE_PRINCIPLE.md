@@ -39,19 +39,46 @@ replacement database dump.
 Default action for `1-6`: **upgrade in place / extend additively.**
 Only `7` (`NEW_GAP`) justifies a brand-new formation.
 
+## Correction — CONTENT_OVERLAP != PROFESSIONAL_DUPLICATE
+
+A first pass on `FMS-07→18` (v1) rejected 3 candidates as duplicates
+on curriculum-overlap grounds alone. The Founder corrected this: the
+Master 2D maps `PROFESSION → ACTIVITY → COMPETENCY → SPECIALIZATION →
+CURRICULUM → INTERNAL SKILL → OPERATOR ROLE → AUTHORIZATION → MISSION
+→ CROSS-ECOSYSTEM`, not curriculum alone. A candidate is now evaluated
+on **two independent dimensions** before any action:
+
+- **Curriculum coverage**: `NONE` / `PARTIAL` / `SUBSTANTIAL` / `COMPLETE`
+- **Occupational distinctness**: `NOT_DISTINCT` / `DISTINCT_SPECIALIZATION`
+  / `DISTINCT_PROFESSION` / `DISTINCT_INTERNAL_ROLE` /
+  `DISTINCT_OPERATOR_ROLE` / `CROSS_ECOSYSTEM_ROLE`
+
+`COMPLETE` coverage + `DISTINCT_SPECIALIZATION/PROFESSION` =
+**specialization path**, never a rejection — existing modules reused
+**by reference**, never re-authored, with a dedicated
+specialization/certification layer added on top.
+
+Only a genuine `NOT_DISTINCT` occupation (no separate professional
+identity, no distinct deliverable/responsibility/role boundary in
+market reality) combined with `COMPLETE` coverage justifies
+`REJECT_TRUE_DUPLICATE`.
+
 ## Applied precedent (this session)
 
-`FMS-07→18` was the first domain run through this framework — see
-`20_EXTERNAL/FMS_07_18_RECONCILIATION.md`. Result: of 12 candidates,
-**3 were `EXISTS_UNDER_ANOTHER_NAME`** (FMS-09 Mixing & Mastering ≡
-FMS-03/M07,12,14 ; FMS-11 Creative Direction ≡ FMS-04/M04,09 ; FMS-14
-Production Coordination ≡ FMS-05 Coordination block) and **2 were
-`ALREADY_EXISTS_PARTIAL`** (FMS-08, FMS-17) — none of these 5 get a new
-formation. Only 6-7 of 12 candidates survive as genuine `NEW_GAP`. This
-is the model to repeat for every remaining domain (KLT-09→20, KOR
-internal layers already done this way in `docs/kor/korXX/REFERENTIAL.md`
-§5-6, LabelOS, Wallet-internal, CVE, etc.) before writing any W6
-référentiel.
+`FMS-07→18` — see `20_EXTERNAL/FMS_07_18_RECONCILIATION.md` (v2,
+corrected). Of 12 candidates: **zero rejected**. FMS-08/09 (Recording
+Engineering, Mixing & Mastering) are real, separately-titled
+professions in the industry despite complete/substantial existing
+FMS-03 coverage — reclassified as specialization tracks anchored on
+existing modules, not new formations and not duplicates. FMS-14/16
+merged as competency blocks into FMS-07 (still distinct operator roles,
+just not standalone formations). FMS-17 merged into FMS-18. FMS-11
+built as a hybrid path reusing FMS-04 by reference. Net: **9
+formations/paths for 12 candidates**, richer than a naive "build all
+12" and more honest than v1's "reject 5." This corrected method — not
+v1's curriculum-only method — is the model to repeat for every
+remaining domain (FREK, KLT-09→20, Wallet-internal, LabelOS, CVE,
+Agent Factory/Laurentia, Good Mood/DJ Sayd, etc.).
 
 ## Boundary already respected before this rule was stated explicitly
 
