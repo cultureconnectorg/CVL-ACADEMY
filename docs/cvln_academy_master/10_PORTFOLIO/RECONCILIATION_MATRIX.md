@@ -74,3 +74,13 @@ delivered in `raw/Master_Catalogue.csv`.
 Aucune ligne candidate ci-dessus n'est promue `VERIFIED`/`DECIDED` par
 ce document seul — chaque verdict `VERIFICATION` reste tel quel jusqu'à
 un ticket W1-W5 dédié par domaine.
+
+## Couche économique (Founder, 2026-09-06)
+
+`100_ECONOMY/ECONOMIC_MODEL.md` superpose un modèle économique
+`DECIDED_V1` complet sur les 812 lignes ci-dessus (7 moteurs de
+revenus, 20 offres, marges/planchers tous validés). Il ne modifie
+aucun verdict de réconciliation — il fixe seulement le prix/emballage
+de ce qui est déjà classifié, gaté sur `CANONICALIZED`/
+`PRODUCT_VERIFIED`/`HANDOFF_VERIFIED` (donc 0/812 activable
+commercialement tant que le W6 correspondant n'est pas construit).

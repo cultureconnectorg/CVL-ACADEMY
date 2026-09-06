@@ -1,7 +1,7 @@
 # CVLN Academy Master — Manifest
 
 ```
-Structure of docs/cvln_academy_master/ — 31 files across 12 folders,
+Structure of docs/cvln_academy_master/ — 33 files across 13 folders,
 plus 11 raw source CSVs preserved verbatim. All 812 Master 2D rows are
 RECONCILED_NOT_BUILT (see 00_GOVERNANCE/QUALITY_GATES.md for the final
 tally). The two decisions the Founder asked to close are closed
@@ -64,7 +64,16 @@ docs/cvln_academy_master/
     SPATIAL_RELATIONSHIP_MAP.md
   95_GAPS/
     REPO_TRUTH_AUDIT.md
-    GAP_REGISTER.md                — G1-G9, all resolved/closed
+    GAP_REGISTER.md                — G1-G11
+  100_ECONOMY/
+    ECONOMIC_MODEL.md              — 7 engines, ECO-001->045, offers, margins, policies, roadmap (DECIDED_V1)
+    raw/
+      Mapping_812.csv (812 rows — per-object economic packaging/pricing/gate)
+      Offres_Economiques.csv, Pricing_V1.csv, Unit_Economics.csv (20 SKUs)
+      Decisions_Fondateur.csv (ECO-001->045)
+      Economie_Domaines.csv (27 domains), Valeur_Interne.csv, Learning_to_Work.csv
+      Sources_Methodo.csv, B2B_B2G.csv, Plan_36M.csv, Policies.csv,
+      Roadmap_Monetisation.csv, Hypotheses.csv, Dashboard.csv
   99_REPORTS/
     W0_AUDIT_REPORT.md
     MANIFEST.md (this file)
