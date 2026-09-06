@@ -68,17 +68,17 @@ Fondation Cœurvolan — chacun garde sa formation legacy réelle
 | **3 — CVE** | `docs/cve/` | CVE-01→15 (15) | CVE-02 `PACKAGE_COMPLETE` (flagship) ; 14/15 `MODULE_CONTENT_DRAFTED` ; CVE-06/08 `FORMALIZATION_PENDING` (jamais comblées par une formule inventée) |
 | **4 — FMS étendu** | `docs/fms/` | FMS-07→18 → 9 parcours après fusions (FMS-07 absorbe 14/16, FMS-18 absorbe 17) | FMS-07 `PACKAGE_COMPLETE` (flagship) ; 8/9 `MODULE_CONTENT_DRAFTED` |
 | **5 — FREK (domaine complet)** | `docs/frk/` | 75/75 comptabilisées | 54/75 `PACKAGE_COMPLETE` (passe de deepening complète Batches A→I + reclassification FRK-16 sur audit `Cvln-ios-v.1`) ; 3/75 `MODULE_CONTENT_DRAFTED` (FRK-10/14/73, `NEEDS_EXPERT_REVIEW` non levé, jamais promues sans revue humaine réelle) ; 10/75 `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, gaps produit réels, re-vérifiés) ; 8/75 `EXTEND_EXISTING` (rattachées à un sibling, sans fichier séparé) |
-| **6 — Agent Factory/IOS/Brain/CMD/Laurentia** | `docs/agf/` (séparation stricte `external/`/`internal/`) | 109/109 comptabilisées | CMD-15 `PACKAGE_COMPLETE` (flagship, grondé sur les vraies routes `/command-center/*` de `MetaCVLN`) ; 58/109 `MODULE_CONTENT_DRAFTED` (53 externes marché-général + 5 internes grondées uniquement sur `CVLNAgentfactory`/`Cvln-ios-v.1`/`Laurent.ia`/`MetaCVLN`, jamais extrapolées) ; 39/109 `BLOCKED_PRODUCT_DEPENDENCY` (repos réels non branchés à l'Academy) ; 11/109 `EXTEND_EXISTING` |
+| **6 — Agent Factory/IOS/Brain/CMD/Laurentia** | `docs/agf/` (séparation stricte `external/`/`internal/`) | 109/109 comptabilisées | 59/109 `PACKAGE_COMPLETE` (passe de deepening complète cette session : les 5 clusters `external/` — af01_03/af04_15/lau01_10/brn01_14/cmd01_14, 53 lignes — et les 6 formations `internal/` — CMD-15 flagship + AF-16/17/AF-X-03/BRN-15/IOS-07, 6 lignes — chaque interne grondée uniquement sur `CVLNAgentfactory`/`Cvln-ios-v.1`/`Laurent.ia`/`MetaCVLN`, jamais extrapolée, clusters externes sur disciplines marché-général réelles) ; 39/109 `BLOCKED_PRODUCT_DEPENDENCY` (repos réels non branchés à l'Academy, inchangées) ; 11/109 `EXTEND_EXISTING` (inchangées) |
 
 **Pré-existant, jamais reconstruit** : KOR-01/02 (`PACKAGE_COMPLETE`),
 KOR-03→10 (`PARTIAL_PACKAGE`), KOR-11→15 (`DRAFTED`), KLT-01→05
 (`PACKAGE_COMPLETE`), KLT-06→08 (`PARTIAL_PACKAGE`, auto-déclaré),
 FMS-01→06 (`PACKAGE_COMPLETE`-équivalent, code réel).
 
-**Total formations à contenu réel écrit ce chantier (waves 1-6) : 160**
-(13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 58 AGF à contenu construit,
+**Total formations à contenu réel écrit ce chantier (waves 1-6) : 161**
+(13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF à contenu construit,
 plus 11 FRK + 39 AGF déclarées `GAP.md`/`BLOCKED_CANDIDATES.md`), dont
-**6 flagships**
+désormais **11 formations/clusters AGF + CMD-15 + FRK flagships**
 `PACKAGE_COMPLETE` (GMD couvre 13 flagships en fait — voir détail
 `docs/gmd/QUALITY_GATES.md`) et le reste honnêtement
 `MODULE_CONTENT_DRAFTED`/`BLOCKED` selon la preuve réelle disponible —
@@ -93,7 +93,7 @@ D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
 | Domaine | Rows | État |
 |---|---|---|
 | FREK (FRK-01→75) | 75 | **Couverture 75/75 complète, corpus au maximum de profondeur atteignable sans lever `NEEDS_EXPERT_REVIEW`** — vague 5 complète + passe de deepening complète (Batches A→I) + une reclassification ponctuelle sur preuve repo nouvelle (FRK-16, `docs/frk/`), aucun candidat restant `RECONCILED_NOT_BUILT`. FRK-16 (FREK Digital Notary) est passé de `BLOCKED_PRODUCT_DEPENDENCY` à `PACKAGE_COMPLETE` après audit de `cultureconnectorg/Cvln-ios-v.1` (repo non croisé par la réconciliation initiale pour ce candidat), qui documente un vrai système `IMPLEMENTED` de notarisation + ancrage externe dans MetaCVLN — jamais un notariat légal, jamais confondu avec `frek_core.py`/FRK-13 (voir `docs/frk/frk16/INTEGRATION_NOTE.md`). État canonique final : 54 `PACKAGE_COMPLETE` / 3 `MODULE_CONTENT_DRAFTED` (`NEEDS_EXPERT_REVIEW` : FRK-10 EUDI/eIDAS2, FRK-14 chaîne de custody, FRK-73 cryptographie appliquée — 8/8 fichiers de support écrits pour chacune, jamais promues sans revue humaine réelle documentée) / 10 `BLOCKED_PRODUCT_DEPENDENCY` (re-vérifiés contre `Cvln-ios-v.1` et confirmés inchangés) / 8 `EXTEND_EXISTING` — jamais résumé autrement que ce décompte exact (54+3+10+8=75). |
-| Agent Factory/AF-X/Laurentia/IOS/Brain/CMD | 109 | **Couverture complète (vague 6, `docs/agf/`)** — 1 `PACKAGE_COMPLETE` (CMD-15) / 58 `MODULE_CONTENT_DRAFTED` / 39 `BLOCKED_PRODUCT_DEPENDENCY` / 11 `EXTEND_EXISTING` — jamais résumé comme domaine terminé |
+| Agent Factory/AF-X/Laurentia/IOS/Brain/CMD | 109 | **Couverture complète (vague 6 + passe de deepening, `docs/agf/`)** — 59 `PACKAGE_COMPLETE` (5 clusters `external/` + 6 formations `internal/`, deepening achevé cette session) / 39 `BLOCKED_PRODUCT_DEPENDENCY` (inchangées) / 11 `EXTEND_EXISTING` (inchangées) — jamais résumé comme domaine `FULLY_COMPLETE` |
 | CyberSecure+Blockchain+Gala+Hospitality+LabelOS | 214 | `RECONCILED_NOT_BUILT` — 4 ancrages legacy réels (`CYB` sur `backend/auth.py`, `BCH-01`, `HOS-01`, `LOS-01`) |
 | Founder/CEO+Group+Fondation | 158 | `RECONCILED_NOT_BUILT` — ~25 lignes `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique), jamais de recette universelle |
 | KORA interne/cross | 19 | `RECONCILED_NOT_BUILT` |

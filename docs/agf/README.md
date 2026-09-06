@@ -57,19 +57,36 @@ KPI dashboard, unrelated to CVLN's real `/command-center/overview`/
 even though CMD-01→14's market-general SRE curriculum must also never
 be confused with either.
 
-## Status (this wave)
+## Status (post-deepening pass, Rail 1 priority 2)
 
 | Layer | Formations | Depth |
 |---|---|---|
-| `external/` | 5 cluster referentials covering 53 rows (AF-01→15, LAU-01→10, BRN-01→14, CMD-01→14) | `MODULE_CONTENT_DRAFTED` |
-| `internal/` | 6 referentials (AF-16, AF-17, AF-X-03, BRN-15, IOS-07, CMD-15) | CMD-15 `PACKAGE_COMPLETE` (flagship); the other 5 `MODULE_CONTENT_DRAFTED` |
-| `EXTEND_EXISTING_NOTE.md` | AF-22 (→ `AUTHORIZATION_MODEL.md`), SYS-01→10 (→ `MISSIONS_PIPELINES.md`) | No separate formation, 11 rows |
-| `BLOCKED_CANDIDATES.md` | AF-18/19/20/21/23/25, AF-24, AF-X-01/02/04/05/06/07/08, AF-X-09, IOS-01→06/08→25 | `BLOCKED_PRODUCT_DEPENDENCY`, 39 rows, `GAP.md`-style, no invented content |
+| `external/` | 5 cluster referentials covering 53 rows (AF-01→15, LAU-01→10, BRN-01→14, CMD-01→14) | `PACKAGE_COMPLETE`, all 5, deepened this pass |
+| `internal/` | 6 referentials (AF-16, AF-17, AF-X-03, BRN-15, IOS-07, CMD-15) | `PACKAGE_COMPLETE`, all 6 (CMD-15 flagship from a prior pass; AF-16/17/AF-X-03/BRN-15/IOS-07 deepened this pass) |
+| `EXTEND_EXISTING_NOTE.md` | AF-22 (→ `AUTHORIZATION_MODEL.md`), SYS-01→10 (→ `MISSIONS_PIPELINES.md`) | No separate formation, 11 rows, untouched |
+| `BLOCKED_CANDIDATES.md` | AF-18/19/20/21/23/25, AF-24, AF-X-01/02/04/05/06/07/08, AF-X-09, IOS-01→06/08→25 | `BLOCKED_PRODUCT_DEPENDENCY`, 39 rows, `GAP.md`-style, no invented content, untouched |
 
-**53 + 6 + 1 + 39 + 10 = 109.** All 109 rows accounted for. 1/109
-`PACKAGE_COMPLETE` (CMD-15), 58/109 `MODULE_CONTENT_DRAFTED` (53
-external + 5 other internal), 39/109 `BLOCKED_PRODUCT_DEPENDENCY`, 11/109
-`EXTEND_EXISTING` (AF-22 + SYS-01→10, no separate file).
+**53 + 6 + 1 + 39 + 10 = 109.** All 109 rows accounted for. 59/109
+`PACKAGE_COMPLETE` (all 5 external clusters + all 6 internal
+formations, i.e. 53 + 6 rows), 39/109 `BLOCKED_PRODUCT_DEPENDENCY`
+(untouched, genuine), 11/109 `EXTEND_EXISTING` (AF-22 + SYS-01→10, no
+separate file, untouched, genuine).
 
-**Canonical state — never summarized otherwise:** this corpus is
-**not** `PACKAGE_COMPLETE` as a domain. Only CMD-15 is.
+Per Rail 1's directive — "ne pas chercher 100% `PACKAGE_COMPLETE`
+artificiellement : conserver `BLOCKED`, `NEEDS_EXPERT_REVIEW`,
+`EXTEND_EXISTING` quand c'est la vérité" — the 39 `BLOCKED` and 11
+`EXTEND_EXISTING` rows were **not** touched or reclassified in this
+pass; only the 59 rows already scoped as buildable (`NEW_EXTERNAL` /
+`NEW_INTERNAL` in the source reconciliation) were deepened from
+`MODULE_CONTENT_DRAFTED` to `PACKAGE_COMPLETE`.
+
+**Canonical state — never summarized otherwise:** this corpus reaches
+`PACKAGE_COMPLETE` on its **59 buildable rows** (54% of the domain).
+It is **not** `FULLY_COMPLETE` as a domain, and never will be until a
+real human candidate pass exists — `PACKAGE_COMPLETE` here means a
+full canonical package (référentiel + banques + assessment/rubric +
+evidence model + 3 guides + integration note) exists and is
+repo-truth-grounded or explicitly market-general, nothing more. The 50
+non-`PACKAGE_COMPLETE` rows (39 `BLOCKED` + 11 `EXTEND_EXISTING`)
+remain genuinely blocked or folded, per the reconciliation's own
+verdict — not a gap in this pass's coverage.
