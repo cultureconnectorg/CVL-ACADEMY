@@ -55,18 +55,18 @@ BLOCKED            — construction cannot proceed without something
 | Founder/CEO+CVLN Group+Fondation Cœurvolan | 158 | none | `RECONCILED_NOT_BUILT` — `FOUNDER_CEO_GROUP_FONDATION_RECONCILIATION.md` verdicts exist (incl. `FD-CIP-001` closure), no pedagogical corpus started. `NEEDS_EXPERT_REVIEW` rows (legal/fiscal/philanthropic, ~25 rows) stay explicitly unbuildable without a real expert, by design — never a universal recipe. |
 | FREK (FRK-01→75) | 75 | none | `RECONCILED_NOT_BUILT` — `FREK_01_75_RECONCILIATION.md` verdicts exist, including this session's FRK-71 closure and the `frekcoreAout2026`/`frek_v3/` repo-truth. No pedagogical corpus started despite this being one of the best-grounded domains in the whole cartography (real architecture corpus + real Python reference verifier, 16 passing tests). |
 | Kiltikonet (KLT-09→20) | 12 | none | `BLOCKED` — reconciled (`KLT_09_20_RECONCILIATION.md`), but inherits `docs/klt/`'s own `STOP=TRUE` authorization gate; this session's repo-truth delta additionally flags that KLT-06/07's old `BLOCKED` sub-verdicts (Observatory/Network) should be re-checked against `Kiltikonet-Aout2026` (now canonical) before any future authorized wave, not assumed still accurate. |
-| FMS (FMS-07→18) | 12 | none (real runtime template exists in scratchpad, `FMS_Chantier_Complet/`, reusable when this wave starts) | `RECONCILED_NOT_BUILT` — `FMS_07_18_RECONCILIATION.md` verdicts exist (0/12 rejected, 9 formations/parcours after merges), no pedagogical corpus started yet under `docs/`. |
+| FMS (FMS-07→18) | 12 | `docs/fms/` (9 formations after merges: FMS-07 absorbs 14/16, FMS-18 absorbs 17) | `PARTIAL_PACKAGE` (corrected this session, was `RECONCILED_NOT_BUILT`) — FMS-07 (umbrella, flagship) `PACKAGE_COMPLETE`; FMS-08/09/10/11/12/13/15/18 `MODULE_CONTENT_DRAFTED`; 0/9 `BLOCKED`. FMS-07/15/18 grounded directly in the real, re-read `fms-os/fms/backend/server.py`; FMS-08/09/11 anchored by reference on the Founder-gated FMS-01→06 canon; FMS-10/12/13 new professions with explicit cross-reference boundaries. See `docs/fms/QUALITY_GATES.md`. |
 | Cross-CVLN (XCV-01→67) | 67 | none | `RECONCILED_NOT_BUILT`, mostly `EXTEND_EXISTING` — `XCV_TRANSVERSAL_RECONCILIATION.md` merges `XCV-57→66` into the Agent Factory cluster's own `SYS-01→10` pipeline (no separate build needed for those 10); the remaining ~57 rows (`XCV-01→56`) still need their own W6 pass once `80_MISSIONS/MISSIONS_PIPELINES.md` exists to anchor them. |
 
 ## Summary — real, current W6 depth across all 27 domains + pre-existing canon
 
 | State | Domains / sub-domains in this state |
 |---|---|
-| `PACKAGE_COMPLETE` | KOR-01/02, KLT-01→05, FMS-01→06 (pre-existing canon); GMD-21→33 (13/13); WAL-19; CVE-02 |
-| `PARTIAL_PACKAGE` | KOR-03→10 (8), KLT-06→08 (3) |
-| `DRAFTED` | KOR-11→15 (5); WAL-20/21/22/23/24/25/26/27/28 (9); CVE-01,03→15 (14) |
+| `PACKAGE_COMPLETE` | KOR-01/02, KLT-01→05, FMS-01→06 (pre-existing canon); GMD-21→33 (13/13); WAL-19; CVE-02; FMS-07 |
+| `PARTIAL_PACKAGE` | KOR-03→10 (8), KLT-06→08 (3); FMS-07→18 (9, corrected — 1/9 `PACKAGE_COMPLETE`, 8/9 `DRAFTED`) |
+| `DRAFTED` | KOR-11→15 (5); WAL-20/21/22/23/24/25/26/27/28 (9); CVE-01,03→15 (14); FMS-08/09/10/11/12/13/15/18 (8) |
 | `BLOCKED` | GMD-34 (product gap); Kiltikonet KLT-09→20 (governance gate) |
-| `RECONCILED_NOT_BUILT` | Good Mood/DJ Sayd external-market rows (~51); WAL-01→18 + WAL-X (27); KORA interne/cross (19); Agent Factory cluster (109); CyberSecure+Blockchain+Gala+Hospitality+LabelOS (214); Founder/CEO+Group+Fondation (158); FREK (75); FMS-07→18 (12); Cross-CVLN XCV-01→56 (~57) |
+| `RECONCILED_NOT_BUILT` | Good Mood/DJ Sayd external-market rows (~51); WAL-01→18 + WAL-X (27); KORA interne/cross (19); Agent Factory cluster (109); CyberSecure+Blockchain+Gala+Hospitality+LabelOS (214); Founder/CEO+Group+Fondation (158); FREK (75); Cross-CVLN XCV-01→56 (~57) |
 
 ## What this changes, and what it does not
 

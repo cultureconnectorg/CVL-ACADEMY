@@ -22,6 +22,8 @@
 | `5ca5bad` | Garde anti-collision CVE re-vérifiée directement (relecture fraîche des deux sources) et ancrée dans la section CVE-01→15 de `WALLET_CVE_RECONCILIATION.md` elle-même, avant la vague Wallet. |
 | `2178c02`→`5d90e8b` (G14 — W6 Wave 2+3 livrées) | **`docs/wal/`** : WAL-19→28, WAL-19 flagship au niveau package complet, WAL-20/21/24/28 en référentiel+modules, WAL-22/23/25/26/27 déclarées `GAP.md` (aucune capacité correspondante dans `backend/wallet/`). Correction de repo-truth : le "501" du commentaire de `passes.py` n'existe jamais en HTTP réel (200 + `"status":"unsigned"`, grep confirmé) — corrigé dans `WALLET_CVE_RECONCILIATION.md`. **`docs/cve/`** : CVE-01→15, CVE-02 (Layer 1/Trust Score) flagship au niveau package complet, les 14 autres en référentiel+modules, aucune `BLOCKED_PRODUCT_DEPENDENCY` (l'objet est une spécification mathématique). CVE-06 (Shapley) et CVE-08 (VCF) déclarées `FORMALIZATION_PENDING` après vérification directe (recherche plein texte) que ces concepts ne sont pas formalisés dans le document frozen v1.0 — jamais comblés par une formule inventée. Voir `GAP_REGISTER.md` G14, `docs/wal/QUALITY_GATES.md`, `docs/cve/QUALITY_GATES.md`. |
 | (ce commit) (G15 — checkpoint Founder Wallet) | **WAL-22/23/25/26/27 re-vérifiées contre `djsayd/CVLN-Wallet`** (déjà audité cette session) sur demande explicite du Founder — le petit `backend/wallet/` de cette Academy ne devait pas devenir par erreur l'unique source de vérité pour ces 5 formations intitulées "CVLN Wallet Operator." Résultat : les 5 capacités existent réellement dans le vrai produit (coffres, transfert, marketplace, settlement/réconciliation, kill-switch), toutes vérifiées route par route. Les 5 `GAP.md` sont remplacées par de vrais `REFERENTIAL.md` — statut porté à `MODULE_CONTENT_DRAFTED` uniquement (jamais `PACKAGE_COMPLETE`, aucune promotion artificielle). `WALLET_CVE_RECONCILIATION.md`, `95_GAPS/REPO_REGISTRY.md`, `docs/wal/README.md`/`QUALITY_GATES.md`/`WAL_CANONICAL_EDUCATION_MAP.md` mis à jour. Discipline de statut rappelée explicitement : `WAVE_PROCESSED`/`RECONCILED` ≠ `PACKAGE_COMPLETE` ≠ `FULLY_COMPLETE`. Voir `GAP_REGISTER.md` G15. **W6 continue.** |
+| `97d3b65` | **`W6_GLOBAL_STATUS.md`** — premier état réel par domaine (taxonomie Founder `NOT_STARTED`/`RECONCILED_NOT_BUILT`/`DRAFTED`/`PARTIAL_PACKAGE`/`PACKAGE_COMPLETE`/`BLOCKED`), construit uniquement à partir des statuts déjà déclarés par les fichiers existants (aucune ré-audit). Sert à choisir la vague W6 suivante sur preuve plutôt qu'un choix arbitraire — identifie `FMS-07→18` comme la vague suivante correcte (séquence déjà établie, corpus zéro, template réel disponible en scratchpad). |
+| (ce commit) (**W6 Wave 4** — `docs/fms/`) | **FMS-07→18** (9 formations après fusion, `FMS_07_18_RECONCILIATION.md` v2) : FMS-07 (absorbe FMS-14/16) flagship porté à `PACKAGE_COMPLETE`, grondé directement dans le vrai `fms-os/fms/backend/server.py` re-lu cette session (`/os/bookings`, `PATCH .../status` — énumération réelle à 8 états, `/os/services`). FMS-15 et FMS-18 (absorbe FMS-17) grondés dans le même repo réel (`/os/clients`, `/os/leads`, `/os/command-center`, `/os/integrations`, `/os/audit-log`) — garde anti-contamination `/os/command-center` (studio) ≠ Command Center CVLN déjà consignée. FMS-08/09 (spécialisations, ancrées par référence sur FMS-03/M06,M11,M07,M12,M14, jamais réécrit) et FMS-11 (hybride, ancré par référence sur FMS-04/M04,M09). FMS-10/12/13 nouvelles professions sans repo à citer, frontières croisées explicites. 8/9 formations `MODULE_CONTENT_DRAFTED`, 0/9 `BLOCKED`. Voir `docs/fms/QUALITY_GATES.md`. **W6 continue.** |
 
 ## Ce que ce chantier NE fait PAS
 
@@ -70,3 +72,22 @@ certification/évaluation partagée (`CERTIFICATION_MODEL.md`) pour
 réservés (`70_EVIDENCE/EVIDENCE_ARCHITECTURE.md`). `FULLY_COMPLETE`
 non déclaré — aucun candidat réel évalué encore
 (`docs/gmd/QUALITY_GATES.md`).
+
+### Wave 4 — FMS-07→18 extended professions corpus (`docs/fms/`)
+
+Choisie via `W6_GLOBAL_STATUS.md` (premier état réel par domaine),
+comme la vague la mieux ancrée restant `RECONCILED_NOT_BUILT` avec un
+template réel déjà disponible (scratchpad `FMS_Chantier_Complet/`,
+223 fichiers). 9 formations après les fusions déjà actées par
+`FMS_07_18_RECONCILIATION.md` v2 : FMS-07 (absorbe FMS-14, FMS-16),
+FMS-08, FMS-09, FMS-10, FMS-11 (hybride), FMS-12, FMS-13, FMS-15,
+FMS-18 (absorbe FMS-17). FMS-07/15/18 grondés directement dans le
+vrai `fms-os/fms/backend/server.py` (re-lu cette session — routes
+`/os/bookings`, `/os/services`, `/os/clients`, `/os/leads`, `/os/
+command-center`, `/os/integrations`, `/os/audit-log`) ; FMS-08/09/11
+ancrés par référence sur les modules du canon FMS-01→06 gelé par le
+Founder (jamais réécrit) ; FMS-10/12/13 nouvelles professions sans
+repo à citer, avec frontières croisées explicites. FMS-07 seul monté
+à `PACKAGE_COMPLETE` (flagship) ; les 8 autres à
+`MODULE_CONTENT_DRAFTED`. `FULLY_COMPLETE` non déclaré — aucun
+candidat réel évalué (`docs/fms/QUALITY_GATES.md`).
