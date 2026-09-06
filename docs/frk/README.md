@@ -20,21 +20,25 @@ Repo grounding: this Academy's own backend/services/frek_core.py
 `FREK_01_75_RECONCILIATION.md` classified all 75 candidates with 0
 rejections. This corpus now accounts for every one of them, at the
 depth its own real grounding (or genuine absence of grounding)
-supports — **never** built past that depth:
+supports — **never** built past that depth. This section reflects the
+completed deepening pass (Batches A→I, this pass): every formation not
+held by a `NEEDS_EXPERT_REVIEW` flag or a genuine `GAP`/`EXTEND_
+EXISTING` verdict has been deepened to a full 9-file `PACKAGE_
+COMPLETE` package.
 
 | Depth | Count | Candidates |
 |---|---|---|
-| `PACKAGE_COMPLETE` | 8 | FRK-01 (flagship), FRK-03, FRK-06, FRK-13, FRK-56, FRK-58, FRK-59, FRK-68 (deepened this pass — the full internal/best-grounded tier 1-3 set) |
-| `MODULE_CONTENT_DRAFTED` (own référentiel) | 47 | FRK-02,04,07,08,09,10,11,12,14,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,60,61,62,63,69,71,72,73,74,75 |
+| `PACKAGE_COMPLETE` | 53 | FRK-01,02,03,04,06,07,08,09,11,12,13,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,56,58,59,60,61,62,63,68,69,71,72,74,75 — full canonical package (référentiel + N1/N2 banks + assessment/rubric + evidence model + 3 guides + integration note) |
+| `MODULE_CONTENT_DRAFTED` (`NEEDS_EXPERT_REVIEW`, held) | 3 | FRK-10 (EUDI/eIDAS2, EU-jurisdiction-specific), FRK-14 (chain-of-custody, forensic/legal-adjacent), FRK-73 (applied cryptography) — all 8 supporting files written, but never promoted past `MODULE_CONTENT_DRAFTED` without a real, named human expert's documented review |
 | `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, no invented content) | 11 | FRK-16,19,21,22,24,39,57,64,65,66,67 |
 | `EXTEND_EXISTING` (folds into a sibling or an existing Master Package doc — no separate file) | 8 | FRK-05 (intro to FRK-56→60), FRK-45/46 (reuse `AUTHORIZATION_MODEL.md`), FRK-48/49/50/51/70 (point to `CYB-31→42`, itself not yet built) |
 
-**8 + 47 + 11 + 8 = 74** — plus FRK-01 already counted in the
-`PACKAGE_COMPLETE` row above, **= 75.** Zero candidates left
-unaccounted for; zero built past their real evidence. The 47 remaining
-`MODULE_CONTENT_DRAFTED` formations (market-general clusters + the
-FRK-71→75 v3 architecture cluster) are a future deepening pass, not
-performed here.
+**53 + 3 + 11 + 8 = 75.** Zero candidates left unaccounted for; zero
+built past their real evidence. The 3 `NEEDS_EXPERT_REVIEW` exceptions
+are the only formations correctly held below `PACKAGE_COMPLETE` among
+those with real, teachable content — they stay there until a real,
+named human expert (forensic/legal for FRK-14, EU-jurisdiction legal
+for FRK-10, applied cryptography for FRK-73) documents a review.
 
 ## Build-priority tiers actually used (per the reconciliation's own
 sequencing)
@@ -79,11 +83,16 @@ sequencing)
 
 ## Status (full domain)
 
-**8/75 `PACKAGE_COMPLETE`, 47/75 `MODULE_CONTENT_DRAFTED`, 11/75
+**53/75 `PACKAGE_COMPLETE`, 3/75 `MODULE_CONTENT_DRAFTED`
+(`NEEDS_EXPERT_REVIEW`: FRK-10/14/73), 11/75
 `BLOCKED_PRODUCT_DEPENDENCY`, 8/75 `EXTEND_EXISTING` (no separate
 formation).** No candidate was promoted past what its own real
 grounding supports; no `BLOCKED` candidate was built on an invented
-capability.
+capability; no `NEEDS_EXPERT_REVIEW` formation was promoted without a
+real human expert's documented review. Never summarize this as "FREK
+terminé/complete" — the 3 held exceptions and the 11+8 non-
+`PACKAGE_COMPLETE` candidates remain real, permanent facts of this
+domain's status, not a temporary gap to round away.
 
 ## What this corpus does NOT do
 
@@ -98,6 +107,11 @@ capability.
 - Does not build separate formations for FRK-05/45/46/48/49/50/51/70 —
   each folds into a sibling or an existing Master Package document,
   per the reconciliation's own `EXTEND_EXISTING` verdict.
-- Does not claim FRK-71→75's real architecture corpus is hardware-
-  proven or production-integrated — `ARCHITECTURE_LEVEL_2` stated
-  explicitly on every one.
+- Does not claim FRK-71/72/74/75's real architecture corpus is
+  hardware-proven or production-integrated — `ARCHITECTURE_LEVEL_2`
+  stated explicitly on every one.
+- Does not promote FRK-10, FRK-14, or FRK-73 to `PACKAGE_COMPLETE` —
+  all three carry their `NEEDS_EXPERT_REVIEW` flag forward unresolved,
+  even though all 8 supporting files exist for each; no assessment is
+  administered on any of them until a real, named human expert
+  documents a review.
