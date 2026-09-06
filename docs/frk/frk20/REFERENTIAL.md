@@ -27,4 +27,5 @@ A design exercise graded against real offline-verification patterns.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE` — full canonical package, deepened this
+pass. Never implies `FULLY_COMPLETE`.
