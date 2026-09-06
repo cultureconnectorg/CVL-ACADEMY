@@ -72,6 +72,7 @@ Fondation Cœurvolan — chacun garde sa formation legacy réelle
 | **7 — KORA interne/cross** | `docs/kor_op/` | 19/19 comptabilisées | 1/19 `PACKAGE_COMPLETE` (KOR-OP-12, seule ligne sans ancrage 1:1, package neuf construit sur les compétences réelles KOR-03/KOR-04) ; 18/19 `EXTEND_EXISTING`/index convergé (11 notes de cadrage KOR-OP pointant vers `docs/kor/korXX/` déjà bâti, 7 ponts KOR-X convergés dont 4 identiques à un pont déjà construit sous un autre numéro de ligne — `FRK-56`/`LOS-X-03`/`WAL-X-01`) ; `docs/kor/kor01→15` non touché |
 | **8 — CyberSecure+Blockchain+Gala+Hospitality+LabelOS** | `docs/cyb/`+`docs/bci/`+`docs/gcf/`+`docs/hos/`+`docs/los/` | 214/214 comptabilisées | 1/214 `PACKAGE_COMPLETE` (CYB-32, grondé sur le vrai `backend/auth.py`) ; 139/214 contenu réel construit (137 `MODULE_CONTENT_DRAFTED` + 2 modules de pont neufs) ; 13/214 index convergé/citation seule ; 1/214 préservé verbatim (`HOS-GAP`) ; 60/214 `BLOCKED_PRODUCT_DEPENDENCY` ; aucune formation legacy (`BCH-01`/`HOS-01`/`LOS-01`/`AGR-01`) reconstruite, chacune citée par référence ; résout `G3` et `G8` |
 | **9 — Founder/CEO+CVLN Group+Fondation Cœurvolan** | `docs/ceo/`+`docs/grp/`+`docs/fdc/` | 158/158 comptabilisées | 0/158 `PACKAGE_COMPLETE` (aucun flagship cette vague) ; 88/158 contenu réel construit (12 CEO + 39 GRP + 37 FDC) ; 9/158 ponts citation-seule (FDC-X) ; 25/158 `NEEDS_EXPERT_REVIEW` (10 GRP + 15 FDC, légal/fiscal/philanthropique, jamais de recette universelle) ; 27/158 `BLOCKED_PRODUCT_DEPENDENCY` (14 GRP + 13 FDC) ; 9/158 signalées non énumérées dans la source (`docs/grp/GRP_GAP_NOTE.md`, jamais inventées) ; aucune formation legacy (`GRP-01`/`GRP-02`/`CIP-01`) reconstruite ; `FD-CIP-001` (CIP Foundation ≠ Fondation Cœurvolan) appliqué sans exception |
+| **10 — Cross-CVLN (RAIL 1 FERMÉ)** | `docs/xcv/` | 67/67 comptabilisées | 0/67 `PACKAGE_COMPLETE` (par construction — couche transversale, convergence pure) ; 66/67 `EXTEND_EXISTING`/`MERGE` (10 notes de cadrage fondationnelles + 46 index d'étapes de pipeline + 10 fusionnées avec `SYS-01→10`) ; 1/67 `BLOCKED_PRODUCT_DEPENDENCY` (`XCV-67`, opérateur capstone, aucune infrastructure de pipeline réelle à superviser) — **ferme l'intégralité du Rail 1** |
 
 **Pré-existant, jamais reconstruit** : KOR-01/02 (`PACKAGE_COMPLETE`),
 KOR-03→10 (`PARTIAL_PACKAGE`), KOR-11→15 (`DRAFTED`), KLT-01→05
@@ -79,22 +80,33 @@ KOR-03→10 (`PARTIAL_PACKAGE`), KOR-11→15 (`DRAFTED`), KLT-01→05
 FMS-01→06 (`PACKAGE_COMPLETE`-équivalent, code réel).
 
 **Total formations/lignes à contenu réel écrit ce chantier (waves
-1-15) : ~390** (13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF + 1
+1-16) : ~390** (13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF + 1
 KOR-OP-12 + 140 CyberSecure/Blockchain/Gala/Hospitality/LabelOS + 88
 Founder/CEO/Group/Fondation à contenu construit, plus 11 FRK + 39 AGF
-+ 60 CYB/BCI/GCF/LOS + 27 GRP/FDC déclarées `GAP.md`/
++ 60 CYB/BCI/GCF/LOS + 27 GRP/FDC + 1 XCV-67 déclarées `GAP.md`/
 `BLOCKED_CANDIDATES.md`, plus 18 lignes KORA + 13 lignes CYB/BCI/GCF/LOS
-+ 9 lignes FDC-X `EXTEND_EXISTING`/index convergé sans formation
-séparée, plus 1 ligne `HOS-GAP` préservée verbatim, plus 3 FRK + 25
-GRP/FDC `NEEDS_EXPERT_REVIEW`, plus 9 lignes GRP signalées non
++ 9 lignes FDC-X + 66 lignes XCV `EXTEND_EXISTING`/index convergé sans
+formation séparée, plus 1 ligne `HOS-GAP` préservée verbatim, plus 3
+FRK + 25 GRP/FDC `NEEDS_EXPERT_REVIEW`, plus 9 lignes GRP signalées non
 énumérées dans la source), dont désormais **11 formations/clusters
 AGF + CMD-15 + FRK flagships + KOR-OP-12 + CYB-32** `PACKAGE_COMPLETE`
 (GMD couvre 13 flagships en fait — voir détail
 `docs/gmd/QUALITY_GATES.md`) et le reste honnêtement
-`MODULE_CONTENT_DRAFTED`/`BLOCKED`/`NEEDS_EXPERT_REVIEW` selon la
-preuve réelle disponible — **aucun statut jamais gonflé** (discipline
-`WAVE_PROCESSED`/`RECONCILED` ≠ `PACKAGE_COMPLETE` ≠
-`FULLY_COMPLETE`, voir `W6_GLOBAL_STATUS.md`).
+`MODULE_CONTENT_DRAFTED`/`BLOCKED`/`NEEDS_EXPERT_REVIEW`/
+`EXTEND_EXISTING` selon la preuve réelle disponible — **aucun statut
+jamais gonflé** (discipline `WAVE_PROCESSED`/`RECONCILED` ≠
+`PACKAGE_COMPLETE` ≠ `FULLY_COMPLETE`, voir `W6_GLOBAL_STATUS.md`).
+
+**RAIL 1 FERMÉ (2026-09-06)** — les 6 priorités explicites du Founder
+("FREK deepening final → Agent Factory → KORA interne/cross →
+CyberSecure/Blockchain/LabelOS/Gala/Hospitality → Founder/Group/
+Fondation → Cross-CVLN") ont chacune un statut propre par formation :
+classée + corpus construit ou blocage explicite, jamais artificiel.
+Le gate de sortie du Rail 1 ("812 objets = chacun classé + corpus
+construit ou blocage explicite") reste à vérifier sur les domaines
+hors Rail 1 (Good Mood/DJ Sayd côté marché, Wallet côté marché) avant
+de le déclarer atteint sur l'intégralité des 812 lignes — voir §5
+ci-dessous pour l'état exact de ce qui reste.
 
 ## 5. Ce qui reste dans le périmètre W6 (domaines encore à zéro corpus)
 
@@ -108,7 +120,7 @@ D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
 | Founder/CEO+Group+Fondation | 158 | **Couverture complète (vague 13-15, `docs/ceo/`+`docs/grp/`+`docs/fdc/`)** — 0 `PACKAGE_COMPLETE` / 88 contenu réel construit / 9 citation-seule / 25 `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique, jamais de recette universelle) / 27 `BLOCKED_PRODUCT_DEPENDENCY` / 9 signalées non énumérées dans la source (`docs/grp/GRP_GAP_NOTE.md`, jamais inventées) |
 | KORA interne/cross | 19 | **Couverture complète (vague 7, `docs/kor_op/`)** — 1 `PACKAGE_COMPLETE` (KOR-OP-12) / 18 `EXTEND_EXISTING`/index convergé (aucune formation séparée, `docs/kor/kor01→15` non touché) |
 | Kiltikonet KLT-09→20 | 12 | `BLOCKED` — hérite du `STOP=TRUE` de `docs/klt/` (gate d'autorisation Founder, jamais contourné) |
-| Cross-CVLN XCV-01→56 | ~57 | `RECONCILED_NOT_BUILT` — nécessite `80_MISSIONS/MISSIONS_PIPELINES.md` comme point d'ancrage |
+| Cross-CVLN (XCV-01→67) | 67 | **Couverture complète (vague 16, `docs/xcv/`) — RAIL 1 FERMÉ** — 0 `PACKAGE_COMPLETE` (par construction) / 66 `EXTEND_EXISTING`/`MERGE` / 1 `BLOCKED_PRODUCT_DEPENDENCY` (`XCV-67`) |
 | Good Mood/DJ Sayd — côté marché | ~51 | `RECONCILED_NOT_BUILT` |
 | Wallet — côté marché (WAL-01→18, WAL-X) | 27 | `RECONCILED_NOT_BUILT` |
 

@@ -56,18 +56,31 @@ BLOCKED            — construction cannot proceed without something
 | Founder/CEO+CVLN Group+Fondation Cœurvolan | 158 | `docs/ceo/`+`docs/grp/`+`docs/fdc/` — full 158/158 accounted for | `PARTIAL_PACKAGE` (was `RECONCILED_NOT_BUILT`) — 0/158 `PACKAGE_COMPLETE` (no flagship this wave); 88/158 real content built (12 CEO + 39 GRP + 37 FDC); 9/158 citation-only bridges (FDC-X); 25/158 `NEEDS_EXPERT_REVIEW` (legal/fiscal/philanthropic — 10 GRP + 15 FDC, unbuildable without a real expert, by design, never a universal recipe); 27/158 `BLOCKED_PRODUCT_DEPENDENCY` (14 GRP + 13 FDC); 9/158 flagged `UNENUMERATED_IN_SOURCE_RECONCILIATION` (GRP, never invented). No legacy formation (`GRP-01`, `GRP-02`, `CIP-01`) rebuilt. See each domain's own README/QUALITY_GATES. |
 | Kiltikonet (KLT-09→20) | 12 | none | `BLOCKED` — reconciled (`KLT_09_20_RECONCILIATION.md`), but inherits `docs/klt/`'s own `STOP=TRUE` authorization gate; this session's repo-truth delta additionally flags that KLT-06/07's old `BLOCKED` sub-verdicts (Observatory/Network) should be re-checked against `Kiltikonet-Aout2026` (now canonical) before any future authorized wave, not assumed still accurate. |
 | FMS (FMS-07→18) | 12 | `docs/fms/` (9 formations after merges: FMS-07 absorbs 14/16, FMS-18 absorbs 17) | `PARTIAL_PACKAGE` (corrected this session, was `RECONCILED_NOT_BUILT`) — FMS-07 (umbrella, flagship) `PACKAGE_COMPLETE`; FMS-08/09/10/11/12/13/15/18 `MODULE_CONTENT_DRAFTED`; 0/9 `BLOCKED`. FMS-07/15/18 grounded directly in the real, re-read `fms-os/fms/backend/server.py`; FMS-08/09/11 anchored by reference on the Founder-gated FMS-01→06 canon; FMS-10/12/13 new professions with explicit cross-reference boundaries. See `docs/fms/QUALITY_GATES.md`. |
-| Cross-CVLN (XCV-01→67) | 67 | none | `RECONCILED_NOT_BUILT`, mostly `EXTEND_EXISTING` — `XCV_TRANSVERSAL_RECONCILIATION.md` merges `XCV-57→66` into the Agent Factory cluster's own `SYS-01→10` pipeline (no separate build needed for those 10); the remaining ~57 rows (`XCV-01→56`) still need their own W6 pass once `80_MISSIONS/MISSIONS_PIPELINES.md` exists to anchor them. |
+| Cross-CVLN (XCV-01→67) | 67 | `docs/xcv/` — full 67/67 accounted for | `PARTIAL_PACKAGE` (was `RECONCILED_NOT_BUILT`) — 0/67 `PACKAGE_COMPLETE` (by design, pure convergence/index content); 66/67 `EXTEND_EXISTING`/`MERGE` (10 foundational framing notes + 46 pipeline-stage index + 10 merged into `SYS-01→10`); 1/67 `BLOCKED_PRODUCT_DEPENDENCY` (`XCV-67`, capstone operator, no pipeline has real infrastructure to supervise yet). See `docs/xcv/README.md`/`QUALITY_GATES.md`. |
 
 ## Summary — real, current W6 depth across all 27 domains + pre-existing canon
 
 | State | Domains / sub-domains in this state |
 |---|---|
 | `PACKAGE_COMPLETE` | KOR-01/02, KLT-01→05, FMS-01→06 (pre-existing canon); GMD-21→33 (13/13); WAL-19; CVE-02; FMS-07; FRK-01/03/06/13/56/58/59/68 (8); CMD-15, AF-16/17/AF-X-03/BRN-15/IOS-07 + af01_03/af04_15/lau01_10/brn01_14/cmd01_14 (11 AGF formations, 59 rows); CYB-32 |
-| `PARTIAL_PACKAGE` | KOR-03→10 (8), KLT-06→08 (3); FMS-07→18 (9, 1/9 `PACKAGE_COMPLETE`, 8/9 `DRAFTED`); FREK (75, 54/75 `PACKAGE_COMPLETE`, 3/75 `DRAFTED` (`NEEDS_EXPERT_REVIEW`), 10/75 `BLOCKED`, 8/75 `EXTEND_EXISTING`); Agent Factory cluster (109, 59/109 `PACKAGE_COMPLETE`, 39/109 `BLOCKED`, 11/109 `EXTEND_EXISTING`); KORA interne/cross (19, 1/19 `PACKAGE_COMPLETE`, 18/19 `EXTEND_EXISTING`/converged-index); CyberSecure+Blockchain+Gala+Hospitality+LabelOS (214, 1/214 `PACKAGE_COMPLETE`, 139/214 real content, 13/214 converged/citation, 1/214 preserved, 60/214 `BLOCKED`); Founder/CEO+Group+Fondation (158, 0/158 `PACKAGE_COMPLETE`, 88/158 real content, 9/158 citation-only, 25/158 `NEEDS_EXPERT_REVIEW`, 27/158 `BLOCKED`, 9/158 flagged unenumerated) |
+| `PARTIAL_PACKAGE` | KOR-03→10 (8), KLT-06→08 (3); FMS-07→18 (9, 1/9 `PACKAGE_COMPLETE`, 8/9 `DRAFTED`); FREK (75, 54/75 `PACKAGE_COMPLETE`, 3/75 `DRAFTED` (`NEEDS_EXPERT_REVIEW`), 10/75 `BLOCKED`, 8/75 `EXTEND_EXISTING`); Agent Factory cluster (109, 59/109 `PACKAGE_COMPLETE`, 39/109 `BLOCKED`, 11/109 `EXTEND_EXISTING`); KORA interne/cross (19, 1/19 `PACKAGE_COMPLETE`, 18/19 `EXTEND_EXISTING`/converged-index); CyberSecure+Blockchain+Gala+Hospitality+LabelOS (214, 1/214 `PACKAGE_COMPLETE`, 139/214 real content, 13/214 converged/citation, 1/214 preserved, 60/214 `BLOCKED`); Founder/CEO+Group+Fondation (158, 0/158 `PACKAGE_COMPLETE`, 88/158 real content, 9/158 citation-only, 25/158 `NEEDS_EXPERT_REVIEW`, 27/158 `BLOCKED`, 9/158 flagged unenumerated); Cross-CVLN (67, 0/67 `PACKAGE_COMPLETE`, 66/67 `EXTEND_EXISTING`/`MERGE`, 1/67 `BLOCKED`) |
 | `DRAFTED` | KOR-11→15 (5); WAL-20/21/22/23/24/25/26/27/28 (9); CVE-01,03→15 (14); FMS-08/09/10/11/12/13/15/18 (8); FRK (47 — see `docs/frk/README.md`) |
-| `BLOCKED` | GMD-34 (product gap); Kiltikonet KLT-09→20 (governance gate); FRK-16/19/21/22/24/39/57/64/65/66/67 (11, `docs/frk/*/GAP.md`); AF-18/19/20/21/23/25/24, AF-X-01/02/04/05/06/07/08/09, IOS-01→06/08→25 (39, `docs/agf/BLOCKED_CANDIDATES.md`); 60 rows across CYB/BCI/GCF/LOS (`docs/cyb/`, `docs/bci/`, `docs/gcf/`, `docs/los/` `BLOCKED_CANDIDATES.md` each); 27 rows across GRP/FDC (`docs/grp/`, `docs/fdc/` `BLOCKED_CANDIDATES.md` each) |
+| `BLOCKED` | GMD-34 (product gap); Kiltikonet KLT-09→20 (governance gate); FRK-16/19/21/22/24/39/57/64/65/66/67 (11, `docs/frk/*/GAP.md`); AF-18/19/20/21/23/25/24, AF-X-01/02/04/05/06/07/08/09, IOS-01→06/08→25 (39, `docs/agf/BLOCKED_CANDIDATES.md`); 60 rows across CYB/BCI/GCF/LOS (`docs/cyb/`, `docs/bci/`, `docs/gcf/`, `docs/los/` `BLOCKED_CANDIDATES.md` each); 27 rows across GRP/FDC (`docs/grp/`, `docs/fdc/` `BLOCKED_CANDIDATES.md` each); XCV-67 (1, `docs/xcv/BLOCKED_CANDIDATES.md`) |
 | `NEEDS_EXPERT_REVIEW` | FRK-10/14/73 (3, `docs/frk/`); GRP-11, GRP-32→40 (10, `docs/grp/NEEDS_EXPERT_REVIEW.md`); FDC-21→35 (15, `docs/fdc/NEEDS_EXPERT_REVIEW.md`) |
-| `RECONCILED_NOT_BUILT` | Good Mood/DJ Sayd external-market rows (~51); WAL-01→18 + WAL-X (27); Cross-CVLN XCV-01→56 (~57) |
+| `RECONCILED_NOT_BUILT` | Good Mood/DJ Sayd external-market rows (~51); WAL-01→18 + WAL-X (27) |
+
+## Rail 1 — FERMÉ (2026-09-06)
+
+Tous les domaines de l'ordre de priorité Rail 1 explicite du Founder
+("FREK deepening final → Agent Factory → KORA interne/cross →
+CyberSecure/Blockchain/LabelOS/Gala/Hospitality → Founder/Group/
+Fondation → Cross-CVLN") ont désormais un statut propre par formation
+— chacune classée + corpus construit ou blocage explicite, jamais un
+statut gonflé. Seuls deux domaines restent `RECONCILED_NOT_BUILT` en
+dehors de l'ordre Rail 1 explicite : Good Mood/DJ Sayd (côté marché,
+~51 lignes) et Wallet (côté marché, WAL-01→18 + WAL-X, 27 lignes) —
+tous deux hors du périmètre Rail 1 tel que donné par le Founder cette
+session.
 
 ## What this changes, and what it does not
 
