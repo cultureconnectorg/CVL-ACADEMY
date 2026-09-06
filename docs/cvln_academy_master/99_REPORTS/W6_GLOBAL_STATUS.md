@@ -47,8 +47,8 @@ BLOCKED            — construction cannot proceed without something
 
 | Domain | Rows | Corpus | Real state (from files) |
 |---|---|---|---|
-| Good Mood + DJ Sayd | 94 | `docs/gmd/` (GMD-21→34) | `PACKAGE_COMPLETE` for GMD-21→33 (13/13, closed this session — see `docs/gmd/QUALITY_GATES.md`); `BLOCKED` for GMD-34 (product gap, `gmd34/GAP.md`, by design, never simulated). DJ Sayd's own external/market rows (the other ~51/94) remain `RECONCILED_NOT_BUILT` — no W6 corpus started for the DJ Sayd market-professional side yet. |
-| Wallet + CVE | 52 | `docs/wal/` (WAL-19→28), `docs/cve/` (CVE-01→15) | `PACKAGE_COMPLETE` for WAL-19, CVE-02 (2/25 formations across both corpora); `DRAFTED` for the other 23 (WAL-20/21/22/23/24/25/26/27/28, CVE-01/03→15) — corrected this session, `0/25` `BLOCKED` (WAL-22/23/25/26/27 un-blocked via the `djsayd/CVLN-Wallet` checkpoint). WAL-01→18 (external/market side, 18 rows) remain `RECONCILED_NOT_BUILT`. WAL-X-01→09 (9 rows) remain `RECONCILED_NOT_BUILT`. |
+| Good Mood + DJ Sayd | 94 | `docs/gmd/` (full GMD-01→34, GMD-X-01→09, 43 rows) + `docs/say/` (full SAY-01→50 + SAY-LAB, 51 rows) — full 94/94 accounted for | `PARTIAL_PACKAGE` (was `RECONCILED_NOT_BUILT` for the non-GMD-21→34 portion) — 14/94 `PACKAGE_COMPLETE` (GMD-21→33, 13 rows + `SAY-LAB` capstone flagship, 1 row); GMD-34 `BLOCKED` (product gap, by design); GMD-01→20 (20 rows) `MODULE_CONTENT_DRAFTED`; GMD-X-01→09 resolved (5 new/reused + 4 blocked); SAY's 50 rows resolved as 19 `MODULE_CONTENT_DRAFTED` + 23 `SPECIALIZE_EXISTING` + 8 `MERGE` into FMS-02. See `docs/gmd/README.md`/`QUALITY_GATES.md`, `docs/say/README.md`/`QUALITY_GATES.md`. |
+| Wallet + CVE | 52 | `docs/wal/` (full WAL-01→28, WAL-X-01→09, 37 rows), `docs/cve/` (CVE-01→15, 15 rows) — full 52/52 accounted for | `PARTIAL_PACKAGE` (was `RECONCILED_NOT_BUILT` for WAL-01→18/WAL-X) — `PACKAGE_COMPLETE` for WAL-19, CVE-02 (2/52); `MODULE_CONTENT_DRAFTED` for WAL-20/21/22/23/24/25/26/27/28 (9), CVE-01/03→15 (14), and WAL-01→13,16→18 (16); WAL-14 `EXTEND_EXISTING` (→`docs/cyb/`); WAL-15 `NEEDS_EXPERT_REVIEW`; WAL-X-01→09 resolved (4 new bridge + 3 converged + 2 `BLOCKED`). See `docs/wal/README.md`/`QUALITY_GATES.md`, `docs/cve/QUALITY_GATES.md`. |
 | KORA (interne/cross) | 19 | `docs/kor_op/` — full 19/19 accounted for | `PARTIAL_PACKAGE` (was `RECONCILED_NOT_BUILT`) — 1/19 `PACKAGE_COMPLETE` (KOR-OP-12, the one row without a 1:1 existing anchor, newly built); 18/19 resolved as `EXTEND_EXISTING`/converged-index (11 KOR-OP framing notes pointing to already-built `docs/kor/korXX/` competencies, 7 KOR-X bridges converged, 4 of them the same real bridge as `FRK-56`/`LOS-X-03`/`WAL-X-01`). Does not touch or rebuild `docs/kor/kor01→15`. See `docs/kor_op/README.md`/`QUALITY_GATES.md`. |
 | FREK (FRK-01→75) | 75 | `docs/frk/` — **full domain, 75/75 accounted for** | `PARTIAL_PACKAGE` (was `RECONCILED_NOT_BUILT`) — 54/75 `PACKAGE_COMPLETE` (full deepening pass across Batches A→I this session, every formation without a real blocker or `NEEDS_EXPERT_REVIEW` flag, plus FRK-16 reclassified post-pass on new repo-truth from `Cvln-ios-v.1`'s own governance corpus — MetaCVLN's real Notary & Public Audit + OpenTimestamps anchoring); 3/75 `MODULE_CONTENT_DRAFTED` (FRK-10 EUDI/eIDAS2, FRK-14 chain-of-custody, FRK-73 applied cryptography — all `NEEDS_EXPERT_REVIEW`, 8/8 supporting files written but never promoted without a real named expert's review); 10/75 `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, genuine repo/spec gaps, re-verified against `Cvln-ios-v.1` and confirmed unchanged, no invention); 8/75 `EXTEND_EXISTING` (fold into a sibling or an existing Master Package doc — FRK-05, FRK-45/46, FRK-48/49/50/51/70 — no separate formation, per the reconciliation's own verdict). See `docs/frk/README.md` and `docs/frk/QUALITY_GATES.md`. |
 | Agent Factory/AF-X/Laurentia/IOS/Brain/CMD/Intelligent Operations | 109 | `docs/agf/` — full domain, 109/109 accounted for | `PARTIAL_PACKAGE` (was `RECONCILED_NOT_BUILT`) — 59/109 `PACKAGE_COMPLETE` (full deepening pass this session: all 5 `external/` clusters — af01_03/af04_15/lau01_10/brn01_14/cmd01_14, 53 rows — plus all 6 `internal/` formations — af16/af17/afx03/brn15/ios07/cmd15, 6 rows — each internal one grounded strictly on `CVLNAgentfactory`/`Cvln-ios-v.1`/`Laurent.ia`/`MetaCVLN`, never extrapolated, external clusters on real market-general disciplines); 39/109 `BLOCKED_PRODUCT_DEPENDENCY` (untouched — real repos exist but none wired to `CVL-ACADEMY`); 11/109 `EXTEND_EXISTING` (AF-22, SYS-01→10, no separate file, untouched). See `docs/agf/README.md`/`QUALITY_GATES.md`. |
@@ -62,25 +62,33 @@ BLOCKED            — construction cannot proceed without something
 
 | State | Domains / sub-domains in this state |
 |---|---|
-| `PACKAGE_COMPLETE` | KOR-01/02, KLT-01→05, FMS-01→06 (pre-existing canon); GMD-21→33 (13/13); WAL-19; CVE-02; FMS-07; FRK-01/03/06/13/56/58/59/68 (8); CMD-15, AF-16/17/AF-X-03/BRN-15/IOS-07 + af01_03/af04_15/lau01_10/brn01_14/cmd01_14 (11 AGF formations, 59 rows); CYB-32 |
-| `PARTIAL_PACKAGE` | KOR-03→10 (8), KLT-06→08 (3); FMS-07→18 (9, 1/9 `PACKAGE_COMPLETE`, 8/9 `DRAFTED`); FREK (75, 54/75 `PACKAGE_COMPLETE`, 3/75 `DRAFTED` (`NEEDS_EXPERT_REVIEW`), 10/75 `BLOCKED`, 8/75 `EXTEND_EXISTING`); Agent Factory cluster (109, 59/109 `PACKAGE_COMPLETE`, 39/109 `BLOCKED`, 11/109 `EXTEND_EXISTING`); KORA interne/cross (19, 1/19 `PACKAGE_COMPLETE`, 18/19 `EXTEND_EXISTING`/converged-index); CyberSecure+Blockchain+Gala+Hospitality+LabelOS (214, 1/214 `PACKAGE_COMPLETE`, 139/214 real content, 13/214 converged/citation, 1/214 preserved, 60/214 `BLOCKED`); Founder/CEO+Group+Fondation (158, 0/158 `PACKAGE_COMPLETE`, 88/158 real content, 9/158 citation-only, 25/158 `NEEDS_EXPERT_REVIEW`, 27/158 `BLOCKED`, 9/158 flagged unenumerated); Cross-CVLN (67, 0/67 `PACKAGE_COMPLETE`, 66/67 `EXTEND_EXISTING`/`MERGE`, 1/67 `BLOCKED`) |
-| `DRAFTED` | KOR-11→15 (5); WAL-20/21/22/23/24/25/26/27/28 (9); CVE-01,03→15 (14); FMS-08/09/10/11/12/13/15/18 (8); FRK (47 — see `docs/frk/README.md`) |
-| `BLOCKED` | GMD-34 (product gap); Kiltikonet KLT-09→20 (governance gate); FRK-16/19/21/22/24/39/57/64/65/66/67 (11, `docs/frk/*/GAP.md`); AF-18/19/20/21/23/25/24, AF-X-01/02/04/05/06/07/08/09, IOS-01→06/08→25 (39, `docs/agf/BLOCKED_CANDIDATES.md`); 60 rows across CYB/BCI/GCF/LOS (`docs/cyb/`, `docs/bci/`, `docs/gcf/`, `docs/los/` `BLOCKED_CANDIDATES.md` each); 27 rows across GRP/FDC (`docs/grp/`, `docs/fdc/` `BLOCKED_CANDIDATES.md` each); XCV-67 (1, `docs/xcv/BLOCKED_CANDIDATES.md`) |
-| `NEEDS_EXPERT_REVIEW` | FRK-10/14/73 (3, `docs/frk/`); GRP-11, GRP-32→40 (10, `docs/grp/NEEDS_EXPERT_REVIEW.md`); FDC-21→35 (15, `docs/fdc/NEEDS_EXPERT_REVIEW.md`) |
-| `RECONCILED_NOT_BUILT` | Good Mood/DJ Sayd external-market rows (~51); WAL-01→18 + WAL-X (27) |
+| `PACKAGE_COMPLETE` | KOR-01/02, KLT-01→05, FMS-01→06 (pre-existing canon); GMD-21→33 (13/13); WAL-19; CVE-02; FMS-07; FRK-01/03/06/13/56/58/59/68 (8); CMD-15, AF-16/17/AF-X-03/BRN-15/IOS-07 + af01_03/af04_15/lau01_10/brn01_14/cmd01_14 (11 AGF formations, 59 rows); CYB-32; SAY-LAB |
+| `PARTIAL_PACKAGE` | KOR-03→10 (8), KLT-06→08 (3); FMS-07→18 (9, 1/9 `PACKAGE_COMPLETE`, 8/9 `DRAFTED`); FREK (75, 54/75 `PACKAGE_COMPLETE`, 3/75 `DRAFTED` (`NEEDS_EXPERT_REVIEW`), 10/75 `BLOCKED`, 8/75 `EXTEND_EXISTING`); Agent Factory cluster (109, 59/109 `PACKAGE_COMPLETE`, 39/109 `BLOCKED`, 11/109 `EXTEND_EXISTING`); KORA interne/cross (19, 1/19 `PACKAGE_COMPLETE`, 18/19 `EXTEND_EXISTING`/converged-index); CyberSecure+Blockchain+Gala+Hospitality+LabelOS (214, 1/214 `PACKAGE_COMPLETE`, 139/214 real content, 13/214 converged/citation, 1/214 preserved, 60/214 `BLOCKED`); Founder/CEO+Group+Fondation (158, 0/158 `PACKAGE_COMPLETE`, 88/158 real content, 9/158 citation-only, 25/158 `NEEDS_EXPERT_REVIEW`, 27/158 `BLOCKED`, 9/158 flagged unenumerated); Cross-CVLN (67, 0/67 `PACKAGE_COMPLETE`, 66/67 `EXTEND_EXISTING`/`MERGE`, 1/67 `BLOCKED`); Good Mood/DJ Sayd (94, 14/94 `PACKAGE_COMPLETE`, rest `MODULE_CONTENT_DRAFTED`/`SPECIALIZE_EXISTING`/`MERGE`/`BLOCKED`); Wallet+CVE (52, 2/52 `PACKAGE_COMPLETE`, rest `MODULE_CONTENT_DRAFTED`/`EXTEND_EXISTING`/`NEEDS_EXPERT_REVIEW`/`BLOCKED`) |
+| `DRAFTED` | KOR-11→15 (5); FRK (47 — see `docs/frk/README.md`) |
+| `BLOCKED` | GMD-34 (product gap); Kiltikonet KLT-09→20 (governance gate); FRK-16/19/21/22/24/39/57/64/65/66/67 (11, `docs/frk/*/GAP.md`); AF-18/19/20/21/23/25/24, AF-X-01/02/04/05/06/07/08/09, IOS-01→06/08→25 (39, `docs/agf/BLOCKED_CANDIDATES.md`); 60 rows across CYB/BCI/GCF/LOS (`docs/cyb/`, `docs/bci/`, `docs/gcf/`, `docs/los/` `BLOCKED_CANDIDATES.md` each); 27 rows across GRP/FDC (`docs/grp/`, `docs/fdc/` `BLOCKED_CANDIDATES.md` each); XCV-67 (1, `docs/xcv/BLOCKED_CANDIDATES.md`); GMD-X-04/05/07/08 (4, `docs/gmd/BLOCKED_CANDIDATES.md`); WAL-X-08/09 (2, `docs/wal/WAL_X_BRIDGE_NOTE.md`) |
+| `NEEDS_EXPERT_REVIEW` | FRK-10/14/73 (3, `docs/frk/`); GRP-11, GRP-32→40 (10, `docs/grp/NEEDS_EXPERT_REVIEW.md`); FDC-21→35 (15, `docs/fdc/NEEDS_EXPERT_REVIEW.md`); WAL-15 (1, `docs/wal/NEEDS_EXPERT_REVIEW.md`) |
+| `RECONCILED_NOT_BUILT` | **None remaining** — see closure note below. |
 
-## Rail 1 — FERMÉ (2026-09-06)
+## RAIL 1 + FULL 812-OBJECT EXIT GATE — FERMÉS (2026-09-06)
 
 Tous les domaines de l'ordre de priorité Rail 1 explicite du Founder
 ("FREK deepening final → Agent Factory → KORA interne/cross →
 CyberSecure/Blockchain/LabelOS/Gala/Hospitality → Founder/Group/
-Fondation → Cross-CVLN") ont désormais un statut propre par formation
-— chacune classée + corpus construit ou blocage explicite, jamais un
-statut gonflé. Seuls deux domaines restent `RECONCILED_NOT_BUILT` en
-dehors de l'ordre Rail 1 explicite : Good Mood/DJ Sayd (côté marché,
-~51 lignes) et Wallet (côté marché, WAL-01→18 + WAL-X, 27 lignes) —
-tous deux hors du périmètre Rail 1 tel que donné par le Founder cette
-session.
+Fondation → Cross-CVLN") ont un statut propre par formation. **Après
+que le Founder a signalé que le travail n'était pas terminé** ("Tu
+n'as pas fini !"), les deux derniers domaines `RECONCILED_NOT_BUILT`
+— Good Mood/DJ Sayd côté marché (80 des 94 lignes) et Wallet côté
+marché (WAL-01→18 + WAL-X, 27 des 52 lignes avec CVE) — ont été
+fermés à leur tour (`docs/gmd/` étendu, `docs/say/` neuf, `docs/wal/`
+étendu). **Le gate de sortie réel du chantier ("812 objets = chacun
+classé + corpus construit ou blocage explicite") est désormais
+atteint sur l'intégralité du périmètre W6 : plus aucun domaine
+n'est `RECONCILED_NOT_BUILT`.** Chaque ligne du Master 2D porte
+maintenant soit un statut de contenu réel construit
+(`PACKAGE_COMPLETE`/`MODULE_CONTENT_DRAFTED`/`SPECIALIZE_EXISTING`/
+`MERGE`/`EXTEND_EXISTING`), soit un blocage honnête et explicite
+(`BLOCKED_PRODUCT_DEPENDENCY`/`NEEDS_EXPERT_REVIEW`) — jamais un
+statut gonflé, jamais une capacité inventée.
 
 ## What this changes, and what it does not
 

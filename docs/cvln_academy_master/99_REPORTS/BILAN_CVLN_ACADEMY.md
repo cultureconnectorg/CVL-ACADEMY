@@ -102,11 +102,15 @@ jamais gonflé** (discipline `WAVE_PROCESSED`/`RECONCILED` ≠
 CyberSecure/Blockchain/LabelOS/Gala/Hospitality → Founder/Group/
 Fondation → Cross-CVLN") ont chacune un statut propre par formation :
 classée + corpus construit ou blocage explicite, jamais artificiel.
-Le gate de sortie du Rail 1 ("812 objets = chacun classé + corpus
-construit ou blocage explicite") reste à vérifier sur les domaines
-hors Rail 1 (Good Mood/DJ Sayd côté marché, Wallet côté marché) avant
-de le déclarer atteint sur l'intégralité des 812 lignes — voir §5
-ci-dessous pour l'état exact de ce qui reste.
+
+**GATE DE SORTIE COMPLET ATTEINT (2026-09-06)** — sur remarque du
+Founder que le travail n'était pas terminé, les deux derniers domaines
+hors Rail 1 (Good Mood/DJ Sayd côté marché, Wallet côté marché) ont
+été fermés à leur tour (`docs/gmd/` étendu, `docs/say/` neuf,
+`docs/wal/` étendu). **Le gate de sortie du chantier ("812 objets =
+chacun classé + corpus construit ou blocage explicite") est désormais
+atteint sur l'intégralité des 812 lignes** — voir §5 ci-dessous pour
+le détail domaine par domaine.
 
 ## 5. Ce qui reste dans le périmètre W6 (domaines encore à zéro corpus)
 
@@ -121,8 +125,12 @@ D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
 | KORA interne/cross | 19 | **Couverture complète (vague 7, `docs/kor_op/`)** — 1 `PACKAGE_COMPLETE` (KOR-OP-12) / 18 `EXTEND_EXISTING`/index convergé (aucune formation séparée, `docs/kor/kor01→15` non touché) |
 | Kiltikonet KLT-09→20 | 12 | `BLOCKED` — hérite du `STOP=TRUE` de `docs/klt/` (gate d'autorisation Founder, jamais contourné) |
 | Cross-CVLN (XCV-01→67) | 67 | **Couverture complète (vague 16, `docs/xcv/`) — RAIL 1 FERMÉ** — 0 `PACKAGE_COMPLETE` (par construction) / 66 `EXTEND_EXISTING`/`MERGE` / 1 `BLOCKED_PRODUCT_DEPENDENCY` (`XCV-67`) |
-| Good Mood/DJ Sayd — côté marché | ~51 | `RECONCILED_NOT_BUILT` |
-| Wallet — côté marché (WAL-01→18, WAL-X) | 27 | `RECONCILED_NOT_BUILT` |
+| Good Mood/DJ Sayd (domaine complet, 94 lignes) | 94 | **Couverture complète (vague 17-18, `docs/gmd/` étendu + `docs/say/` neuf)** — 14 `PACKAGE_COMPLETE` (13 GMD-21→33 + `SAY-LAB` capstone flagship) / le reste `MODULE_CONTENT_DRAFTED`/`SPECIALIZE_EXISTING`/`MERGE`/`BLOCKED` — aucune formation legacy FMS-01→06 reconstruite |
+| Wallet + CVE (domaine complet, 52 lignes) | 52 | **Couverture complète (vague 19, `docs/wal/` étendu + `docs/cve/`)** — 2 `PACKAGE_COMPLETE` (WAL-19, CVE-02) / 25 `MODULE_CONTENT_DRAFTED` (9 interne + 16 externe) / 14 `MODULE_CONTENT_DRAFTED` (CVE) / 1 `EXTEND_EXISTING` (WAL-14) / 1 `NEEDS_EXPERT_REVIEW` (WAL-15) / 7 WAL-X résolues / 2 `BLOCKED_PRODUCT_DEPENDENCY` — résout la fermeture complète du domaine |
+
+**Plus aucun domaine `RECONCILED_NOT_BUILT` : le gate de sortie réel du
+chantier ("812 objets = chacun classé + corpus construit ou blocage
+explicite") est désormais atteint sur l'intégralité du périmètre W6.**
 
 ## 6. Les 4 chantiers transversaux évoqués — état réel de chacun
 
