@@ -2,12 +2,14 @@
 
 ```
 Structure of docs/cvln_academy_master/ — 33 files across 13 folders,
-plus 11 raw source CSVs preserved verbatim. All 812 Master 2D rows are
+plus 11 raw source CSVs preserved verbatim, plus 100_ECONOMY/ (economic
+model, 15 raw CSVs) and docs/gmd/ (W6 Wave 1, Good Mood operator
+corpus, outside this folder proper). All 812 Master 2D rows are
 RECONCILED_NOT_BUILT (see 00_GOVERNANCE/QUALITY_GATES.md for the final
-tally). The two decisions the Founder asked to close are closed
-(FD-CVE-001, FD-CIP-001) — one distinct, pre-existing Founder decision
-remains open (FRK-71, FREK v3 architecture, never covered by either
-closure).
+tally). FOUNDER_DECISION_REQUIRED = 0 across all 812 rows: FD-CVE-001,
+FD-CIP-001, and FRK-71 are all CLOSED, each on a directly-verified real
+repo source (kora2024/Kora-app and cultureconnectorg/frekcoreAout2026
+respectively, both cloned and inspected this session).
 ```
 
 ```
@@ -65,6 +67,7 @@ docs/cvln_academy_master/
   95_GAPS/
     REPO_TRUTH_AUDIT.md
     GAP_REGISTER.md                — G1-G11
+    REPO_REGISTRY.md                — canonical cross-session repo audit tracker
   100_ECONOMY/
     ECONOMIC_MODEL.md              — 7 engines, ECO-001->045, offers, margins, policies, roadmap (DECIDED_V1)
     raw/

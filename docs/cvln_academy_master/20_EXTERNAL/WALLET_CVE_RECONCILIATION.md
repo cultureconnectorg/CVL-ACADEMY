@@ -103,21 +103,17 @@ constructs (source-observed, per Founder decision); their specific
 numeric parameters/weights, where not yet calibrated against real
 data, remain `CALIBRATION_PENDING`.
 
-**Audit note (verification, not a challenge to the decision):** this
-session's own repo audit — `cultureconnectorg/CVL-ACADEMY`, `fms-os/
-fms`, `gmfest972/goodmooddjsayd`, `cultureconnectorg/culutureconnect2026`,
-and a `list_repos` scan of the account's other accessible repositories —
-did not directly locate the cited file (no `KORA`-named repo is
-currently in this session's GitHub scope, and no repo audited this
-session contains a `memory/` path with a CVE mathematical
-specification). The classification above is applied on Founder
-authority per `FD-CVE-001`, exactly as instructed, not on this
-session's own direct verification. Recommendation for a future
-session: attach the KORA repo (or wherever `memory/KORA_CVE_
-Specification_Mathematique_v1.0.md` actually lives) so
-`SOURCE_OBSERVED` can be corroborated at the file level, matching the
-same discipline already applied to every other repo-truth claim in
-this Master Package.
+**Audit note (verification complete):** `kora2024/Kora-app` cloned and
+inspected directly — `memory/KORA_CVE_Specification_Mathematique_v1.0.md`
+confirmed present and real: "KORA Cultural Value Engine — Mathematical
+Specification v1.0, Formal Reference Document, Frozen on Theory v1.4,
+CVLN Group / Tech & Data Pole," a rigorous, self-consistent measurement
+model (Layer 1 raw signals — Trust Score, normalized components —
+through saturation/normalization transforms, explicitly noting it
+"introduces no new concepts," consolidating CVE v1.0→v1.4). This is
+this session's own direct verification, not merely Founder attestation
+— the earlier reservation (source not directly located) is fully
+resolved.
 
 **Action for all 15**: `NEW_INTERNAL`/`NEW_EXTERNAL` per row (as for
 any other formalized-but-uncalibrated methodology domain), never

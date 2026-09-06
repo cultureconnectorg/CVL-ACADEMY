@@ -14,7 +14,9 @@
 | `6ec239b` | Cross-CVLN/XCV (67 lignes) réconcilié — sur-comptage `XCV-57→66` ≡ `SYS-01→10` détecté et convergé. |
 | `1331be3` | Consolidation finale des registres (rôles, habilitations, évidence, Spatial) — indexation pure, `ORPHAN_ROLE=0`, `ORPHAN_AUTHORIZATION=0` confirmés sur 130+71 lignes. |
 | `fe00bb9` | Bilan final des quality gates — **812/812 lignes réconciliées**, 0 rejet, 2 décisions Founder alors résiduelles (CVE, identité CIP/Fondation). |
-| Ce commit (`FD-CVE-001` + `FD-CIP-001`) | **Clôture des deux décisions Founder demandées.** CVE : source méthodologique réelle nommée (`memory/KORA_CVE_Specification_Mathematique_v1.0.md`, KORA) → statut `FORMALIZED_METHODOLOGY`/`SOURCE_OBSERVED`, `CALIBRATION_PENDING` pour les paramètres non calibrés. CIP/Fondation : deux objets distincts, jamais fusionnés — `CIP Foundation (legacy working identity)` en attendant sa forme juridique définitive. Vérification globale : 1 décision Founder distincte et pré-existante reste ouverte (`FRK-71`, jamais couverte par ces deux clôtures — voir `QUALITY_GATES.md`). `RECONCILIATION_MATRIX.md`, `GAP_REGISTER.md`, `QUALITY_GATES.md` mis à jour en conséquence. Puis lancement de **W6** (référentiels pédagogiques réels par vagues). |
+| `4307d47` | Intégration du Modèle Économique 3D (`100_ECONOMY/`, DECIDED_V1) : 7 moteurs, ECO-001→045, 20 offres, mapping économique sur 812 lignes. |
+| `0982c1a` | **W6 Wave 1** — corpus opérateur interne Good Mood (`docs/gmd/`) : GMD-21→33 (13 formations, 41 modules, `MODULE_CONTENT_DRAFTED`), GMD-34 gap déclaré. |
+| Ce commit (`FD-CVE-001` + `FD-CIP-001` + `FRK-71`) | **Clôture des trois dernières décisions Founder — vérifications directes effectuées.** CVE : source vérifiée par clonage direct (`kora2024/Kora-app/memory/KORA_CVE_Specification_Mathematique_v1.0.md`) → `FORMALIZED_METHODOLOGY`/`SOURCE_OBSERVED`, `CALIBRATION_PENDING` pour les paramètres non calibrés. CIP/Fondation : deux objets distincts, jamais fusionnés. FRK-71 : source vérifiée par clonage direct (`cultureconnectorg/frekcoreAout2026`, commit `fb272f1d491b09a6d068fb3f6c9c75d407bb0626`, `frek_v3/`) → `FORMALIZED_ARCHITECTURE`/`SOURCE_OBSERVED`, `ARCHITECTURE_LEVEL_2` explicitement `NOT_FULL_ENGINEERING`/`NOT_HARDWARE_PROVEN`/`NOT_PRODUCTION_INTEGRATED` ; FRK-72→75 reclassés sur preuve repo. **`FOUNDER_DECISION_REQUIRED` = 0 sur les 812 lignes.** `RECONCILIATION_MATRIX.md`, `GAP_REGISTER.md`, `QUALITY_GATES.md` mis à jour en conséquence. **W6 continue sans arrêt.** |
 
 ## Ce que ce chantier NE fait PAS
 
@@ -22,17 +24,18 @@ Ne modifie aucun fichier de code, seed, ou runtime existant
 (`NO_RUNTIME_BINDING`, `NO_DB_MUTATION`, `NO_SEED_MUTATION`). Ne
 reconstruit aucun corpus déjà livré (KOR-01→15, KLT-01→08, FMS-01→06).
 
-## Décisions Founder — les deux demandées sont closes
+## Décisions Founder — toutes closes
 
-`FD-CVE-001` et `FD-CIP-001` sont désormais `CLOSED` (voir
-`QUALITY_GATES.md` pour le détail). **1 décision Founder distincte
-reste ouverte** — `FRK-71` (FREK v3 Architecture), jamais couverte par
-ces deux clôtures et non traitée ici faute de mandat explicite ; elle
-ne bloque qu'une ligne sur 812. Le chantier reste sur la discipline
-`RECONCILED_NOT_BUILT` jusqu'à ce qu'un objet ait effectivement son
-contenu W6 (compétences, modules, assessments, preuves, gates)
-construit et vérifié — `FULLY_COMPLETE` n'est déclaré pour aucun objet
-par ce seul commit.
+`FD-CVE-001`, `FD-CIP-001` et `FRK-71` sont désormais `CLOSED` (voir
+`QUALITY_GATES.md` pour le détail complet, incluant les repos vérifiés
+directement). **`FOUNDER_DECISION_REQUIRED` = 0 sur les 812 lignes.**
+Le chantier reste sur la discipline `RECONCILED_NOT_BUILT` jusqu'à ce
+qu'un objet ait effectivement son contenu W6 complet (référentiel,
+banques N1/N2, assessment certificatif, rubric, evidence model,
+guides candidat/correcteur/jury, certification/mission eligibility,
+authorization gates, quality gates, integration note) construit et
+vérifié — `FULLY_COMPLETE` n'est déclaré pour aucun objet par ce seul
+commit.
 
 ## W6 — construction des référentiels pédagogiques réels (en cours)
 

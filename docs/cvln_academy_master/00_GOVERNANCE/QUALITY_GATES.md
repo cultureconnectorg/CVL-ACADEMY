@@ -46,22 +46,20 @@ FULLY_COMPLETE (voir section suivante).
 | `EXTERNAL_INTERNAL_CONFUSION` | 0 — chaque domaine à double couche (marché externe vs opérateur interne) garde la distinction explicite : CyberSecure (CYB-01→30 vs 31→42), Blockchain (BCI-01→30 vs 31→40), Good Mood/DJ Sayd (GMD externe+interne vs SAY 100% externe), LabelOS (formation legacy marché vs LOS-OP bloqué). |
 | `CERTIFICATION_AUTHORIZATION_CONFUSION` | 0 — aucune des 71 lignes `Habilitations` n'est présentée comme acquise par certification Academy seule ; rappelé explicitement dans `50_AUTHORIZATIONS/AUTHORIZATION_REGISTRY.md`. |
 
-## Décisions Founder — les deux dernières fermées ; vérification globale
+## Décisions Founder — toutes fermées, 0 `FOUNDER_DECISION_REQUIRED`
 
-Les deux décisions Founder que le Founder a explicitement demandé de
-fermer sont **closes**, par décision finale du Founder :
+Les décisions Founder sur les 812 lignes sont **toutes closes** :
 
 1. **`FD-CVE-001`** (`WALLET_CVE_RECONCILIATION.md`) — **CLOSED.** Source
-   méthodologique réelle nommée : `memory/KORA_CVE_Specification_
-   Mathematique_v1.0.md` (KORA), Mathematical Specification v1.0,
-   frozen on Theory v1.4. Statut canonique : `FORMALIZED_METHODOLOGY` /
-   `SOURCE_OBSERVED`. Existence de la méthodologie ≠ validation
-   empirique : tout paramètre non encore calibré reste
-   `CALIBRATION_PENDING`, sans jamais dégrader la méthodologie entière
-   en `PROPOSED`. (Note d'audit : le fichier cité n'a pas été localisé
-   directement par cette session — aucun repo "KORA" dans le périmètre
-   GitHub actuel ; classification appliquée sur autorité Founder,
-   vérification directe recommandée dès que ce repo sera accessible.)
+   méthodologique réelle **vérifiée directement** : `kora2024/Kora-app/
+   memory/KORA_CVE_Specification_Mathematique_v1.0.md`, Mathematical
+   Specification v1.0, frozen on Theory v1.4. Statut canonique :
+   `FORMALIZED_METHODOLOGY` / `SOURCE_OBSERVED`. Existence de la
+   méthodologie ≠ validation empirique : tout paramètre non encore
+   calibré reste `CALIBRATION_PENDING`, sans jamais dégrader la
+   méthodologie entière en `PROPOSED`. La réserve d'audit antérieure
+   (source non localisée par cette session) est levée — la source est
+   confirmée.
 2. **`FD-CIP-001`** (`FOUNDER_CEO_GROUP_FONDATION_RECONCILIATION.md`) —
    **CLOSED.** CIP Foundation et Fondation Cœurvolan sont deux objets
    distincts, **jamais fusionnés**. CIP Foundation nomme la fonction
@@ -71,6 +69,21 @@ fermer sont **closes**, par décision finale du Founder :
    formalisée — utiliser `CIP Foundation (legacy working identity)` ;
    cette absence de forme juridique ne bloque aucune classification
    pédagogique.
+3. **`FRK-71`** (FREK v3 Architecture, `20_EXTERNAL/
+   FREK_01_75_RECONCILIATION.md`) — **CLOSED.** Repo-truth vérifiée
+   directement : `cultureconnectorg/frekcoreAout2026`, commit
+   `fb272f1d491b09a6d068fb3f6c9c75d407bb0626`, `frek_v3/`. Statut :
+   `FORMALIZED_ARCHITECTURE` / `SOURCE_OBSERVED`, maturité exacte
+   préservée — `ARCHITECTURE_LEVEL_2`, explicitement
+   `NOT_FULL_ENGINEERING`, `NOT_HARDWARE_PROVEN`,
+   `NOT_PRODUCTION_INTEGRATED`. L'existence réelle de FREK V3 n'est
+   jamais transformée en affirmation que le FPGA/ASIC ou l'intégration
+   FREKCORE production sont terminés. FRK-72→75 reclassés selon leur
+   repo-truth exacte (voir `FREK_01_75_RECONCILIATION.md`) :
+   attestation protocol (FRK-72) et crypto architecture (FRK-73)
+   réelles et spécifiées ; DSP fingerprint (FRK-74) explicitement
+   non finalisée par le corpus lui-même ; reference verifier (FRK-75)
+   = code Python réel, 16 tests passés, meilleur ancrage du cluster.
 
 Toutes les autres questions initialement escaladées (frontière
 sécurité `G8`, LabelOS `G3`, Good Mood/DJ Sayd `G1`, sur-comptage KORA/
@@ -80,20 +93,12 @@ de la méthode à deux dimensions. Ceci inclut FRK-48/49/50/51/70
 (FREK-security vs CyberSecure), désormais `EXTEND_EXISTING` vers
 `CYB-31→42` sans nouvelle décision.
 
-**Vérification globale (demandée explicitement) : sur 812 lignes,
-1 ligne reste `NEEDS_FOUNDER_DECISION`** — **`FRK-71`** (FREK v3
-Architecture, `20_EXTERNAL/FREK_01_75_RECONCILIATION.md`), une
-question distincte, jamais couverte par `FD-CVE-001` ni `FD-CIP-001` :
-elle implique une feuille de route v3 dont aucune trace n'existe dans
-les repos audités. Ce n'est pas laissé "ouvert" par omission — c'est
-une décision Founder à part entière que ce commit n'a pas reçu
-mandat de trancher (le Founder n'a fermé que CVE et CIP/Fondation).
-Elle ne bloque qu'une seule ligne et n'empêche aucune vague W6 sur
-les 811 autres lignes (`NO_BLOCKED_DOMAIN_BLOCKS_ANOTHER`). Toute
-autre mention résiduelle de `NEEDS_FOUNDER_DECISION` dans les
-documents de réconciliation individuels désigne un historique
-(décision alors ouverte, close depuis par `FD-CVE-001`/`FD-CIP-001`
-ou `G8`), jamais un blocage actif.
+**Vérification globale (demandée explicitement) : `FOUNDER_DECISION_
+REQUIRED = 0` sur les 812 lignes de la cartographie.** Toute mention
+résiduelle de `NEEDS_FOUNDER_DECISION` dans les documents de
+réconciliation individuels désigne un historique (décision alors
+ouverte, close depuis par `FD-CVE-001`/`FD-CIP-001`/FRK-71 ou `G8`),
+jamais un blocage actif.
 
 ## Never claim FULLY_COMPLETE
 

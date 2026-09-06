@@ -10,12 +10,11 @@ Academy doctrine so the next W6 wave knows exactly what is real, what
 is market-general knowledge, and what is blocked.
 ```
 
-## Repo truth — the entire real FREK footprint in this repo
+## Repo truth — the entire real FREK footprint
 
 `backend/services/frek_core.py` (142 lines) is the **sole** FREK
-implementation anywhere in `cultureconnectorg/CVL-ACADEMY`. No separate
-FREKCORE repository was named or found (§28 applies: nothing to clone,
-nothing to assume). Real capabilities, verbatim:
+implementation in `cultureconnectorg/CVL-ACADEMY` itself. Real
+capabilities, verbatim:
 
 | Method | Real behavior |
 |---|---|
@@ -25,16 +24,38 @@ nothing to assume). Real capabilities, verbatim:
 | `resolve_stade(cc_credits)` | Maps a credit count to one of 6 named progression tiers (graine→pousse→racine→branches→arbre→forêt). |
 | `is_remote_enabled()` | Returns whether `FREK_CORE_BASE_URL` is set (it is not, by default). |
 
+## Repo truth — `cultureconnectorg/frekcoreAout2026` (FREK v3 architecture corpus)
+
+A **second, real, verified FREK footprint** exists — audited at commit
+`fb272f1d491b09a6d068fb3f6c9c75d407bb0626`, `frek_v3/`:
+
+| Artifact | What it is |
+|---|---|
+| `docs/FREK_V3_Architecture_Review_Final.md` | The architecture's own maturity ladder — **verbatim, teach it as written**: `1. Concept (dépassé) → 2. Architecture (✅ on est ici, verrouillé) → 3. Engineering (⏳ prochaine phase, RTL/bits exacts/résultats expérimentaux)`. FPGA named explicitly as the bridge between Level 2 and Level 3 — not yet built. |
+| `docs/FREK_Attestation_Protocol_v0.1.md` (FRK-72) | A specified 283-byte binary attestation protocol, L0/L1/L2 levels. |
+| `docs/FREK_Cryptographic_Architecture_Review_v0.1.md` (FRK-73) | `PUF → HKDF → DRK → AK/FK/CK` key-derivation chain, ECDSA P-256, raw-signature + canonical-message-encoding design. |
+| `docs/FREK_DSP_Fingerprint_Specification_v0.1.md` (FRK-74) | Explicitly **unfinished** per the corpus's own `CE_QUI_MANQUE.md` — FFT window size, hop size, band count, and the fingerprint algorithm itself are named as still-open product decisions. |
+| `reference_verifier/` (FRK-75) | **Real, working Python implementation** — `frek_constants.py`, `frek_types.py`, `frek_crypto.py`, `frek_parser.py`, `frek_registry.py`, `frek_verifier.py`, `frek_device_sim.py`, plus `test_frek_verifier.py` (16 passing tests against golden vectors). The corpus's own `CE_QUI_MANQUE.md` names the **single-implementation limitation** explicitly: a Rust cross-implementation is the named next step to prove the *spec* correct, not just this Python code — teach that limitation, never imply it's resolved. |
+
+**Standing classification for all of FRK-71→75: `ARCHITECTURE_LEVEL_2`
+/ `SOURCE_OBSERVED`.** Per the Founder's explicit correction: real
+architecture-level existence is never inflated into
+`NOT_FULL_ENGINEERING` (no RTL/timings), `NOT_HARDWARE_PROVEN` (no
+FPGA prototype), or `NOT_PRODUCTION_INTEGRATED` (no binding to any
+live FREKCORE, this Academy's `frek_core.py` included) being complete.
+This is the same real-vs-aspirational discipline already applied to
+`frek_core.py` itself (`issue_proof()` = stub, no real crypto) — a
+different, more mature layer of the same product, still short of
+production.
+
 **Everything else the Master 2D candidate map names** (DID/VC, EUDI/
 SD-JWT, provenance graphs, `.fk` object format, cultural fingerprint,
 FREKRAW, FREKANSLA, chain-of-custody, notary/timestamping, Bitcoin/
 OpenTimestamps, offline transport, chain watchdog, production ops,
-observability, backup/restore, crypto architecture, attestation
-protocol, reference verifier) — **zero code footprint**, confirmed by
-exhaustive grep across `backend/`, `docs/`, and both external repos
-audited so far (`fms-os/fms`, `gmfest972/goodmooddjsayd`). This
-matches the Founder's own framing exactly: `FRK-01→75 = CANDIDATE MAP,
-NOT CANONICAL YET`.
+observability, backup/restore) — still **zero code footprint**,
+confirmed by exhaustive grep across `backend/`, `docs/`,
+`frekcoreAout2026`, and both external repos audited earlier
+(`fms-os/fms`, `gmfest972/goodmooddjsayd`).
 
 Already-established Academy doctrine (from KOR-01→15, reused here, not
 reinvented): `READY_FOR_FREK_PROOF = FALSE` on every evidence model in
@@ -120,23 +141,23 @@ content today · **Distinctness** = occupational distinctness ·
 | FRK-68 | FREK Auditor | NONE (curriculum) / PARTIAL (repo) | DISTINCT_INTERNAL_ROLE | NEW_INTERNAL | Buildable now at a procedural level: `db.frek_signals` and the outbox tables (Good Mood) are real, inspectable audit surfaces even without cryptographic depth. |
 | FRK-69 | Evidence & Provenance Audit | NONE | DISTINCT_SPECIALIZATION (of FRK-68) | NEW_INTERNAL | Sequenced after FRK-68. |
 | FRK-70 | Security, Permission & Compliance Audit | NONE | DISTINCT_SPECIALIZATION | `EXTEND_EXISTING` | Same CyberSecure boundary as FRK-48→51, resolved via `G8` — points at `CYB-31→42`. |
-| FRK-71 | FREK v3 Architecture | NONE | — | `NEEDS_FOUNDER_DECISION` | Implies a v1/v2 history and v3 roadmap not visible anywhere in this repo. Cannot be built without the real roadmap — name the source or this stays `BLOCKED_DEPENDENCY` indefinitely. |
-| FRK-72 | FREK Attestation Protocol | NONE | DISTINCT_PROFESSION | NEW_EXTERNAL | `CAPABILITY_NOT_IMPLEMENTED`, `NEEDS_REPO_AUDIT`. |
-| FRK-73 | FREK Cryptographic Architecture | NONE | DISTINCT_PROFESSION | NEW_EXTERNAL | `NEEDS_EXPERT_REVIEW` (applied cryptography), `CAPABILITY_NOT_IMPLEMENTED`. |
-| FRK-74 | FREK DSP Fingerprint | NONE | DISTINCT_SPECIALIZATION | NEW_EXTERNAL | "DSP" = digital signal processing (audio fingerprinting) here, a different technical domain from FRK-29/30's broader "cultural fingerprint" — kept distinct, cross-referenced. |
-| FRK-75 | FREK Reference Verifier Engineering | NONE | DISTINCT_PROFESSION | NEW_EXTERNAL | The verifier counterpart to FRK-13 (Proof Engine) — sequence after it. |
+| FRK-71 | FREK v3 Architecture | **PARTIAL — SOURCE_OBSERVED** | DISTINCT_PROFESSION | `NEW_EXTERNAL` | **CLOSED, no longer a Founder decision.** Repo truth verified: `cultureconnectorg/frekcoreAout2026`, commit `fb272f1d491b09a6d068fb3f6c9c75d407bb0626`, `frek_v3/` — a real, internally-consistent architecture corpus (`FREK_V3_Architecture_Review_Final.md`, `FREK_Architecture_Integree_v0.2.md`, `FREK_V3_Engineering_Exploded_View_v0.2.md`, `FREK_V3_Reconciliation_Architecture_v0.2.md`, `CE_QUI_MANQUE.md`). Status per the corpus's **own explicit maturity ladder**: `ARCHITECTURE_LEVEL_2` ("hardware + crypto + DSP + Core cohérent ensemble" — verrouillé) — **not** `NOT_FULL_ENGINEERING` (no RTL/bit-exact timings), **not** `NOT_HARDWARE_PROVEN` (no FPGA prototype — the doc names FPGA as the explicit bridge to Level 3, not yet crossed), **not** `NOT_PRODUCTION_INTEGRATED` (no binding to this Academy's or any product's live FREKCORE). Teach the real architecture and its own honest maturity ladder — never assert FPGA/ASIC or production FREKCORE integration is complete. |
+| FRK-72 | FREK Attestation Protocol | **PARTIAL — SOURCE_OBSERVED** | DISTINCT_PROFESSION | `NEW_EXTERNAL` | Real, verified: `frek_v3/docs/FREK_Attestation_Protocol_v0.1.md` — a specified 283-byte binary attestation protocol (L0/L1/L2 levels), **and** a working Python reference implementation (`reference_verifier/`, 16 passing tests, golden test vectors). `ARCHITECTURE_LEVEL_2` per FRK-71's ladder — real and testable, not yet hardware-proven. |
+| FRK-73 | FREK Cryptographic Architecture | **PARTIAL — SOURCE_OBSERVED** | DISTINCT_PROFESSION | `NEW_EXTERNAL` | Real, verified: `frek_v3/docs/FREK_Cryptographic_Architecture_Review_v0.1.md` + `reference_verifier/frek_crypto.py` (real P-256/ECDSA primitives, `PUF → HKDF → DRK → AK/FK/CK` key-derivation chain, raw `r\|\|s` signatures, canonical-message encoding). Still `NEEDS_EXPERT_REVIEW` (applied cryptography, never taught as production-audited without a named cryptographer's review) — that caution stands independent of `ARCHITECTURE_LEVEL_2` status. |
+| FRK-74 | FREK DSP Fingerprint | **PARTIAL — SOURCE_OBSERVED, explicitly unfinished** | DISTINCT_SPECIALIZATION | `NEW_EXTERNAL` | Real, verified: `frek_v3/docs/FREK_DSP_Fingerprint_Specification_v0.1.md`. Per the corpus's own `CE_QUI_MANQUE.md`: this spec is explicitly the **least resolved** part (band count, FFT window, hop size, and the fingerprint algorithm itself are named as still-open product decisions, not yet locked). Teach it as an architecture-in-progress, never as a finished spec. "DSP" = digital signal processing (audio fingerprinting) here, a different technical domain from FRK-29/30's broader "cultural fingerprint" — kept distinct, cross-referenced. |
+| FRK-75 | FREK Reference Verifier Engineering | **SUBSTANTIAL — SOURCE_OBSERVED, real working code** | DISTINCT_PROFESSION | `NEW_EXTERNAL` | Best-grounded of the FRK-71→75 cluster: `reference_verifier/` is a real, structured Python package (`frek_constants.py`, `frek_types.py`, `frek_crypto.py`, `frek_parser.py`, `frek_registry.py`, `frek_verifier.py`, `frek_device_sim.py`) with 16 passing unit tests against golden vectors — genuinely teachable as a worked engineering example. Its own docs flag the **single-implementation limitation** honestly: a Rust cross-implementation is explicitly named as the next required step to prove the spec (not just the Python) is correct — teach that limitation, never imply the protocol is proven implementation-agnostic yet. The verifier counterpart to FRK-13 (Proof Engine) — sequence after it. |
 
 ## Summary
 
 | Verdict | Count |
 |---|---|
-| `NEW_EXTERNAL` (market-general or CVLN-applied, buildable as pure curriculum) | 51 |
+| `NEW_EXTERNAL` (market-general or CVLN-applied, buildable as pure curriculum) | 56 (51 + FRK-71→75, all now `SOURCE_OBSERVED`) |
 | `NEW_INTERNAL` | 12 |
 | `NEW_CROSS_ECOSYSTEM` | 5 (FRK-56→60) |
 | `SPECIALIZE_EXISTING` | 1 (FRK-11) |
 | `EXTEND_EXISTING` (reuse Master Package governance / merge into a sibling) | 3 (FRK-05, FRK-45, FRK-46) |
 | `EXTEND_EXISTING` (CyberSecure boundary, resolved via `G8`) | 5 (FRK-48, 49, 50, 51, 70) |
-| `NEEDS_FOUNDER_DECISION` (unnamed FREK v3 roadmap — distinct, still open) | 1 (FRK-71) |
+| `NEEDS_FOUNDER_DECISION` | **0** — FRK-71 closed (repo verified, `ARCHITECTURE_LEVEL_2`/`SOURCE_OBSERVED`, maturity preserved exactly, never inflated to production-proven). |
 | `REJECT_TRUE_DUPLICATE` | 0 |
 
 **Zero rejections** — every candidate carries real professional or
@@ -161,10 +182,14 @@ Founder decisions.
 4. Market-general clusters (FRK-07/08/09/10, FRK-12/14/15,
    FRK-17/18, FRK-52/53/54/55) — real, teachable industry-standard
    knowledge independent of any CVLN implementation gap.
-5. Everything `BLOCKED_PRODUCT_DEPENDENCY` (`.fk` format, FREKANSLA,
-   notary, watchdog, production ops, v3 architecture) — held until a
-   real FREKCORE repo or Founder specification is named. Not built on
-   invention.
+5. **FRK-71→75** — the FREK v3 architecture cluster, `SOURCE_OBSERVED`
+   on `frekcoreAout2026`, buildable now at `ARCHITECTURE_LEVEL_2`
+   (FRK-75's `reference_verifier/` is real working code with passing
+   tests — the best-grounded of the five).
+6. Everything still `BLOCKED_PRODUCT_DEPENDENCY` (`.fk` format,
+   FREKANSLA, notary, watchdog, production ops) — held until a real
+   FREKCORE production repo or Founder specification is named. Not
+   built on invention.
 
 ## Status
 
