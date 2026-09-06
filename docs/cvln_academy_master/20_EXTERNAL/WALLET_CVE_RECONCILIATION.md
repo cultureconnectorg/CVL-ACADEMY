@@ -40,6 +40,45 @@ settlement/reconciliation.** This is a simple, honest rewards ledger —
 richer than nothing, far short of the fintech-grade system WAL-01→28
 as a whole implies.
 
+## Repo truth delta — real CVLN Wallet product found (2026-09-06)
+
+```
+Founder correction: djsayd/CVLN-Wallet exists and was verified
+directly this session. "No separate Wallet repo was named" above is
+now superseded for the product side of WAL-19→28/WAL-X; it remains
+accurate for describing THIS Academy's own additive ledger, which is
+unchanged and still what WAL-19→28 must be built to teach honestly
+(the operator role is "operate this Academy's ledger," not "operate
+the external product").
+```
+
+`djsayd/CVLN-Wallet` (commit `359aaee1`, audited directly — see
+`95_GAPS/REPO_REGISTRY.md`) is a real, financial-grade FastAPI product
+with everything the paragraph above says this repo's own ledger
+lacks: holds/authorization/capture, maker-checker, idempotency keys +
+kill-switch, monetary precision, outbox/inbox delivery, refunds/
+reversals/fees, settlement/reconciliation, virtual card audit/
+security. It also has a real `docs/AGENTSKILL-WALLET-MAPPING.md`
+showing `Payments.Request`/`Payments.Send`/`Wallet.Balance`/
+`Assets.Portfolio` already integrated (P0), `FREK.Identity` and
+`KORA.StreamIncome` as prepared-but-inactive interfaces, and an
+explicit `REJECT` verdict on "Treasury bots illimités" for violating
+least-privilege — a real, citable security-governance precedent.
+
+**What this changes:** WAL-19→28 (internal operator roles) and WAL-X
+(cross-ecosystem bridges) were reconciled below against *this repo's*
+thin ledger, correctly per the "upgrade in place, don't invent" rule.
+That reconciliation is not wrong, but it undersells the real external
+product's sophistication when framing "why a WAL-19→28 operator
+matters" — a future deepening pass (per the Founder's W6 depth
+standard) should cite the real `djsayd/CVLN-Wallet` financial-core
+docs as market/context grounding for holds/maker-checker/idempotency
+concepts, exactly as CVE cites the KORA spec, **without** claiming an
+Academy candidate can operate the real product (no integration
+observed between the two repos). CVE-01→15 verdicts below are
+unaffected — CVE-01→15 already cites the correct KORA source
+directly; nothing in `djsayd/CVLN-Wallet` changes that.
+
 ## WAL-01→18 (external/market) — reconciliation
 
 All 18 are `DISTINCT_PROFESSION` (standard, real fintech-engineering

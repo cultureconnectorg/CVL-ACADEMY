@@ -16,6 +16,35 @@ does not reopen KLT-01→08 — it only positions where KLT-09→20 would
 attach if/when authorized.
 ```
 
+## Repo truth delta — canonical external Kiltikonet repo determined (2026-09-06)
+
+```
+Read-only note, does not reopen KLT-01->08 or its STOP=TRUE gate.
+```
+
+Two external Kiltikonet product repos were compared on evidence this
+session (see `95_GAPS/REPO_REGISTRY.md`): `cultureconnectorg/Kiltikonet`
+(legacy, last commit 2026-04-14) and `cultureconnectorg/
+Kiltikonet-Aout2026` (**canonical**, last commit 2026-08-15, a strict
+superset). Kiltikonet-Aout2026 adds real `backend/routes/observatory.py`,
+`observatory_adapters/` (alerts/badges/conversion/diffusion/live/
+mgraph/network), and `backend/routes/network.py` — capabilities that
+did not exist in the legacy repo.
+
+This is potentially relevant to KLT-06's "C5/C6 (Observatory)
+explicitly `BLOCKED` (`NOT_CONNECTED`)" and KLT-07's "C4 (Network)
+explicitly `BLOCKED` (`NOT_CONNECTED`)" rows below — if those
+`BLOCKED`/`NOT_CONNECTED` verdicts were made against the legacy repo
+or without knowing Kiltikonet-Aout2026 existed, a real Observatory/
+Network system may now exist to connect to. **This reconciliation
+does not re-audit or re-verdict KLT-06/07/08 content** — `docs/klt/`
+carries its own `STOP=TRUE` gate (`intégration runtime Academy et
+tout nouveau chantier ACA restent NOT_AUTHORIZED`), never reopened
+here. This note exists so that if/when a Founder authorizes further
+Kiltikonet work, the first step is re-checking KLT-06/07's Observatory/
+Network `BLOCKED` verdicts against `Kiltikonet-Aout2026`'s real routes
+before assuming they still hold.
+
 ## Existing INTERNAL-shaped corpus (verified, read-only)
 
 | Formation | Relevant competencies |

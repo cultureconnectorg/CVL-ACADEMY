@@ -128,7 +128,32 @@ needs to be named.
 |---|---|---|---|
 | LOS-01→14 (external, market-general label-industry) | `SUBSTANTIAL` against legacy `LOS-01`'s 8 modules (catalog anatomy, metadata, release management, rights, royalties, A&R already covered at survey depth) | `DISTINCT_SPECIALIZATION` per named role (metadata management, publishing ops, royalties ops, A&R, contracts, industry standards/DDEX-type interoperability, finance, catalog exploitation, compliance are each a distinct, deeper professional specialization beyond the generalist "Label Operations Manager" survey) | `SPECIALIZE_EXISTING` on legacy `LOS-01` for all 14 — same "foundation formation → specialization paths" pattern as `BCH-01`→BCI and FMS-03→FMS-08/09. |
 | LOS-OP-01→15 (internal operator) | `NONE` (no LabelOS product/service exists to operate) | `DISTINCT_OPERATOR_ROLE` each | `NEW_INTERNAL`, `BLOCKED_PRODUCT_DEPENDENCY` for all 15 — the internal-operator layer genuinely has nothing to anchor on (unlike CyberSecure/Blockchain, the legacy formation here teaches the *market* profession, not CVLN's *own* label-ops system, because no such system exists). LOS-OP-15 (AI-Assisted Label Operations) additionally cross-references the Agent Factory cluster's own near-total block status. |
-| LOS-X-01→08 (cross-ecosystem) | Mixed | `CROSS_ECOSYSTEM_ROLE` each | `LOS-X-01` (FMS→LabelOS) and `LOS-X-06` (× Academy) can build now, citing FMS-07 (`FMS_07_18_RECONCILIATION.md`) and the Master Package's own skill-registry doctrine respectively (`EXTEND_EXISTING`/`NEW_CROSS_ECOSYSTEM`). `LOS-X-02` is **literally the same bridge as `FRK-56`** and `LOS-X-03` **the same bridge as `KOR-X-02`** (already flagged in `KORA_OP_X_RECONCILIATION.md` — converge, don't rebuild). `LOS-X-04` (× Wallet) — `PARTIAL` (real Wallet ledger exists). `LOS-X-05/07/08` — `BLOCKED_PRODUCT_DEPENDENCY` (Kiltikonet/Intelligence-OS/Brain sides each inherit their own domain's block). |
+| LOS-X-01→08 (cross-ecosystem) | Mixed | `CROSS_ECOSYSTEM_ROLE` each | `LOS-X-01` (FMS→LabelOS) and `LOS-X-06` (× Academy) can build now, citing FMS-07 (`FMS_07_18_RECONCILIATION.md`) and the Master Package's own skill-registry doctrine respectively (`EXTEND_EXISTING`/`NEW_CROSS_ECOSYSTEM`). `LOS-X-02` is **literally the same bridge as `FRK-56`** and `LOS-X-03` **the same bridge as `KOR-X-02`** (already flagged in `KORA_OP_X_RECONCILIATION.md` — converge, don't rebuild). `LOS-X-04` (× Wallet) — `PARTIAL` (real Wallet ledger exists, now further grounded by the real `djsayd/CVLN-Wallet` product, see `WALLET_CVE_RECONCILIATION.md` delta). `LOS-X-05/07/08` — `BLOCKED_PRODUCT_DEPENDENCY` (Kiltikonet/Intelligence-OS/Brain sides each inherit their own domain's block). |
+
+### Repo truth delta — LabelOS interface contract observed (2026-09-06)
+
+```
+"No separate LabelOS service/route/model exists in code" (above)
+still holds for CVL-ACADEMY and for every repo audited by name so
+far. It is now qualified, not reversed: a real LabelOS API CONTRACT
+was observed from the consumer side.
+```
+
+`cultureconnectorg/Laurent.ia/backend/services/labelos_bridge.py`
+(directly read this session — see `95_GAPS/REPO_REGISTRY.md`) is a
+real, env-gated (`LABELOS_API_URL`/`LABELOS_API_KEY`) httpx client
+with a documented stub fallback ("le Gateway ne doit JAMAIS être
+bloqué par une indisponibilité LabelOS") calling `get_artist_context()`
+and returning `stage_name`/`genres`/`next_release`/`tour_status`/
+`team`. This confirms LabelOS is a real external system with a real
+API surface — the repo *hosting* LabelOS itself is still
+`NO_REPO_FOUND_YET` (not found via `list_repos`), but its interface
+shape is no longer unknown. **This does not change any verdict
+above**: LOS-OP-01→15 stays `BLOCKED_PRODUCT_DEPENDENCY` (no CVLN-side
+LabelOS system exists to *operate*, only a client contract to consume
+from the Laurentia side), and `G3`'s resolution stands. It upgrades
+the citable evidence for a future LOS-X-04-style bridge row should one
+be added for LabelOS × Laurentia specifically.
 
 **Zero rejections across all 37 rows.**
 

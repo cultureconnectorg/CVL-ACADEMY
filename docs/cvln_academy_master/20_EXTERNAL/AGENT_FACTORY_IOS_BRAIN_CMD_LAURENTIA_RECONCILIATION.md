@@ -32,6 +32,79 @@ fleet supervision/incident command/KPI monitoring, Laurentia entirely —
 **zero code footprint**, confirmed by exhaustive grep across all 3
 repos audited this session.
 
+## Repo truth — Wave 2 correction (2026-09-06, Founder-directed repo discovery)
+
+```
+CORRECTION, not a rebuild: applying only the deltas the newly-found
+repos reveal, per the Founder's "ne pas refaire les réconciliations
+déjà valides" instruction. The verdicts and BLOCKED_PRODUCT_DEPENDENCY
+counts below are amended in place; the reconciliation table further
+down is NOT re-derived row by row.
+```
+
+The original pass above audited 3 repos (`fms-os/fms`, plus two
+others) and found "zero code footprint" for Intelligence OS, Brain,
+Command Center, and Laurentia. That conclusion was correct **for the
+repos then known to this session** — it was never correct for the
+CVLN ecosystem. Repo discovery this session (`95_GAPS/
+REPO_REGISTRY.md`) found four more real repos this cluster actually
+depends on:
+
+| Repo | Real capability, directly verified | What this changes |
+|---|---|---|
+| `cultureconnectorg/Cvln-ios-v.1` (`cvln-intelligence-os/`) | Real drift-control backend (`lib/anchoring.py`, `baselines.py`, `invariants.py`) + a dated (2026-08-20), methodical governance/audit corpus: 21 ADRs, 7 RFCs, a constitution, protocol specs (ADL/AGENT-PROTOCOL/ISA/MCL), component matrix, implementation-status ledger | IOS is no longer "zero footprint" — it is a real **governance/architecture-freeze layer**, self-declared not `DEPLOYED_RUNTIME` |
+| `metacvln-spec/MetaCVLN` | FastAPI backend, 1,611 lines, ~50 routes — directly `grep`-confirmed **real** `/command-center/overview` + `/command-center/timeline` (lines 184/221), plus registry/entities/agents/decisions/event-bus(Ed25519)/runtime-state/learning-proposals/`/brain/ask`/notarization/domain-overviews/outbound adapters (laurentia, labelos, wallet) | **Command Center is no longer zero-footprint.** A real CVLN Command Center governance-overview surface exists — distinct from both `fms-os/fms`'s unrelated route and from the CMD-01→14 "SRE/incident-command" curriculum content (still market-general, unaffected) |
+| `frekcore/CVLNAgentfactory` (branch `CVLN-AGENT-FACTORY`) | 225 files, ~143 routes/30 routers, real Agent Definition Language v1 (directly read `adl_schema.py`: `AGT-\d{3}` ids, semver, 7-stage lifecycle, `allowed_transitions()`) + v2 JSON Schema, gates with append-only journal, event bus with DLQ, model/provider router | **Agent Factory is no longer zero-footprint.** A real, substantial agent-lifecycle nervous system exists, independent of this Academy's thin `agent_factory.py` shim |
+| `cultureconnectorg/Laurent.ia` | Real multi-service FastAPI product: orchestrator (agents/circuit-breaker/event-bus/signals), billing, `cvl_brain*.py`, `frekcore_bridge.py`, `kiltikonet_bridge.py`, `labelos_bridge.py` (real env-gated API contract), RGPD purge, extensive phase1-4 test suite | **Laurentia is no longer zero-footprint.** It is a real, live-shaped AI-orchestration product |
+
+**What this does NOT change:** none of these four repos shows any
+observed integration with `CVL-ACADEMY` itself — no shared auth, no
+cross-repo API calls, no shared database. `MetaCVLN`'s own audit says
+it plainly: "nothing audited depends on it," and no component across
+all three of its audited repos is asserted at `DEPLOYED_RUNTIME`. The
+correct maturity framing mirrors FRK-71's own discipline: real,
+substantial, testable **architecture and implementation** exists —
+never inflate that into a claim of production integration with this
+Academy, and never claim these systems are "live" for a candidate to
+operate.
+
+**Verdict deltas** (amending, not replacing, the rows below):
+
+- **CMD-15** (the one CVLN-specific Command Center row): was
+  `NEW_INTERNAL, BLOCKED_PRODUCT_DEPENDENCY` ("no real CVLN Command
+  Center exists to operate") → now `NEW_INTERNAL`, maturity upgraded
+  to `PARTIAL` (real `/command-center/overview`/`/timeline` exist in
+  `MetaCVLN`, external to this Academy, not yet buildable as an
+  Academy-side operator qualification without a wired integration —
+  register as `PRODUCT_DEPENDENCY` still, but no longer
+  `BLOCKED` on "nothing exists").
+- **BRN-15**: unchanged verdict (`NEW_INTERNAL`, buildable now on the
+  Academy's own `academy.certification.passed` touchpoint) — now
+  additionally grounded by `MetaCVLN`'s real `/brain/ask` interface as
+  market-context, not a build dependency.
+- **AF-16, AF-17**: unchanged verdicts (buildable now on this
+  Academy's own `agent_factory.py`/`ai_assistant.py`) — now
+  additionally contextualized: the *real* CVLN Agent Factory (ADL,
+  gates, lifecycle) is far more sophisticated than this Academy's own
+  shim, which remains the honest, narrow thing to teach until a real
+  integration exists.
+- **AF-01→15, LAU-01→10, IOS-01→06/08→25 (except IOS-07), BRN-01→14,
+  CMD-01→14**: verdicts unchanged (`NEW_EXTERNAL`/`NEW_INTERNAL`,
+  market-general or `BLOCKED_PRODUCT_DEPENDENCY`) — these teach
+  industry-general disciplines or CVLN-specific capabilities that
+  still have no observed Academy-side wiring; the newly-found repos
+  are *evidence the target system exists and is substantial*, not
+  evidence of an integration ready to certify against.
+- **Naming collision closed**: `Cvln-ios-v.1/economics/CVE-v1.2.md`
+  ("CVLN Value Engine" — JCC/contribution recognition,
+  self-labeled `TARGET`/`SPECIFICATION`) is a **different CVE** from
+  the KORA "Cultural Value Engine" Trust Score spec already formalized
+  under `FD-CVE-001`. Same acronym, two distinct systems — recorded
+  here to prevent a future `CROSS_DOMAIN_CONTAMINATION` error; neither
+  is merged into the other.
+
+Full detail: `95_GAPS/REPO_REGISTRY.md`.
+
 ## Reconciliation (grouped — identical verdicts collapsed into one row per rule §26)
 
 | Candidates | Coverage | Distinctness | Action | Note |
@@ -77,6 +150,19 @@ CVLN's own implementation gap. Building its `NEW_INTERNAL`/
 what would exist if this were built" risks `FAKE_PRODUCT_CAPABILITY`
 and should wait for real implementation, named per `95_GAPS/
 GAP_REGISTER.md` sequencing discipline.
+
+**Amendment (Wave 2 correction, see "Repo truth — Wave 2 correction"
+above):** "almost none of which exists yet" was true only of the 3
+repos originally audited. Four newly-found repos (`Cvln-ios-v.1`,
+`MetaCVLN`, `CVLNAgentfactory`, `Laurent.ia`) show this nervous
+system is substantially real *as independent architecture/product*,
+including one row that changes maturity (CMD-15: `BLOCKED` →
+`PARTIAL`, real Command Center overview/timeline routes exist
+externally). The `BLOCKED_PRODUCT_DEPENDENCY` count is not reduced
+elsewhere because the blocking condition is specifically "wired to
+CVL-ACADEMY," which remains unobserved everywhere else in this
+cluster — the systems existing does not mean this Academy can certify
+against them yet.
 
 ## Status
 
