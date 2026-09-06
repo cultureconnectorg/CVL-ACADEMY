@@ -21,24 +21,44 @@ Repo grounding: this Academy's own backend/services/frek_core.py
 rejections. This corpus now accounts for every one of them, at the
 depth its own real grounding (or genuine absence of grounding)
 supports — **never** built past that depth. This section reflects the
-completed deepening pass (Batches A→I, this pass): every formation not
-held by a `NEEDS_EXPERT_REVIEW` flag or a genuine `GAP`/`EXTEND_
-EXISTING` verdict has been deepened to a full 9-file `PACKAGE_
-COMPLETE` package.
+completed deepening pass (Batches A→I) plus one post-pass
+reclassification: every formation not held by a `NEEDS_EXPERT_REVIEW`
+flag or a genuine `GAP`/`EXTEND_EXISTING` verdict has been deepened to
+a full 9-file `PACKAGE_COMPLETE` package.
 
 | Depth | Count | Candidates |
 |---|---|---|
-| `PACKAGE_COMPLETE` | 53 | FRK-01,02,03,04,06,07,08,09,11,12,13,15,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,56,58,59,60,61,62,63,68,69,71,72,74,75 — full canonical package (référentiel + N1/N2 banks + assessment/rubric + evidence model + 3 guides + integration note) |
+| `PACKAGE_COMPLETE` | 54 | FRK-01,02,03,04,06,07,08,09,11,12,13,15,16,17,18,20,23,25,26,27,28,29,30,31,32,33,34,35,36,37,38,40,41,42,43,44,47,52,53,54,55,56,58,59,60,61,62,63,68,69,71,72,74,75 — full canonical package (référentiel + N1/N2 banks + assessment/rubric + evidence model + 3 guides + integration note) |
 | `MODULE_CONTENT_DRAFTED` (`NEEDS_EXPERT_REVIEW`, held) | 3 | FRK-10 (EUDI/eIDAS2, EU-jurisdiction-specific), FRK-14 (chain-of-custody, forensic/legal-adjacent), FRK-73 (applied cryptography) — all 8 supporting files written, but never promoted past `MODULE_CONTENT_DRAFTED` without a real, named human expert's documented review |
-| `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, no invented content) | 11 | FRK-16,19,21,22,24,39,57,64,65,66,67 |
+| `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, no invented content) | 10 | FRK-19,21,22,24,39,57,64,65,66,67 |
 | `EXTEND_EXISTING` (folds into a sibling or an existing Master Package doc — no separate file) | 8 | FRK-05 (intro to FRK-56→60), FRK-45/46 (reuse `AUTHORIZATION_MODEL.md`), FRK-48/49/50/51/70 (point to `CYB-31→42`, itself not yet built) |
 
-**53 + 3 + 11 + 8 = 75.** Zero candidates left unaccounted for; zero
+**54 + 3 + 10 + 8 = 75.** Zero candidates left unaccounted for; zero
 built past their real evidence. The 3 `NEEDS_EXPERT_REVIEW` exceptions
 are the only formations correctly held below `PACKAGE_COMPLETE` among
 those with real, teachable content — they stay there until a real,
 named human expert (forensic/legal for FRK-14, EU-jurisdiction legal
 for FRK-10, applied cryptography for FRK-73) documents a review.
+
+### FRK-16 reclassification (post-pass, `BLOCKED_PRODUCT_DEPENDENCY` → `PACKAGE_COMPLETE`)
+
+`FRK-16` (FREK Digital Notary) was originally `BLOCKED_PRODUCT_
+DEPENDENCY` — the reconciliation found no notarization mechanism in
+`frekcoreAout2026`, `gmfest972/goodmooddjsayd`, or `fms-os/fms`. A
+direct audit of `cultureconnectorg/Cvln-ios-v.1` (its own cross-repo
+governance corpus, `cvln-intelligence-os/`) — a repo the original
+reconciliation did not check for this candidate — surfaced a real,
+`IMPLEMENTED` notarization + external-anchoring system in **MetaCVLN**
+(`backend/server.py`: `/notarizations`, `/public/notarizations`,
+Ed25519 keys; `proof/EXTERNAL-ANCHORING.md`: real OpenTimestamps
+anchoring, Decision `D-020`). On the Founder's explicit confirmation,
+FRK-16 was rebuilt directly to `PACKAGE_COMPLETE`, grounded on this
+real system, carrying forward its own documented boundaries verbatim
+(`proof/NOTARIAL-BOUNDARY.md`: "notary" names a signing-key role, never
+a legal notary) and its own honestly-disclosed limitation (notary
+private key stored unencrypted at rest). See
+`docs/frk/frk16/INTEGRATION_NOTE.md` for the full reclassification
+history.
 
 ## Build-priority tiers actually used (per the reconciliation's own
 sequencing)
@@ -83,8 +103,8 @@ sequencing)
 
 ## Status (full domain)
 
-**53/75 `PACKAGE_COMPLETE`, 3/75 `MODULE_CONTENT_DRAFTED`
-(`NEEDS_EXPERT_REVIEW`: FRK-10/14/73), 11/75
+**54/75 `PACKAGE_COMPLETE`, 3/75 `MODULE_CONTENT_DRAFTED`
+(`NEEDS_EXPERT_REVIEW`: FRK-10/14/73), 10/75
 `BLOCKED_PRODUCT_DEPENDENCY`, 8/75 `EXTEND_EXISTING` (no separate
 formation).** No candidate was promoted past what its own real
 grounding supports; no `BLOCKED` candidate was built on an invented
@@ -101,9 +121,10 @@ domain's status, not a temporary gap to round away.
 - Does not claim any `READY_FOR_FREK_PROOF = TRUE` anywhere.
 - Does not imply Good Mood's two outboxes, or this Academy's own
   systems, are wired to each other where no such wiring is observed.
-- Does not build FRK-16/19/21/22/24/39/57/64/65/66/67 past a declared
+- Does not build FRK-19/21/22/24/39/57/64/65/66/67 past a declared
   `GAP.md` — every one is a genuine product-dependency gap, not a
-  drafting oversight.
+  drafting oversight. (FRK-16 was reclassified out of this list —
+  see the reclassification note above.)
 - Does not build separate formations for FRK-05/45/46/48/49/50/51/70 —
   each folds into a sibling or an existing Master Package document,
   per the reconciliation's own `EXTEND_EXISTING` verdict.
