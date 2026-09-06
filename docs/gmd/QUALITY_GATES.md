@@ -27,10 +27,27 @@ claiming false completeness in the meantime:
 
 | Formation | Depth reached |
 |---|---|
-| GMD-21 | `PACKAGE_COMPLETE_FOR_GMD21` — full canonical package (référentiel, banque N1, banque N2, assessment + rubric, evidence model, 3 guides, integration note), matching the KOR/KLT depth standard. |
-| GMD-22 | `PACKAGE_COMPLETE_FOR_GMD22` — same full canonical package, grounded in `Volume`/`VolumeIn` + the 4 real admin catalogue routes + the public route (`server.py:80-98`, `219-305`). |
-| GMD-23→33 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening to the same standard continues in subsequent waves. |
+| GMD-21 | `PACKAGE_COMPLETE_FOR_GMD21` — `Volume`/`VolumeIn`-independent system map umbrella. |
+| GMD-22 | `PACKAGE_COMPLETE_FOR_GMD22` — `Volume`/`VolumeIn` + 4 admin catalogue routes + public route (`server.py:80-98`, `219-305`). |
+| GMD-23 | `PACKAGE_COMPLETE_FOR_GMD23` — `Event`/`EventIn`, `EVENT_STATUSES`, real `status=="on_sale"` sell-gate (`server.py:99-114`, `312-394`). |
+| GMD-24 | `PACKAGE_COMPLETE_FOR_GMD24` — `TicketType`, checkout capacity check vs. atomic webhook `$inc` (`server.py:115-131`, `489-620`). |
+| GMD-25 | `PACKAGE_COMPLETE_FOR_GMD25` — real 3-outcome `scan_check` + counter, GMD-34 escalation made eliminatory (`server.py:715-753`). |
+| GMD-26 | `PACKAGE_COMPLETE_FOR_GMD26` — `upsert_fan` derived fields (`segments`/`total_events`/`cities`), a referential correction applied (`ticketing_service.py:24-70`). |
+| GMD-27 | `PACKAGE_COMPLETE_FOR_GMD27` — `Product`, real `gm_`/`gmtt_` Stripe lookup-key prefixes (`server.py:133-150`, `165-188`). |
+| GMD-28 | `PACKAGE_COMPLETE_FOR_GMD28` — checkout→webhook→order, incl. the self-heal-status-but-not-tickets gap (`server.py:489-716`). |
+| GMD-29 | `PACKAGE_COMPLETE_FOR_GMD29` — real 4-language copy dict, `"kr"` mislabeling (Haitian Creole, not Korean) found and corrected in the referential (`email_service.py:64-82`). |
+| GMD-30 | `PACKAGE_COMPLETE_FOR_GMD30` — theoretical `revenue_cents` calc, two distinct real caps (`server.py:389-410`). |
+| GMD-31 | `PACKAGE_COMPLETE_FOR_GMD31` — full `frek_service.py` read, boundary discipline vs. this Academy's `frek_core.py` made eliminatory. |
+| GMD-32 | `PACKAGE_COMPLETE_FOR_GMD32` — full `wallet_service.py` read, boundary discipline vs. this Academy's `backend/wallet/` made eliminatory. |
+| GMD-33 | `PACKAGE_COMPLETE_FOR_GMD33` — auth lifecycle, no token-revocation gap found and taught explicitly (`server.py:36-70`, `261-278`). |
 | GMD-34 | `BLOCKED_PRODUCT_DEPENDENCY`, 0% built, by design — no real incident/recovery mechanism exists to teach. |
+
+**Wave closed 2026-09-06: 13/14 formations at full canonical package
+depth.** Several referential repo-truth corrections were applied while
+deepening (GMD-26's fan record actually computes derived fields;
+GMD-29's `"kr"` key is Haitian Creole, not Korean) — each documented in
+its own `INTEGRATION_NOTE.md` and now reflected in the corresponding
+`REFERENTIAL.md`.
 
 ## Never claim FULLY_COMPLETE
 

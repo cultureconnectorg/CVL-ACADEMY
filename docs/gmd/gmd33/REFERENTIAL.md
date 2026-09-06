@@ -50,4 +50,8 @@ above.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD33` — full canonical package built.
+This closes the wave: **13/13 GMD-21→33 formations are now
+package-complete** (GMD-34 stays `BLOCKED_PRODUCT_DEPENDENCY` by
+design). `FULLY_COMPLETE` still requires a real candidate pass for
+each.
