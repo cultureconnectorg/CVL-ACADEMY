@@ -11,16 +11,24 @@ explicit `GAP.md` where no such grounding exists.
 
 ```
 WAL-19 (umbrella, prerequisite for all)
-  ├── WAL-20 (CC/JCC monetary operations)
-  ├── WAL-21 (ledger operator)
-  │     └── WAL-28 (audit, reads the same append-only ledger)
-  ├── WAL-24 (card operations — pass payloads)
-  ├── WAL-22 (GAP — coffres/allocation)
-  ├── WAL-23 (GAP — transfers)
-  ├── WAL-25 (GAP — marketplace)
-  ├── WAL-26 (GAP — settlement/reconciliation)
-  └── WAL-27 (GAP — kill-switch)
+  ├── WAL-20 (CC/JCC monetary operations — this Academy's ledger)
+  ├── WAL-21 (ledger operator — this Academy's ledger)
+  │     ├── WAL-28 (audit, reads the same append-only ledger)
+  │     └── WAL-26 (settlement/reconciliation — real djsayd/CVLN-Wallet,
+  │           ledger literacy transfers to reading a real settlement trail)
+  ├── WAL-24 (card operations — this Academy's pass payloads)
+  ├── WAL-22 (coffres/allocation — real djsayd/CVLN-Wallet)
+  ├── WAL-23 (transfers — real djsayd/CVLN-Wallet)
+  ├── WAL-25 (marketplace — real djsayd/CVLN-Wallet)
+  └── WAL-27 (kill-switch — real djsayd/CVLN-Wallet)
 ```
+
+**Corrected 2026-09-06:** WAL-22/23/25/26/27 are no longer gaps — each
+is grounded directly in the real external `djsayd/CVLN-Wallet` product
+(re-verified this session), while WAL-19/20/21/24/28 remain grounded in
+this Academy's own `backend/wallet/`. A formation's real grounding
+(this Academy vs. the external product) is stated explicitly in its own
+`REFERENTIAL.md` — never blended or left ambiguous.
 
 ## Anti-footprint verification (mandatory before certifying any WAL-2X)
 
@@ -33,16 +41,24 @@ reason this rule exists: even this Academy's own code comments can
 describe behavior slightly differently from what the code actually
 does.
 
-## Boundary note — never merge with the real `djsayd/CVLN-Wallet` product
+## Boundary note — two real grounding sources, never blended, never operated live
 
-WAL-19→28 certifies operation of **this Academy's own** ledger
-(`backend/wallet/`) — a simple, additive, single-entry system. The
-real external `djsayd/CVLN-Wallet` product (holds/authorization/
-capture, maker-checker, idempotency, virtual cards — see
-`WALLET_CVE_RECONCILIATION.md`'s repo-truth delta) is cited only as
-market/context grounding for WAL-01→18 (external, market-general
-formations), never as something a WAL-2X candidate can operate — no
-integration between the two repos is observed.
+WAL-19→28 splits across two real, distinct grounding sources —
+**stated explicitly per formation, never blended**:
+
+- **This Academy's own** ledger (`backend/wallet/`) — a simple,
+  additive, single-entry system — grounds WAL-19/20/21/24/28.
+- The real external **`djsayd/CVLN-Wallet`** product (holds/
+  authorization/capture, maker-checker, idempotency, virtual cards,
+  and — corrected 2026-09-06 — coffres, transfers, marketplace,
+  settlement/reconciliation, kill-switch) grounds WAL-22/23/25/26/27
+  directly, in addition to serving as market/context for WAL-01→18.
+
+**No integration between the two repos is observed either way.** A
+WAL-2X candidate is certified on literacy of whichever real system
+their formation cites — never granted live operational access to
+either `backend/wallet/` in production or to `djsayd/CVLN-Wallet`,
+regardless of which one grounds their formation.
 
 ## Certification / mission eligibility doctrine
 

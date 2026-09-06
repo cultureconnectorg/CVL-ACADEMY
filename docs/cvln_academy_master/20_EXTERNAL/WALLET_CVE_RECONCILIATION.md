@@ -73,13 +73,16 @@ least-privilege — a real, citable security-governance precedent.
 **What this changes:** WAL-19→28 (internal operator roles) and WAL-X
 (cross-ecosystem bridges) were reconciled below against *this repo's*
 thin ledger, correctly per the "upgrade in place, don't invent" rule.
-That reconciliation is not wrong, but it undersells the real external
-product's sophistication when framing "why a WAL-19→28 operator
-matters" — a future deepening pass (per the Founder's W6 depth
-standard) should cite the real `djsayd/CVLN-Wallet` financial-core
-docs as market/context grounding for holds/maker-checker/idempotency
-concepts, exactly as CVE cites the KORA spec, **without** claiming an
-Academy candidate can operate the real product (no integration
+That reconciliation was not wrong for WAL-19/20/21/24/28 — it stands.
+**It undersold WAL-22/23/25/26/27 specifically**, which this repo's
+own thin ledger has no equivalent of at all: those 5 rows have now
+been re-checked directly against `djsayd/CVLN-Wallet` and reclassified
+from `CAPABILITY_NOT_IMPLEMENTED` to buildable (see the dedicated
+repo-truth delta further below, "WAL-22/23/25/26/27 found in
+`djsayd/CVLN-Wallet`") — cited as real grounding for
+coffres/transfer/marketplace/settlement/kill-switch concepts, exactly
+as CVE cites the KORA spec, **without** claiming an Academy candidate
+can operate the real product (no integration
 observed between the two repos). CVE-01→15 verdicts below are
 unaffected — CVE-01→15 already cites the correct KORA source
 directly; nothing in `djsayd/CVLN-Wallet` changes that.
@@ -115,16 +118,57 @@ CyberSecure boundary question as FRK-48→51/KLT-17 (`G8`); WAL-15 is
 | WAL-19 CVLN Wallet Operator | `PARTIAL` (real `credit`/read functions) | `NEW_INTERNAL`, buildable now. |
 | WAL-20 CC/JCC Monetary Operations | `PARTIAL` | `NEW_INTERNAL` — must reuse the real code-level CC≠JCC distinction verbatim (see above), never invent a merged currency model. |
 | WAL-21 CVLN Ledger Operator | `PARTIAL` (real `credit()`) | `NEW_INTERNAL`, buildable now. |
-| WAL-22 Coffres & Allocation Operations | `NONE` (no vault/allocation concept in code) | `NEW_INTERNAL`, `CAPABILITY_NOT_IMPLEMENTED`. |
-| WAL-23 CVLN Payment & Transfer Operations | `NONE` (no user-to-user transfer function exists) | `NEW_INTERNAL`, `CAPABILITY_NOT_IMPLEMENTED`. |
+| WAL-22 Coffres & Allocation Operations | **UPGRADED, see delta below** | `NEW_INTERNAL`, buildable now — real `djsayd/CVLN-Wallet` grounding. |
+| WAL-23 CVLN Payment & Transfer Operations | **UPGRADED, see delta below** | `NEW_INTERNAL`, buildable now — real `djsayd/CVLN-Wallet` grounding. |
 | WAL-24 CVLN Card Operations | `PARTIAL` (real pass payload builders, operator angle vs WAL-10's market angle) | `NEW_INTERNAL`, buildable now — cross-reference WAL-10, don't duplicate its market content. |
-| WAL-25 CVLN Marketplace Operations | `NONE` | `NEW_INTERNAL`, `CAPABILITY_NOT_IMPLEMENTED`. |
-| WAL-26 Settlement & Reconciliation Operator | `NONE` | `NEW_INTERNAL`, `CAPABILITY_NOT_IMPLEMENTED`. |
-| WAL-27 Financial Incident & Kill-Switch Operations | `NONE` (no kill-switch mechanism) | `NEW_INTERNAL`, `CAPABILITY_NOT_IMPLEMENTED`. |
+| WAL-25 CVLN Marketplace Operations | **UPGRADED, see delta below** | `NEW_INTERNAL`, buildable now — real `djsayd/CVLN-Wallet` grounding. |
+| WAL-26 Settlement & Reconciliation Operator | **UPGRADED, see delta below** | `NEW_INTERNAL`, buildable now — real `djsayd/CVLN-Wallet` grounding. |
+| WAL-27 Financial Incident & Kill-Switch Operations | **UPGRADED, see delta below** | `NEW_INTERNAL`, buildable now — real `djsayd/CVLN-Wallet` grounding. |
 | WAL-28 Wallet Audit & Evidence Operations | `PARTIAL` (real, genuinely append-only `db.wallet_transactions`) | `NEW_INTERNAL`, buildable now — same pattern as FRK-68 (Auditor): a real, inspectable audit surface even without cryptographic depth. |
 
-**Zero rejected.** 5/10 buildable now on real code (WAL-19/20/21/24/28),
-5/10 `CAPABILITY_NOT_IMPLEMENTED`.
+**Zero rejected. Corrected count (was 5/10, see delta below): 10/10
+buildable now on real code** — WAL-19/20/21/24/28 on this Academy's
+own `backend/wallet/`, WAL-22/23/25/26/27 on the real external
+`djsayd/CVLN-Wallet` product (no capability of theirs exists in
+`backend/wallet/`, but all five exist, precisely named, in the real
+product).
+
+### Repo-truth delta — WAL-22/23/25/26/27 found in `djsayd/CVLN-Wallet` (checkpoint, 2026-09-06)
+
+```
+Founder checkpoint: before finalizing WAL-22/23/25/26/27 as
+BLOCKED_PRODUCT_DEPENDENCY, cross-check against djsayd/CVLN-Wallet
+(already cloned/audited this session) rather than treating this
+Academy's own thin backend/wallet/ as the only source of truth for a
+formation literally titled "CVLN Wallet Operator." Verification only
+— the WAL-19/20/21/24/28 reconciliation above is not redone.
+```
+
+Direct verification this session, `djsayd/CVLN-Wallet/backend/
+server.py` (re-read, not merely cited from the earlier session pass):
+
+| Formation | Real capability found | Route(s) |
+|---|---|---|
+| **WAL-22** Coffres & Allocation Operations | Real vault system: create/list/delete a `coffre` (`goal_cc`, `amount_cc`), atomic move in/out backed by the ledger (`ledger_post`, `atomic_spend`/`apply_user_balance`) | `GET/POST /coffres`, `POST /coffres/{coffre_id}/move`, `DELETE /coffres/{coffre_id}` |
+| **WAL-23** CVLN Payment & Transfer Operations | Real entity-to-user and entity-to-entity transfer, atomic entity debit, dual ledger posting, recipient resolved by FREK-ID or `entity_id` | `POST /v1/entity/transfer` |
+| **WAL-25** CVLN Marketplace Operations | Real seeded catalog (8 items spanning the actual CVLN ecosystem: FREKCORE, Factory Maker Studio, Culture Connect, Laurentia, Kiltikonet, KORA, Factory Maker Academy, CVLN OS) + real idempotent buy flow (`atomic_spend`, `idem_begin`/`idem_finish`) | `GET /marketplace`, `POST /marketplace/buy` |
+| **WAL-26** Settlement & Reconciliation Operator | Real settlement state machine (`PENDING→SUBMITTED→SETTLED`/etc., `_settlement_predecessors`, retry-safe re-submit), provider abstraction (`get_provider().submit()`), correlation IDs, event emission (`emit_event`), full state history; real reconciliation case lifecycle (`OPEN`/`INVESTIGATING`→`RESOLVED`/`ACCEPTED_DIFFERENCE`/`ESCALATED`) | `POST/GET /admin/settlements`, `POST /admin/settlements/{id}/submit`, `GET /admin/settlements/{id}`, `POST /admin/reconciliation/run`, `GET /admin/reconciliation/cases`, `POST /admin/reconciliation/cases/{case_id}/resolve`; doc: `docs/CVLN-SETTLEMENT-RECONCILIATION.md` |
+| **WAL-27** Financial Incident & Kill-Switch Operations | Real global kill-switch, exactly 3 named switches (`"withdrawals"`, `"card"`, `"agents"`), admin-only, audited (`KillSwitch.Toggled`); separately, real per-user card freeze/unfreeze | `PUT /admin/kill-switch`, `POST /card/freeze`, `POST /card/unfreeze` |
+
+**What this changes:** these 5 rows move from `CAPABILITY_NOT_
+IMPLEMENTED`/`BLOCKED_PRODUCT_DEPENDENCY` to `NEW_INTERNAL`, buildable
+now, grounded in `djsayd/CVLN-Wallet` directly (`docs/wal/wal2{2,3,5,
+6,7}/REFERENTIAL.md`) — **matching the discipline already applied to
+WAL-08** above (a real external precedent used as the worked case).
+**What this does NOT change:** none of these five capabilities exists
+in this Academy's own `backend/wallet/`, and no integration between
+the two repos is observed — a candidate is taught to read and reason
+about the real product's operator surface, never granted real
+operational access to `djsayd/CVLN-Wallet` (a separate, human-governed
+authorization decision, unchanged). Status discipline: this is a
+`RECONCILED_NOT_BUILT`→`MODULE_CONTENT_DRAFTED` correction via real
+work, not an artificial status promotion — none of these five reaches
+`PACKAGE_COMPLETE` in this pass.
 
 ## CVE-01→15 — reconciliation
 
@@ -203,15 +247,21 @@ touches an uncalibrated parameter.
 | Domain | New/Extend | Blocked | Founder decision |
 |---|---|---|---|
 | WAL-01→18 | 18 `NEW_EXTERNAL` (4 with real partial grounding) | 14 `CAPABILITY_NOT_IMPLEMENTED` | WAL-14 (CyberSecure boundary, `G8` — resolved) |
-| WAL-19→28 | 10 `NEW_INTERNAL` (5 buildable now) | 5 `CAPABILITY_NOT_IMPLEMENTED` | — |
+| WAL-19→28 | 10 `NEW_INTERNAL` (**10/10 buildable now**, corrected 2026-09-06 — see repo-truth delta above) | 0 `CAPABILITY_NOT_IMPLEMENTED` | — |
 | CVE-01→15 | 15 `NEW_INTERNAL`/`NEW_EXTERNAL` (`FORMALIZED_METHODOLOGY`, `CALIBRATION_PENDING` per uncalibrated parameter) | 0 | **CLOSED** — `FD-CVE-001` |
 | WAL-X-01→09 | Partial, per row | Depends on Wallet richness only | — |
 
 **Zero rejections across all 52 rows.** Build priority: WAL-10 (best
-grounded) → WAL-19/20/21/24/28 (internal, real code) → WAL-03/08/13
-(partial, real worked examples) → remaining WAL-01→18 (market-general
-fintech knowledge) → CVE-01→15 (formalized methodology, per `FD-CVE-001`)
-→ WAL-X (per-row, no longer CVE-blocked).
+grounded) → WAL-19/20/21/24/28 (internal, this Academy's own real code)
+→ WAL-22/23/25/26/27 (internal, real `djsayd/CVLN-Wallet` grounding,
+corrected 2026-09-06) → WAL-03/08/13 (partial, real worked examples) →
+remaining WAL-01→18 (market-general fintech knowledge) → CVE-01→15
+(formalized methodology, per `FD-CVE-001`) → WAL-X (per-row, no longer
+CVE-blocked). **Build status (docs/wal/) as of 2026-09-06: WAL-19
+`PACKAGE_COMPLETE`; WAL-20/21/24/28 and WAL-22/23/25/26/27
+`MODULE_CONTENT_DRAFTED` — referential depth only, deepening to full
+package is a future wave, never assumed complete from this
+reconciliation alone.**
 
 ## Status
 
