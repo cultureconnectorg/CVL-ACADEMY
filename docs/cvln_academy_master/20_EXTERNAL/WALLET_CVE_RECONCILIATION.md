@@ -18,10 +18,15 @@ occupational distinctness, CONTENT_OVERLAP != PROFESSIONAL_DUPLICATE.
   distinct mechanism.
 - `get_summary()`, `list_transactions()` — reads.
 - **Real, unsigned** Apple/Google Wallet pass payload builders
-  (`passes.py`) — correct documented shape for both platforms,
-  **honestly stops at a 501** where real signing (Apple Pass Type ID +
-  WWDR cert, Google Wallet Issuer account) would be required, rather
-  than faking an installable pass.
+  (`passes.py`) — correct documented shape for both platforms, and
+  honestly never fakes a signed, installable pass. **Correction
+  (re-verified directly, `docs/wal/wal24/`):** the file's own comment
+  claims signing is "left as a 501," but no route raises
+  `HTTPException(status_code=501)` anywhere in `backend/wallet/` or
+  `backend/api/wallet.py` — both pass routes return a normal HTTP 200
+  with `{"status": "unsigned", ...}` in the JSON body. The intent is
+  honored; the "501" wording is the code's own comment, not its actual
+  HTTP behavior — cite the real 200-plus-status-field pattern.
 - Real, minimal REST API (`api/wallet.py`): `GET /wallet/me`,
   `GET /wallet/transactions`, `GET /wallet/pass/apple`,
   `GET /wallet/pass/google` — read-only; no public credit/transfer
@@ -93,7 +98,7 @@ candidates require; the two never overlap, no duplication risk).
 |---|---|---|
 | WAL-03 Digital Ledger & Double-Entry Accounting | `PARTIAL` | Real ledger exists but is **single-entry additive**, not double-entry — teach the real double-entry standard, then explicitly mark CVL-ACADEMY's own ledger as a simplified `CAPABILITY_PARTIAL` case study, never implied as double-entry. |
 | WAL-08 Payment Infrastructure & Provider Integration | `PARTIAL` (via cross-ecosystem) | CVL-ACADEMY's own Wallet has no PSP integration, but `gmfest972/goodmooddjsayd` has a **real, working Stripe integration** (`/payments/checkout`, `/stripe/webhook`) — the one genuinely real payment-provider precedent anywhere in the ecosystem audited this session. Use it as the worked case. |
-| WAL-10 Apple/Google Wallet & Tokenized Card Operations | `SUBSTANTIAL` | **Best-grounded WAL candidate** — real, correctly-shaped pass payloads exist for both platforms; the formation can teach the real code and its honest 501-signing boundary directly. |
+| WAL-10 Apple/Google Wallet & Tokenized Card Operations | `SUBSTANTIAL` | **Best-grounded WAL candidate** — real, correctly-shaped pass payloads exist for both platforms; the formation can teach the real code and its honest unsigned-pass boundary directly (HTTP 200 + `"status": "unsigned"`, not a literal 501 — see repo-truth correction above). |
 | WAL-13 Financial API & Embedded Finance | `PARTIAL` | A real, minimal, read-only Wallet API exists (`api/wallet.py`) — small but genuine worked example. |
 
 All others (WAL-01/02/04/05/06/07/09/11/12/14/15/16/17/18):
