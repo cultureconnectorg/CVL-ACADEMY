@@ -53,4 +53,5 @@ unilaterally in this referential).
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD28` — full canonical package built.
+`FULLY_COMPLETE` still requires a real candidate pass.

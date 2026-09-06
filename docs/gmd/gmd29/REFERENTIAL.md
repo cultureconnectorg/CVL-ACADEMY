@@ -7,9 +7,13 @@ Prerequisite: GMD-21. Reads the fan base built by GMD-26.
 ## Repo truth
 
 Routes `POST /newsletter`, `GET /admin/newsletter`, `GET /admin/
-newsletter/export`; `email_service.py` with **real bilingual copy**
-(`send_newsletter_welcome(to, lang="fr")`, a `copy` dict keyed by
-`lang` with `fr` as the guaranteed fallback).
+newsletter/export` (`server.py:241-252`); `email_service.py:64-82`
+with **real 4-language copy** (`send_newsletter_welcome(to,
+lang="fr")`, a `copy` dict keyed by `lang` with `fr` as the guaranteed
+fallback). **Re-verified this session:** the 4 real keys are
+`fr`/`en`/`es`/`kr` — and `"kr"`'s content is Haitian Creole ("Byenveni
+nan Good Mood"), not Korean, despite the key name. No unsubscribe
+route exists anywhere in the audited code.
 
 ## Prerequisites
 
@@ -44,4 +48,5 @@ Same general pattern as GMD-22.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD29` — full canonical package built.
+`FULLY_COMPLETE` still requires a real candidate pass.
