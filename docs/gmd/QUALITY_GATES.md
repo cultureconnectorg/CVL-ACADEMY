@@ -1,21 +1,21 @@
-# GMD-21→34 — Quality Gates (W6 Wave 1 pass)
+# GMD-01→34, GMD-X-01→09 — Quality Gates (W6 Wave 1 + Wave 17)
 
 ```
 Applies the same 10-gate checklist as
 docs/cvln_academy_master/00_GOVERNANCE/QUALITY_GATES.md, scoped to
-this corpus.
+this corpus. 43/43 GMD-side rows accounted for (GMD-01→34 + GMD-X-01→09).
 ```
 
 | Gate | Result |
 |---|---|
-| `SOURCE_TRUTH_COVERAGE` | 14/14 rows (GMD-21→34) map to a real route/model cited with file path, or (GMD-34) an explicit gap. |
-| `ORPHAN_SKILL` | 0 — every module in every `gmdNN/REFERENTIAL.md` traces to a named route/model in `README.md`'s repo-truth table. |
-| `UNPROVEN_FEATURE` | 0 — GMD-34 stays a declared gap (`gmd34/GAP.md`), never simulated. GMD-25/33 explicitly teach escalation instead of an invented incident runbook. |
+| `SOURCE_TRUTH_COVERAGE` | 43/43: 13 rows (GMD-21→33) map to a real route/model cited with file path (`PACKAGE_COMPLETE`); 20 rows (GMD-01→20, `external/gmd01_20/`) real market-general live-events disciplines, best-grounded ones citing their `GMD-2x` counterpart as worked example; 5 rows (GMD-X-01/02/03/06/09) real code (`frek_service.py`/`wallet_service.py` outboxes) or already-decided/formalized doctrine; 5 rows genuinely blocked (GMD-34 + GMD-X-04/05/07/08, `BLOCKED_CANDIDATES.md`). |
+| `ORPHAN_SKILL` | 0 — every module in every `gmdNN/REFERENTIAL.md` traces to a named route/model in `README.md`'s repo-truth table; `external/gmd01_20/` and `GMD_X_BRIDGE_NOTE.md` cite the same table or already-reconciled doctrine. |
+| `UNPROVEN_FEATURE` | 0 — GMD-34 stays a declared gap (`gmd34/GAP.md`), never simulated. GMD-25/33 explicitly teach escalation instead of an invented incident runbook. `external/gmd01_20/` never claims a Good Mood capability beyond what `GMD-21→33` already documents. |
 | `FAKE_PROOF` | 0 — every assessment artifact is checkable against the real repo (route responses, model fields), not against invented facts. |
-| `DUPLICATE_CURRICULUM` | 0 — shared competency skeleton lives once in `GMD_CANONICAL_EDUCATION_MAP.md`; shared certification doctrine lives once in `CERTIFICATION_MODEL.md`; no `gmdNN/REFERENTIAL.md` restates either. |
-| `CROSS_DOMAIN_CONTAMINATION` | 0 — GMD-31/32 each carry an explicit, eliminatory-assessed module distinguishing Good Mood's own FREK/Wallet outbox clients from this Academy's `frek_core.py`/`backend/wallet/`. |
+| `DUPLICATE_CURRICULUM` | 0 — shared competency skeleton lives once in `GMD_CANONICAL_EDUCATION_MAP.md`; shared certification doctrine lives once in `CERTIFICATION_MODEL.md`; `external/gmd01_20/` cites `GMD-2x` as worked examples, never re-derives them. |
+| `CROSS_DOMAIN_CONTAMINATION` | 0 — GMD-31/32 each carry an explicit, eliminatory-assessed module distinguishing Good Mood's own FREK/Wallet outbox clients from this Academy's `frek_core.py`/`backend/wallet/`; `GMD_X_BRIDGE_NOTE.md` never fabricates a wired integration beyond real code/doctrine cited. |
 | `UNAUTHORIZED_AUTHORITY` | 0 — `CERTIFICATION_MODEL.md` §Authorization gate: passing an assessment never grants real admin access to `gmfest972/goodmooddjsayd`; that stays a separate, human-governed decision. |
-| `EXTERNAL_INTERNAL_CONFUSION` | 0 — this whole corpus is `INTERNAL_QUALIFICATION` per `100_ECONOMY/ECONOMIC_MODEL.md`'s per-object mapping (`NOT_FOR_SALE`), never confused with a public Academy offer. |
+| `EXTERNAL_INTERNAL_CONFUSION` | 0 — `GMD-21→34` (`internal/` equivalent) stays `INTERNAL_QUALIFICATION` per `100_ECONOMY/ECONOMIC_MODEL.md`; `GMD-01→20` (`external/`) is real market-general content, kept physically separate. |
 | `CERTIFICATION_AUTHORIZATION_CONFUSION` | 0 — see `UNAUTHORIZED_AUTHORITY` row; the two are explicitly distinguished in `CERTIFICATION_MODEL.md`. |
 | `ORPHAN_ROLE`/`ORPHAN_AUTHORIZATION` | N/A for this corpus (no new `Operator_Roles`/`Habilitations` rows created — GMD-21→34 already exist in those registries, indexed in `40_OPERATOR_ROLES/ROLE_REGISTRY.md`). |
 
@@ -42,12 +42,24 @@ claiming false completeness in the meantime:
 | GMD-33 | `PACKAGE_COMPLETE_FOR_GMD33` — auth lifecycle, no token-revocation gap found and taught explicitly (`server.py:36-70`, `261-278`). |
 | GMD-34 | `BLOCKED_PRODUCT_DEPENDENCY`, 0% built, by design — no real incident/recovery mechanism exists to teach. |
 
-**Wave closed 2026-09-06: 13/14 formations at full canonical package
-depth.** Several referential repo-truth corrections were applied while
-deepening (GMD-26's fan record actually computes derived fields;
-GMD-29's `"kr"` key is Haitian Creole, not Korean) — each documented in
-its own `INTEGRATION_NOTE.md` and now reflected in the corresponding
-`REFERENTIAL.md`.
+**Wave 1 closed 2026-09-06: 13/14 internal-operator formations at full
+canonical package depth.** Several referential repo-truth corrections
+were applied while deepening (GMD-26's fan record actually computes
+derived fields; GMD-29's `"kr"` key is Haitian Creole, not Korean) —
+each documented in its own `INTEGRATION_NOTE.md` and now reflected in
+the corresponding `REFERENTIAL.md`.
+
+**Wave 17 (2026-09-06, Rail 1 exit-gate completion): GMD-01→20
+(`external/gmd01_20/`) built to `MODULE_CONTENT_DRAFTED`; `GMD_X_BRIDGE_
+NOTE.md` resolves all 9 cross-ecosystem rows (5 buildable/reusable now,
+4 blocked, folded into `BLOCKED_CANDIDATES.md`).** No formation here
+claims `PACKAGE_COMPLETE` — this pass closes the domain's last
+`RECONCILED_NOT_BUILT` rows to a clean status, not to maximum depth.
+
+**Canonical state, full GMD domain (43 rows):** 13 `PACKAGE_COMPLETE`
+(GMD-21→33) / 20 `MODULE_CONTENT_DRAFTED` (GMD-01→20) / 5 new
+bridge/reused content (GMD-X-01/02/03/06/09) / 5 `BLOCKED_PRODUCT_
+DEPENDENCY` (GMD-34 + GMD-X-04/05/07/08). 13+20+5+5=43.
 
 ## Never claim FULLY_COMPLETE
 

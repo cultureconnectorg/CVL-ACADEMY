@@ -7,18 +7,19 @@ SOURCE OF TRUTH: docs/cvln_academy_master/20_EXTERNAL/
 GOOD_MOOD_DJ_SAYD_RECONCILIATION.md — this corpus builds exactly what
 that document already verdicted (NEW_INTERNAL, buildable now on real
 code), it does not re-audit or re-classify.
-STATUT = **vague clôturée (2026-09-06) : 13/14 formations à package
-canonique complet** (GMD-21→33 : référentiel + banque N1 + banque N2 +
-assessment + rubric + evidence model + 3 guides + integration note —
-niveau KOR/KLT, chacune re-vérifiée contre le code réel de
-`gmfest972/goodmooddjsayd` cette session, plusieurs corrections de
-repo-truth appliquées en cours de route — voir chaque
-`INTEGRATION_NOTE.md`), 1/14 (GMD-34) `BLOCKED_PRODUCT_DEPENDENCY`
-(aucun mécanisme d'incident/rollback réel n'existe dans
-`gmfest972/goodmooddjsayd` ; non simulé, voir `gmd34/GAP.md`). Aucune
-formation n'est `FULLY_COMPLETE` — chacune attend un premier passage
-réel vérifié par un humain avant ce statut. Prochaine étape W6 :
-domaine suivant (Wallet/CVE), voir `99_REPORTS/CHANGELOG.md`.
+STATUT = **domaine complet (94 lignes avec DJ Sayd, voir docs/say/ ;
+43 lignes côté Good Mood ici) — Rail 1 exit-gate (2026-09-06)** :
+GMD-21→33 (13/14 internal) à package canonique complet (référentiel +
+banque N1 + banque N2 + assessment + rubric + evidence model + 3
+guides + integration note — niveau KOR/KLT, chacune re-vérifiée contre
+le code réel de `gmfest972/goodmooddjsayd` cette session) ; GMD-34
+`BLOCKED_PRODUCT_DEPENDENCY` (voir `gmd34/GAP.md`) ; GMD-01→20
+(`external/gmd01_20/`) `MODULE_CONTENT_DRAFTED` (marché-général
+live-events, citant les GMD-2x comme exemples travaillés) ; GMD-X-01→09
+résolues dans `GMD_X_BRIDGE_NOTE.md` (5 buildable/réutilisées + 4
+bloquées, `BLOCKED_CANDIDATES.md`). Aucune formation n'est
+`FULLY_COMPLETE` — chacune attend un premier passage réel vérifié par
+un humain avant ce statut. Voir `99_REPORTS/CHANGELOG.md`.
 ```
 
 ## Pourquoi ce corpus existe
