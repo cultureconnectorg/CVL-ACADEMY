@@ -90,7 +90,7 @@ D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
 
 | Domaine | Rows | État |
 |---|---|---|
-| FREK (FRK-01→75) | 75 | **Achevé** — vague 5 complète (`docs/frk/`), 75/75 comptabilisées, aucun candidat restant `RECONCILED_NOT_BUILT` |
+| FREK (FRK-01→75) | 75 | **Couverture 75/75 complète, corpus PAS `PACKAGE_COMPLETE`** — vague 5 complète (`docs/frk/`), aucun candidat restant `RECONCILED_NOT_BUILT`. État canonique : 1 `PACKAGE_COMPLETE` / 55 `MODULE_CONTENT_DRAFTED` / 11 `BLOCKED_PRODUCT_DEPENDENCY` / 8 `EXTEND_EXISTING` — jamais résumé autrement. |
 | Agent Factory/AF-X/Laurentia/IOS/Brain/CMD | 109 | `RECONCILED_NOT_BUILT` — ~50 lignes `NEW_EXTERNAL` immédiatement démarrables |
 | CyberSecure+Blockchain+Gala+Hospitality+LabelOS | 214 | `RECONCILED_NOT_BUILT` — 4 ancrages legacy réels (`CYB` sur `backend/auth.py`, `BCH-01`, `HOS-01`, `LOS-01`) |
 | Founder/CEO+Group+Fondation | 158 | `RECONCILED_NOT_BUILT` — ~25 lignes `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique), jamais de recette universelle |
@@ -168,7 +168,10 @@ en attente d'une décision Founder explicite pour lancer cette phase.
 
 ## 8. Prochaine étape recommandée
 
-FREK (FRK-01→75) est désormais achevé à 75/75 (vague 5). Par ordre de
+FREK (FRK-01→75) a désormais une **couverture** 75/75 complète (vague
+5) — à ne jamais résumer comme "terminé" ou `PACKAGE_COMPLETE` : l'état
+canonique reste 1 `PACKAGE_COMPLETE` / 55 `MODULE_CONTENT_DRAFTED` /
+11 `BLOCKED_PRODUCT_DEPENDENCY` / 8 `EXTEND_EXISTING`. Par ordre de
 solidité d'ancrage réel (`W6_GLOBAL_STATUS.md`), suite recommandée :
 Agent Factory (~50 lignes `NEW_EXTERNAL` démarrables), puis
 CyberSecure/Blockchain/Hospitality (ancrages legacy réels), puis
