@@ -32,5 +32,8 @@ never against an invented FREKRAW feature.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`, `NEEDS_REPO_AUDIT` open for FREKRAW
-specifically.
+`STATUS = PACKAGE_COMPLETE` — full canonical package, deepened this
+pass. `NEEDS_REPO_AUDIT` remains open for FREKRAW specifically (see
+`INTEGRATION_NOTE.md` for why this differs from `NEEDS_EXPERT_REVIEW`
+and does not block package completion). Never implies
+`FULLY_COMPLETE`.
