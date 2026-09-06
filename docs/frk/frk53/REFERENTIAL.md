@@ -28,4 +28,5 @@ An SDK-design exercise graded against real practice.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE` — full canonical package, deepened this
+pass. Never implies `FULLY_COMPLETE`.
