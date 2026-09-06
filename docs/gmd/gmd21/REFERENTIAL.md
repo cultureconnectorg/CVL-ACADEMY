@@ -60,5 +60,9 @@ one of GMD-22→33.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`. Not yet delivered to a real
-candidate; not `FULLY_COMPLETE`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD21` — full canonical package built:
+`BANQUE_N1.md`, `BANQUE_N2.md`, `ASSESSMENT_AND_RUBRIC.md`,
+`EVIDENCE_MODEL.md`, `GUIDE_CANDIDAT.md`, `GUIDE_CORRECTEUR.md`,
+`GUIDE_JURY.md`, `INTEGRATION_NOTE.md` (see each file). Not yet
+delivered to a real candidate — `FULLY_COMPLETE` still requires that
+verification, per `../QUALITY_GATES.md`.

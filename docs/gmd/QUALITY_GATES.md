@@ -19,11 +19,21 @@ this corpus.
 | `CERTIFICATION_AUTHORIZATION_CONFUSION` | 0 — see `UNAUTHORIZED_AUTHORITY` row; the two are explicitly distinguished in `CERTIFICATION_MODEL.md`. |
 | `ORPHAN_ROLE`/`ORPHAN_AUTHORIZATION` | N/A for this corpus (no new `Operator_Roles`/`Habilitations` rows created — GMD-21→34 already exist in those registries, indexed in `40_OPERATOR_ROLES/ROLE_REGISTRY.md`). |
 
+## Depth staging (per Founder directive, 2026-09-06)
+
+`MODULE_CONTENT_DRAFTED` is explicitly an intermediate state, not a
+target. This corpus is deepened wave by wave, never all at once, never
+claiming false completeness in the meantime:
+
+| Formation | Depth reached |
+|---|---|
+| GMD-21 | `PACKAGE_COMPLETE_FOR_GMD21` — full canonical package (référentiel, banque N1, banque N2, assessment + rubric, evidence model, 3 guides, integration note), matching the KOR/KLT depth standard. |
+| GMD-22→33 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening to the same standard continues in subsequent waves. |
+| GMD-34 | `BLOCKED_PRODUCT_DEPENDENCY`, 0% built, by design — no real incident/recovery mechanism exists to teach. |
+
 ## Never claim FULLY_COMPLETE
 
-`STATUS = MODULE_CONTENT_DRAFTED` for GMD-21→33 (13 formations, 41
-modules) — real, checkable, grounded content, but never delivered to
-a real candidate yet. `FULLY_COMPLETE` requires: a real candidate
-assessed, a jury/corrector verification, and evidence recorded — none
-of which this drafting pass performs. GMD-34 stays
-`BLOCKED_PRODUCT_DEPENDENCY`, 0% built, by design.
+Even GMD-21, now at full package depth, is not `FULLY_COMPLETE` —
+that status requires a real candidate assessed, a jury/corrector
+verification, and evidence actually recorded, none of which this
+drafting pass performs.
