@@ -81,6 +81,10 @@ docs/cvln_academy_master/
     W0_AUDIT_REPORT.md
     MANIFEST.md (this file)
     CHANGELOG.md                   — full commit history of the reconciliation arc
+    W6_GLOBAL_STATUS.md            — live per-domain W6 build-depth survey (NOT_STARTED/
+                                      RECONCILED_NOT_BUILT/DRAFTED/PARTIAL_PACKAGE/
+                                      PACKAGE_COMPLETE/BLOCKED), re-read before each
+                                      wave-selection decision
 ```
 
 ## Domain row accounting (812/812)
