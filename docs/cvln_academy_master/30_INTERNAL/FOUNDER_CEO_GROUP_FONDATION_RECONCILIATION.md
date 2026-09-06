@@ -27,29 +27,28 @@ the companion document):** Master 2D's `GRP-01` candidate
 a different title ("Ecosystem Entrepreneurship"). Same resolution as
 elsewhere: no runtime rename here, flagged for W6.
 
-**Entity-identity question — this one is a genuine Founder decision,
-not a curriculum-architecture call:** `seed_data.py` line 786 lists a
-real career outcome, *"Archiviste CVLN, gestionnaire patrimoine CIP,"*
-and `CIP-01`'s content (heritage standardization, UNESCO-aligned
-archiving, cultural governance) overlaps substantially with Fondation
-Cœurvolan's own FDC-01→20 (patrimoine/mémoire) and FDC-21→35
-(foundation governance) blocks. This reads as strong evidence that
-**"CIP Foundation" and "Fondation Cœurvolan" may be the same
-real-world entity under two names, or one may be a predecessor/renamed
-program of the other.** Unlike the curriculum-sequencing decisions
-elsewhere in this Master Package, **this is a factual/organizational
-question I cannot resolve myself** — misidentifying two distinct legal
-entities as one (or vice versa) is exactly the kind of error the
-Master Package's `EXTERNAL_INTERNAL_CONFUSION` gate exists to prevent,
-and it touches real institutional identity, not just content design.
-`NEEDS_FOUNDER_DECISION`: is CIP Foundation Fondation Cœurvolan under
-an earlier/working name? If yes, `CIP-01` becomes the
-`ALREADY_EXISTS_PARTIAL` anchor for `FDC-36→48`'s internal-restricted
-layer (same "legacy formation → specialization" pattern used
-throughout this Priority) and FDC-01→35 build straightforwardly as the
-external deepening. If no — two distinct entities — FDC's external
-layer builds independently and `CIP-01` stays exactly what it already
-is, untouched.
+**Entity-identity question — CLOSED, `FD-CIP-001` (Founder decision,
+final).** `CIP Foundation` and `Fondation Cœurvolan` are **two distinct
+objects — never to be merged.** `CIP Foundation` names, in the legacy
+corpus, the standards/normalization/cultural-governance function
+carried in particular by `CIP-01`; `Fondation Cœurvolan` keeps its own
+separate institutional identity. Until `CIP Foundation`'s definitive
+legal form is settled, use the working label **`CIP Foundation (legacy
+working identity)`** — the absence of a final legal form does not
+block pedagogical classification. Applied here:
+
+- `CIP-01` stays exactly what it already is — the anchor formation for
+  the standards/normalization/governance function it names — **not**
+  reclassified as, merged into, or treated as a predecessor of
+  Fondation Cœurvolan.
+- `FDC-01→48` (Fondation Cœurvolan, all sub-blocks) build **independently**
+  of `CIP-01` — no shared anchor, no cross-reuse implied by this
+  decision. Any genuine content overlap between the two (heritage
+  standardization touching both) is resolved the normal way, by the
+  two-dimension method per row, never by an entity merger.
+- `EXTERNAL_INTERNAL_CONFUSION` risk this raised is closed: the two
+  remain separately named, separately tracked, in every document of
+  this Master Package.
 
 ## Founder/CEO (CEO-01→12) — EXECUTIVE_ONLY
 
@@ -161,14 +160,15 @@ gated on the FDC-01→20 buildout above.
 | Domain | Rows | Rejected | `NEW_EXTERNAL`/buildable | `NEEDS_EXPERT_REVIEW` | `NEW_INTERNAL`/blocked | `NEEDS_FOUNDER_DECISION` |
 |---|---|---|---|---|---|---|
 | Founder/CEO | 12 | 0 | 12 | 0 | 0 | 0 |
-| CVLN Group | 72 | 0 | 39 | 10 (GRP-11,32-40) | 14 (GRP-59-72) | entity-identity + institutional-authority rows above |
-| Fondation Cœurvolan | 74 | 0 | 46 (37 heritage + 9 cross) | 15 (FDC-21-35) | 13 (FDC-36-48) | CIP/Fondation identity (see above) |
+| CVLN Group | 72 | 0 | 39 | 10 (GRP-11,32-40) | 14 (GRP-59-72) | 0 — institutional-authority rows stay `NEEDS_EXPERT_REVIEW`/`BLOCKED`, not Founder-pending |
+| Fondation Cœurvolan | 74 | 0 | 46 (37 heritage + 9 cross) | 15 (FDC-21-35) | 13 (FDC-36-48) | 0 — `FD-CIP-001` closed |
 
-**Zero rejections across all 158 rows.** One genuine Founder decision
-raised (CIP Foundation ≟ Fondation Cœurvolan — an entity-identity
-question, not a curriculum-architecture one), everything else resolved
-without escalation, consistent with the correction's instruction to
-decide obvious curriculum questions myself and only raise genuine ones.
+**Zero rejections across all 158 rows. Zero open Founder decisions** —
+`FD-CIP-001` closed the one genuine entity-identity question this
+document raised (CIP Foundation ≠ Fondation Cœurvolan, never merged,
+per Founder decision). Everything else was resolved without
+escalation, consistent with the correction's instruction to decide
+obvious curriculum questions directly and only raise genuine ones.
 
 ## Status
 

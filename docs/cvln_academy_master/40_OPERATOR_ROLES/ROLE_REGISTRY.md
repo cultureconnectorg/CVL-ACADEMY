@@ -30,7 +30,7 @@ restate aucun contenu, il pointe)
 | Blockchain (BCI-31→40) | 10 | Zéro | même document |
 | Gala Cook & Food (GCF-19→30) | 12 | Zéro | même document |
 | CVLN Group (GRP-59→72) | 14 | Legacy `GRP-01/02` seulement, générique | `30_INTERNAL/FOUNDER_CEO_GROUP_FONDATION_RECONCILIATION.md` |
-| Fondation Cœurvolan (FDC-36→48) | 13 | Dépend de `G9` (identité CIP) | même document |
+| Fondation Cœurvolan (FDC-36→48) | 13 | Construit indépendamment de `CIP-01` (`FD-CIP-001` : objets distincts, jamais fusionnés) | même document |
 | Cross-CVLN (XCV-67 capstone) | 1 | Zéro | `60_CROSS_ECOSYSTEM/XCV_TRANSVERSAL_RECONCILIATION.md` |
 
 **Total indexé : 130/130 lignes `Operator_Roles` rattachées à un

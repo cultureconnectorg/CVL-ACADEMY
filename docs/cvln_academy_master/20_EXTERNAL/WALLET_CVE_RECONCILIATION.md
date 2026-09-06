@@ -84,49 +84,71 @@ CyberSecure boundary question as FRK-48→51/KLT-17 (`G8`); WAL-15 is
 
 ## CVE-01→15 — reconciliation
 
-All 15 confirmed `NONE` curriculum coverage and **zero code
-footprint** anywhere audited (already established by KOR-10:
-`EXTERNAL_PRODUCT_EVIDENCE_NOT_AUDITED`, never invented). Unlike FREK's
-market-general clusters (DID/VC, timestamping — real external
-industry standards teachable independent of CVLN's implementation),
-**CVE's specific frameworks are not external industry standards** —
-"Shapley Value for Cultural Contribution," "Nebula Cultural Value
-Modeling," "VCF," "UVC Allocation" read as CVLN-proposed/coined
-methodologies, not established external doctrine. Teaching them as if
-authoritative would risk exactly the `FAKE_PRODUCT_CAPABILITY` /
-`UNPROVEN_FEATURE` failure mode this Master Package exists to prevent.
+**CLOSED — `FD-CVE-001` (Founder decision, final).** A real
+methodological source is named: `memory/KORA_CVE_Specification_
+Mathematique_v1.0.md` (KORA), formalizing the Cultural Value Engine as
+a Mathematical Specification v1.0, frozen on Theory v1.4. Canonical
+status: **`FORMALIZED_METHODOLOGY` / `SOURCE_OBSERVED`** — this
+replaces `PROPOSED_METHODOLOGY` wherever that label described the
+*existence* of the CVE methodology itself. The Founder's decision
+draws a strict line that this reconciliation preserves exactly:
+**existence of the methodology ≠ empirical validation.** Any
+parameter, weight, or calibration input the specification leaves open
+(not yet simulated/tuned against real cultural-contribution data)
+stays `CALIBRATION_PENDING` — this never degrades the formalized
+methodology itself back to `PROPOSED`. Concretely: "Shapley Value for
+Cultural Contribution," "Nebula Cultural Value Modeling," "VCF," "UVC
+Allocation" are now `FORMALIZED_METHODOLOGY` as *named, specified*
+constructs (source-observed, per Founder decision); their specific
+numeric parameters/weights, where not yet calibrated against real
+data, remain `CALIBRATION_PENDING`.
 
-**Action for all 15**: `NEEDS_FOUNDER_DECISION` (not `NEW_INTERNAL`
-outright) — is there a real CVE methodology specification (a document,
-a repo, an economics paper) this session has no access to? If yes,
-name it and reconciliation continues normally. If no, CVE-01→15 stay
-`BLOCKED_PRODUCT_DEPENDENCY` as a domain, and any future build must
-frame every module as `PROPOSED_METHODOLOGY` (a candidate economic
-model to be validated), never as CVLN's existing practice — the same
-discipline KOR-10/M09 already applied to CVE at the application layer,
-now extended to the full CVE-01→15 domain.
+**Audit note (verification, not a challenge to the decision):** this
+session's own repo audit — `cultureconnectorg/CVL-ACADEMY`, `fms-os/
+fms`, `gmfest972/goodmooddjsayd`, `cultureconnectorg/culutureconnect2026`,
+and a `list_repos` scan of the account's other accessible repositories —
+did not directly locate the cited file (no `KORA`-named repo is
+currently in this session's GitHub scope, and no repo audited this
+session contains a `memory/` path with a CVE mathematical
+specification). The classification above is applied on Founder
+authority per `FD-CVE-001`, exactly as instructed, not on this
+session's own direct verification. Recommendation for a future
+session: attach the KORA repo (or wherever `memory/KORA_CVE_
+Specification_Mathematique_v1.0.md` actually lives) so
+`SOURCE_OBSERVED` can be corroborated at the file level, matching the
+same discipline already applied to every other repo-truth claim in
+this Master Package.
+
+**Action for all 15**: `NEW_INTERNAL`/`NEW_EXTERNAL` per row (as for
+any other formalized-but-uncalibrated methodology domain), never
+`BLOCKED_PRODUCT_DEPENDENCY` for lack of a methodology — that blocker
+is lifted. Any row whose specific numeric parameters are not yet
+calibrated stays flagged `CALIBRATION_PENDING` at the module level once
+W6 content is written; this is a normal build note, not a Founder
+escalation.
 
 ## Wallet/CVE cross (WAL-X-01→09)
 
-Unchanged verdict from the first pass: `BLOCKED_DEPENDENCY` — depends
-on both a richer Wallet (WAL-05/06/07 above) and a real/decided CVE
-methodology. Not rejected, not built; revisit once either input
-resolves.
+Updated verdict: no longer `BLOCKED` on the CVE methodology question
+(`FD-CVE-001` closed) — still depends on a richer Wallet (WAL-05/06/07
+above) for some rows, so `PARTIAL`/`EXTEND_EXISTING` per row rather than
+a blanket block. `CALIBRATION_PENDING` inherited from CVE where a row
+touches an uncalibrated parameter.
 
 ## Summary
 
 | Domain | New/Extend | Blocked | Founder decision |
 |---|---|---|---|
-| WAL-01→18 | 18 `NEW_EXTERNAL` (4 with real partial grounding) | 14 `CAPABILITY_NOT_IMPLEMENTED` | WAL-14 (CyberSecure boundary, `G8`) |
+| WAL-01→18 | 18 `NEW_EXTERNAL` (4 with real partial grounding) | 14 `CAPABILITY_NOT_IMPLEMENTED` | WAL-14 (CyberSecure boundary, `G8` — resolved) |
 | WAL-19→28 | 10 `NEW_INTERNAL` (5 buildable now) | 5 `CAPABILITY_NOT_IMPLEMENTED` | — |
-| CVE-01→15 | 0 built | 15 `BLOCKED_PRODUCT_DEPENDENCY` | **all 15** — name a real methodology source or accept `PROPOSED_METHODOLOGY` framing |
-| WAL-X-01→09 | 0 built | 9 `BLOCKED_DEPENDENCY` | inherits CVE decision above |
+| CVE-01→15 | 15 `NEW_INTERNAL`/`NEW_EXTERNAL` (`FORMALIZED_METHODOLOGY`, `CALIBRATION_PENDING` per uncalibrated parameter) | 0 | **CLOSED** — `FD-CVE-001` |
+| WAL-X-01→09 | Partial, per row | Depends on Wallet richness only | — |
 
 **Zero rejections across all 52 rows.** Build priority: WAL-10 (best
 grounded) → WAL-19/20/21/24/28 (internal, real code) → WAL-03/08/13
 (partial, real worked examples) → remaining WAL-01→18 (market-general
-fintech knowledge) → CVE (pending Founder decision) → WAL-X (pending
-CVE).
+fintech knowledge) → CVE-01→15 (formalized methodology, per `FD-CVE-001`)
+→ WAL-X (per-row, no longer CVE-blocked).
 
 ## Status
 

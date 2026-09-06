@@ -39,31 +39,61 @@ FULLY_COMPLETE (voir section suivante).
 | `ORPHAN_ROLE` | 0 — 130/130 lignes `Operator_Roles` indexées par domaine dans `40_OPERATOR_ROLES/ROLE_REGISTRY.md`. |
 | `ORPHAN_AUTHORIZATION` | 0 — 71/71 lignes `Habilitations` restent `CANDIDATE`, rattachées à leur domaine (`50_AUTHORIZATIONS/AUTHORIZATION_REGISTRY.md`). |
 | `UNPROVEN_FEATURE` | 0 — chaque document distingue explicitement le réel (code cité avec chemin de fichier) du candidat ; toute capacité non vérifiée porte `CAPABILITY_NOT_IMPLEMENTED`/`BLOCKED_PRODUCT_DEPENDENCY`, jamais présentée comme construite. Cas le plus sensible (cluster Agent Factory/IOS/Brain/Command Center/Laurentia, ~90% bloqué) traité avec la même rigueur que les domaines mieux ancrés. |
-| `FAKE_PROOF` | 0 — `issue_proof()` de FREK explicitement documenté comme stub UUID sans cryptographie réelle partout où il est cité ; passes Apple/Google Wallet explicitement non signés (501 honnête) ; frameworks CVE explicitement non traités comme standards externes vérifiés (`NEEDS_FOUNDER_DECISION`, jamais construits comme s'ils l'étaient). |
+| `FAKE_PROOF` | 0 — `issue_proof()` de FREK explicitement documenté comme stub UUID sans cryptographie réelle partout où il est cité ; passes Apple/Google Wallet explicitement non signés (501 honnête) ; frameworks CVE désormais `FORMALIZED_METHODOLOGY` (`FD-CVE-001`) mais leurs paramètres non calibrés restent explicitement `CALIBRATION_PENDING`, jamais présentés comme validés empiriquement. |
 | `DUPLICATE_CURRICULUM` | **Résolu.** Un vrai risque (Good Mood/DJ Sayd, même repo) s'est révélé n'être **pas** un doublon (DJ Sayd ne porte aucune ligne opérateur) — `GAP_REGISTER.md` G1 fermé. Trois sur-comptages de cartographie détectés et convergés plutôt que reconstruits : `KOR-X-01/02/03` ≡ `FRK-56`/`LOS-X-03`/`WAL-X-01` ; `TOK-01` ≡ `BCI-08` (titre littéralement identique) ; **`XCV-57→66` ≡ `SYS-01→10`** (même pipeline "Intelligent Operations" en 10 étages, décrit sous deux domaines — le cas le plus net du chantier). Aucun de ces cas n'a été construit deux fois. |
 | `CROSS_DOMAIN_CONTAMINATION` | 0 — surveillé activement : `fms-os/fms`'s propre route `/os/command-center` (produit studio-business réel) signalée à plusieurs reprises comme **distincte** du "Command Center" CVLN (stub générique) ; `AGR-01` (agroalimentaire) gardé adjacent et non fusionné avec Gala Cook & Food malgré la tentation de chevauchement thématique. |
 | `UNAUTHORIZED_AUTHORITY` | 0 — chaque ligne touchant une autorité réelle (gouvernance de groupe, fondation, sécurité, agents autonomes) reste `NEEDS_FOUNDER_DECISION`/`BLOCKED_PRODUCT_DEPENDENCY`/`NEEDS_EXPERT_REVIEW`, jamais simulée comme opérationnelle (`AUTHORIZATION_MODEL.md` et `XCV-09` réutilisés partout par référence, jamais réécrits localement). |
 | `EXTERNAL_INTERNAL_CONFUSION` | 0 — chaque domaine à double couche (marché externe vs opérateur interne) garde la distinction explicite : CyberSecure (CYB-01→30 vs 31→42), Blockchain (BCI-01→30 vs 31→40), Good Mood/DJ Sayd (GMD externe+interne vs SAY 100% externe), LabelOS (formation legacy marché vs LOS-OP bloqué). |
 | `CERTIFICATION_AUTHORIZATION_CONFUSION` | 0 — aucune des 71 lignes `Habilitations` n'est présentée comme acquise par certification Academy seule ; rappelé explicitement dans `50_AUTHORIZATIONS/AUTHORIZATION_REGISTRY.md`. |
 
-## Décisions Founder résiduelles (les seules non tranchées par ce Master Package)
+## Décisions Founder — les deux dernières fermées ; vérification globale
 
-Sur 812 lignes, exactement **2 décisions Founder** restent ouvertes
-(toutes deux des questions factuelles/institutionnelles, jamais des
-choix de curriculum — conformément à la consigne de ne pas déférer les
-décisions d'architecture évidentes) :
+Les deux décisions Founder que le Founder a explicitement demandé de
+fermer sont **closes**, par décision finale du Founder :
 
-1. **CVE** (`WALLET_CVE_RECONCILIATION.md`) : une source méthodologique
-   réelle existe-t-elle pour Shapley Value/Nebula/VCF/UVC, ou ces 15
-   lignes restent-elles `PROPOSED_METHODOLOGY` ?
-2. **`G9`** (`FOUNDER_CEO_GROUP_FONDATION_RECONCILIATION.md`) : CIP
-   Foundation est-elle Fondation Cœurvolan sous un autre nom ?
+1. **`FD-CVE-001`** (`WALLET_CVE_RECONCILIATION.md`) — **CLOSED.** Source
+   méthodologique réelle nommée : `memory/KORA_CVE_Specification_
+   Mathematique_v1.0.md` (KORA), Mathematical Specification v1.0,
+   frozen on Theory v1.4. Statut canonique : `FORMALIZED_METHODOLOGY` /
+   `SOURCE_OBSERVED`. Existence de la méthodologie ≠ validation
+   empirique : tout paramètre non encore calibré reste
+   `CALIBRATION_PENDING`, sans jamais dégrader la méthodologie entière
+   en `PROPOSED`. (Note d'audit : le fichier cité n'a pas été localisé
+   directement par cette session — aucun repo "KORA" dans le périmètre
+   GitHub actuel ; classification appliquée sur autorité Founder,
+   vérification directe recommandée dès que ce repo sera accessible.)
+2. **`FD-CIP-001`** (`FOUNDER_CEO_GROUP_FONDATION_RECONCILIATION.md`) —
+   **CLOSED.** CIP Foundation et Fondation Cœurvolan sont deux objets
+   distincts, **jamais fusionnés**. CIP Foundation nomme la fonction
+   standards/normalisation/gouvernance culturelle portée par `CIP-01` ;
+   Fondation Cœurvolan garde son identité institutionnelle séparée.
+   Identité juridique définitive de CIP Foundation non encore
+   formalisée — utiliser `CIP Foundation (legacy working identity)` ;
+   cette absence de forme juridique ne bloque aucune classification
+   pédagogique.
 
 Toutes les autres questions initialement escaladées (frontière
 sécurité `G8`, LabelOS `G3`, Good Mood/DJ Sayd `G1`, sur-comptage KORA/
 FREK/LabelOS, sur-comptage Tokenomics/Blockchain, sur-comptage XCV/
 Agent Factory) ont été résolues sans escalade, par application directe
-de la méthode à deux dimensions.
+de la méthode à deux dimensions. Ceci inclut FRK-48/49/50/51/70
+(FREK-security vs CyberSecure), désormais `EXTEND_EXISTING` vers
+`CYB-31→42` sans nouvelle décision.
+
+**Vérification globale (demandée explicitement) : sur 812 lignes,
+1 ligne reste `NEEDS_FOUNDER_DECISION`** — **`FRK-71`** (FREK v3
+Architecture, `20_EXTERNAL/FREK_01_75_RECONCILIATION.md`), une
+question distincte, jamais couverte par `FD-CVE-001` ni `FD-CIP-001` :
+elle implique une feuille de route v3 dont aucune trace n'existe dans
+les repos audités. Ce n'est pas laissé "ouvert" par omission — c'est
+une décision Founder à part entière que ce commit n'a pas reçu
+mandat de trancher (le Founder n'a fermé que CVE et CIP/Fondation).
+Elle ne bloque qu'une seule ligne et n'empêche aucune vague W6 sur
+les 811 autres lignes (`NO_BLOCKED_DOMAIN_BLOCKS_ANOTHER`). Toute
+autre mention résiduelle de `NEEDS_FOUNDER_DECISION` dans les
+documents de réconciliation individuels désigne un historique
+(décision alors ouverte, close depuis par `FD-CVE-001`/`FD-CIP-001`
+ou `G8`), jamais un blocage actif.
 
 ## Never claim FULLY_COMPLETE
 

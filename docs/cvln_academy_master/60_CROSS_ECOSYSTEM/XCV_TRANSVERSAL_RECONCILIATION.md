@@ -57,9 +57,11 @@ established per stage** rather than re-deriving it:
 - Artist-to-Audience stages cite `FMS_07_18_RECONCILIATION.md` (FMS
   side), `FREK_01_75_RECONCILIATION.md` (FRK-56/58), the LabelOS and
   KORA reconciliations, in that order.
-- Activity-to-Value stages cite `WALLET_CVE_RECONCILIATION.md` and
-  inherit its CVE `NEEDS_FOUNDER_DECISION` at exactly the stages that
-  touch CVE (XCV-21→23) — never built around it as if resolved.
+- Activity-to-Value stages cite `WALLET_CVE_RECONCILIATION.md` — CVE
+  is now `FORMALIZED_METHODOLOGY` (`FD-CVE-001`), so the stages
+  touching CVE (XCV-21→23) are no longer Founder-blocked; any
+  uncalibrated parameter they touch stays `CALIBRATION_PENDING` at the
+  module level, per the same decision.
 - Learning-to-Opportunity stages cite the Academy's own real
   certification/skill/FREK-proof chain (`docs/kor/`,
   `FREK_01_75_RECONCILIATION.md`).

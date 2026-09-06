@@ -13,30 +13,37 @@
 | `3fb54a4` | CyberSecure, Blockchain+Tokenomics, Gala Cook & Food, Hospitality, LabelOS, Founder/CEO, CVLN Group, Fondation Cœurvolan (372 lignes) réconciliés — G3, G7, G8 fermés ; découverte d'un corpus legacy sous-évalué au W0 (`LOS-01`, `BCH-01`, `HOS-01`, `GRP-01/02`, `CIP-01`) ; nouvelle décision Founder `G9` (identité CIP/Fondation). |
 | `6ec239b` | Cross-CVLN/XCV (67 lignes) réconcilié — sur-comptage `XCV-57→66` ≡ `SYS-01→10` détecté et convergé. |
 | `1331be3` | Consolidation finale des registres (rôles, habilitations, évidence, Spatial) — indexation pure, `ORPHAN_ROLE=0`, `ORPHAN_AUTHORIZATION=0` confirmés sur 130+71 lignes. |
-| Ce commit | **812/812 lignes de la cartographie réconciliées.** Bilan final des quality gates (`00_GOVERNANCE/QUALITY_GATES.md`) : 0 rejet, 0 doublon non résolu, 0 contamination cross-domaine, 2 décisions Founder résiduelles (CVE, G9). |
+| `fe00bb9` | Bilan final des quality gates — **812/812 lignes réconciliées**, 0 rejet, 2 décisions Founder alors résiduelles (CVE, identité CIP/Fondation). |
+| Ce commit (`FD-CVE-001` + `FD-CIP-001`) | **Clôture des deux décisions Founder demandées.** CVE : source méthodologique réelle nommée (`memory/KORA_CVE_Specification_Mathematique_v1.0.md`, KORA) → statut `FORMALIZED_METHODOLOGY`/`SOURCE_OBSERVED`, `CALIBRATION_PENDING` pour les paramètres non calibrés. CIP/Fondation : deux objets distincts, jamais fusionnés — `CIP Foundation (legacy working identity)` en attendant sa forme juridique définitive. Vérification globale : 1 décision Founder distincte et pré-existante reste ouverte (`FRK-71`, jamais couverte par ces deux clôtures — voir `QUALITY_GATES.md`). `RECONCILIATION_MATRIX.md`, `GAP_REGISTER.md`, `QUALITY_GATES.md` mis à jour en conséquence. Puis lancement de **W6** (référentiels pédagogiques réels par vagues). |
 
 ## Ce que ce chantier NE fait PAS
 
 Ne modifie aucun fichier de code, seed, ou runtime existant
 (`NO_RUNTIME_BINDING`, `NO_DB_MUTATION`, `NO_SEED_MUTATION`). Ne
 reconstruit aucun corpus déjà livré (KOR-01→15, KLT-01→08, FMS-01→06).
-Ne rédige aucun référentiel (W6) pour les 812 lignes candidates de
-cette cartographie — cette étape reste `docs/cvln_academy_master/`
-niveau W0-W5/W12-W16 uniquement ; chaque ligne reste `RECONCILED_NOT_BUILT`.
 
-## Décisions Founder résiduelles (seules questions non tranchées)
+## Décisions Founder — les deux demandées sont closes
 
-1. **CVE** (`20_EXTERNAL/WALLET_CVE_RECONCILIATION.md`) : source
-   méthodologique réelle ou cadrage `PROPOSED_METHODOLOGY` ?
-2. **`G9`** (`30_INTERNAL/FOUNDER_CEO_GROUP_FONDATION_RECONCILIATION.md`) :
-   CIP Foundation ≟ Fondation Cœurvolan ?
+`FD-CVE-001` et `FD-CIP-001` sont désormais `CLOSED` (voir
+`QUALITY_GATES.md` pour le détail). **1 décision Founder distincte
+reste ouverte** — `FRK-71` (FREK v3 Architecture), jamais couverte par
+ces deux clôtures et non traitée ici faute de mandat explicite ; elle
+ne bloque qu'une ligne sur 812. Le chantier reste sur la discipline
+`RECONCILED_NOT_BUILT` jusqu'à ce qu'un objet ait effectivement son
+contenu W6 (compétences, modules, assessments, preuves, gates)
+construit et vérifié — `FULLY_COMPLETE` n'est déclaré pour aucun objet
+par ce seul commit.
 
-## Prochains commits attendus
+## W6 — construction des référentiels pédagogiques réels (en cours)
 
-Première vague W6 (référentiel pédagogique réel) sur les domaines les
-mieux ancrés, dans cet ordre suggéré : Good Mood GMD-21→33 (meilleur
-cluster opérateur, code réel complet) → FMS-07 (ombrelle) → FREK-01/58
-→ CyberSecure CYB-01→30 → Blockchain BCI-01→30 (sur `BCH-01`) →
-CVLN Hospitality HOS-01→30 (sur legacy `HOS-01`) → Founder/CEO
-CEO-01→12 — puis extension aux domaines restants une fois les deux
-décisions Founder ci-dessus tranchées.
+Les 812 lignes réconciliées sont l'entrée canonique ; W6 ne recrée
+aucune cartographie. Vagues par ordre de solidité d'ancrage : Good
+Mood GMD-21→33 (meilleur cluster opérateur, code réel complet) →
+FMS-07 (ombrelle) → FREK-01/58 → CyberSecure CYB-01→30 → Blockchain
+BCI-01→30 (sur `BCH-01`) → CVLN Hospitality HOS-01→30 (sur legacy
+`HOS-01`) → Founder/CEO CEO-01→12 → CVE-01→15 (méthodologie formalisée)
+→ extension aux domaines restants. Chaque vague : compétences →
+prérequis → objectifs → modules → outcomes → exercices → livrables →
+assessments → rubrics → evidence → certification eligibility →
+mission eligibility → internal authorization gates (si applicable),
+suivie de tests, preuve, commit, push.

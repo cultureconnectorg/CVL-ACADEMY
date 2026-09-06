@@ -41,7 +41,7 @@ module(s) rather than re-teaching them (`NO_DUPLICATE_CURRICULUM`).
 | KOR-X-01 KORA × FREK — Provenance & Identity | SUBSTANTIAL | Already documented in every `docs/kor/korXX/` module's `FREK_PROOF_MAPPING` header. **Same bridge as `FRK-56`** (FREK × KORA, already reconciled in `FREK_01_75_RECONCILIATION.md`) — build once, cross-link, never twice. |
 | KOR-X-02 KORA × LabelOS — Catalog & Release Pipeline | SUBSTANTIAL | Already documented via KOR-08's "KORA application rule." **Same bridge as `LOS-X-03`** (LabelOS × KORA) — one bridge, two Master 2D row numbers. |
 | KOR-X-03 KORA × Wallet — Cultural Economy Operations | **COMPLETE** | This is KOR-10/M08 itself. **Same bridge as `WAL-X-01`** (KORA × CVE × Wallet) — merge into one, don't build twice. |
-| KOR-X-04 KORA × CVE — Cultural Value Operations | `BLOCKED` | Inherits the CVE `NEEDS_FOUNDER_DECISION` from `WALLET_CVE_RECONCILIATION.md`. |
+| KOR-X-04 KORA × CVE — Cultural Value Operations | `PARTIAL` (methodology now `FORMALIZED_METHODOLOGY`, per `FD-CVE-001`) | Unblocked — `NEW_CROSS_ECOSYSTEM`, `CALIBRATION_PENDING` for uncalibrated parameters, no longer inherits an open Founder decision. |
 | KOR-X-05 KORA × Kiltikonet — Cultural Network Distribution | SUBSTANTIAL | Already documented in `docs/kor/kor15/REFERENTIAL.md` §5 (explicit non-duplication check against `KLT-07`, verified this session). |
 | KOR-X-06 KORA × Academy — Learning-to-Opportunity Pipeline | SUBSTANTIAL | This **is** the Master Package's own pipeline doctrine (`80_MISSIONS/MISSIONS_PIPELINES.md`, "Learning-to-Opportunity"). Reuse verbatim, don't re-derive. |
 | KOR-X-07 KORA × Intelligence OS / Brain — Intelligent Operations | SUBSTANTIAL | Already documented in `docs/kor/kor12/` (Brain's only real touchpoint: `academy.certification.passed`). |
@@ -63,7 +63,7 @@ build four.
 | `EXTEND_EXISTING` (KOR-OP, anchored on already-built KOR-01→15) | 11 |
 | `NEW_INTERNAL` (narrow) | 1 (KOR-OP-12) |
 | Cross-ecosystem bridges already substantially/completely documented, needing convergence not construction | 6 (KOR-X-01/02/03/05/06/07) |
-| `BLOCKED` (inherits CVE decision) | 1 (KOR-X-04) |
+| Unblocked since `FD-CVE-001` | 1 (KOR-X-04) |
 | `REJECT_TRUE_DUPLICATE` | 0 |
 
 ## Recommended action

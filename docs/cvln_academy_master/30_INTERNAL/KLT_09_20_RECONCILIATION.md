@@ -110,12 +110,12 @@ attach if/when authorized.
 - **Coverage**: PARTIAL (KLT-05/C2 covers basic operator RBAC
   literacy; this candidate implies deeper security engineering).
 - **Distinctness**: DISTINCT_OPERATOR_ROLE at a more technical tier.
-- **Action**: `NEEDS_FOUNDER_DECISION` — same boundary question raised
-  for FRK-48→51/70 in `FREK_01_75_RECONCILIATION.md`: does
-  platform/identity security live inside the separate "CVLN
-  CyberSecure" Master 2D domain (recommended), or stand alone per
-  product (Kiltikonet, FREK, etc.)? One decision should govern all of
-  these consistently, not be made piecemeal per domain.
+- **Action**: `EXTEND_EXISTING` — the same boundary question raised for
+  FRK-48→51/70 (`G8`) is resolved: platform/identity security lives in
+  the "CVLN CyberSecure" domain's internal-operator layer (`CYB-31→42`,
+  `CYBERSECURE_BLOCKCHAIN_GALA_HOSPITALITY_LABELOS_RECONCILIATION.md`).
+  KLT-17 points at that content rather than re-deriving security
+  engineering per product — no Founder decision required.
 
 ### KLT-18 — Cultural Communications & Engagement Operations
 - **Coverage**: SUBSTANTIAL (KLT-05/C5 community, C7 support, C9
@@ -157,15 +157,16 @@ attach if/when authorized.
 | `EXTEND_EXISTING` / hybrid (anchored on KLT-05) | KLT-18 |
 | `EXTEND_EXISTING` (unblocking content for a named `BLOCKED` competency) | KLT-09 (→ KLT-07/C4), KLT-14 (→ WAL-X-04) |
 | `MERGE` (same profession as an existing formation) | KLT-10 (→ KLT-06) |
-| `NEEDS_FOUNDER_DECISION` | KLT-17 (CyberSecure boundary, same question as FRK-48→51) |
+| `EXTEND_EXISTING` (CyberSecure boundary, `G8` resolved) | KLT-17 (→ `CYB-31→42`) |
 | `REJECT_TRUE_DUPLICATE` | **none** |
 
 **Zero rejections**, consistent with the corrected method. What
 changes from a naive "12 new internal formations" read: KLT-09/10/14
 attach to already-blocked or already-named competencies rather than
 duplicating them, KLT-13/18 become specializations of KLT-05, and
-KLT-17 joins the cross-domain CyberSecure question already raised by
-FREK — one Founder decision, not two independent ones.
+KLT-17 (like FRK-48→51/70 and WAL-14) points at the CyberSecure
+domain's internal-operator layer rather than re-deriving security
+engineering — resolved without a Founder decision (`G8`).
 
 ## Status
 

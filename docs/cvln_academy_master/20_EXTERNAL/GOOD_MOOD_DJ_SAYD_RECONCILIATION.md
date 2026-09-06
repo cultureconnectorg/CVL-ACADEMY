@@ -99,7 +99,7 @@ KORA's 11/12 or FREK's partial coverage). Only exception:
 |---|---|---|
 | GMD-X-01 × FREK | `SUBSTANTIAL` (real `frek_service.py` outbox) | `NEW_CROSS_ECOSYSTEM`, buildable now — same bridge pattern as `FRK-56`/`KOR-X-01`, cross-link rather than re-derive. |
 | GMD-X-02 × Wallet | `SUBSTANTIAL` (real `wallet_service.py` outbox) | `NEW_CROSS_ECOSYSTEM`, buildable now — cross-link `WAL-X` cluster. |
-| GMD-X-03 × CVE | `NONE` | `BLOCKED` — inherits the CVE `NEEDS_FOUNDER_DECISION` (same as `WAL-X`, `KOR-X-04`). |
+| GMD-X-03 × CVE | `NONE` (methodology now `FORMALIZED_METHODOLOGY`, no product-level footprint here) | `NEW_CROSS_ECOSYSTEM` — unblocked since `FD-CVE-001` (CVE methodology named); `CALIBRATION_PENDING` where the bridge touches uncalibrated parameters. |
 | GMD-X-04 × Kiltikonet | `NONE` | `NEW_CROSS_ECOSYSTEM`, `BLOCKED_PRODUCT_DEPENDENCY` (no Kiltikonet repo named). |
 | GMD-X-05 × KORA | `NONE` | `NEW_CROSS_ECOSYSTEM`, `BLOCKED_PRODUCT_DEPENDENCY` (live-to-media pipeline is conceptual; can cite `docs/kor/kor03/` by reference once built). |
 | GMD-X-06 × FMS | `PARTIAL` (both sides real: this repo + `fms-os/fms`) | `NEW_CROSS_ECOSYSTEM` — the artist/production pipeline can cite `FMS_07_18_RECONCILIATION.md`'s FMS-07 umbrella by reference. |
@@ -203,8 +203,8 @@ two parallel Academies.
 | GMD-01→20 | 20 | `NEW_EXTERNAL` | Live-events/festival industry, none currently taught. |
 | GMD-21→33 | 13 | `NEW_INTERNAL`, buildable now | Best-grounded operator cluster this session. |
 | GMD-34 | 1 | `NEW_INTERNAL`, blocked | No incident/rollback mechanism exists. |
-| GMD-X-01/02/06/09 | 4 | `NEW_CROSS_ECOSYSTEM`/`EXTEND_EXISTING`, buildable/reusable now | Real outbox code or existing doctrine. |
-| GMD-X-03/04/05/07/08 | 5 | `BLOCKED_PRODUCT_DEPENDENCY` | Inherit CVE/Kiltikonet/KORA/LabelOS/Gala blocks already logged. |
+| GMD-X-01/02/03/06/09 | 5 | `NEW_CROSS_ECOSYSTEM`/`EXTEND_EXISTING`, buildable/reusable now | Real outbox code, existing doctrine, or (GMD-X-03) `FD-CVE-001`'s formalized methodology. |
+| GMD-X-04/05/07/08 | 4 | `BLOCKED_PRODUCT_DEPENDENCY` | Inherit Kiltikonet/KORA/LabelOS/Gala blocks already logged. |
 | SAY-01→10 | 10 | `SPECIALIZE_EXISTING` on FMS-01 | |
 | SAY-11→20 | 10 | `NEW_EXTERNAL` | Distinct profession (DJ performance), same logic as Mixing & Mastering. |
 | SAY-21→28 | 8 | `SPECIALIZE_EXISTING` on FMS-03 | Artist's creative-decision role, not the engineer's. |

@@ -97,10 +97,10 @@ content today · **Distinctness** = occupational distinctness ·
 | FRK-45 | FREK Roles, Permissions & Delegation | NONE | DISTINCT_INTERNAL_ROLE | EXTEND_EXISTING | Reuse `00_GOVERNANCE/AUTHORIZATION_MODEL.md` (already built in this Master Package) rather than reinvent a parallel roles/permissions doctrine. |
 | FRK-46 | Trust Governance & Policy Enforcement | NONE | DISTINCT_INTERNAL_ROLE | EXTEND_EXISTING | Same reuse as FRK-45; also cross-reference `docs/kor/kor11/` (KOR-11 already disambiguated "gouvernance éditoriale" vs "gouvernance FREK" — reuse that boundary language verbatim, never re-derive it). |
 | FRK-47 | Audit Trail & Institutional Accountability | NONE | DISTINCT_PROFESSION | NEW_EXTERNAL | |
-| FRK-48 | FREK Security Foundations | NONE | DISTINCT_PROFESSION | `NEEDS_FOUNDER_DECISION` | Overlaps "CVLN CyberSecure" domain (42 candidate rows, separate Master 2D domain). Recommend: FRK-48→51 become a CyberSecure **specialization track applied to FREK infrastructure**, built after CyberSecure's own base formation exists — not a parallel generic security curriculum. |
-| FRK-49 | Zero Trust & Infrastructure Hardening | NONE | DISTINCT_SPECIALIZATION | `NEEDS_FOUNDER_DECISION` | Same CyberSecure boundary as FRK-48. |
-| FRK-50 | Cryptographic Keys, Secrets & Trust Operations | NONE | DISTINCT_SPECIALIZATION | `NEEDS_FOUNDER_DECISION` | Same CyberSecure boundary; also `NEEDS_EXPERT_REVIEW` (applied cryptography). |
-| FRK-51 | Threat Modeling & Incident Response | NONE | DISTINCT_SPECIALIZATION | `NEEDS_FOUNDER_DECISION` | Same CyberSecure boundary. |
+| FRK-48 | FREK Security Foundations | NONE | DISTINCT_PROFESSION | `EXTEND_EXISTING` | CyberSecure boundary resolved (`G8`) — points at `CYB-31→42` (`CYBERSECURE_BLOCKCHAIN_GALA_HOSPITALITY_LABELOS_RECONCILIATION.md`) rather than a parallel generic security curriculum. |
+| FRK-49 | Zero Trust & Infrastructure Hardening | NONE | DISTINCT_SPECIALIZATION | `EXTEND_EXISTING` | Same CyberSecure boundary as FRK-48, resolved via `G8` — points at `CYB-31→42`. |
+| FRK-50 | Cryptographic Keys, Secrets & Trust Operations | NONE | DISTINCT_SPECIALIZATION | `EXTEND_EXISTING` | Same CyberSecure boundary, resolved via `G8` — points at `CYB-31→42`; also `NEEDS_EXPERT_REVIEW` (applied cryptography). |
+| FRK-51 | Threat Modeling & Incident Response | NONE | DISTINCT_SPECIALIZATION | `EXTEND_EXISTING` | Same CyberSecure boundary, resolved via `G8` — points at `CYB-31→42`. |
 | FRK-52 | FREK API Engineering | NONE | DISTINCT_PROFESSION | NEW_EXTERNAL | Market-general API engineering; `frek_core.py` exposes no public API today (internal Python client only) — CVLN-specific claims `CAPABILITY_NOT_IMPLEMENTED`. |
 | FRK-53 | FREK SDK Engineering | NONE | DISTINCT_SPECIALIZATION | NEW_EXTERNAL | Same caveat as FRK-52. |
 | FRK-54 | Event Bus, Webhooks & Integration Contracts | NONE (curriculum) / PARTIAL (repo, `services/events.py`) | DISTINCT_PROFESSION | NEW_EXTERNAL | Real, generic in-process pub/sub exists in this repo (`events.py`, powers `academy.certification.passed`) — usable as a genuine (small) worked example, but it is Academy's own event bus, not a FREK one; boundary must be explicit. |
@@ -119,7 +119,7 @@ content today · **Distinctness** = occupational distinctness ·
 | FRK-67 | Performance, Capacity & Failure Engineering | NONE | DISTINCT_OPERATOR_ROLE | NEW_INTERNAL | `BLOCKED_PRODUCT_DEPENDENCY`. |
 | FRK-68 | FREK Auditor | NONE (curriculum) / PARTIAL (repo) | DISTINCT_INTERNAL_ROLE | NEW_INTERNAL | Buildable now at a procedural level: `db.frek_signals` and the outbox tables (Good Mood) are real, inspectable audit surfaces even without cryptographic depth. |
 | FRK-69 | Evidence & Provenance Audit | NONE | DISTINCT_SPECIALIZATION (of FRK-68) | NEW_INTERNAL | Sequenced after FRK-68. |
-| FRK-70 | Security, Permission & Compliance Audit | NONE | DISTINCT_SPECIALIZATION | `NEEDS_FOUNDER_DECISION` | Same CyberSecure-boundary question as FRK-48→51. |
+| FRK-70 | Security, Permission & Compliance Audit | NONE | DISTINCT_SPECIALIZATION | `EXTEND_EXISTING` | Same CyberSecure boundary as FRK-48→51, resolved via `G8` — points at `CYB-31→42`. |
 | FRK-71 | FREK v3 Architecture | NONE | — | `NEEDS_FOUNDER_DECISION` | Implies a v1/v2 history and v3 roadmap not visible anywhere in this repo. Cannot be built without the real roadmap — name the source or this stays `BLOCKED_DEPENDENCY` indefinitely. |
 | FRK-72 | FREK Attestation Protocol | NONE | DISTINCT_PROFESSION | NEW_EXTERNAL | `CAPABILITY_NOT_IMPLEMENTED`, `NEEDS_REPO_AUDIT`. |
 | FRK-73 | FREK Cryptographic Architecture | NONE | DISTINCT_PROFESSION | NEW_EXTERNAL | `NEEDS_EXPERT_REVIEW` (applied cryptography), `CAPABILITY_NOT_IMPLEMENTED`. |
@@ -135,7 +135,8 @@ content today · **Distinctness** = occupational distinctness ·
 | `NEW_CROSS_ECOSYSTEM` | 5 (FRK-56→60) |
 | `SPECIALIZE_EXISTING` | 1 (FRK-11) |
 | `EXTEND_EXISTING` (reuse Master Package governance / merge into a sibling) | 3 (FRK-05, FRK-45, FRK-46) |
-| `NEEDS_FOUNDER_DECISION` (CyberSecure boundary or unnamed dependency) | 6 (FRK-48, 49, 50, 51, 70, 71) |
+| `EXTEND_EXISTING` (CyberSecure boundary, resolved via `G8`) | 5 (FRK-48, 49, 50, 51, 70) |
+| `NEEDS_FOUNDER_DECISION` (unnamed FREK v3 roadmap — distinct, still open) | 1 (FRK-71) |
 | `REJECT_TRUE_DUPLICATE` | 0 |
 
 **Zero rejections** — every candidate carries real professional or
