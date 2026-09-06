@@ -45,4 +45,7 @@ certification is the most operationally load-bearing of the 13.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD24` — full canonical package built
+(see `BANQUE_N1.md`, `BANQUE_N2.md`, `ASSESSMENT_AND_RUBRIC.md`,
+`EVIDENCE_MODEL.md`, 3 guides, `INTEGRATION_NOTE.md`). `FULLY_COMPLETE`
+still requires a real candidate pass.

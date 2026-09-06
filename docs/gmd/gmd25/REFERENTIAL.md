@@ -50,4 +50,5 @@ who may staff a real door on a real event night.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD25` — full canonical package built.
+`FULLY_COMPLETE` still requires a real candidate pass.
