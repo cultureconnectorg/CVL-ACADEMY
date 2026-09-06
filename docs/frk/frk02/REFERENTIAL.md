@@ -41,4 +41,6 @@ asserting any unimplemented capability as real.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE` — full canonical package (référentiel +
+N1/N2 + assessment/rubric + evidence model + 3 guides + integration
+note), deepened this pass. Never implies `FULLY_COMPLETE`.
