@@ -162,6 +162,29 @@ calibrated stays flagged `CALIBRATION_PENDING` at the module level once
 W6 content is written; this is a normal build note, not a Founder
 escalation.
 
+**Naming-collision guard (verified again, monitored ahead of the
+Wallet wave) — do not merge with `Cvln-ios-v.1/economics/CVE-v1.2.md`.**
+The `cultureconnectorg/Cvln-ios-v.1` repo (`95_GAPS/REPO_REGISTRY.md`)
+carries its own, unrelated document under the same acronym: **"CVE
+v1.2 — CVLN Value Engine"** — a contribution/JCC value-recognition
+model, self-labeled `status: TARGET`/`attribution: SPECIFICATION`,
+explicitly stating "no economic engine implementation was observed."
+Re-read directly again for this note: it models *value recognition
+from verified contribution* (JCC accounting), which is a **different
+system** from KORA's Cultural Value Engine (Trust Score, `w_id/w_comp/
+w_net/w_hist`, S/E/F/C/L components) formalized under `FD-CVE-001`
+above. Same three letters, two distinct specifications, two distinct
+owners (KORA Tech & Data Pole vs. the Office of the Principal Systems
+Architect's IOS audit). **CVE-01→15 module content must cite only the
+KORA spec** (`kora2024/Kora-app/memory/
+KORA_CVE_Specification_Mathematique_v1.0.md`) as its source of truth;
+`CVE-v1.2.md`'s JCC/contribution-recognition model is out of scope for
+this domain and must never be blended into a CVE-01→15 module,
+however similar the acronym looks. If a future formation is ever built
+to teach the *other* CVE (CVLN Value Engine / JCC), it must use a
+different code — never `CVE-*` — precisely to keep this collision from
+recurring at the Skill-ID or module-code level.
+
 ## Wallet/CVE cross (WAL-X-01→09)
 
 Updated verdict: no longer `BLOCKED` on the CVE methodology question
