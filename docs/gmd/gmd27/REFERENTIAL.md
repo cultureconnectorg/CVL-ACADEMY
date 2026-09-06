@@ -43,4 +43,5 @@ Same general pattern as GMD-22.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD27` — full canonical package built.
+`FULLY_COMPLETE` still requires a real candidate pass.

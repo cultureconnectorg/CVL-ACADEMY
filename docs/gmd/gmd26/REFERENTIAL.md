@@ -6,10 +6,15 @@ Prerequisite: GMD-21. Fed by GMD-24 (a purchase creates/updates a fan record).
 
 ## Repo truth
 
-`/admin/fans` route, fan-upsert-on-purchase logic (`server.py:611`
-region). This is the operator role for Good Mood's real, minimal fan
-database — not a full marketing-CRM product, an upsert table keyed on
-purchase activity.
+`/admin/fans` route (`server.py:415-418`); `upsert_fan`
+(`ticketing_service.py:24-70`, corrected pointer — the logic lives in
+this service file, not inline at `server.py:611`). This is the
+operator role for Good Mood's real fan database — not a full
+marketing-CRM product, but richer than "raw table only": it computes
+real derived fields (`total_events`, `cities`, `segments` —
+`primo`/`recurring`/`vip`) on every upsert. `external_id` is derived
+from the email's local-part and can collide across different domains
+(e.g. `x@a.com`/`x@b.com`) — a real, citable data-quality edge case.
 
 ## Prerequisites
 
@@ -48,4 +53,5 @@ Same general pattern as GMD-22.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_GMD26` — full canonical package built.
+`FULLY_COMPLETE` still requires a real candidate pass.
