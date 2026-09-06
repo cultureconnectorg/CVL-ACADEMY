@@ -71,6 +71,7 @@ Fondation Cœurvolan — chacun garde sa formation legacy réelle
 | **6 — Agent Factory/IOS/Brain/CMD/Laurentia** | `docs/agf/` (séparation stricte `external/`/`internal/`) | 109/109 comptabilisées | 59/109 `PACKAGE_COMPLETE` (passe de deepening complète cette session : les 5 clusters `external/` — af01_03/af04_15/lau01_10/brn01_14/cmd01_14, 53 lignes — et les 6 formations `internal/` — CMD-15 flagship + AF-16/17/AF-X-03/BRN-15/IOS-07, 6 lignes — chaque interne grondée uniquement sur `CVLNAgentfactory`/`Cvln-ios-v.1`/`Laurent.ia`/`MetaCVLN`, jamais extrapolée, clusters externes sur disciplines marché-général réelles) ; 39/109 `BLOCKED_PRODUCT_DEPENDENCY` (repos réels non branchés à l'Academy, inchangées) ; 11/109 `EXTEND_EXISTING` (inchangées) |
 | **7 — KORA interne/cross** | `docs/kor_op/` | 19/19 comptabilisées | 1/19 `PACKAGE_COMPLETE` (KOR-OP-12, seule ligne sans ancrage 1:1, package neuf construit sur les compétences réelles KOR-03/KOR-04) ; 18/19 `EXTEND_EXISTING`/index convergé (11 notes de cadrage KOR-OP pointant vers `docs/kor/korXX/` déjà bâti, 7 ponts KOR-X convergés dont 4 identiques à un pont déjà construit sous un autre numéro de ligne — `FRK-56`/`LOS-X-03`/`WAL-X-01`) ; `docs/kor/kor01→15` non touché |
 | **8 — CyberSecure+Blockchain+Gala+Hospitality+LabelOS** | `docs/cyb/`+`docs/bci/`+`docs/gcf/`+`docs/hos/`+`docs/los/` | 214/214 comptabilisées | 1/214 `PACKAGE_COMPLETE` (CYB-32, grondé sur le vrai `backend/auth.py`) ; 139/214 contenu réel construit (137 `MODULE_CONTENT_DRAFTED` + 2 modules de pont neufs) ; 13/214 index convergé/citation seule ; 1/214 préservé verbatim (`HOS-GAP`) ; 60/214 `BLOCKED_PRODUCT_DEPENDENCY` ; aucune formation legacy (`BCH-01`/`HOS-01`/`LOS-01`/`AGR-01`) reconstruite, chacune citée par référence ; résout `G3` et `G8` |
+| **9 — Founder/CEO+CVLN Group+Fondation Cœurvolan** | `docs/ceo/`+`docs/grp/`+`docs/fdc/` | 158/158 comptabilisées | 0/158 `PACKAGE_COMPLETE` (aucun flagship cette vague) ; 88/158 contenu réel construit (12 CEO + 39 GRP + 37 FDC) ; 9/158 ponts citation-seule (FDC-X) ; 25/158 `NEEDS_EXPERT_REVIEW` (10 GRP + 15 FDC, légal/fiscal/philanthropique, jamais de recette universelle) ; 27/158 `BLOCKED_PRODUCT_DEPENDENCY` (14 GRP + 13 FDC) ; 9/158 signalées non énumérées dans la source (`docs/grp/GRP_GAP_NOTE.md`, jamais inventées) ; aucune formation legacy (`GRP-01`/`GRP-02`/`CIP-01`) reconstruite ; `FD-CIP-001` (CIP Foundation ≠ Fondation Cœurvolan) appliqué sans exception |
 
 **Pré-existant, jamais reconstruit** : KOR-01/02 (`PACKAGE_COMPLETE`),
 KOR-03→10 (`PARTIAL_PACKAGE`), KOR-11→15 (`DRAFTED`), KLT-01→05
@@ -78,19 +79,22 @@ KOR-03→10 (`PARTIAL_PACKAGE`), KOR-11→15 (`DRAFTED`), KLT-01→05
 FMS-01→06 (`PACKAGE_COMPLETE`-équivalent, code réel).
 
 **Total formations/lignes à contenu réel écrit ce chantier (waves
-1-12) : ~302** (13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF + 1
-KOR-OP-12 + 140 CyberSecure/Blockchain/Gala/Hospitality/LabelOS à
-contenu construit, plus 11 FRK + 39 AGF + 60 CYB/BCI/GCF/LOS déclarées
-`GAP.md`/`BLOCKED_CANDIDATES.md`, plus 18 lignes KORA + 13 lignes
-CYB/BCI/GCF/LOS `EXTEND_EXISTING`/index convergé sans formation
-séparée, plus 1 ligne `HOS-GAP` préservée verbatim), dont désormais
-**11 formations/clusters AGF + CMD-15 + FRK flagships + KOR-OP-12 +
-CYB-32** `PACKAGE_COMPLETE` (GMD couvre 13 flagships en fait — voir
-détail `docs/gmd/QUALITY_GATES.md`) et le reste honnêtement
-`MODULE_CONTENT_DRAFTED`/`BLOCKED` selon la preuve réelle disponible —
-**aucun statut jamais gonflé** (discipline `WAVE_PROCESSED`/
-`RECONCILED` ≠ `PACKAGE_COMPLETE` ≠ `FULLY_COMPLETE`, voir
-`W6_GLOBAL_STATUS.md`).
+1-15) : ~390** (13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF + 1
+KOR-OP-12 + 140 CyberSecure/Blockchain/Gala/Hospitality/LabelOS + 88
+Founder/CEO/Group/Fondation à contenu construit, plus 11 FRK + 39 AGF
++ 60 CYB/BCI/GCF/LOS + 27 GRP/FDC déclarées `GAP.md`/
+`BLOCKED_CANDIDATES.md`, plus 18 lignes KORA + 13 lignes CYB/BCI/GCF/LOS
++ 9 lignes FDC-X `EXTEND_EXISTING`/index convergé sans formation
+séparée, plus 1 ligne `HOS-GAP` préservée verbatim, plus 3 FRK + 25
+GRP/FDC `NEEDS_EXPERT_REVIEW`, plus 9 lignes GRP signalées non
+énumérées dans la source), dont désormais **11 formations/clusters
+AGF + CMD-15 + FRK flagships + KOR-OP-12 + CYB-32** `PACKAGE_COMPLETE`
+(GMD couvre 13 flagships en fait — voir détail
+`docs/gmd/QUALITY_GATES.md`) et le reste honnêtement
+`MODULE_CONTENT_DRAFTED`/`BLOCKED`/`NEEDS_EXPERT_REVIEW` selon la
+preuve réelle disponible — **aucun statut jamais gonflé** (discipline
+`WAVE_PROCESSED`/`RECONCILED` ≠ `PACKAGE_COMPLETE` ≠
+`FULLY_COMPLETE`, voir `W6_GLOBAL_STATUS.md`).
 
 ## 5. Ce qui reste dans le périmètre W6 (domaines encore à zéro corpus)
 
@@ -101,7 +105,7 @@ D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
 | FREK (FRK-01→75) | 75 | **Couverture 75/75 complète, corpus au maximum de profondeur atteignable sans lever `NEEDS_EXPERT_REVIEW`** — vague 5 complète + passe de deepening complète (Batches A→I) + une reclassification ponctuelle sur preuve repo nouvelle (FRK-16, `docs/frk/`), aucun candidat restant `RECONCILED_NOT_BUILT`. FRK-16 (FREK Digital Notary) est passé de `BLOCKED_PRODUCT_DEPENDENCY` à `PACKAGE_COMPLETE` après audit de `cultureconnectorg/Cvln-ios-v.1` (repo non croisé par la réconciliation initiale pour ce candidat), qui documente un vrai système `IMPLEMENTED` de notarisation + ancrage externe dans MetaCVLN — jamais un notariat légal, jamais confondu avec `frek_core.py`/FRK-13 (voir `docs/frk/frk16/INTEGRATION_NOTE.md`). État canonique final : 54 `PACKAGE_COMPLETE` / 3 `MODULE_CONTENT_DRAFTED` (`NEEDS_EXPERT_REVIEW` : FRK-10 EUDI/eIDAS2, FRK-14 chaîne de custody, FRK-73 cryptographie appliquée — 8/8 fichiers de support écrits pour chacune, jamais promues sans revue humaine réelle documentée) / 10 `BLOCKED_PRODUCT_DEPENDENCY` (re-vérifiés contre `Cvln-ios-v.1` et confirmés inchangés) / 8 `EXTEND_EXISTING` — jamais résumé autrement que ce décompte exact (54+3+10+8=75). |
 | Agent Factory/AF-X/Laurentia/IOS/Brain/CMD | 109 | **Couverture complète (vague 6 + passe de deepening, `docs/agf/`)** — 59 `PACKAGE_COMPLETE` (5 clusters `external/` + 6 formations `internal/`, deepening achevé cette session) / 39 `BLOCKED_PRODUCT_DEPENDENCY` (inchangées) / 11 `EXTEND_EXISTING` (inchangées) — jamais résumé comme domaine `FULLY_COMPLETE` |
 | CyberSecure+Blockchain+Gala+Hospitality+LabelOS | 214 | **Couverture complète (vague 8-12, `docs/cyb/`+`docs/bci/`+`docs/gcf/`+`docs/hos/`+`docs/los/`)** — 1 `PACKAGE_COMPLETE` (CYB-32) / 139 contenu réel construit / 13 index convergé/citation / 1 préservé verbatim (`HOS-GAP`) / 60 `BLOCKED_PRODUCT_DEPENDENCY` — résout `G3` (LabelOS) et `G8` (frontière sécurité), aucune formation legacy (`BCH-01`/`HOS-01`/`LOS-01`/`AGR-01`) reconstruite |
-| Founder/CEO+Group+Fondation | 158 | `RECONCILED_NOT_BUILT` — ~25 lignes `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique), jamais de recette universelle |
+| Founder/CEO+Group+Fondation | 158 | **Couverture complète (vague 13-15, `docs/ceo/`+`docs/grp/`+`docs/fdc/`)** — 0 `PACKAGE_COMPLETE` / 88 contenu réel construit / 9 citation-seule / 25 `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique, jamais de recette universelle) / 27 `BLOCKED_PRODUCT_DEPENDENCY` / 9 signalées non énumérées dans la source (`docs/grp/GRP_GAP_NOTE.md`, jamais inventées) |
 | KORA interne/cross | 19 | **Couverture complète (vague 7, `docs/kor_op/`)** — 1 `PACKAGE_COMPLETE` (KOR-OP-12) / 18 `EXTEND_EXISTING`/index convergé (aucune formation séparée, `docs/kor/kor01→15` non touché) |
 | Kiltikonet KLT-09→20 | 12 | `BLOCKED` — hérite du `STOP=TRUE` de `docs/klt/` (gate d'autorisation Founder, jamais contourné) |
 | Cross-CVLN XCV-01→56 | ~57 | `RECONCILED_NOT_BUILT` — nécessite `80_MISSIONS/MISSIONS_PIPELINES.md` comme point d'ancrage |
