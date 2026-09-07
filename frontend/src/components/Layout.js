@@ -4,7 +4,7 @@ import {
   HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
   Fingerprint, LogOut, Leaf, Language, Wallet as WalletIcon,
   Sparks, ShieldCheck, ShieldSearch, PeopleTag, Settings,
-  Menu, Xmark,
+  Menu, Xmark, CreditCard,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
@@ -20,6 +20,10 @@ const STUDENT_NAV = [
   { to: "/badges",          key: "badges",          Icon: Medal1st },
   { to: "/skills",          key: "skills",          Icon: Sparks },
   { to: "/certifications",  key: "certifications",  Icon: ShieldCheck },
+  // ACA-0025/W-FUNNEL-2 "Conversion" — the real DECIDED_V1 commercial
+  // catalogue, same NAV list every other page uses (desktop sidebar +
+  // mobile "more" sheet, see MOBILE_PRIMARY_KEYS below).
+  { to: "/offers",          key: "offers",          Icon: CreditCard },
   { to: "/wallet",          key: "wallet",          Icon: WalletIcon },
   { to: "/frek-profile",    key: "frek_profile",    Icon: Fingerprint },
 ];

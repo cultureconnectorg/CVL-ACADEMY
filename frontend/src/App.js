@@ -23,6 +23,7 @@ const Roadmap = lazy(() => import("@/pages/Roadmap"));
 const Wallet = lazy(() => import("@/pages/Wallet"));
 const Skills = lazy(() => import("@/pages/Skills"));
 const Certifications = lazy(() => import("@/pages/Certifications"));
+const Offers = lazy(() => import("@/pages/Offers"));
 const CanonicalFormations = lazy(() => import("@/pages/CanonicalFormations"));
 const CanonicalFormationDetail = lazy(() => import("@/pages/CanonicalFormationDetail"));
 const CanonicalModuleView = lazy(() => import("@/pages/CanonicalModuleView"));
@@ -90,6 +91,12 @@ function App() {
                 <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
                 <Route path="/skills" element={<Protected><Skills /></Protected>} />
                 <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
+                {/* ACA-0025/W-FUNNEL-2 "Conversion" — the real DECIDED_V1
+                    commercial catalogue (`GET /commerce/offers`) is public
+                    same PUBLIC_DISCOVERY=TRUE logic as /formations; only the
+                    CTA behavior (honest BLOCKED_EXTERNAL, never a fake
+                    purchase) is gated inside the page itself. */}
+                <Route path="/offers" element={<Layout><Offers /></Layout>} />
                 {/* ACA-0006 — canonical FMS runtime binding, read-only pages,
                     separate from the legacy /formations tree above. */}
                 <Route path="/canonical" element={<Protected><CanonicalFormations /></Protected>} />
