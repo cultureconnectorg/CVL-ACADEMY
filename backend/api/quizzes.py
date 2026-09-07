@@ -88,6 +88,7 @@ async def submit_module_quiz(
     # Attempt count + latest score are recorded on every submission,
     # pass or fail — a real pedagogical re-attempt is always allowed
     # and always tracked.
+    now = utc_now_iso()
     await db.progress.update_one(
         {"user_id": current.id, "module_code": module_code},
         {
@@ -97,6 +98,7 @@ async def submit_module_quiz(
                 "formation_code": formation_code,
                 "module_code": module_code,
                 "quiz_score": result["score"],
+                "last_activity_at": now,  # ACA-0024, see learning.py's phase-view write
             },
         },
         upsert=True,

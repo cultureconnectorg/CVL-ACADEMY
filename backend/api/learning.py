@@ -132,6 +132,15 @@ async def tick_phase(
         "user_id": current.id,
         "formation_code": formation_code,
         "module_code": module_code,
+        # ACA-0024 (Founder decision, W-FUNNEL-2 "Regular Use",
+        # 2026-09-07) — every write that represents genuine learner
+        # activity on a module stamps `last_activity_at`, so a
+        # returning learner's Dashboard can resume the module they
+        # actually last touched instead of only the next one in
+        # sequence. Additive: pre-existing progress docs simply lack
+        # this field until next touched, degrading to today's
+        # sequential behavior (see user_learning_path below).
+        "last_activity_at": now,
     }
     if inp.key == "course":
         pct = max(0, min(100, int(inp.progress_pct or 0)))
@@ -197,6 +206,7 @@ async def submit_deliverable(
                 "module_code": module_code,
                 "deliverable_text": text,
                 "deliverable_submitted_at": now,
+                "last_activity_at": now,  # ACA-0024, see phase-view write above
             }
         },
         upsert=True,
@@ -253,6 +263,7 @@ async def commit_mini_mission(
                 "mini_mission_committed_at": now,
                 "completed": True,
                 "completed_at": now,
+                "last_activity_at": now,  # ACA-0024, see phase-view write above
             }
         },
         upsert=True,
@@ -329,11 +340,54 @@ async def user_learning_path(current: User = Depends(get_current_user)):
     others = [s for s in summarized if not s["is_recommended"]]
     others.sort(key=lambda x: (x["pole"], x["code"]))
 
+    # ACA-0024 (Founder decision, W-FUNNEL-2 "Regular Use", 2026-09-07)
+    # — CONTINUATION_ENGINE: a returning learner who already has real
+    # work in flight resumes THAT module first, not whichever comes
+    # earliest in curriculum order. Scanned across every unlocked
+    # legacy formation (own pole and others alike — a learner's actual
+    # last activity, not their declared pole, decides what "regular
+    # use" means to them), restricted to modules genuinely started
+    # (status already past "available") with a real `last_activity_at`
+    # stamp (see the progress writes in learning.py/quizzes.py this
+    # reads). No `last_activity_at` anywhere == a brand-new learner ==
+    # this loop finds nothing == falls straight through to the
+    # existing sequential "first actionable module" search below,
+    # byte-identical to pre-ACA-0024 behavior.
+    resume_candidate = None
+    resume_ts = None
+    for s in own + others:
+        if s["canonical_authority"] or not s["is_unlocked"]:
+            continue
+        f_doc = next((f for f in all_forms if f["code"] == s["code"]), None)
+        if f_doc is None:
+            continue
+        for m in f_doc.get("modules", []):
+            if not is_module_unlocked(f_doc, m["code"], prog_by_mod):
+                continue
+            p = prog_by_mod.get(m["code"])
+            status = compute_status(p)
+            ts = (p or {}).get("last_activity_at")
+            if status in ("available", "validated") or not ts:
+                continue
+            if resume_ts is None or ts > resume_ts:
+                resume_ts = ts
+                resume_candidate = {
+                    "formation_code": s["code"],
+                    "formation_name": s["name"],
+                    "module_code": m["code"],
+                    "module_name": m["name"],
+                    "status": status,
+                    "pole_color": s["pole_color"],
+                    "source": "legacy",
+                    "route": f"/formations/{s['code']}/modules/{m['code']}",
+                    "resume": True,
+                }
+
     # Compute next actionable module — skips any formation canonical
     # content has taken over (see authority_map above); those fall
     # through to the canonical next_action search below instead.
-    next_action = None
-    for s in own + others:
+    next_action = resume_candidate
+    for s in (own + others) if next_action is None else []:
         if s["canonical_authority"]:
             continue
         if not s["is_unlocked"]:
@@ -352,6 +406,7 @@ async def user_learning_path(current: User = Depends(get_current_user)):
                     "module_code": m["code"],
                     "module_name": m["name"],
                     "status": status,
+                    "resume": status != "available",
                     "pole_color": s["pole_color"],
                     "source": "legacy",
                     "route": f"/formations/{s['code']}/modules/{m['code']}",

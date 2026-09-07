@@ -112,7 +112,13 @@ export default function Dashboard() {
           <div className="flex flex-wrap items-center gap-6">
             <div className="flex-1 min-w-0">
               <div className="text-[10px] mono uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
-                {t("dashboard_p.next_step")}
+                {/* ACA-0024 (CONTINUATION_ENGINE, W-FUNNEL-2 "Regular
+                    Use") — the backend only sets `resume: true` when
+                    this module is real, already-touched work being
+                    resumed, never a fresh curriculum recommendation;
+                    the eyebrow reflects that real distinction instead
+                    of always saying "next step". */}
+                {path.next_action.resume ? t("dashboard_p.resume_step") : t("dashboard_p.next_step")}
               </div>
               <div className="font-display font-bold text-2xl md:text-3xl tracking-tight mt-2 leading-tight">
                 {path.next_action.module_name}

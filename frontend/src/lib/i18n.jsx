@@ -196,7 +196,7 @@ const DICT = {
       unavailable: "Mentor CVLN indisponible pour l'instant.",
     },
     dashboard_p: {
-      greeting: "Bonjour", next_step: "Ta prochaine étape",
+      greeting: "Bonjour", next_step: "Ta prochaine étape", resume_step: "Reprends où tu t'es arrêté",
       no_badges: "Aucun badge pour l'instant. Complète un module ou une mission pour en gagner.",
     },
     formation_detail_p: {
@@ -453,7 +453,7 @@ const DICT = {
       unavailable: "CVLN Mentor unavailable right now.",
     },
     dashboard_p: {
-      greeting: "Hello", next_step: "Your next step",
+      greeting: "Hello", next_step: "Your next step", resume_step: "Pick up where you left off",
       no_badges: "No badge yet. Complete a module or a mission to earn one.",
     },
     formation_detail_p: {
@@ -710,7 +710,7 @@ const DICT = {
       unavailable: "Mentò CVLN pa disponib pou lè ya.",
     },
     dashboard_p: {
-      greeting: "Bonjou", next_step: "Pwochen étap ou",
+      greeting: "Bonjou", next_step: "Pwochen étap ou", resume_step: "Kontinye kote ou te rete a",
       no_badges: "Poko gen badj. Fini yon modil ou yon misyon pou genyen'y.",
     },
     formation_detail_p: {
@@ -967,7 +967,7 @@ const DICT = {
       unavailable: "Mentor CVLN no disponible por ahora.",
     },
     dashboard_p: {
-      greeting: "Hola", next_step: "Tu próximo paso",
+      greeting: "Hola", next_step: "Tu próximo paso", resume_step: "Retoma donde lo dejaste",
       no_badges: "Todavía no hay insignias. Completa un módulo o una misión para ganar una.",
     },
     formation_detail_p: {
