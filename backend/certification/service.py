@@ -151,6 +151,7 @@ async def grade_attempt(
             attempt.user_id,
             "jcc_earned",
             CERTIFICATION_JCC_REWARD,
+            economic_event_id=f"certification-pass:{attempt_id}",
             currency="jcc",
             ref=attempt.certification_code,
             description=f"Certification {attempt.certification_code} réussie",

@@ -47,6 +47,21 @@ async def ensure_indexes() -> None:
     # Wallet
     await db.wallet_accounts.create_index("user_id", unique=True)
     await db.wallet_transactions.create_index([("user_id", 1), ("created_at", -1)])
+    # WAL-01 (Audit Chirurgical 2026-09-07) — the real idempotency
+    # guard: every wallet.credit() call now requires a real
+    # economic_event_id, so this index is never sparse-vs-null
+    # ambiguous (see wallet/service.py's own docstring for why).
+    # MIGRATION NOTE: this repo has no live MongoDB in this sandbox and
+    # this session never observed a real deployed wallet_transactions
+    # collection, so no backfill script exists here. A real production
+    # deployment carrying pre-existing rows with no economic_event_id
+    # (multiple such rows collide on `null`) must run a one-time
+    # backfill (a synthetic unique id per legacy row, e.g. its own `id`
+    # field) before this index build — this comment names that
+    # requirement rather than silently assuming it away.
+    await db.wallet_transactions.create_index(
+        [("user_id", 1), ("economic_event_id", 1)], unique=True
+    )
 
     # Assistants / mentor
     await db.mentor_conversations.create_index(

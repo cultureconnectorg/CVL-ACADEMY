@@ -3,12 +3,13 @@ payloads) for the public entry points."""
 
 from .models import WalletAccount, WalletSummary, WalletTransaction
 from .passes import build_apple_pass_payload, build_google_pass_payload
-from .service import credit, get_summary, list_transactions
+from .service import credit, get_summary, list_transactions, reconcile_wallet_balance
 
 __all__ = [
     "credit",
     "get_summary",
     "list_transactions",
+    "reconcile_wallet_balance",
     "build_apple_pass_payload",
     "build_google_pass_payload",
     "WalletAccount",
