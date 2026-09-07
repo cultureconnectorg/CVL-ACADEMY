@@ -40,6 +40,8 @@ CASE.md`).
 
 - Présenter les livrables sans les relier entre eux.
 - Ignorer l'absence de définition de CVE dans la conclusion finale.
+- Formuler un bilan réflexif qui n'admette aucune difficulté réelle
+  rencontrée dans la construction du modèle économique.
 
 ## Activité
 

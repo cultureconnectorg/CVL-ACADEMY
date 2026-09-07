@@ -37,11 +37,14 @@ sont la base de tout calcul ultérieur.
    audience.
 3. Formuler le diagnostic sans encore trancher entre options.
 
-## Exemple
+## Exemples
 
 Avec quelques centaines d'auditeurs réguliers, un modèle d'abonnement
 payant seul serait probablement irréaliste — le diagnostic doit le
-signaler, pas l'ignorer par optimisme.
+signaler, pas l'ignorer par optimisme. À l'inverse, conclure qu'aucune
+option n'est même à explorer parce que l'audience actuelle est modeste
+écarterait prématurément des options à seuil bas (sponsoring, dons
+ponctuels) qui pourraient, elles, rester réalistes.
 
 ## Cas
 
@@ -51,6 +54,9 @@ Le diagnostic porte sur *Rasin* réellement (`case/CASE.md`).
 
 - Diagnostiquer sans s'appuyer sur les données réelles d'audience.
 - Trancher prématurément entre options avant le diagnostic complet.
+- Conclure qu'aucune option économique n'est à explorer du seul fait
+  que l'audience actuelle est modeste, sans distinguer les options à
+  seuil bas des options à seuil élevé.
 
 ## Activité
 

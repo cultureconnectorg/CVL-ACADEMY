@@ -41,11 +41,16 @@ inéquitable même si elle n'est pas "productrice" au sens technique.
    y compris le témoignage.
 3. Documenter la justification de cette clé.
 
-## Exemple
+## Exemples
 
 Une clé qui partagerait uniquement entre les trois fondateurs
 techniques, en excluant Man Rosa, ignorerait que l'intérêt du contenu
-(et donc sa valeur monétisable) repose largement sur son témoignage.
+(et donc sa valeur monétisable) repose largement sur son témoignage. À
+l'inverse, accorder à Man Rosa une part si importante qu'elle
+laisserait les contributeurs techniques sous-rémunérés au regard du
+temps réellement investi déplacerait l'iniquité plutôt que de la
+corriger — reconnaître une contribution ne signifie pas la
+surpondérer au détriment des autres.
 
 ## Cas
 
@@ -55,6 +60,8 @@ Le partage porte sur les contributeurs réels du cas (`case/CASE.md`).
 
 - Exclure une contribution non technique (témoignage) du partage.
 - Proposer une clé arbitraire sans justification.
+- Surpondérer une contribution au point de sous-rémunérer les autres
+  contributeurs au regard du temps réellement investi.
 
 ## Activité
 

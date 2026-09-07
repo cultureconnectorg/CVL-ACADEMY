@@ -40,11 +40,15 @@ sponsoring ciblé qu'à une publicité générique.
 3. Rappeler que ce contact reste informel (cohérent avec `KOR-01`/M13)
    — ne pas le présenter comme acquis.
 
-## Exemple
+## Exemples
 
 Un sponsoring ciblé pourrait mentionner Kafé Kreyòl en fin d'épisode
 avec un message cohérent avec son identité diaspora — plus adapté
-qu'une publicité générique insérée sans lien avec le contenu.
+qu'une publicité générique insérée sans lien avec le contenu. À
+l'inverse, proposer à Kafé Kreyòl un simple espace publicitaire
+générique, sans lien avec l'identité diaspora déjà partagée, gâcherait
+une relation mieux adaptée à un sponsoring ciblé — le mécanisme choisi
+doit correspondre au partenaire réel, pas être choisi par défaut.
 
 ## Cas
 
@@ -54,6 +58,9 @@ L'évaluation porte sur la piste réelle du cas (`case/CASE.md`).
 
 - Présenter le contact Kafé Kreyòl comme un accord acquis.
 - Confondre publicité générique et sponsoring ciblé.
+- Proposer un mécanisme qui ne correspond pas au partenaire réel,
+  alors qu'un sponsoring ciblé serait mieux adapté à la relation déjà
+  établie.
 
 ## Activité
 

@@ -41,14 +41,17 @@ rien ne permet de tirer.
 3. Ne construire aucun modèle économique qui dépendrait d'une
    définition inventée de CVE.
 
-## Exemple
+## Exemples
 
 Formulation correcte : « CVE n'est pas documenté dans ce repo —
 `EXTERNAL_PRODUCT_EVIDENCE_NOT_AUDITED` — le modèle économique de
 *Rasin* ne peut donc pas s'appuyer dessus tant qu'une clarification
 n'est pas obtenue du Founder. » Formulation à proscrire : deviner que
 CVE signifie "Culture Value Exchange" ou toute autre définition
-inventée.
+inventée. À l'inverse, omettre toute mention de CVE dans le modèle
+économique, sans même documenter cette absence, laisserait croire
+qu'aucune clarification n'était nécessaire — la vigilance exige de
+nommer l'absence, pas seulement de ne pas inventer.
 
 ## Cas
 
@@ -60,6 +63,9 @@ La clarification porte sur l'absence réelle constatée dans ce repo
 - Inventer une définition de CVE pour "faire avancer" le modèle
   économique.
 - Conclure que CVE n'existe pas dans l'écosystème CVLN au sens large.
+- Omettre toute mention de CVE dans le modèle économique sans
+  documenter cette absence, laissant croire qu'aucune clarification
+  n'était nécessaire.
 
 ## Activité
 

@@ -39,11 +39,14 @@ respecter.
 3. Documenter la conclusion, même si elle est négative pour les deux
    modèles à ce stade.
 
-## Exemple
+## Exemples
 
 Avec quelques centaines d'auditeurs, ni le freemium ni l'abonnement ne
 généreraient un revenu significatif dans l'immédiat — cette conclusion
-honnête oriente vers d'autres options (M03).
+honnête oriente vers d'autres options (M03). À l'inverse, recommander
+malgré tout un lancement premium « pour voir » après avoir soi-même
+établi que le seuil n'est pas atteint annulerait la valeur du
+diagnostic honnête qui vient d'être posé.
 
 ## Cas
 
@@ -53,6 +56,8 @@ L'évaluation porte sur l'audience réelle du cas (`case/CASE.md`).
 
 - Recommander un modèle sans vérifier le seuil d'audience nécessaire.
 - Éviter de conclure négativement par optimisme non fondé.
+- Recommander malgré tout un modèle dont on vient soi-même d'établir
+  honnêtement qu'il ne franchit pas le seuil réaliste.
 
 ## Activité
 

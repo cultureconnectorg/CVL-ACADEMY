@@ -43,11 +43,16 @@ dans ce repo.
 3. Documenter cette exploration en citant précisément les fichiers
    réels concernés.
 
-## Exemple
+## Exemples
 
 Une part du revenu de sponsoring pourrait, en théorie, être créditée
 aux contributeurs via `jcc_balance` — une exploration réaliste puisque
-le mécanisme existe déjà, contrairement à un système fictif inventé.
+le mécanisme existe déjà, contrairement à un système fictif inventé. À
+l'inverse, décrire ce mécanisme réel comme capable de répartir
+automatiquement les revenus entre contributeurs alors que le code cité
+ne fait que créditer un solde attribuerait au mécanisme réel des
+capacités qu'il n'a pas — aussi trompeur que de le traiter comme
+fictif.
 
 ## Cas
 
@@ -59,6 +64,9 @@ CASE.md`).
 - Traiter Wallet/JCC comme un système fictif alors qu'il est réel.
 - Proposer une implémentation technique (hors mandat — ceci reste une
   exploration pédagogique, pas un développement).
+- Attribuer au mécanisme réel des capacités qu'il n'a pas réellement
+  (comme une répartition automatique), aussi trompeur que de le
+  traiter comme fictif.
 
 ## Activité
 

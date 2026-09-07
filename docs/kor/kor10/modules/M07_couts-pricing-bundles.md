@@ -38,11 +38,14 @@ proportionnellement.
 2. Fixer un pricing qui couvre au moins les coûts directs.
 3. Explorer un bundle simple si pertinent pour l'audience diaspora.
 
-## Exemple
+## Exemples
 
 Un bundle "accès anticipé + contenu bonus" à un prix légèrement
 supérieur à l'abonnement simple peut augmenter la valeur perçue sans
-complexifier excessivement l'offre.
+complexifier excessivement l'offre. À l'inverse, fixer un pricing censé
+couvrir les coûts mais basé sur une estimation approximative plutôt
+que sur le recensement réel effectué à l'étape 1 laisserait un écart
+invisible entre le prix affiché et les coûts réellement couverts.
 
 ## Cas
 
@@ -53,6 +56,9 @@ Le pricing porte sur les coûts réels du cas (`case/CASE.md`,
 
 - Fixer un pricing sans avoir recensé les coûts réels.
 - Proposer un bundle trop complexe pour une petite structure.
+- Fixer un pricing basé sur une estimation approximative des coûts
+  plutôt que sur le recensement réel effectué, laissant un écart
+  invisible entre prix affiché et coûts réellement couverts.
 
 ## Activité
 

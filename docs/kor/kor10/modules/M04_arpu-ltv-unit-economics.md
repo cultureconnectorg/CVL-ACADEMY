@@ -39,12 +39,15 @@ M07) : un auditeur qui reste plus longtemps a un LTV plus élevé, même
 3. Documenter les hypothèses utilisées, jamais présentées comme des
    certitudes.
 
-## Exemple
+## Exemples
 
 Si le taux de rétention estimé en `KOR-09` est de 40% à 3 mois, le LTV
 sur sponsoring serait plus élevé que sur un modèle premium à faible
 conversion — un calcul avec hypothèses explicites, pas un chiffre
-sorti de nulle part.
+sorti de nulle part. À l'inverse, utiliser un taux de rétention
+emprunté à une référence sectorielle externe plutôt que la donnée
+réelle (même limitée) issue de `KOR-09` produirait un calcul plausible
+en apparence mais déconnecté de la situation réelle de *Rasin*.
 
 ## Cas
 
@@ -55,6 +58,9 @@ Le calcul porte sur les données réelles du cas (`case/CASE.md`,
 
 - Présenter un chiffre d'ARPU/LTV sans hypothèses explicites.
 - Ignorer le lien entre rétention et LTV.
+- Utiliser une référence sectorielle externe pour estimer la
+  rétention plutôt que la donnée réelle, même limitée, issue de
+  `KOR-09`.
 
 ## Activité
 

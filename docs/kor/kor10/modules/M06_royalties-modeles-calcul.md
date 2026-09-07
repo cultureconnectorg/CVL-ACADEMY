@@ -41,11 +41,15 @@ juridique.
 3. Provisionner l'incertitude du chant traditionnel dans le modèle
    économique.
 
-## Exemple
+## Exemples
 
 Une réserve de 10% des revenus liés à l'épisode, mise de côté en
 attendant la clarification du statut du chant traditionnel — plutôt que
-de distribuer 100% du revenu en ignorant le risque.
+de distribuer 100% du revenu en ignorant le risque. À l'inverse,
+provisionner une réserve si élevée (par exemple 90%) qu'elle rendrait
+le modèle non viable pour tout le monde reviendrait à sur-réagir à une
+incertitude encore non quantifiée — la provision doit rester
+proportionnée au risque réel, pas maximale par principe.
 
 ## Cas
 
@@ -56,6 +60,8 @@ Le modèle porte sur l'incertitude réelle déjà identifiée dans le cas
 
 - Refaire l'analyse juridique de `KOR-07` au lieu de la citer.
 - Distribuer 100% du revenu en ignorant l'incertitude de droits.
+- Provisionner une réserve si élevée qu'elle rend le modèle non
+  viable, sur-réagissant à une incertitude encore non quantifiée.
 
 ## Activité
 

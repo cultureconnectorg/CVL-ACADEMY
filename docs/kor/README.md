@@ -35,8 +35,8 @@ selon la méthode `AUDIT → CANONICALIZE → FREEZE → BUILD → TEST → VERI
 | `KOR-07` | Droits et licences média | 9 | 9/9 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`→`06` ; `NEEDS_EXPERT_REVIEW = TRUE` en permanence sur tout ce corpus, discipline préservée dans l'approfondissement) |
 | `KOR-08` | Métadonnées et catalogue streaming | 9 | 9/9 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`→`07` ; frontière LabelOS explicite préservée) |
 | `KOR-09` | Développement d'audience diaspora | 11 | 11/11 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`→`08` ; `KORA_PRODUCT_GAP` CRM/A-B testing à grande échelle inchangé) |
-| `KOR-10` | 1 autre angle métier KORA | variable | 100% par formation | `BUILT`, `PARTIAL_PACKAGE` (structure complète par `QUALITY_GATES.md`, contenu de module plus léger que `KOR-01`/`02`/`03`→`09` — approfondissement non encore engagé) |
-| `KOR-11`→`15` | 5 derniers angles métier KORA | variable | 100% par formation | `BUILT`, `DRAFTED` (chaque `REFERENTIAL.md` self-déclare `STATUS = PROPOSED` pour au moins un scénario de cas ; corpus le plus léger de KORA) |
+| `KOR-10` | Modèle économique streaming | 10 | 10/10 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`→`09` ; vigilance CVE et citation Wallet/JCC réelles préservées) |
+| `KOR-11`→`15` | 5 derniers angles métier KORA | variable | 100% par formation | `BUILT`, `DRAFTED` (chaque `REFERENTIAL.md` self-déclare `STATUS = PROPOSED` pour au moins un scénario de cas ; corpus le plus léger de KORA — approfondissement non encore engagé) |
 
 **Rappel** : `BUILT` signifie que le package canonique existe et que
 `QUALITY_GATES.md` de la formation rapporte 100% de couverture
