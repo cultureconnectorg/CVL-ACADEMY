@@ -9,6 +9,7 @@ const FLAG_NAMES = [
   "SPATIAL_DEBUG",
   "LIFECYCLE_RUNTIME",
   "SPATIAL_HUB_ENABLED",
+  "SPATIAL_CAMERA_INTENT",
 ];
 
 describe("featureFlags.js", () => {

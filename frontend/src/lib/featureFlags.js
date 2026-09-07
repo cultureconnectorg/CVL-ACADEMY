@@ -48,6 +48,15 @@ export const FEATURE_FLAGS = Object.freeze({
   get SPATIAL_HUB_ENABLED() {
     return readFlag("SPATIAL_HUB_ENABLED");
   },
+  /** RAIL 4 ("continue les H", 2026-09-07) — gates whether activating a
+   * SpatialHub node plays a real camera-intent flight (INTENT->LOCKING->
+   * FOLLOWING, `lib/spatial/cameraFollow.js`, ported from H0.8) before
+   * navigating, instead of navigating instantly. Same-page scope only —
+   * the full cross-route REVEALING handoff stays NOT_AUTHORIZED (see
+   * cameraFollow.js's own docstring). Off by default. */
+  get SPATIAL_CAMERA_INTENT() {
+    return readFlag("SPATIAL_CAMERA_INTENT");
+  },
 });
 
 /** Test/story-only override — never used by production code, which

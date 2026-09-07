@@ -6,6 +6,7 @@ import { createCadenceTracker } from "@/lib/spatial/cadence";
 import { createSpatialAudio } from "@/lib/spatial/audio";
 import { createHaptics } from "@/lib/spatial/haptics";
 import { useDepthPhysics } from "@/lib/useDepthPhysics";
+import { useCameraIntent } from "@/lib/useCameraIntent";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useI18n } from "@/lib/i18n.jsx";
@@ -54,6 +55,12 @@ import { useI18n } from "@/lib/i18n.jsx";
  * (opacity/saturation/scale) — and, per `useDepthPhysics`'s own
  * contract, still fires FOCUS_LOCK feedback (audio/haptics are not
  * motion) even though the spring itself is skipped.
+ *
+ * RAIL 4 ("continue les H", 2026-09-07) addendum: activation can also
+ * play a real camera-intent flight (`useCameraIntent.js`, ported from
+ * H0.8's camera-follow state machine) before navigating — flag-gated
+ * (`SPATIAL_CAMERA_INTENT`, default off), same-page scope only. See
+ * that hook's own docstring for exactly what's authorized vs. not.
  */
 export default function SpatialHub({ formationNodes, missionNodes }) {
   const navigate = useNavigate();
@@ -106,6 +113,11 @@ export default function SpatialHub({ formationNodes, missionNodes }) {
   if (!hapticsRef.current) {
     hapticsRef.current = createHaptics({ isEnabled: () => FEATURE_FLAGS.SPATIAL_HAPTICS });
   }
+  // RAIL 4 ("continue les H") — real camera-follow primitives
+  // (lib/spatial/cameraFollow.js, ported from H0.8), same-page scope
+  // only. See useCameraIntent.js's own docstring for exactly what is
+  // and isn't authorized.
+  const cameraIntent = useCameraIntent();
 
   // Roving tabindex: the keyboard handler lives on each real, already-
   // interactive `<button>` (never on the non-interactive wrapper), and
@@ -142,13 +154,18 @@ export default function SpatialHub({ formationNodes, missionNodes }) {
         // Still real navigation — the destination page explains the lock;
         // this rail never fabricates a different behavior than the rest
         // of the app already has for a locked/ineligible destination.
-      } else {
-        audioRef.current.play("CONFIRM");
-        hapticsRef.current.fire("CONFIRM");
+        item.onActivate();
+        return;
       }
-      item.onActivate();
+      audioRef.current.play("CONFIRM");
+      hapticsRef.current.fire("CONFIRM");
+      if (FEATURE_FLAGS.SPATIAL_CAMERA_INTENT) {
+        cameraIntent.fly(nodeRefs.current[item.key], item.onActivate);
+      } else {
+        item.onActivate();
+      }
     },
-    []
+    [cameraIntent]
   );
 
   if (items.length === 0) return null;
