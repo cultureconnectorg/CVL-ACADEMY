@@ -111,3 +111,14 @@ async def ensure_indexes() -> None:
     await db.fms_resource_provenance.create_index(
         [("formation_code", 1), ("resource_type", 1)]
     )
+
+    # ACA-0007/ACA-0008 — Physical/hybrid delivery (physical_delivery.py).
+    await db.physical_sessions.create_index(
+        [("formation_code", 1), ("starts_at", 1)]
+    )
+    await db.physical_sessions.create_index("status")
+    await db.physical_enrollments.create_index(
+        [("session_id", 1), ("user_id", 1)]
+    )
+    await db.physical_enrollments.create_index([("user_id", 1), ("status", 1)])
+    await db.physical_attendance.create_index([("session_id", 1), ("user_id", 1)])

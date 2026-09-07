@@ -93,11 +93,18 @@ class DeliveryArchitecture(BaseModel):
 
 
 def derive_delivery_architecture(
-    formation_code: str, contexts: List[str]
+    formation_code: str, contexts: List[str], physical_available: bool = False
 ) -> DeliveryArchitecture:
     """Pure — the Founder's rule, applied mechanically to a real
     `contexts` list. No formation-specific judgment is made here; the
-    same rule applies identically to every formation, canonical or not."""
+    same rule applies identically to every formation, canonical or not.
+
+    `physical_available`: the one input this function still takes from a
+    caller rather than deriving itself — whether `physical_delivery.py`
+    (ACA-0007) found a real, future, capacity-remaining
+    `TrainingSession` for this formation. Defaults to `False` so this
+    function's own behavior is unchanged for any caller that doesn't
+    pass it (`ELIGIBLE_PENDING_OFFER`, exactly as before)."""
     modes: List[DeliveryModeEntry] = []
     if "INTERNAL" in contexts:
         modes.append(
@@ -109,7 +116,9 @@ def derive_delivery_architecture(
         )
         modes.append(
             DeliveryModeEntry(
-                mode="PHYSICAL", channel="EXTERNAL", status="ELIGIBLE_PENDING_OFFER"
+                mode="PHYSICAL",
+                channel="EXTERNAL",
+                status="AVAILABLE" if physical_available else "ELIGIBLE_PENDING_OFFER",
             )
         )
     return DeliveryArchitecture(
@@ -125,10 +134,18 @@ async def get_delivery_architecture(
 ) -> Optional[DeliveryArchitecture]:
     """The one read of `db.formations` in this package — read-only,
     `contexts` field only. Returns `None` if the formation doesn't exist
-    — never a fabricated default."""
+    — never a fabricated default. Also checks `physical_delivery.py`
+    (ACA-0007) for a real bookable session — the only way PHYSICAL ever
+    reads `AVAILABLE` instead of `ELIGIBLE_PENDING_OFFER`."""
     doc = await db.formations.find_one(
         {"code": formation_code}, {"_id": 0, "contexts": 1}
     )
     if not doc:
         return None
-    return derive_delivery_architecture(formation_code, doc.get("contexts", []))
+    from physical_delivery import has_bookable_session  # local import: avoids a
+    # module-load-order cycle (physical_delivery imports db, not this module).
+
+    physical_available = await has_bookable_session(formation_code)
+    return derive_delivery_architecture(
+        formation_code, doc.get("contexts", []), physical_available=physical_available
+    )

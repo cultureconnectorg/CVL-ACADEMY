@@ -14,7 +14,8 @@ from fastapi import APIRouter
 from . import (assistants, auth, badges, canonical, certification, fms,
                fms_lineage, formations, health, integrations, klt_canonical,
                kor_canonical, learning, mentor, missions, onboarding, orgs,
-               progression, quizzes, qualification, skills, templates, wallet)
+               physical_sessions, progression, quizzes, qualification,
+               skills, templates, wallet)
 
 router = APIRouter(prefix="/api")
 
@@ -38,6 +39,7 @@ for module in (
     skills,
     certification,
     qualification,
+    physical_sessions,
     templates,
     assistants,
     wallet,

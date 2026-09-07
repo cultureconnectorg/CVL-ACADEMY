@@ -34,6 +34,7 @@ import fms_canonical.provenance as provenance_module
 import fms_canonical.read_model as read_model_module
 import fms_import.importer as fms_importer_module
 import fms_import.indexer as fms_indexer_module
+import physical_delivery as physical_delivery_module
 from fms_canonical.delivery_architecture import (
     derive_delivery_architecture,
     get_delivery_architecture,
@@ -164,6 +165,7 @@ async def canon_db(monkeypatch):
         read_model_module,
         progress_module,
         delivery_architecture_module,
+        physical_delivery_module,
     ):
         monkeypatch.setattr(module, "db", mock_db)
     return mock_db
