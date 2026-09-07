@@ -38,11 +38,15 @@ inexistant.
 2. Identifier les canaux organiques réalistes à chaque étape.
 3. Prioriser un canal principal par persona.
 
-## Exemple
+## Exemples
 
 Pour le persona "2e génération" : découverte via réseaux sociaux
 partagés par le collectif, premier épisode via un post ciblé, retour
-via abonnement au flux — un funnel entièrement organique.
+via abonnement au flux — un funnel entièrement organique. À l'inverse,
+glisser une étape supposant un léger budget publicitaire
+(« sponsoriser le post ciblé ») dans un funnel par ailleurs présenté
+comme organique romprait discrètement la contrainte posée, sans
+l'assumer explicitement.
 
 ## Cas
 
@@ -52,6 +56,8 @@ Le funnel porte sur les personas réels du cas (`case/CASE.md`).
 
 - Construire un funnel qui suppose un budget publicitaire inexistant.
 - Ignorer les personas de M02 dans la construction du funnel.
+- Glisser une étape supposant un budget publicitaire, même léger,
+  dans un funnel par ailleurs présenté comme entièrement organique.
 
 ## Activité
 

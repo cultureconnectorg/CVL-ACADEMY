@@ -38,11 +38,15 @@ pas seulement annoncer une publication.
    intenable).
 3. Créer un contenu qui invite explicitement à l'échange.
 
-## Exemple
+## Exemples
 
 Une question hebdomadaire ("Quel objet de famille raconte votre
 histoire ?") invite à l'échange, contrairement à une simple annonce
-"nouvel épisode disponible".
+"nouvel épisode disponible". À l'inverse, poser une question trop
+générale ("Que pensez-vous de cet épisode ?") produirait le même
+silence qu'une simple annonce, malgré la bonne intention — inviter à
+l'échange suppose une question suffisamment spécifique pour donner
+envie de répondre.
 
 ## Cas
 
@@ -52,6 +56,9 @@ Le plan porte sur la communauté réelle du cas (`case/CASE.md`).
 
 - Tenter d'animer tous les canaux à la fois, épuisant Marc-Andy.
 - Publier uniquement des annonces sans inviter à l'échange.
+- Poser une question trop générale pour susciter une vraie réponse,
+  produisant le même silence qu'une simple annonce malgré la bonne
+  intention.
 
 ## Activité
 

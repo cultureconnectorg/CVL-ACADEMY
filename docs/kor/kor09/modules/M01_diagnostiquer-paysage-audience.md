@@ -39,11 +39,14 @@ dilue l'effort au lieu de le concentrer.
    pertinents.
 3. Formuler un diagnostic priorisé, pas une liste exhaustive.
 
-## Exemple
+## Exemples
 
 L'audience de *Dyaspora FM* est déjà connue (diaspora nord-américaine
 principalement) — le diagnostic peut identifier l'Europe comme zone
-sous-exploitée plutôt que de viser "le monde entier".
+sous-exploitée plutôt que de viser "le monde entier". À l'inverse,
+supposer que l'audience nord-américaine déjà connue représente
+l'essentiel du potentiel réel négligerait des canaux caribéens jamais
+testés, faute d'avoir cherché au-delà de ce qui est déjà observé.
 
 ## Cas
 
@@ -53,6 +56,8 @@ Le diagnostic porte sur l'audience réelle du cas (`case/CASE.md`).
 
 - Viser une audience générale ("tout le monde") sans priorisation.
 - Ignorer les données déjà disponibles via *Dyaspora FM*.
+- Supposer que l'audience déjà connue représente l'essentiel du
+  potentiel réel, sans chercher au-delà de ce qui est déjà observé.
 
 ## Activité
 

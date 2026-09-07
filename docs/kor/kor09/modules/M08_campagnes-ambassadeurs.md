@@ -38,11 +38,15 @@ soutenable dans la durée.
    (partage, retour, témoignage).
 3. Prévoir une reconnaissance non financière (mention, accès anticipé).
 
-## Exemple
+## Exemples
 
 Une campagne "Partagez votre objet de famille" où les ambassadeurs
 partagent leur propre histoire en écho à *Rasin*, avec mention publique
-de leur contribution.
+de leur contribution. À l'inverse, choisir comme ambassadeurs les
+auditeurs les plus visibles sur les réseaux sociaux, sans vérifier
+leur lien réel avec le contenu, risquerait de mobiliser une visibilité
+sans authenticité — l'engagement réel (données CRM) doit primer sur la
+seule visibilité.
 
 ## Cas
 
@@ -53,6 +57,8 @@ CASE.md`).
 
 - Solliciter des ambassadeurs sans leur offrir de reconnaissance.
 - Choisir des ambassadeurs peu engagés, sans lien réel avec *Rasin*.
+- Choisir des ambassadeurs sur leur seule visibilité sur les réseaux
+  sociaux, sans vérifier leur engagement réel envers le contenu.
 
 ## Activité
 

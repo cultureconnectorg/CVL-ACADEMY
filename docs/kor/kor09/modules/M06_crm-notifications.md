@@ -38,11 +38,14 @@ pas d'une solution à fabriquer ici.
    sans interaction).
 3. Documenter explicitement la limite d'échelle de cette méthode.
 
-## Exemple
+## Exemples
 
 Un tableur avec colonnes (nom, canal, dernière interaction, statut
 activé/non activé) suffit pour quelques centaines de contacts — au-delà
-de mille, une vraie solution serait nécessaire.
+de mille, une vraie solution serait nécessaire. À l'inverse, définir
+une règle de relance précise mais ne jamais l'appliquer réellement
+rendrait le CRM inutile malgré son apparence structurée — un CRM tenu
+sur le papier sans relance effective ne vaut pas mieux qu'aucun suivi.
 
 ## Cas
 
@@ -52,6 +55,8 @@ Le CRM porte sur les contacts réels du cas (`case/CASE.md`).
 
 - Ne tenir aucun suivi, rendant impossible toute relance ciblée.
 - Prétendre qu'un tableur tiendrait à n'importe quelle échelle.
+- Définir une règle de relance précise sans jamais l'appliquer
+  réellement, rendant le CRM inutile malgré son apparence structurée.
 
 ## Activité
 

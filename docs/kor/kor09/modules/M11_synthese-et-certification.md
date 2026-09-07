@@ -39,6 +39,8 @@ CASE.md`).
 
 - Présenter les livrables sans les relier entre eux.
 - Minimiser l'arbitrage acquisition/rétention dans la défense.
+- Formuler un bilan réflexif qui n'admette aucune difficulté réelle
+  rencontrée dans le développement d'audience.
 
 ## Activité
 

@@ -38,11 +38,15 @@ fidèlement, y compris un résultat négatif ou nul.
 2. Mesurer avec les moyens disponibles (CRM de M06).
 3. Rapporter le résultat honnêtement, y compris s'il est décevant.
 
-## Exemple
+## Exemples
 
 Comparer le taux d'activation avant/après un changement de rythme de
 publication — si le résultat est neutre ou négatif, le rapporter
-tel quel plutôt que de l'enjoliver.
+tel quel plutôt que de l'enjoliver. À l'inverse, changer simultanément
+le rythme de publication et le canal d'animation rendrait impossible
+d'attribuer un résultat observé à l'un ou l'autre changement — une
+comparaison avant/après doit isoler une seule variable à la fois pour
+rester interprétable.
 
 ## Cas
 
@@ -53,6 +57,9 @@ L'expérimentation porte sur une action réelle du cas (`case/CASE.md`).
 - Prétendre à un A/B testing rigoureux sans outil pour le mener
   réellement.
 - Enjoliver un résultat décevant dans le rapport.
+- Changer plusieurs variables à la fois dans une comparaison
+  avant/après, rendant impossible d'attribuer le résultat observé à
+  l'une ou l'autre.
 
 ## Activité
 

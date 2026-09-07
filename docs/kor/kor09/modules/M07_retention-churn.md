@@ -39,11 +39,15 @@ l'acquisition.
 3. Convaincre Marc-Andy avec des arguments concrets, pas seulement une
    affirmation de principe.
 
-## Exemple
+## Exemples
 
 Argument concret : « Sur 50 contacts, 30 n'ont plus interagi depuis 2
 mois — acquérir 50 nouveaux contacts sans traiter ce churn reviendrait
-à recommencer le même cycle. »
+à recommencer le même cycle. » À l'inverse, citer une statistique
+générique sur le churn observée ailleurs (« les études montrent
+que... ») plutôt que la donnée réelle du CRM de M06 affaiblirait
+l'argumentaire — la preuve doit venir des données propres à *Rasin*,
+pas d'une généralité externe.
 
 ## Cas
 
@@ -55,6 +59,9 @@ L'analyse porte sur le churn réel observable dans le CRM du cas
 - Affirmer l'importance de la rétention sans preuve concrète tirée du
   CRM.
 - Ignorer le churn par optimisme non fondé.
+- Citer une statistique générique sur le churn plutôt que la donnée
+  réelle du CRM, affaiblissant un argumentaire qui devrait s'appuyer
+  sur les faits propres à *Rasin*.
 
 ## Activité
 

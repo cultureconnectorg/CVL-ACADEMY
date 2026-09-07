@@ -40,11 +40,15 @@ au-delà des moyens réels de Marc-Andy est le vrai défi.
 2. Identifier les contraintes de fuseaux horaires pour la publication.
 3. Proposer des adaptations simples, pas une multiplication du travail.
 
-## Exemple
+## Exemples
 
 Publier un message à un horaire qui convient à la fois à la Caraïbe et
 à l'Europe (compromis, comme déjà pratiqué en `KOR-06`/M08 pour la
-maintenance) plutôt que de multiplier les horaires de publication.
+maintenance) plutôt que de multiplier les horaires de publication. À
+l'inverse, appliquer une seule adaptation générique « pour la
+diaspora » à tous les personas de M02 sans distinction ignorerait que
+chaque persona a des canaux de confiance différents — l'adaptation
+doit rester spécifique par persona, pas uniforme.
 
 ## Cas
 
@@ -55,6 +59,9 @@ L'analyse porte sur la dispersion réelle du cas (`case/CASE.md`).
 - Traiter l'audience diaspora comme un bloc homogène.
 - Démultiplier le travail de Marc-Andy au point de le rendre
   intenable.
+- Appliquer une seule adaptation générique à toute l'audience
+  diaspora sans distinction par persona, alors que chacun a des
+  canaux de confiance différents.
 
 ## Activité
 

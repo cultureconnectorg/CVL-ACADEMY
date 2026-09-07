@@ -37,12 +37,16 @@ communication différente.
 2. Construire un persona par segment, basé sur des données observées.
 3. Vérifier que chaque persona justifie une approche distincte.
 
-## Exemple
+## Exemples
 
 Persona 1 : "Diaspora 2e génération, 25-40 ans, consomme via réseaux
 sociaux" ; Persona 2 : "Diaspora 1re génération, 50+, consomme via
 radio/WhatsApp familial" — deux approches de communication très
-différentes.
+différentes. À l'inverse, définir deux personas dont les comportements
+de consommation se recoupent presque entièrement ferait perdre
+l'intérêt de la segmentation — un persona doit se distinguer
+suffisamment d'un autre pour justifier une approche réellement
+différente, pas seulement porter un nom différent.
 
 ## Cas
 
@@ -53,6 +57,9 @@ Les personas portent sur l'audience réelle du cas (`case/CASE.md`).
 - Construire des personas génériques sans lien avec des données
   observées.
 - Créer trop de personas, diluant la priorisation déjà établie en M01.
+- Définir des personas dont les comportements se recoupent presque
+  entièrement, perdant l'intérêt de la segmentation malgré des noms
+  différents.
 
 ## Activité
 

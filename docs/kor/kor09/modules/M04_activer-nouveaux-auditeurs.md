@@ -36,10 +36,14 @@ précisément permet ensuite de le mesurer honnêtement.
    cette activation.
 3. Proposer une action simple pour améliorer l'activation.
 
-## Exemple
+## Exemples
 
 Critère d'activation : "écoute d'un deuxième épisode dans les 2
 semaines" — plus utile que "a cliqué sur le lien" (simple découverte).
+À l'inverse, définir l'activation comme « application installée »
+mesurerait un geste technique sans rapport avec un engagement réel
+envers le contenu — un seuil d'activation doit refléter un
+comportement d'écoute réel, pas une action annexe facile à obtenir.
 
 ## Cas
 
@@ -49,6 +53,8 @@ Le plan porte sur *Rasin* réellement (`case/CASE.md`).
 
 - Confondre découverte et activation.
 - Définir un critère d'activation si vague qu'il ne peut être mesuré.
+- Définir l'activation par un geste technique facile à obtenir
+  (installation, clic) plutôt que par un comportement d'écoute réel.
 
 ## Activité
 
