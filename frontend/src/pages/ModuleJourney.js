@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   CheckCircle, Circle, Lock, ArrowRight, PlaySolid,
@@ -11,6 +11,9 @@ import { toast } from "sonner";
 import BackButton from "@/components/BackButton";
 import { JourneyPhaseShell } from "@/lib/JourneyHierarchy";
 import { ContextFrame, useContextEntry } from "@/lib/ContextFrame";
+import { createSpatialAudio } from "@/lib/spatial/audio";
+import { createHaptics } from "@/lib/spatial/haptics";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 
 const PHASE_KEYS = [
   { key: "hook",          labelKey: "phase_hook",         icon: Sparks },
@@ -33,6 +36,17 @@ export default function ModuleJourney() {
   const [quiz, setQuiz] = useState(null);
   const [answers, setAnswers] = useState({});
   const [quizResult, setQuizResult] = useState(null);
+
+  // RAIL 5 — real CONFIRM audio+haptics on a genuinely completed action
+  // (quiz passed, mini-mission committed), gated with the same flag as
+  // the rest of ModuleJourney's real-engine wiring.
+  const audioRef = useRef(null);
+  if (!audioRef.current) audioRef.current = createSpatialAudio();
+  audioRef.current.setEnabled(FEATURE_FLAGS.SPATIAL_MODULE_DEPTH && FEATURE_FLAGS.SPATIAL_AUDIO);
+  const hapticsRef = useRef(null);
+  if (!hapticsRef.current) {
+    hapticsRef.current = createHaptics({ isEnabled: () => FEATURE_FLAGS.SPATIAL_MODULE_DEPTH && FEATURE_FLAGS.SPATIAL_HAPTICS });
+  }
 
   const PHASE_META = PHASE_KEYS.map((p) => ({ ...p, label: t(`module_journey.${p.labelKey}`) }));
 
@@ -86,6 +100,8 @@ export default function ModuleJourney() {
       setQuizResult(data);
       if (data.passed) {
         toast.success(`+${data.cc_earned} CC · signal ${data.signal_emitted}`);
+        audioRef.current.play("CONFIRM");
+        hapticsRef.current.fire("CONFIRM");
         await refreshMe();
         await load();
         setOpenPhase("mini_mission");
@@ -101,6 +117,8 @@ export default function ModuleJourney() {
     try {
       await api.post(`/modules/${fc}/${mc}/mini-mission/commit`);
       toast.success(t("module_journey.module_validated_toast"));
+      audioRef.current.play("CONFIRM");
+      hapticsRef.current.fire("CONFIRM");
       await refreshMe();
       await load();
     } catch (e) {
@@ -185,12 +203,25 @@ export default function ModuleJourney() {
           const isOpen = openPhase === p.key;
           const prev = idx === 0 ? true : phase_flags[PHASE_META[idx - 1].key];
           const canOpen = done || prev;
+          // RAIL 5: the real "current" reference for physics-driven depth
+          // — the open phase if one is expanded, else the frontier (the
+          // first reachable-but-not-done phase, same real signal the
+          // toggle button's own disabled={!canOpen} already reads), else
+          // the very first phase. Not a new source of truth: openPhase/
+          // phase_flags are exactly what this loop already computes above.
+          const openIdx = PHASE_META.findIndex((m) => m.key === openPhase);
+          const frontierIdx = PHASE_META.findIndex((m, i) => {
+            const d = phase_flags[m.key];
+            const prevDone = i === 0 ? true : phase_flags[PHASE_META[i - 1].key];
+            return !d && prevDone;
+          });
+          const currentIdx = openIdx !== -1 ? openIdx : frontierIdx !== -1 ? frontierIdx : 0;
           return (
             // CURRENT -> FOREGROUND, ACQUIRED -> BEHIND_BUT_ACCESSIBLE,
             // NEXT -> HORIZON, LOCKED -> DISTANT_SUBDUED. Purely visual:
             // isOpen/done/canOpen are exactly what this loop already
             // computed above — no new rule, no new data.
-            <JourneyPhaseShell key={p.key} isOpen={isOpen} done={done} canOpen={canOpen}>
+            <JourneyPhaseShell key={p.key} isOpen={isOpen} done={done} canOpen={canOpen} idx={idx} currentIdx={currentIdx}>
               <div
                 data-testid={`phase-${p.key}`}
                 className={`cvln-card overflow-hidden transition ${isOpen ? "ring-2 ring-[--cvln-orange]/40" : ""}`}

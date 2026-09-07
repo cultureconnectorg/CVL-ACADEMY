@@ -57,6 +57,19 @@ export const FEATURE_FLAGS = Object.freeze({
   get SPATIAL_CAMERA_INTENT() {
     return readFlag("SPATIAL_CAMERA_INTENT");
   },
+  /** RAIL 5 (2026-09-07) — correcting a wrong assumption from Rail 3's
+   * own SpatialHub docstring, which claimed CONTEXT_OPEN/CONTEXT_CLOSE/
+   * ENTER_DEPTH/RETURN_DEPTH "belong to route-level transitions" — they
+   * don't: `lib/ContextFrame.jsx` (W3-B) is a same-page dock system,
+   * never a route change. This flag gates: (a) ModuleJourney's phase
+   * hierarchy (`JourneyHierarchy.jsx`) rendering through the real
+   * physics/attention engine instead of a static 4-bucket variant
+   * table, and (b) ContextFrame/quiz-submit/mini-mission-commit firing
+   * real CONTEXT_OPEN/CONTEXT_CLOSE/CONFIRM audio+haptics. Off by
+   * default. See docs/ACADEMY_RAIL5_MODULE_JOURNEY_ENGINE_REPORT.md. */
+  get SPATIAL_MODULE_DEPTH() {
+    return readFlag("SPATIAL_MODULE_DEPTH");
+  },
 });
 
 /** Test/story-only override — never used by production code, which

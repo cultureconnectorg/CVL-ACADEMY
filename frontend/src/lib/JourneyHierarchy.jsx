@@ -33,6 +33,9 @@
 import { motion } from "framer-motion";
 import { MOTION_EASING, motionDuration } from "@/lib/motion-tokens";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { useDepthPhysics } from "@/lib/useDepthPhysics";
+import { computeDepthStyle } from "@/lib/spatial/attention";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 
 export const JOURNEY_ROLES = Object.freeze({
   CURRENT: "current",
@@ -86,12 +89,37 @@ const DURATION_KEY_BY_ROLE = Object.freeze({
  * Wraps one phase card. `isOpen`/`done`/`canOpen` are exactly the values
  * ModuleJourney.js already computes per phase in its `.map()` — nothing
  * new is derived from module content or progress here.
+ *
+ * RAIL 5 (2026-09-07): `idx`/`currentIdx` (also already computed by
+ * ModuleJourney.js's own `.map()` — the phase's position and the open
+ * phase's position) let this component, when `SPATIAL_MODULE_DEPTH` is
+ * on, render through the same real physics/attention engine as
+ * Dashboard/Roadmap (`useDepthPhysics`/`spatial/attention.js`, both
+ * unmodified) instead of the static 4-bucket `JOURNEY_VARIANTS` table
+ * above — real distance, real spring, not a renamed lookup. `role` (and
+ * `deriveJourneyRole`) stay exactly as before either way: they're still
+ * what decides *which* distance a phase gets (LOCKED phases read
+ * farther than their raw index gap, matching the doctrine's "real,
+ * disclosed reason to be farther" — never arbitrary), and still drive
+ * `data-journey-role` for existing tests/selectors. Unlike `SpatialHub`,
+ * `aria-hidden` is deliberately never applied here: a module's phase
+ * list is a real sequential structure a learner needs to know the
+ * shape of, not a rail where "more exists off to the side" is implicit
+ * — every phase stays screen-reader-visible regardless of depth.
  */
-export function JourneyPhaseShell({ isOpen, done, canOpen, children, className }) {
+export function JourneyPhaseShell({ isOpen, done, canOpen, idx, currentIdx, children, className }) {
   const reduced = useReducedMotion();
   const role = deriveJourneyRole({ isOpen, done, canOpen });
-  const duration = motionDuration(DURATION_KEY_BY_ROLE[role], reduced) / 1000;
 
+  if (FEATURE_FLAGS.SPATIAL_MODULE_DEPTH && typeof idx === "number" && typeof currentIdx === "number") {
+    return (
+      <PhysicsPhaseShell role={role} idx={idx} currentIdx={currentIdx} reduced={reduced} className={className}>
+        {children}
+      </PhysicsPhaseShell>
+    );
+  }
+
+  const duration = motionDuration(DURATION_KEY_BY_ROLE[role], reduced) / 1000;
   return (
     <motion.div
       className={className}
@@ -101,5 +129,26 @@ export function JourneyPhaseShell({ isOpen, done, canOpen, children, className }
     >
       {children}
     </motion.div>
+  );
+}
+
+function PhysicsPhaseShell({ role, idx, currentIdx, reduced, children, className }) {
+  const rawDistance = idx - currentIdx;
+  // LOCKED always reads farther than its raw index gap alone would say —
+  // a real, disclosed reason (not yet reachable), never an arbitrary bump.
+  const targetDistance = role === JOURNEY_ROLES.LOCKED ? Math.max(rawDistance, 2) : rawDistance;
+  const distance = useDepthPhysics(targetDistance, { reduced });
+  const depth = computeDepthStyle(distance, { mobile: false });
+  const style = reduced
+    ? { opacity: depth.opacity, transform: `scale(${Math.max(depth.scale, 0.94)})` }
+    : {
+        opacity: depth.opacity,
+        filter: `saturate(${depth.saturate}) contrast(${depth.contrast}) brightness(${depth.brightness})`,
+        transform: `translateY(${depth.translateY * 0.3}px) translateZ(${depth.translateZ}px) scale(${depth.scale})`,
+      };
+  return (
+    <div className={className} style={style} data-journey-role={role} data-tier={depth.tier}>
+      {children}
+    </div>
   );
 }
