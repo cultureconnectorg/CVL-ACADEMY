@@ -4,6 +4,9 @@ import { ArrowRight, Coins, Medal1st, GraduationCap, Sparks } from "iconoir-reac
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
+import { usePedagogicalGraph } from "@/lib/usePedagogicalGraph";
+import SpatialHub from "@/components/SpatialHub";
 
 const STADE_EMOJI = {
   graine: "🌱", pousse: "🌿", racine: "🌳",
@@ -38,6 +41,13 @@ export default function Dashboard() {
   const cc = user?.cc_credits ?? 0;
   const progressPct = prof?.stade_progress_pct ?? 0;
 
+  // RAIL 3 — additive, flag-gated (default off = today's behavior
+  // byte-for-byte). Own fetch, not a replacement of the effect above:
+  // this hook reads the real pedagogical graph (learning-path/missions/
+  // badges/skills/qualifications) and never recomputes any of the
+  // numbers already rendered above (`summary`, `path`, `badges`).
+  const { graph } = usePedagogicalGraph({ enabled: FEATURE_FLAGS.SPATIAL_HUB_ENABLED });
+
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="dashboard-page">
       {/* Hero */}
@@ -66,8 +76,15 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Next Action banner — LX v2 "you are here" */}
-      {path?.next_action && (
+      {/* RAIL 3 — Spatial Hub: the real pedagogical graph, rendered as
+          a distance-ordered rail (`lib/spatial/attention.js`, unmodified
+          formulas). Replaces the static Next Action banner only while
+          the flag is on — doctrine forbids two competing "where do I go
+          next" surfaces at once. */}
+      {FEATURE_FLAGS.SPATIAL_HUB_ENABLED ? (
+        <SpatialHub formationNodes={graph.formationNodes} missionNodes={graph.missionNodes} />
+      ) : (
+        path?.next_action && (
         <div className="mb-10 cvln-card p-6 relative overflow-hidden" data-testid="next-action-card">
           <div className="absolute inset-y-0 left-0 w-1.5" style={{ background: path.next_action.pole_color }} />
           <div className="flex flex-wrap items-center gap-6">
@@ -92,6 +109,7 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
+        )
       )}
 
       {/* North star + KPI bento */}

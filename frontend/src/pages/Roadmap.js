@@ -1,6 +1,10 @@
+import { motion } from "framer-motion";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { FocusFieldItem } from "@/lib/CvlnFocusField";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
+import { computeDepthStyle } from "@/lib/spatial/attention";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 const STAGE_CODES = ["graine", "pousse", "racine", "branches", "arbre", "foret"];
 const STAGE_EMOJI = { graine: "🌱", pousse: "🌿", racine: "🌳", branches: "🌲", arbre: "🦅", foret: "🌳🌳" };
@@ -10,9 +14,31 @@ const STAGE_SIGNAL = {
   branches: "FREK-LINK", arbre: "FREK-CERT", foret: "FREK-CONTRIB",
 };
 
+/** Shared card body — identical markup whichever wrapper (FocusFieldItem
+ * or the RAIL 3 continuous-depth motion.div) renders it, so the two
+ * treatments can never drift in content, only in motion. */
+function StageCardBody({ s, done, active, t }) {
+  return (
+    <>
+      <div className="text-6xl mb-4">{s.emoji}</div>
+      <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">
+        {s.cc}+ CC
+      </div>
+      <h3 className="font-display font-bold text-2xl tracking-tight mt-2">{t(`stades.${s.code}`)}</h3>
+      <p className="text-sm text-[--cvln-ink-2] mt-3">{s.desc}</p>
+      <div className="mt-auto pt-6">
+        <div className="mono text-xs text-[--cvln-orange] font-semibold">{s.signal}</div>
+        {done && <div className="text-xs mt-2 text-[--cvln-forest] font-bold">✓ {t("roadmap_p.crossed")}</div>}
+        {active && <div className="text-xs mt-2 text-[--cvln-orange] font-bold">{t("roadmap_p.you_are_here")}</div>}
+      </div>
+    </>
+  );
+}
+
 export default function Roadmap() {
   const { user } = useAuth();
   const { t } = useI18n();
+  const reduced = useReducedMotion();
   const currentIdx = STAGE_CODES.indexOf(user?.stade);
 
   const STAGES = STAGE_CODES.map((code) => ({
@@ -39,6 +65,39 @@ export default function Roadmap() {
         {STAGES.map((s, i) => {
           const active = i === currentIdx;
           const done = i < currentIdx;
+
+          // RAIL 3 (flag-gated): the stage rail's own real distance —
+          // `i - currentIdx`, driven by `user.stade`, the same real field
+          // FocusFieldItem's binary target/secondary already reads via
+          // `currentStageCode`. Continuous, never a second progression
+          // source: `currentIdx` is the one real signal both branches use.
+          if (FEATURE_FLAGS.SPATIAL_HUB_ENABLED) {
+            const distance = currentIdx === -1 ? 0 : i - currentIdx;
+            const depth = computeDepthStyle(distance);
+            const style = reduced
+              ? { opacity: depth.opacity, transform: `scale(${Math.max(depth.scale, 0.94)})` }
+              : {
+                  opacity: depth.opacity,
+                  filter: `saturate(${depth.saturate}) contrast(${depth.contrast})`,
+                  transform: `translateY(${depth.translateY}px) translateZ(${depth.translateZ}px) scale(${depth.scale})`,
+                };
+            return (
+              <motion.div
+                key={s.code}
+                data-testid={`stage-${s.code}`}
+                data-tier={depth.tier}
+                aria-current={active ? "true" : undefined}
+                animate={style}
+                transition={{ duration: reduced ? 0.15 : 0.45, ease: [0.22, 1, 0.36, 1] }}
+                style={{ zIndex: depth.zIndex }}
+                className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col
+                  ${active ? "border-2 border-[--cvln-orange]" : ""}`}
+              >
+                <StageCardBody s={s} done={done} active={active} t={t} />
+              </motion.div>
+            );
+          }
+
           return (
             <FocusFieldItem
               key={s.code}
@@ -48,17 +107,7 @@ export default function Roadmap() {
               className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col
                 ${active ? "border-2 border-[--cvln-orange]" : ""}`}
             >
-              <div className="text-6xl mb-4">{s.emoji}</div>
-              <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">
-                {s.cc}+ CC
-              </div>
-              <h3 className="font-display font-bold text-2xl tracking-tight mt-2">{t(`stades.${s.code}`)}</h3>
-              <p className="text-sm text-[--cvln-ink-2] mt-3">{s.desc}</p>
-              <div className="mt-auto pt-6">
-                <div className="mono text-xs text-[--cvln-orange] font-semibold">{s.signal}</div>
-                {done && <div className="text-xs mt-2 text-[--cvln-forest] font-bold">✓ {t("roadmap_p.crossed")}</div>}
-                {active && <div className="text-xs mt-2 text-[--cvln-orange] font-bold">{t("roadmap_p.you_are_here")}</div>}
-              </div>
+              <StageCardBody s={s} done={done} active={active} t={t} />
             </FocusFieldItem>
           );
         })}

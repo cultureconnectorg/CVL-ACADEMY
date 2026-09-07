@@ -8,6 +8,7 @@ const FLAG_NAMES = [
   "SPATIAL_HAPTICS",
   "SPATIAL_DEBUG",
   "LIFECYCLE_RUNTIME",
+  "SPATIAL_HUB_ENABLED",
 ];
 
 describe("featureFlags.js", () => {

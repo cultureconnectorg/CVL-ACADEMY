@@ -7,6 +7,7 @@ import {
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import MentorPanel from "@/components/MentorPanel";
+import AcademyBackdrop from "@/components/AcademyBackdrop";
 import { isPedagogicalContext } from "@/lib/mentorPresence";
 
 const STUDENT_NAV = [
@@ -41,9 +42,10 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen flex" data-testid="app-layout">
+      <AcademyBackdrop />
       {/* Sidebar */}
       <aside
-        className="hidden md:flex flex-col w-64 shrink-0 px-6 py-8 border-r border-black/5 bg-white sticky top-0 h-screen"
+        className="hidden md:flex flex-col w-64 shrink-0 px-6 py-8 border-r border-black/5 bg-white sticky top-0 h-screen relative z-10"
         data-testid="sidebar"
       >
         <div className="flex items-center gap-2 mb-10">
@@ -106,7 +108,7 @@ export default function Layout({ children }) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0">
+      <main className="flex-1 min-w-0 relative z-10">
         {/* Mobile header */}
         <div className="md:hidden flex items-center justify-between px-5 py-4 border-b border-black/5 bg-white sticky top-0 z-30">
           <div className="font-display font-black tracking-tight">

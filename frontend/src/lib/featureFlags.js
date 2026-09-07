@@ -39,6 +39,15 @@ export const FEATURE_FLAGS = Object.freeze({
   get LIFECYCLE_RUNTIME() {
     return readFlag("LIFECYCLE_RUNTIME");
   },
+  /** RAIL 3 ("Finir Spatial Learning", 2026-09-07) — gates whether
+   * Dashboard/Roadmap render their attention-tier layout driven by the
+   * real pedagogical graph (`lib/pedagogicalGraph.js`) instead of
+   * today's static bento grid / index-based stage rail. Off by default,
+   * same discipline as every other flag here: a fresh deploy is exactly
+   * today's production behavior until deliberately turned on. */
+  get SPATIAL_HUB_ENABLED() {
+    return readFlag("SPATIAL_HUB_ENABLED");
+  },
 });
 
 /** Test/story-only override — never used by production code, which
