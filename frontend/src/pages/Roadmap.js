@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { FocusFieldItem } from "@/lib/CvlnFocusField";
@@ -75,6 +77,17 @@ export default function Roadmap() {
   const { t } = useI18n();
   const reduced = useReducedMotion();
   const currentIdx = STAGE_CODES.indexOf(user?.stade);
+  const [canonical, setCanonical] = useState(null);
+
+  // GLOBAL_PROGRESS (reconciliation 2026-09-07): canonical_progress ->
+  // learning-path -> FREK profile -> Spatial. Same `/progression/summary`
+  // convergence data Dashboard.js already renders — this stage rail is
+  // the legacy GRAINE..FORÊT stade visualization (CC-credits-driven,
+  // untouched), so canonical content viewed is shown as its own
+  // honestly-labeled card below the rail, never blended into a stage.
+  useEffect(() => {
+    api.get("/progression/summary").then((r) => setCanonical(r.data.canonical));
+  }, []);
 
   const STAGES = STAGE_CODES.map((code) => ({
     code, emoji: STAGE_EMOJI[code], cc: STAGE_CC[code],
@@ -135,6 +148,25 @@ export default function Roadmap() {
           );
         })}
       </div>
+
+      {canonical?.canonical_modules_total > 0 && (
+        <div className="mt-8 max-w-md cvln-card p-6" data-testid="roadmap-canonical-progress">
+          <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">
+            <span>{t("canonical_progress")}</span>
+            <span className="text-[--cvln-orange]">{canonical.canonical_progress_pct}%</span>
+          </div>
+          <div className="stage-line mt-3">
+            <div style={{ width: `${canonical.canonical_progress_pct}%` }} />
+          </div>
+          <div className="mt-2 text-xs text-[--cvln-ink-2]">
+            {canonical.canonical_modules_viewed}/{canonical.canonical_modules_total}{" "}
+            {t("canonical_modules_viewed")}
+          </div>
+          <div className="mt-1 text-[10px] text-[--cvln-ink-2]">
+            {t("canonical_progress_hint")}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -64,6 +64,31 @@ export default function FrekProfile() {
         </div>
       </div>
 
+      {/* CAN-01/CAN-02 convergence (P0-G backend, `/frek/profile`'s
+          `canonical` field) — GLOBAL_PROGRESS (reconciliation 2026-09-07):
+          canonical_progress -> learning-path -> FREK profile. Same
+          honestly-labeled, never-blended-into-legacy pattern as
+          Dashboard.js's card-canonical-progress — canonical content
+          *viewed*, never relabeled *completed*. */}
+      {prof?.canonical?.canonical_modules_total > 0 && (
+        <div className="mt-8 cvln-card p-6" data-testid="frek-canonical-progress">
+          <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">
+            <span>{t("canonical_progress")}</span>
+            <span className="text-[--cvln-orange]">{prof.canonical.canonical_progress_pct}%</span>
+          </div>
+          <div className="stage-line mt-3">
+            <div style={{ width: `${prof.canonical.canonical_progress_pct}%` }} />
+          </div>
+          <div className="mt-2 text-xs text-[--cvln-ink-2]">
+            {prof.canonical.canonical_modules_viewed}/{prof.canonical.canonical_modules_total}{" "}
+            {t("canonical_modules_viewed")}
+          </div>
+          <div className="mt-1 text-[10px] text-[--cvln-ink-2]">
+            {t("canonical_progress_hint")}
+          </div>
+        </div>
+      )}
+
       {/* Signals grid */}
       <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {SIGNALS.map((s) => (
