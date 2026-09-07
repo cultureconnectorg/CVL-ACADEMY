@@ -45,6 +45,66 @@ Kiltikonet work, the first step is re-checking KLT-06/07's Observatory/
 Network `BLOCKED` verdicts against `Kiltikonet-Aout2026`'s real routes
 before assuming they still hold.
 
+### Re-verification (2026-09-07) — Founder-authorized, `STOP=TRUE` lifted for this scope
+
+Founder explicitly authorized re-checking this note and building against
+it (see `docs/klt/README.md` header, updated same date). Read directly
+from `cultureconnectorg/Kiltikonet-Aout2026` at commit `bb64ce7`
+(2026-08-15):
+
+- **Observatory is real code, not vaporware.** `backend/routes/
+  observatory.py` (421 lines): `require_founder` RBAC (role or
+  `FOUNDER_EMAILS`), read-only, every response carries an explicit data
+  lineage (`source`/`sources` field naming the exact collection). Real
+  endpoints: `/memory` (digital-memory overview from `db.analytics_events`,
+  `db.workspace_logs`, `db.registrations`, `db.scan_events`), `/timeline`,
+  `/event-types`, `/territories`, `/actors`, `/sessions`, `/access`,
+  `/public/now` (strictly-aggregated public window, no PII). Plus
+  Phase-2 adapter-backed endpoints via `backend/services/
+  observatory_adapters/` (`badges`, `conversion`, `network`, `diffusion`,
+  `live`, `mgraph`, `alerts` — 7 real adapter modules), each founder-only.
+- **Network is real code too.** `backend/routes/network.py` (295 lines):
+  `require_network_read` RBAC (`NETWORK_GLOBAL_READ_ROLES` — FOUNDER,
+  NETWORK_ADMIN, DG_NETWORK, STRATEGIC_COMMITTEE, QUALITY_COMMITTEE,
+  FRANCHISE_MANAGER, DATA_ANALYST, AUDITOR, TECH_PLATFORM_ADMIN,
+  TRAINING_MANAGER, MARKETING_MANAGER, LEGAL_IP, COMMUNITY_MANAGER, DAF
+  — plus territory-scoped `TERRITORY_*` roles), territory-scoped reads.
+  Real, named collections: `network_territories`, `network_operators`,
+  `network_licenses`, `network_compliance_records`, `network_audits`,
+  `network_training_records`, `network_technology_access`,
+  `network_signals`, `network_opportunities`, `network_governance_records`
+  — exactly the objects KLT-07/M01 and KLT-08 already teach conceptually.
+  A fixed public `/programmes` catalog also exists (Music Lab, Culture
+  Lab, Kids, Festival, Connect, Academy, Stories, Talents).
+- **The critical nuance, never to be lost**: every list endpoint
+  explicitly returns `provenance: "NOT_CONFIGURED"` (not `"OBSERVED"`)
+  when its collection doesn't exist or has no matching documents — this
+  is a **real, honest, working system that may currently hold little or
+  no data**, not a live firehose Academy could plug into today. And
+  **Academy's own backend has no client, service, or credentials calling
+  any of these Kiltikonet-Aout2026 endpoints** — the two systems remain
+  two separate deployments with separate databases. The correct
+  reclassification is therefore **not** `NOT_CONNECTED` (implying no
+  such system exists) and **not** `CONNECTED` (implying Academy reads it
+  live) but `PRODUCT_CODE_REAL_VERIFIED, NOT_CONNECTED_TO_ACADEMY_RUNTIME,
+  DATA_MAY_BE_NOT_CONFIGURED` — teach the real, verified architecture
+  (endpoints, RBAC model, collection names, the `OBSERVED`/
+  `NOT_CONFIGURED` provenance discipline itself) as real ground truth,
+  never fabricate a live Academy↔Kiltikonet-Aout2026 integration that
+  does not exist and for which this session holds no credentials.
+- **Effect on KLT-06/M05-M06 and KLT-07/M04 and KLT-08/M04**: these four
+  modules move from `BLOCKED — non construit` to buildable, using this
+  verified real schema as their teaching ground. See `docs/klt/klt06/`,
+  `klt07/`, `klt08/` `MODULES_STATUS.md` for the build record.
+- **Effect on the other 8 `BLOCKED_PRODUCT_DEPENDENCY` KLT-09→20
+  candidates** (KLT-11, 12, 15, 16, 17, 19, 20, plus KLT-14's WAL-X-04
+  pairing): **unchanged** — none of KLT-11 (identity intelligence),
+  KLT-12 (recommendation), KLT-15 (feed ops), KLT-16 (AI/Brain),
+  KLT-17 (security — already resolved to `CYB-31→42` by reference),
+  KLT-19 (opportunity ops), or KLT-20 (capstone) is evidenced anywhere
+  in Kiltikonet-Aout2026's real routes; this re-verification does not
+  manufacture systems for them.
+
 ## Existing INTERNAL-shaped corpus (verified, read-only)
 
 | Formation | Relevant competencies |

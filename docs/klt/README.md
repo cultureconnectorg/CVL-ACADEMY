@@ -14,6 +14,27 @@ KLT-06/07/08 FULLY_COMPLETE = FALSE (2/7, 1/7, 1/7 compétences
          déclarer TRUE sans un ticket dédié qui le justifie.
 STOP = TRUE après cette livraison — intégration runtime Academy et
 tout nouveau chantier ACA restent NOT_AUTHORIZED.
+
+FOUNDER_AUTHORIZATION_UPDATE (2026-09-07) : le Founder a explicitement
+autorisé, dans le périmètre suivant seulement, de lever ce STOP :
+  1. Construire KLT-06/M05-M06, KLT-07/M04, KLT-08/M04 (les 4
+     compétences précédemment `BLOCKED`) — désormais buildables sur la
+     base du schéma réel vérifié de `Kiltikonet-Aout2026` (voir
+     `KLT_09_20_RECONCILIATION.md` §Re-vérification 2026-09-07) :
+     Observatory et Network sont du **code réel vérifié** (routes,
+     RBAC, collections nommées), mais **Academy n'a aucun client/
+     credentials appelant cette API en direct** — le contenu enseigne
+     l'architecture réelle vérifiée, jamais une intégration live
+     fabriquée.
+  2. Construire KLT-13 (Terrain Operations, Accreditation & NFC) et
+     KLT-18 (Cultural Communications & Engagement Operations) comme
+     nouvelles formations complètes, per les verdicts déjà posés dans
+     `KLT_09_20_RECONCILIATION.md` (`SPECIALIZE_EXISTING`/
+     `EXTEND_EXISTING`, ancrées sur `KLT-05`).
+Le reste du chantier KLT-09→20 (les 8 autres candidats, tous
+`BLOCKED_PRODUCT_DEPENDENCY`) et toute intégration runtime live
+Academy↔Kiltikonet-Aout2026 restent `NOT_AUTHORIZED` — ce champ ne
+devient jamais `FALSE` globalement sur la seule base de ce message.
 ```
 
 ## Ce que contient ce corpus
