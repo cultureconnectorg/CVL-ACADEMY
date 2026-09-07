@@ -40,10 +40,14 @@ estimée), pas des répliques — à la différence du script audio de
    espace pour deux caméras).
 3. Rédiger un plan lumière/son prévisionnel à partir de ce repérage.
 
-## Exemple
+## Exemples
 
 Le repérage révèle qu'une fenêtre côté ouest donnera une lumière trop
 dure en après-midi — le tournage est planifié le matin en conséquence.
+Un script visuel mal préparé listerait "plan sur Man Rosa, plan sur la
+valise" sans préciser cadrage ni durée estimée — inexploitable le jour
+J, puisque l'équipe improviserait alors exactement ce que le repérage
+devait éviter.
 
 ## Cas
 
@@ -54,6 +58,9 @@ Le script visuel et le repérage portent sur le salon réel de Man Rosa
 
 - Confondre script visuel et script audio (dialogues au lieu de plans).
 - Ne pas anticiper la lumière/le bruit réels du lieu avant le jour J.
+- Rédiger un script visuel trop vague (juste une liste de sujets) sans
+  cadrage ni durée estimée, qui n'aide pas réellement le jour du
+  tournage.
 
 ## Activité
 

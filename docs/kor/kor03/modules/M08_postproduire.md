@@ -40,11 +40,14 @@ voulu authentique.
 3. Revisionner l'ensemble en le confrontant à la note d'arbitrage de
    M07.
 
-## Exemple
+## Exemples
 
 Un plan tourné en fin d'après-midi (lumière plus chaude) est corrigé
 pour se rapprocher des plans du matin, sans appliquer un filtre
-stylisé non justifié par l'arbitrage retenu.
+stylisé non justifié par l'arbitrage retenu. À l'inverse, appliquer un
+filtre "cinéma" désaturé à l'ensemble du teaser parce que "ça fait plus
+professionnel" contredirait l'arbitrage brut/authentique de M07 sans
+qu'aucune décision explicite n'ait autorisé ce changement de ton.
 
 ## Cas
 
@@ -54,6 +57,9 @@ La postproduction porte sur le montage réel du cas (`case/CASE.md`).
 
 - Sur-styliser au point de contredire l'arbitrage brut/professionnel.
 - Sur-nettoyer le son au point de le rendre artificiel.
+- Corriger chaque plan isolément sans revisionnage final de bout en bout,
+  laissant passer une dérive progressive de teinte ou de niveau sonore
+  invisible plan par plan mais perceptible sur l'ensemble du teaser.
 
 ## Activité
 

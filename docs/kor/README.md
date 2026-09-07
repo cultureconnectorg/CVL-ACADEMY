@@ -20,22 +20,26 @@ selon la méthode `AUDIT → CANONICALIZE → FREEZE → BUILD → TEST → VERI
 | `KOR-0002` | `docs/KORA_KOR0002_LEGACY_CANONICAL_RECONCILIATION.md` — réconciliation élément par élément `KOR-01`/`02`, Boundary Map 13 tensions, cas maître *L'Antenne Lanbi*, structures haut niveau | `FROZEN` |
 | `KOR-0003` | `docs/kor/kor01/` — construction pédagogique complète `KOR-01` (ce dossier) | `BUILT` |
 | `KOR-0004` | `docs/kor/kor02/` — construction pédagogique complète `KOR-02` (ce dossier) | `BUILT` |
+| `KOR-03→15 CONTINUOUS_BUILD` | `docs/kor/kor03/` → `kor15/` — construction pédagogique des 13 formations restantes (référentiel/modules/case/guides/skills/templates/assessments par formation) | `BUILT` |
 
 ## Formations construites
 
 | Code | Nom | Modules | Compétences | Statut |
 |---|---|---|---|---|
-| `KOR-01` | Podcast & Audio Production | 14 | 14/14 | `BUILT`, aucune compétence `BLOCKED` |
-| `KOR-02` | Cultural Storytelling & Broadcasting | 12 | 12/12 | `BUILT`, aucune compétence `BLOCKED` |
+| `KOR-01` | Podcast & Audio Production | 14 | 14/14 | `BUILT`, `PACKAGE_COMPLETE`, aucune compétence `BLOCKED` |
+| `KOR-02` | Cultural Storytelling & Broadcasting | 12 | 12/12 | `BUILT`, `PACKAGE_COMPLETE`, aucune compétence `BLOCKED` |
+| `KOR-03` | Production vidéo/streaming | 11 | 11/11 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — 2 `Exemples` + 3 `Erreurs fréquentes` par module, profondeur alignée sur `KOR-01`/`02`) |
+| `KOR-04`→`10` | 7 autres angles métier KORA | variable | 100% par formation | `BUILT`, `PARTIAL_PACKAGE` (structure complète par `QUALITY_GATES.md` de chaque formation, contenu de module plus léger que `KOR-01`/`02`/`03` — approfondissement non encore engagé) |
+| `KOR-11`→`15` | 5 derniers angles métier KORA | variable | 100% par formation | `BUILT`, `DRAFTED` (chaque `REFERENTIAL.md` self-déclare `STATUS = PROPOSED` pour au moins un scénario de cas ; corpus le plus léger de KORA) |
 
-## Formations non construites (rappel explicite, `KOR-0002` §0)
-
-`KOR-03` à `KOR-15` restent `NEW_CANONICAL_TARGET` /
-`CURRICULUM_BUILT = FALSE` — aucun module, aucun référentiel, aucune
-compétence écrite pour elles. Elles n'apparaissent que de façon
-analytique dans la Boundary Map de `KOR-0002` §4 et la traversée
-conceptuelle du cas maître (`KOR-0002` §6.3), jamais comme contenu
-pédagogique.
+**Rappel** : `BUILT` signifie que le package canonique existe et que
+`QUALITY_GATES.md` de la formation rapporte 100% de couverture
+structurelle réelle (aucun `ORPHAN_SKILL`/`ORPHAN_MODULE`, aucune
+compétence `BLOCKED`) — cela ne signifie pas `FULLY_COMPLETE` (aucune
+formation KORA n'a encore été validée par un vrai candidat) ni que
+toutes les formations ont la même profondeur éditoriale par module.
+Voir `docs/cvln_academy_master/99_REPORTS/W6_GLOBAL_STATUS.md` pour le
+détail ligne par ligne, mis à jour à chaque approfondissement.
 
 ## Le cas maître — *L'Antenne Lanbi*
 
@@ -67,7 +71,12 @@ principe que `docs/klt/README.md` pour Kiltikonet.
 - Aucune mutation de `db.formations`/`seed_data.py`/`seed_modules.py`.
 - Aucun renommage de badge (`Podcast Producer CVLN`, `Cultural
   Broadcaster` inchangés), aucun changement de `contexts`.
-- Aucun code touché — `backend/kor_canonical/` n'existe pas encore
-  (voir `INTEGRATION_ACADEMY_PACKAGE_NOTE.md` de chaque formation pour
-  ce qu'un futur "branchage" impliquerait, non engagé ici).
-- Aucun contenu pour `KOR-03`→`15`.
+- `backend/kor_canonical/` existe et est branché au runtime Academy
+  (voir `INTEGRATION_ACADEMY_PACKAGE_NOTE.md` de chaque formation) ;
+  aucune mutation de `db.formations`/`seed_data.py`/`seed_modules.py`
+  legacy n'a jamais été faite pour autant — le corpus canonique KORA
+  reste une collection séparée (`db.kor_resources`), jamais fusionnée
+  avec le contenu legacy `KOR-01`/`KOR-02` d'origine.
+- `KOR-03`→`15` ont bien du contenu construit (voir tableau
+  ci-dessus) — seule sa profondeur éditoriale par module varie encore
+  d'une formation à l'autre.

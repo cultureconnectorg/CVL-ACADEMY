@@ -41,11 +41,15 @@ respecter les **conditions déjà négociées** (titre, attribution) avec
 3. Publier en respectant les conditions déjà convenues avec
    *Dyaspora FM*.
 
-## Exemple
+## Exemples
 
 Un contrôle systématique révèle qu'un sous-titre affiche un mot erroné
 sur la version verticale — corrigé avant publication plutôt que
-découvert après.
+découvert après. À l'inverse, valider uniquement la version horizontale
+parce que c'est celle visionnée en premier laisserait passer un défaut
+propre à la version verticale (recadrage, orientation) — chaque version
+livrée doit être contrôlée individuellement, pas seulement supposée
+conforme parce qu'une autre l'est.
 
 ## Cas
 
@@ -58,6 +62,9 @@ cas (`case/CASE.md`), dans les conditions déjà négociées.
   générale.
 - Republier des conditions (titre, attribution) différentes de celles
   déjà négociées en `KOR-02`.
+- Contrôler une seule version livrée en supposant que les autres en
+  partagent automatiquement la qualité, alors que chaque export peut
+  introduire des défauts qui lui sont propres.
 
 ## Activité
 

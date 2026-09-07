@@ -39,11 +39,15 @@ la suivante — pas après coup.
    plan.
 3. Noter la décision dans un journal de tournage pour le montage.
 
-## Exemple
+## Exemples
 
 Une prise où le micro capte un bruit de rue est identifiée
 immédiatement et refaite, plutôt que découverte au montage sans
-possibilité de retourner filmer.
+possibilité de retourner filmer. À l'inverse, valider une prise sur un
+simple "ça a l'air bien" sans revisionner l'écran de contrôle laisse
+passer exactement ce type de défaut — la vérification doit porter sur
+l'image et le son réellement enregistrés, pas sur l'impression du
+moment.
 
 ## Cas
 
@@ -54,6 +58,9 @@ temps réel, pas après coup.
 
 - Attendre le montage pour découvrir qu'une prise est inexploitable.
 - Refaire systématiquement sans limite, épuisant le temps disponible.
+- Valider une prise sur impression générale sans revisionner l'écran
+  de contrôle — un défaut ponctuel (bruit, flou bref) peut échapper à
+  une écoute distraite pendant le tournage.
 
 ## Activité
 

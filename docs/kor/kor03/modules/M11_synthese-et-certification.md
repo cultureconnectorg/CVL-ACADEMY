@@ -49,6 +49,9 @@ Le dossier porte sur la production complète de "Rasin, le film"
 
 - Présenter les livrables comme une liste plutôt qu'un récit cohérent.
 - Ignorer la continuité avec `KOR-01`/`KOR-02` dans la défense.
+- Rédiger un bilan réflexif qui occulte les difficultés réellement
+  rencontrées, alors que l'exercice demande justement d'en assumer au
+  moins une.
 
 ## Activité
 

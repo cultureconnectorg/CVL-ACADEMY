@@ -38,11 +38,14 @@ répétées, qui fatiguent, au profit d'une prise bien préparée en amont
 3. Évaluer en direct si le plan est exploitable avant de passer au
    suivant, plutôt que de tout revoir au montage.
 
-## Exemple
+## Exemples
 
 Un plan raté sur la valise (main qui cache l'objet) est immédiatement
 identifié et refait une fois, plutôt que découvert au montage sans
-possibilité de retourner.
+possibilité de retourner. À l'inverse, refaire un plan cinq fois
+"pour être sûr" alors que la deuxième prise était déjà exploitable
+fatiguerait Man Rosa sans bénéfice réel — la règle n'est pas
+"chercher la perfection", mais "reconnaître l'exploitable".
 
 ## Cas
 
@@ -54,6 +57,8 @@ du cas (`case/CASE.md`).
 - Multiplier les prises au point de fatiguer le sujet.
 - Ne pas vérifier l'exploitabilité d'un plan avant de passer au
   suivant.
+- Cadrer un gros plan par réflexe technique (pour "capter l'émotion")
+  sans se demander si le sujet le vit comme intrusif.
 
 ## Activité
 

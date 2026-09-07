@@ -40,10 +40,14 @@ cadre — contrainte physique que n'a pas la prise de son audio seule.
 2. Choisir et positionner un micro discret, hors champ ou dissimulé.
 3. Faire un test combiné lumière + son avant le tournage réel.
 
-## Exemple
+## Exemples
 
 Positionner Man Rosa face à la fenêtre repérée en M02, micro-cravate
-dissimulé sous un vêtement plutôt qu'un micro visible sur perche.
+dissimulé sous un vêtement plutôt qu'un micro visible sur perche. À
+l'inverse, poser une lampe d'appoint directement face au sujet sans
+diffuseur créerait une lumière dure et un reflet gênant dans les
+lunettes — l'appoint doit adoucir la lumière naturelle, pas la
+remplacer brutalement.
 
 ## Cas
 
@@ -54,6 +58,9 @@ plateau standard.
 
 - Placer le sujet à contre-jour par manque de vérification.
 - Utiliser un micro visible à l'image sans raison narrative.
+- Tester la lumière et le son séparément et supposer que la combinaison
+  fonctionnera d'elle-même — un micro-cravate parfait à l'oreille peut
+  se révéler visible une fois la lumière définitive posée.
 
 ## Activité
 

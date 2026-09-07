@@ -43,12 +43,16 @@ plan par plan.
 3. Monter selon la règle retenue, de façon cohérente sur tout le
    teaser.
 
-## Exemple
+## Exemples
 
 Une règle possible : garder les hésitations et les moments de silence
 de Man Rosa (authenticité), mais utiliser un montage rythmé pour les
 plans de coupe du collectif (dynamisme) — cohérent avec les deux
-exigences sans les opposer artificiellement.
+exigences sans les opposer artificiellement. À l'inverse, couper
+systématiquement chaque hésitation de Man Rosa pour "fluidifier" le
+montage romprait discrètement l'arbitrage déjà obtenu — un montage
+plus lisse n'est pas neutre, il déplace la balance vers le documentaire
+soigné sans que la règle explicite l'ait décidé.
 
 ## Cas
 
@@ -60,6 +64,8 @@ cohérence explicite avec les arbitrages déjà obtenus en `KOR-01` et
 
 - Rouvrir l'arbitrage de représentation déjà tranché en `KOR-02`/M09.
 - Trancher sans règle explicite, produisant un montage incohérent.
+- Appliquer la règle à certains plans seulement, produisant un montage
+  qui hésite entre deux styles sans jamais l'assumer.
 
 ## Activité
 

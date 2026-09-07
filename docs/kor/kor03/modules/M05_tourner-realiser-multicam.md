@@ -43,10 +43,14 @@ suffisamment de plans de coupe pour un montage varié.
 3. Prioriser 3-4 plans de coupe indispensables plutôt que multiplier les
    prises.
 
-## Exemple
+## Exemples
 
 Un signe de main convenu à l'avance ("lever la main = on tourne") évite
-le besoin d'un talkie-walkie professionnel absent du budget.
+le besoin d'un talkie-walkie professionnel absent du budget. À
+l'inverse, décider les plans de coupe en improvisant pendant que la
+caméra principale filme Man Rosa disperserait l'attention du second
+point de vue au pire moment — la priorisation se fait avant, jamais
+pendant une prise en cours.
 
 ## Cas
 
@@ -57,6 +61,9 @@ les conditions du cas (`case/CASE.md`).
 
 - Tenter de tout capter sans prioriser, épuisant le temps disponible.
 - Ne pas convenir d'un signal de coordination avant de tourner.
+- Positionner le second point de vue trop près de la caméra
+  principale, produisant deux plans quasi identiques au lieu de deux
+  angles réellement complémentaires.
 
 ## Activité
 

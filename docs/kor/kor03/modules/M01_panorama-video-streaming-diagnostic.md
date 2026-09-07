@@ -36,11 +36,15 @@ physiquement Man Rosa et la valise, pas répéter le récit déjà raconté.
 2. Identifier ce que l'image apporte spécifiquement au récit de *Rasin*.
 3. Formuler le diagnostic en une phrase.
 
-## Exemple
+## Exemples
 
 Un teaser qui se contenterait de lire la feature à voix haute sur fond
 noir n'apporterait rien de plus que le texte déjà publié — l'image doit
-montrer, pas répéter.
+montrer, pas répéter. À l'inverse, un teaser qui filmerait uniquement le
+collectif en train de discuter du projet (sans jamais montrer Man Rosa
+ni la valise) parlerait de la mémoire sans la montrer — même défaut
+sous une forme différente : l'image reste décorative, elle ne remplace
+ni ne prolonge le récit déjà raconté.
 
 ## Cas
 
@@ -52,6 +56,9 @@ sur un teaser générique.
 - Analyser seulement le sujet des teasers référence, pas leur structure.
 - Concevoir un teaser qui répète l'audio/texte sans rien apporter de
   visuel propre.
+- Se limiter à un seul teaser référence : sans base de comparaison,
+  impossible de distinguer une convention de format répandue d'un choix
+  isolé propre à un seul créateur.
 
 ## Activité
 

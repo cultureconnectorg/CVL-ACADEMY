@@ -41,11 +41,16 @@ recadrage réfléchi.
    nécessaire (pas un simple étirement).
 3. Vérifier chaque fichier encodé avant livraison (lecture complète).
 
-## Exemple
+## Exemples
 
 Une version verticale pour les réseaux sociaux de *Dyaspora FM*
 nécessite un recadrage qui garde Man Rosa centrée, pas un simple
-redimensionnement qui la couperait.
+redimensionnement qui la couperait. À l'inverse, exporter cette même
+version sans vérifier ses métadonnées d'orientation peut la faire
+pivoter automatiquement à la lecture sur certaines plateformes, malgré
+un cadrage pourtant correct au moment de l'encodage — un fichier bien
+cadré n'est pas encore un fichier livrable tant que sa lecture réelle
+n'a pas été vérifiée.
 
 ## Cas
 
@@ -56,6 +61,8 @@ L'encodage porte sur les plateformes réellement visées par le cas
 
 - Livrer un seul format pour toutes les plateformes sans l'adapter.
 - Ne pas vérifier le fichier encodé avant livraison.
+- Ignorer les métadonnées d'orientation du fichier encodé, qui peuvent
+  inverser un cadrage vertical pourtant correct au moment de l'export.
 
 ## Activité
 
