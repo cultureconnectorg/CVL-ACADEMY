@@ -45,7 +45,7 @@ Current real state of KORA (verified live, not just self-declared —
 | Tier | Formations | What's true |
 |---|---|---|
 | = FMS (package complete + runtime-bound + full chain proven) | KOR-01 | The only one. `test_rail2_kor01_e2e.py` proves Learning→Skill→Evidence→Assessment→Certification→Qualification→Opportunity→Mission end to end. |
-| Package complete, runtime-bindable, not yet chain-proven | KOR-02→10 | `kor_canonical.import_kor_docs()` already reports `fully_complete=True` for all 9 — the mechanism works. No qualification definition, no E2E test, no frontend deep-link beyond the generic `/kora-canonical` list/detail/module pages has been built per-formation yet. |
+| Package complete, runtime-bindable, chain-proven for one, not yet for the rest | KOR-02→10 | `kor_canonical.import_kor_docs()` reports `fully_complete=True` for all 9. **KOR-02** is now chain-proven too (`test_rail2_kor01_e2e.py`, parametrized 2026-09-07) — Learning→...→Mission passes end to end exactly like KOR-01. KOR-03→10 still lack their own qualification definition/E2E case (adding one is a `pytest.param` entry in `KOR_CASES`, same file — not a new architecture decision). |
 | Real content, lighter convention, not runtime-complete | KOR-11→15 | Real module files exist (`docs/kor/kor1{1..5}/modules/`) but use a `SKILL_ID:`-only header (no `MODULE_ID`/`PREREQUISITES`/`ASSESSMENT_LEVEL`/`ORIGIN`), so `kor_canonical`'s parser correctly reports `fully_complete=False`, `module_count=0` for each. **This is a content gap, not a runtime gap** — do not "fix" it by loosening the parser to fake a pass; the module files themselves need the KOR-01-style header and full package (see §"Next concrete steps"). |
 
 ## The exact pattern to replicate (never reinvent)
@@ -106,9 +106,11 @@ guessed integration.
 
 ## Next concrete steps for KORA (in the order they unblock each other)
 
-1. **KOR-02→10 chain proof** — replicate `test_rail2_kor01_e2e.py` for
-   at least one more formation (KOR-02 is the next-richest) to prove
-   the chain generalizes past the pilot, not just the import mechanism.
+1. ~~**KOR-02→10 chain proof**~~ — **done for KOR-02** (2026-09-07):
+   `test_rail2_kor01_e2e.py` is now parametrized over `KOR_CASES`
+   (KOR-01, KOR-02), proving the chain generalizes past the pilot, not
+   just the import mechanism. Extending to KOR-03→10 is one
+   `pytest.param` entry each — same file, same pattern, no new design.
 2. **KOR-11→15 content rebuild** — bring each formation's module files
    to the KOR-01 header convention (`MODULE_ID`/`COMPETENCY_ID`/
    `PREREQUISITES`/`ASSESSMENT_LEVEL`/`KORA_DEPENDENCY`/

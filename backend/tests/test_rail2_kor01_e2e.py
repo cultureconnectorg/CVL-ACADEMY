@@ -1,21 +1,26 @@
 """RAIL 2 — "MASTER -> RUNTIME ACADEMY" end-to-end proof (Founder
-instruction, 2026-09-06).
+instruction, 2026-09-06; extended 2026-09-07 to prove the chain
+generalizes past the pilot — see `AGENTS.md`'s "Next concrete steps").
 
 Gate: "au moins une formation canonique complète est suivable de bout en
 bout dans le runtime réel." This suite drives the full target chain —
 Learning -> Skill -> Evidence -> Assessment -> Certification ->
-Qualification -> Opportunity -> Mission — against KOR-01 (Podcast &
-Audio Production), the pilot formation, using real code paths only:
+Qualification -> Opportunity -> Mission — against real KOR formations,
+using real code paths only, parametrized over every formation this
+extension proves (KOR-01, the original pilot, and KOR-02, the next-
+richest formation — both independently confirmed `fully_complete=True`
+by `kor_canonical`'s own derived check, per `AGENTS.md`'s KORA tier
+table):
 
-  1. `kor_canonical.import_kor_docs` imports the real `docs/kor/kor01/`
-     tree (no fixture — same rationale as `test_klt_canonical.py`: the
-     corpus already lives unpacked in this repo).
-  2. Every one of KOR-01's 14 real skills is registered
+  1. `kor_canonical.import_kor_docs` imports the real `docs/kor/` tree
+     (no fixture — same rationale as `test_klt_canonical.py`: the corpus
+     already lives unpacked in this repo).
+  2. Every one of the formation's real skills is registered
      (`skills.progression.register_skill`) and evidence recorded
      (`record_evidence`) until each is "acquired".
-  3. A real `Rubric` is created for certification code `KOR01-A01`, one
-     criterion per skill, mirroring the Rubric Master doctrine already
-     reconciled in `certification/models.py`.
+  3. A real `Rubric` is created for the formation's real certification
+     code, one criterion per skill, mirroring the Rubric Master doctrine
+     already reconciled in `certification/models.py`.
   4. `certification.service.start_attempt` / `submit_attempt` /
      `grade_attempt` run the existing, untouched certification engine —
      grading with maximal scores passes the attempt.
@@ -62,9 +67,33 @@ from qualification.models import QualificationDefinitionInput
 from qualification.service import list_user_qualifications, register_definition
 from skills.progression import get_user_progress, record_evidence, register_skill
 
-CERTIFICATION_CODE = "KOR01-A01"
-QUALIFICATION_CODE = "QUAL-KOR01-PRODUCTEUR-PODCAST"
-MISSION_CODE = "MISSION-KORA-ANTENNE-LANBI"
+# One case per formation this extension proves. Each is independently
+# derived from the real corpus — never a hardcoded count — the test
+# below still asserts `formation.module_count`/`len(kor_skills)` match
+# what `kor_canonical` itself reports, so a mismatch here would fail
+# loudly rather than silently pass on the wrong number.
+KOR_CASES = [
+    pytest.param(
+        "KOR-01",
+        "KOR01-A01",
+        "QUAL-KOR01-PRODUCTEUR-PODCAST",
+        "MISSION-KORA-ANTENNE-LANBI",
+        "Produire un épisode pour L'Antenne Lanbi",
+        "Mission réservée aux producteurs podcast qualifiés KOR-01.",
+        14,
+        id="KOR-01",
+    ),
+    pytest.param(
+        "KOR-02",
+        "KOR02-A01",
+        "QUAL-KOR02-STORYTELLER-CULTUREL",
+        "MISSION-KORA-ANTENNE-LANBI-RACONTEE",
+        "Raconter et diffuser \"La valise racontée\"",
+        "Mission réservée aux storytellers culturels qualifiés KOR-02.",
+        12,
+        id="KOR-02",
+    ),
+]
 
 
 @pytest.fixture
@@ -107,34 +136,49 @@ def _rubric_criteria(skills):
 
 
 @pytest.mark.asyncio
-async def test_kor01_full_chain_learning_to_mission(rail2_db):
+@pytest.mark.parametrize(
+    "formation_code,certification_code,qualification_code,mission_code,"
+    "mission_title,mission_description,expected_skill_count",
+    KOR_CASES,
+)
+async def test_kor_formation_full_chain_learning_to_mission(
+    rail2_db,
+    formation_code,
+    certification_code,
+    qualification_code,
+    mission_code,
+    mission_title,
+    mission_description,
+    expected_skill_count,
+):
     user = User(
-        frek_id="FREK-RAIL2-001",
-        email="rail2.candidate@example.com",
+        frek_id=f"FREK-RAIL2-{formation_code}",
+        email=f"rail2.candidate.{formation_code.lower()}@example.com",
         display_name="Candidat Rail 2",
         password_hash="x",
     )
     await rail2_db.users.insert_one(user.model_dump())
+    metier = formation_code.replace("-", "")  # "KOR-01" -> "KOR01"
 
-    # ---- 1. Learning: import the real KOR-01 corpus -----------------
+    # ---- 1. Learning: import the real KORA corpus --------------------
     report = await import_kor_docs()
-    assert "KOR-01" in report.formations_found
+    assert formation_code in report.formations_found
     assert report.unparsed_count >= 0  # every real file accounted for
     assert report.all_files_accounted_for is True
 
-    formation = await get_canonical_kor_formation("KOR-01")
+    formation = await get_canonical_kor_formation(formation_code)
     assert formation is not None
     assert formation.fully_complete is True
-    assert formation.module_count == 14
+    assert formation.module_count == expected_skill_count
     assert formation.unresolved_skill_ids == []
 
-    # ---- 2. Skill + Evidence: register and acquire all 14 skills ----
-    kor_skills = await list_canonical_kor_skills("KOR-01")
-    assert len(kor_skills) == 14
+    # ---- 2. Skill + Evidence: register and acquire all real skills ---
+    kor_skills = await list_canonical_kor_skills(formation_code)
+    assert len(kor_skills) == expected_skill_count
     for skill in kor_skills:
         await register_skill(
             skill_id=skill.skill_id,
-            metier="KOR01",
+            metier=metier,
             niveau="N1",
             bloc="B1",
             label=skill.label,
@@ -152,55 +196,55 @@ async def test_kor01_full_chain_learning_to_mission(rail2_db):
             ref=skill.canonical_module_code or skill.skill_id,
         )
 
-    progress = await get_user_progress(user.id, metier="KOR01")
-    assert len(progress) == 14
+    progress = await get_user_progress(user.id, metier=metier)
+    assert len(progress) == expected_skill_count
     assert all(p.state == "acquired" for p in progress)
 
-    # ---- 3. Assessment: real Rubric for KOR01-A01 --------------------
+    # ---- 3. Assessment: real Rubric for the formation's A01 ----------
     rubric_input = RubricInput(
         level="A01",
-        formation_code="KOR-01",
+        formation_code=formation_code,
         criteria=_rubric_criteria(kor_skills),
         pass_threshold_pct=80.0,
     )
-    rubric = Rubric(certification_code=CERTIFICATION_CODE, **rubric_input.model_dump())
+    rubric = Rubric(certification_code=certification_code, **rubric_input.model_dump())
     await rail2_db.certification_rubrics.insert_one(rubric.model_dump())
-    fetched_rubric = await get_rubric(CERTIFICATION_CODE)
-    assert fetched_rubric.certification_code == CERTIFICATION_CODE
-    assert len(fetched_rubric.criteria) == 14
+    fetched_rubric = await get_rubric(certification_code)
+    assert fetched_rubric.certification_code == certification_code
+    assert len(fetched_rubric.criteria) == expected_skill_count
 
     # ---- 3b. Opportunity/Mission gate BEFORE certification -----------
     definition = await register_definition(
-        QUALIFICATION_CODE,
+        qualification_code,
         QualificationDefinitionInput(
-            label="Producteur Podcast CVLN (KOR-01)",
-            formation_code="KOR-01",
-            certification_codes=[CERTIFICATION_CODE],
+            label=f"Qualification {formation_code} (Rail 2)",
+            formation_code=formation_code,
+            certification_codes=[certification_code],
         ),
     )
-    assert definition.code == QUALIFICATION_CODE
+    assert definition.code == qualification_code
 
     mission = Mission(
-        code=MISSION_CODE,
-        title="Produire un épisode pour L'Antenne Lanbi",
-        description="Mission réservée aux producteurs podcast qualifiés KOR-01.",
+        code=mission_code,
+        title=mission_title,
+        description=mission_description,
         pole="KOR",
         cc_reward=20,
         stade_required="pousse",
         entity="KORA",
-        required_qualification_codes=[QUALIFICATION_CODE],
+        required_qualification_codes=[qualification_code],
     )
     await rail2_db.missions.insert_one(mission.model_dump())
 
     missions_before = await missions_api_module.list_missions(current=user)
-    listed_before = next(m for m in missions_before if m["code"] == MISSION_CODE)
+    listed_before = next(m for m in missions_before if m["code"] == mission_code)
     assert listed_before["eligible"] is False
 
     with pytest.raises(Exception):
-        await missions_api_module.accept_mission(MISSION_CODE, current=user)
+        await missions_api_module.accept_mission(mission_code, current=user)
 
     # ---- 4. Certification: start / submit / grade --------------------
-    attempt = await start_attempt(user.id, CERTIFICATION_CODE)
+    attempt = await start_attempt(user.id, certification_code)
     assert attempt.status == "in_progress"
     attempt = await submit_attempt(attempt.id, user.id)
     assert attempt.status == "submitted"
@@ -217,27 +261,27 @@ async def test_kor01_full_chain_learning_to_mission(rail2_db):
     # ---- 5. Qualification: issued by the certification hook ----------
     quals = await list_user_qualifications(user.id)
     codes = {q.qualification_code for q in quals}
-    assert QUALIFICATION_CODE in codes
-    issued = next(q for q in quals if q.qualification_code == QUALIFICATION_CODE)
-    assert issued.source_certification_code == CERTIFICATION_CODE
+    assert qualification_code in codes
+    issued = next(q for q in quals if q.qualification_code == qualification_code)
+    assert issued.source_certification_code == certification_code
     assert issued.source_attempt_id == attempt.id
 
     # Re-grading (idempotent hook) must never issue a second copy.
     quals_again = await list_user_qualifications(user.id)
-    assert len(quals_again) == len([q for q in quals_again if q.qualification_code == QUALIFICATION_CODE])
-    assert len([q for q in quals_again if q.qualification_code == QUALIFICATION_CODE]) == 1
+    matches_again = [q for q in quals_again if q.qualification_code == qualification_code]
+    assert len(matches_again) == 1
 
     # ---- 6. Opportunity/Mission: eligible + acceptable AFTER ---------
     missions_after = await missions_api_module.list_missions(current=user)
-    listed_after = next(m for m in missions_after if m["code"] == MISSION_CODE)
+    listed_after = next(m for m in missions_after if m["code"] == mission_code)
     assert listed_after["eligible"] is True
 
-    accept_result = await missions_api_module.accept_mission(MISSION_CODE, current=user)
+    accept_result = await missions_api_module.accept_mission(mission_code, current=user)
     assert accept_result["ok"] is True
     assert accept_result["status"] == "accepted"
 
     user_mission = await rail2_db.user_missions.find_one(
-        {"user_id": user.id, "mission_code": MISSION_CODE}, {"_id": 0}
+        {"user_id": user.id, "mission_code": mission_code}, {"_id": 0}
     )
     assert user_mission is not None
     assert user_mission["status"] == "accepted"
