@@ -39,6 +39,12 @@ from io import BytesIO
 from typing import List, Optional, Tuple
 
 from db import db
+from fms_import.importer import (
+    MAX_COMPRESSION_RATIO,
+    MAX_ENTRY_UNCOMPRESSED_BYTES,
+    MAX_ZIP_ENTRIES,
+    RATIO_CHECK_MIN_BYTES,
+)
 from fms_import.parser import MODULE_NUM_RE, parse_markdown_file
 
 from .models import CANONICAL_VERSION_CURRENT, FileProvenance, resource_audience
@@ -74,12 +80,26 @@ def build_zip_inventory(
     raw_zip: bytes, *, canonical_version: str = CANONICAL_VERSION_CURRENT
 ) -> List[FileProvenance]:
     """Pure, read-only. Every real (non-directory) ZIP entry becomes
-    exactly one record — parsed or not, never dropped."""
+    exactly one record — parsed or not, never dropped.
+
+    P0-I (Audit Chirurgical 2026-09-07) — this function reads EVERY
+    real entry (not just `.md`-classified ones, unlike
+    `fms_import.importer._extract_markdown_files`), which makes it the
+    more exposed of the two ZIP-reading paths: a bomb hidden behind any
+    extension would still reach `zf.read()` here even though
+    `import_fms_zip` itself would never look at it. Same size/ratio
+    bounds, reused from `fms_import.importer` rather than duplicated so
+    the two paths can't silently drift apart — a rejected entry still
+    gets exactly one `FileProvenance` record (`ALL_ZIP_FILES_ACCOUNTED_
+    FOR` holds), it is simply never decompressed to produce it."""
     records: List[FileProvenance] = []
     try:
         zf = zipfile.ZipFile(BytesIO(raw_zip))
     except zipfile.BadZipFile:
         return records
+
+    if len(zf.infolist()) > MAX_ZIP_ENTRIES:
+        return records  # archive-level rejection, same as import_fms_zip's own
 
     for info in zf.infolist():
         if info.is_dir() or info.filename.endswith("/"):
@@ -87,6 +107,43 @@ def build_zip_inventory(
 
         original_path = info.filename
         original_filename = original_path.rsplit("/", 1)[-1]
+
+        if info.file_size > MAX_ENTRY_UNCOMPRESSED_BYTES:
+            records.append(
+                FileProvenance(
+                    original_path=original_path,
+                    original_filename=original_filename,
+                    sha256="",
+                    byte_size=info.file_size,
+                    canonical_version=canonical_version,
+                    parsing_status="unparsed_error",
+                    parsing_note=(
+                        f"Fichier non lu : {info.file_size} octets décompressés, "
+                        f"maximum {MAX_ENTRY_UNCOMPRESSED_BYTES}."
+                    ),
+                )
+            )
+            continue
+        if (
+            info.file_size >= RATIO_CHECK_MIN_BYTES
+            and info.file_size > info.compress_size * MAX_COMPRESSION_RATIO
+        ):
+            records.append(
+                FileProvenance(
+                    original_path=original_path,
+                    original_filename=original_filename,
+                    sha256="",
+                    byte_size=info.file_size,
+                    canonical_version=canonical_version,
+                    parsing_status="unparsed_error",
+                    parsing_note=(
+                        "Fichier non lu : taux de compression anormal "
+                        f"({info.file_size}/{max(info.compress_size, 1)}), "
+                        "signature typique d'une ZIP bomb."
+                    ),
+                )
+            )
+            continue
 
         try:
             raw_bytes = zf.read(original_path)

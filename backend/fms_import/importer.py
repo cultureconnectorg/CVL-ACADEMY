@@ -24,6 +24,38 @@ from .module_map import extract_module_prerequisites
 from .parser import parse_markdown_file
 from .validators import validate_batch
 
+# P0-I (Audit Chirurgical 2026-09-07) — ZIP-bomb / upload-abuse
+# protections. `api/fms.py`'s own `MAX_ZIP_BYTES` (50 MB) only bounds
+# the *compressed* upload — it says nothing about what `zf.read(name)`
+# decompresses to in memory. A ZIP's central directory carries each
+# entry's real (`file_size`) and compressed (`compress_size`) byte
+# counts WITHOUT decompressing anything, so every check below runs
+# before a single byte of content is ever read — a crafted archive
+# never gets the chance to exhaust memory before being rejected.
+# Bounds are deliberately generous for a real métier archive (223 real
+# files, none anywhere near these sizes — see the provenance reports
+# already committed) while still being finite:
+MAX_ZIP_ENTRIES = 5000  # a real métier batch is ~20-30 files
+MAX_ENTRY_UNCOMPRESSED_BYTES = 10 * 1024 * 1024  # 10 MB — no real
+# Markdown lesson/quiz/rubric file in this corpus approaches 1 MB
+MAX_TOTAL_UNCOMPRESSED_BYTES = 300 * 1024 * 1024  # 300 MB aggregate
+# across every .md entry in one archive — catches "many merely-large
+# files" bombs a single per-entry cap alone would miss
+MAX_COMPRESSION_RATIO = 100  # file_size / compress_size; real prose
+# Markdown compresses ~2-6x — a crafted bomb (e.g. run-length-encodable
+# filler) compresses at ratios in the thousands. Only applied to
+# entries already past a minimum absolute size, so a tiny file's
+# naturally noisy ratio never false-positives.
+RATIO_CHECK_MIN_BYTES = 4096
+
+# `zf.read()` never writes to disk (parsed content goes straight to
+# `parse_markdown_file`, in memory) and `source_file` is stored purely
+# as display/provenance metadata (grep-confirmed: no code path anywhere
+# in this repo uses it to build a filesystem path) — so a path-
+# traversal entry name (`../../etc/passwd`) has no exploitable target
+# here and is deliberately not treated as a rejection case, unlike the
+# size/ratio bounds above.
+
 
 def _extract_markdown_files(
     raw_zip: bytes,
@@ -40,6 +72,19 @@ def _extract_markdown_files(
         )
         return [], issues
 
+    if len(zf.infolist()) > MAX_ZIP_ENTRIES:
+        issues.append(
+            ImportIssue(
+                level="error",
+                file="<archive>",
+                message=(
+                    f"Archive rejetée : {len(zf.infolist())} entrées, "
+                    f"maximum {MAX_ZIP_ENTRIES}."
+                ),
+            )
+        )
+        return [], issues
+
     bad_entry = zf.testzip()
     if bad_entry:
         issues.append(
@@ -50,10 +95,12 @@ def _extract_markdown_files(
             )
         )
 
-    md_entries = [
-        n for n in zf.namelist() if n.lower().endswith(".md") and not n.endswith("/")
+    md_infos = [
+        info
+        for info in zf.infolist()
+        if info.filename.lower().endswith(".md") and not info.filename.endswith("/")
     ]
-    if not md_entries:
+    if not md_infos:
         issues.append(
             ImportIssue(
                 level="error",
@@ -63,7 +110,51 @@ def _extract_markdown_files(
         )
         return [], issues
 
-    for name in md_entries:
+    total_uncompressed = sum(info.file_size for info in md_infos)
+    if total_uncompressed > MAX_TOTAL_UNCOMPRESSED_BYTES:
+        issues.append(
+            ImportIssue(
+                level="error",
+                file="<archive>",
+                message=(
+                    f"Archive rejetée : {total_uncompressed} octets décompressés "
+                    f"au total, maximum {MAX_TOTAL_UNCOMPRESSED_BYTES}."
+                ),
+            )
+        )
+        return [], issues
+
+    for info in md_infos:
+        name = info.filename
+        if info.file_size > MAX_ENTRY_UNCOMPRESSED_BYTES:
+            issues.append(
+                ImportIssue(
+                    level="error",
+                    file=name,
+                    message=(
+                        f"Fichier ignoré : {info.file_size} octets décompressés, "
+                        f"maximum {MAX_ENTRY_UNCOMPRESSED_BYTES}."
+                    ),
+                )
+            )
+            continue
+        if (
+            info.file_size >= RATIO_CHECK_MIN_BYTES
+            and info.file_size > info.compress_size * MAX_COMPRESSION_RATIO
+        ):
+            issues.append(
+                ImportIssue(
+                    level="error",
+                    file=name,
+                    message=(
+                        "Fichier ignoré : taux de compression anormal "
+                        f"({info.file_size}/{max(info.compress_size, 1)}), "
+                        "signature typique d'une ZIP bomb."
+                    ),
+                )
+            )
+            continue
+
         try:
             raw = zf.read(name)
         except (KeyError, zipfile.BadZipFile) as e:
