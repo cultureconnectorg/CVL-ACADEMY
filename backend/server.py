@@ -55,6 +55,29 @@ async def on_startup():
     except Exception as e:  # noqa: BLE001
         logger.exception("Seed failed: %s", e)
 
+    if os.environ.get("MOCK_DB") == "1":
+        # Preview-only, additive: the real docs/kor and docs/klt trees
+        # already live unpacked in this repo (no ZIP upload needed,
+        # same rationale as their own import pipelines) — auto-import
+        # them under MOCK_DB so a live click-through preview shows real
+        # canonical content without a manual admin action first. Never
+        # runs against a real MongoDB deployment (MOCK_DB is never set
+        # there). FMS canonical is intentionally not auto-imported here:
+        # it requires an uploaded ZIP this sandbox doesn't have.
+        try:
+            from kor_canonical.import_pipeline import import_kor_docs
+            from klt_canonical.import_pipeline import import_klt_docs
+
+            kor_report = await import_kor_docs()
+            klt_report = await import_klt_docs()
+            logger.info(
+                "MOCK_DB preview import: KOR %s formations, KLT %s formations",
+                kor_report.formations_found,
+                klt_report.formations_found,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.exception("MOCK_DB preview canonical import failed: %s", e)
+
 
 @app.on_event("shutdown")
 async def on_shutdown():

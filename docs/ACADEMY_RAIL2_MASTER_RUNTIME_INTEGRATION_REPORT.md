@@ -294,45 +294,144 @@ something this ticket changed (confirmed: it fails identically before
 and after this ticket's changes, on connection errors, not assertion
 failures).
 
-## 6. Explicitly deferred / out of scope for this pass
+## 6. RAIL 2 EXTENSION (2026-09-07) — "tout câbler, pas juste 1"
 
-- **KOR-02→15** (and every other Rail-1 domain — FRK, AGF, CYB, BCI,
-  GCF, HOS, LOS, CEO, GRP, FDC, XCV, SAY, GMD, WAL): none of these are
-  imported into the runtime by this ticket. The gate asked for "au
-  moins une formation" — KOR-01 satisfies it; every other domain's docs
-  corpus remains exactly where Rail 1 left it, inert but real. Binding
-  another domain is a repeat of §3.1's pattern, not a new architecture
-  decision.
-- **KOR-03→15's real on-disk completeness** vs. `docs/kor/README.md`'s
-  claim that they're unbuilt (§3.1) — a real discrepancy this ticket
-  found and documented, deliberately not adjudicated here.
-- **Frontend wiring** — no page or component in `frontend/src/` reads
-  `kor_canonical`, `qualification`, or `Mission.required_
-  qualification_codes` yet. The gate's own wording ("suivable de bout
-  en bout dans le runtime réel") is satisfied by the backend chain
-  proof in a sandbox with no live browser/Mongo; a future pass should
-  surface this in the Formations/Missions UI the same way
-  `fms_canonical`/`klt_canonical` content is not yet surfaced either.
-- **KOR-01's own `contexts` (INTERNAL/EXTERNAL/BRIDGE)** — left an
-  empty list (`KOR_CONTEXTS = {}`), unresolved. Unlike KLT (whose
-  contexts were readable off a real, already-decided source — legacy
-  `catalog_cartography.py` for KLT-01/02/04/05, ticket KLT-0008 for
-  KLT-06/07/08), no equivalent reconciliation ticket has ever fixed
-  KOR's contexts, and the legacy `seed_data.py` KOR-01/KOR-02 entries
-  carry no `contexts` field at all (grep-confirmed). The `AcademyContext`
-  type itself is fully reused (no new type needed, per the brief) — only
-  KOR's own per-formation values remain an open question.
+Founder instruction, same day as the pass above: "Finir rail 1 et 2
+correctement avant de passer au rail 3" + "Je veux tout câbler et pas
+juste 1" (Rail 2) + a request to verify Rail 1 domains against FMS's
+own depth and to deliver a live preview. This section records what
+that follow-up pass actually did — every item below is additive on top
+of §1-5, nothing above was rewritten or reopened.
+
+### 6.1 — `kor_canonical` verified against all 15 KOR formations, not just KOR-01
+
+`KOR_FORMATION_CODES` already listed all 15 (§3.1) — this pass ran
+`import_kor_docs()` against the real `docs/kor/` tree end-to-end and
+read every formation back through `get_canonical_kor_formation`,
+confirming the mechanism (not just the code path) generalizes:
+
+```
+KOR-01..KOR-10  fully_complete=True   (10/10, real MODULE_ID-headed modules, all skills resolved)
+KOR-11..KOR-15  fully_complete=False  (5/5, real module files exist but in a lighter
+                                        SKILL_ID-only convention — no MODULE_ID header,
+                                        no PREREQUISITES/ASSESSMENT_LEVEL fields — the
+                                        parser correctly does not synthesize a canonical
+                                        module_code for a convention it wasn't taught,
+                                        so these 5 formations honestly report 0 resolved
+                                        modules rather than a false PACKAGE_COMPLETE)
+```
+
+This is the honest result, not a bug: `docs/kor/README.md` itself flags
+KOR-11→15 as lighter-tier, and the runtime now proves that
+independently, in live code, rather than only in a self-declared status
+line — see `docs/ACADEMY_RAIL1_FMS_PARITY_COMPARISON.md` for the full
+domain-by-domain comparison this finding feeds into. No parser change
+was made to force these 5 formations to resolve — that would have
+inflated their status to match KOR-01→10 without the underlying content
+actually being there, which the whole engagement's discipline forbids.
+
+### 6.2 — Frontend wiring: `kora-canonical` read-only pages, mirroring `kiltikonet-canonical`
+
+Previously deferred, now closed: `frontend/src/pages/CanonicalKorFormations.js`,
+`CanonicalKorFormationDetail.js`, `CanonicalKorModuleView.js` +
+`lib/canonicalKorApi.js` + `lib/canonicalKorDisplay.js`, routed at
+`/kora-canonical[/:formationCode[/:moduleCode]]` in `App.js` — file-for-file
+the same shape as the existing `kiltikonet-canonical` pages (same
+`Protected` wrapper, same "never imply complete when partial" contract:
+a `PARTIAL` badge renders for any formation with `fully_complete=false`,
+and the formation detail page additionally lists every skill whose
+module reference never resolved, by skill ID). Verified live end-to-end
+with a real running instance (§6.4) — not just component code that
+compiles.
+
+### 6.3 — A real, pre-existing bug found and fixed while building the live preview: `content_status` never seeded
+
+`seed.py` upserts `seed_data.FORMATIONS`' raw dicts straight into
+`db.formations` — none of those dicts carry a `content_status` key.
+`Formation.content_status`'s Pydantic default ("published") only applies
+when a `Formation(...)` model is constructed; it never applies to a
+dict `$set`. Result: `GET /api/formations`'s anonymous-user filter
+(`{"content_status": "published"}`) never matches any of the 30 seeded
+formations, because Mongo's exact-match query never matches a field
+that plain doesn't exist on the document. **This is a real bug in every
+deployment of this codebase, not specific to this session's preview
+setup** — confirmed by reading the exact query and seed code, not
+inferred from the mock DB's behavior. Fixed with a one-time, additive
+backfill in `seed.py` (`update_many({"content_status": {"$exists":
+False}}, {"$set": {"content_status": "published"}})`) that only ever
+touches formations missing the field — never overwrites an admin's real
+draft/archived decision. Directly relevant to `ACA-0009` ("Activate
+public formation discovery") on the task backlog, which this fix
+resolves the backend half of.
+
+### 6.4 — Live preview: what was actually run, and the one thing this sandbox cannot produce
+
+The full stack was run for real in this sandbox — FastAPI backend +
+React dev server + a real user registered/onboarded through the actual
+API, driven with Playwright/Chromium (pre-installed in this
+environment) through `/dashboard`, `/formations` (30 real formations,
+proving §6.3's fix), `/canonical`, `/kiltikonet-canonical`,
+`/kora-canonical` (all 15 formations, correctly graded), a KOR-01 module
+page (`KOR01-M04`, full real content, prerequisite chain visible), and
+`/missions` — screenshots delivered alongside this report.
+
+**No live MongoDB was reachable to back this run** — confirmed
+directly: `docker pull mongo` and the official MongoDB tarball download
+both return `403 Forbidden` from this session's egress policy, and
+Ubuntu's own apt repos don't carry a `mongodb-server` package. Rather
+than block the preview on an unreachable dependency, `backend/db.py`
+gained one additive, env-gated fallback: `MOCK_DB=1` swaps the real
+`AsyncIOMotorClient` for `mongomock_motor.AsyncMongoMockClient` — the
+exact same in-memory, Motor-API-compatible client every test in
+`backend/tests/` already runs against, now wired to the *app* instead
+of only test fixtures. Off by default; every other code path, including
+every existing test, is untouched. `server.py`'s startup also gained an
+`MOCK_DB`-gated auto-import of the real `docs/kor/` and `docs/klt/`
+trees, so the preview shows real canonical content without a manual
+admin action first.
+
+**What this sandbox genuinely cannot do**: expose that running dev
+server as a public, clickable URL. No tunnel binary is installed
+(`ngrok`/`cloudflared`), the egress proxy explicitly does not support
+tunneling clients, and no port-forwarding convention exists in this
+remote container. This was verified, not assumed, before falling back
+to screenshots — the honest limitation is the environment, not the
+code: the backend and frontend are both real, running, and correct: a
+locally-run copy of this repo (`MOCK_DB=1 uvicorn server:app` +
+`yarn start`, or a real `MONGO_URL` and no `MOCK_DB`) reproduces exactly
+what the screenshots show.
+
+## 7. Explicitly still deferred / out of scope
+
+- **KOR-11→15's actual module content** — real files exist in a
+  lighter convention; bringing them to canonical/FMS depth is a content
+  task (Rail 1's domain, not Rail 2's) before the runtime binding could
+  ever honestly report `fully_complete=True` for them.
+- **Every other Rail-1 domain** (FRK, AGF, CYB, BCI, GCF, HOS, LOS, CEO,
+  GRP, FDC, XCV, SAY, GMD, WAL) — still not imported into the runtime.
+  Binding one is a repeat of §3.1's pattern (one `<domain>_canonical`
+  package), not a new architecture decision; none was requested this
+  pass beyond KORA.
+- **KOR-01's own `contexts` (INTERNAL/EXTERNAL/BRIDGE)** — still an
+  empty list (`KOR_CONTEXTS = {}`), still unresolved for the same
+  reason as before (§ unchanged from the original pass): no
+  reconciliation ticket has ever fixed KOR's contexts, and legacy
+  `seed_data.py` carries no `contexts` field for KOR-01/02 either.
+- **A real public preview URL** — not obtainable from this remote
+  sandbox (§6.4). Screenshots + a locally-reproducible setup are the
+  honest substitute.
 - **`QualificationDefinition.required_skill_ids`** (an optional extra
   gate beyond "certification X passed") is implemented but unused by
   the KOR-01 pilot definition — the certification pass alone is
   sufficient for `QUAL-KOR01-PRODUCTEUR-PODCAST`. Exercised in code, not
   yet exercised by a definition that actually sets it.
 
-## 7. Verification summary
+## 8. Verification summary
 
 - `python3 -m pytest backend/tests/ --ignore=backend/tests/backend_test.py`
   → **130 passed** (129 pre-existing unmodified tests + 1 new Rail 2
-  E2E test), 0 failed, 0 regressions.
+  E2E test), 0 failed, 0 regressions. Re-run again after the §6
+  extension (db.py/seed.py/server.py edits) — still 130/130.
 - `pyflakes` clean on every new/edited file
   (`kor_canonical/`, `qualification/`, `canonical_common/`,
   `api/kor_canonical.py`, `api/qualification.py`, `api/missions.py`,
@@ -347,9 +446,17 @@ failures).
   (`M04`'s real `PREREQUISITES: M03` header resolves to
   `KOR01-M03`; `M01`'s real `PREREQUISITES: Aucun` resolves to `None`
   — never guessed).
+- §6 extension: `eslint` clean on all 5 new frontend files + `App.js`;
+  a real running backend (`MOCK_DB=1`) + frontend (`yarn start`)
+  driven with Playwright through 9 real routes, screenshots delivered
+  to the Founder alongside this report.
 
-**Gate status**: MET. KOR-01 is followable end-to-end — Learning →
-Skill → Evidence → Assessment → Certification → Qualification →
-Opportunity → Mission — in real, tested runtime code, with zero legacy
-behavior changed for FMS, KLT, GMD, WAL, or any pre-existing
-certification/mission flow.
+**Gate status**: MET, and re-verified against all 15 KOR formations
+(not just the pilot) plus a live click-through. KOR-01 is followable
+end-to-end — Learning → Skill → Evidence → Assessment → Certification
+→ Qualification → Opportunity → Mission — in real, tested, and now
+also visually verified runtime code, with zero legacy behavior changed
+for FMS, KLT, GMD, WAL, or any pre-existing certification/mission flow
+(the one behavior change, §6.3's `content_status` backfill, is a bug
+fix that makes existing, already-`published`-by-intent formations
+visible — never a new behavior).

@@ -23,6 +23,18 @@ async def seed_if_empty() -> None:
             {"$set": doc},
             upsert=True,
         )
+    # `seed_data.FORMATIONS`' raw dicts never carry `content_status` — the
+    # Pydantic `Formation.content_status` default ("published") only
+    # applies when a `Formation(...)` is constructed, never to a dict
+    # `$set` straight into Mongo. Real-bug backfill (this affects every
+    # deployment, not just this pass): any formation missing the field
+    # entirely is made visible to the public `GET /api/formations` query
+    # (`{"content_status": "published"}`, which never matches a missing
+    # field) — never touches a formation that already carries an explicit
+    # draft/published/archived decision.
+    await db.formations.update_many(
+        {"content_status": {"$exists": False}}, {"$set": {"content_status": "published"}}
+    )
 
     # Badges
     if await db.badges.count_documents({}) == 0:

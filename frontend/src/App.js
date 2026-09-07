@@ -28,6 +28,9 @@ const CanonicalModuleView = lazy(() => import("@/pages/CanonicalModuleView"));
 const CanonicalKltFormations = lazy(() => import("@/pages/CanonicalKltFormations"));
 const CanonicalKltFormationDetail = lazy(() => import("@/pages/CanonicalKltFormationDetail"));
 const CanonicalKltModuleView = lazy(() => import("@/pages/CanonicalKltModuleView"));
+const CanonicalKorFormations = lazy(() => import("@/pages/CanonicalKorFormations"));
+const CanonicalKorFormationDetail = lazy(() => import("@/pages/CanonicalKorFormationDetail"));
+const CanonicalKorModuleView = lazy(() => import("@/pages/CanonicalKorModuleView"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
@@ -80,6 +83,11 @@ function App() {
                 <Route path="/kiltikonet-canonical" element={<Protected><CanonicalKltFormations /></Protected>} />
                 <Route path="/kiltikonet-canonical/:formationCode" element={<Protected><CanonicalKltFormationDetail /></Protected>} />
                 <Route path="/kiltikonet-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKltModuleView /></Protected>} />
+                {/* RAIL 2 — "Master -> Runtime Academy" (2026-09-06) — canonical
+                    KORA runtime binding, read-only pages, separate tree. */}
+                <Route path="/kora-canonical" element={<Protected><CanonicalKorFormations /></Protected>} />
+                <Route path="/kora-canonical/:formationCode" element={<Protected><CanonicalKorFormationDetail /></Protected>} />
+                <Route path="/kora-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKorModuleView /></Protected>} />
                 <Route
                   path="/trainer"
                   element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
