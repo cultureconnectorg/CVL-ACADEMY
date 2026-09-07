@@ -30,7 +30,7 @@ import api.progression as progression_module
 import fms_canonical
 import klt_canonical
 import kor_canonical
-from fms_canonical.models import CanonicalFormation, CanonicalModuleProgress
+from fms_canonical.models import CanonicalFormation, CanonicalModule, CanonicalModuleProgress
 from klt_canonical.models import CanonicalKltFormation, CanonicalKltModuleProgress
 from kor_canonical.models import CanonicalKorFormation
 from models import User
@@ -111,8 +111,21 @@ def stub_canonical(monkeypatch):
     async def kor_progress(user_id, **_kw):
         return []  # no KOR activity at all for this user
 
+    # get_first_unviewed_canonical_module (api/learning.py's next_action
+    # fallback) also needs the single-module getters — FMS-01-M02 is the
+    # real "first unviewed" module fms_progress above leaves open.
+    async def fms_module(formation_code, module_code, **_kw):
+        return CanonicalModule(
+            canonical_formation_code=formation_code,
+            canonical_module_code=module_code,
+            order_index=1,
+            title="Module Deux",
+            prerequisites={"status": "UNSPECIFIED"},
+        )
+
     monkeypatch.setattr(fms_canonical, "list_canonical_formations", fms_formations)
     monkeypatch.setattr(fms_canonical, "get_user_canonical_progress", fms_progress)
+    monkeypatch.setattr(fms_canonical, "get_canonical_module", fms_module)
     monkeypatch.setattr(klt_canonical, "list_canonical_klt_formations", klt_formations)
     monkeypatch.setattr(klt_canonical, "get_user_klt_progress", klt_progress)
     monkeypatch.setattr(kor_canonical, "list_canonical_kor_formations", kor_formations)

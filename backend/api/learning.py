@@ -19,7 +19,10 @@ from lx import (
     phase_completion_flags,
 )
 from models import User
-from services.canonical_convergence import get_canonical_progress_summary
+from services.canonical_convergence import (
+    get_canonical_progress_summary,
+    get_first_unviewed_canonical_module,
+)
 from services.frek_core import frek_core
 
 router = APIRouter(tags=["learning"])
@@ -317,10 +320,37 @@ async def user_learning_path(current: User = Depends(get_current_user)):
                     "module_name": m["name"],
                     "status": status,
                     "pole_color": s["pole_color"],
+                    "source": "legacy",
+                    "route": f"/formations/{s['code']}/modules/{m['code']}",
                 }
                 break
         if next_action:
             break
+
+    # CONVERGENCE_RUNTIME (reconciliation 2026-09-07, ACA-0019) — a
+    # learner whose legacy path has nothing actionable (every legacy
+    # formation locked/validated, or the learner has none assigned)
+    # must never see an empty "next action" when real canonical work
+    # is genuinely available. Tried only when legacy found nothing —
+    # legacy stays authoritative whenever it has a real next step,
+    # never silently overridden. `route` carries the correct one of
+    # three canonical frontend prefixes (`/canonical`,
+    # `/kiltikonet-canonical`, `/kora-canonical`) — see
+    # get_first_unviewed_canonical_module's own docstring for why the
+    # caller must never have to know which domain answered.
+    if next_action is None:
+        canonical_next = await get_first_unviewed_canonical_module(current.id)
+        if canonical_next:
+            next_action = {
+                "formation_code": canonical_next["formation_code"],
+                "formation_name": canonical_next["formation_name"],
+                "module_code": canonical_next["module_code"],
+                "module_name": canonical_next["module_name"],
+                "status": "available",
+                "pole_color": None,
+                "source": canonical_next["domain"],
+                "route": canonical_next["route"],
+            }
 
     # CAN-01 (Audit Chirurgical 2026-09-07) — additive convergence: a
     # learner progressing through FMS-canonical/Kiltikonet/KORA content

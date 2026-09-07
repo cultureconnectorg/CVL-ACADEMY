@@ -109,6 +109,92 @@ async def _kor_summary(user_id: str) -> List[Dict[str, Any]]:
     ]
 
 
+async def _first_unviewed_fms(user_id: str) -> Any:
+    formations = await fms_canonical.list_canonical_formations()
+    progress = await fms_canonical.get_user_canonical_progress(user_id)
+    viewed = {p.canonical_module_code for p in progress if p.content_viewed_at}
+    for f in formations:
+        for module_code in f.module_codes_in_order:
+            if module_code not in viewed:
+                module = await fms_canonical.get_canonical_module(
+                    f.canonical_formation_code, module_code
+                )
+                return {
+                    "domain": "FMS",
+                    "formation_code": f.canonical_formation_code,
+                    "formation_name": f.metier_name,
+                    "module_code": module_code,
+                    "module_name": module.title if module else module_code,
+                    "route": f"/canonical/{f.canonical_formation_code}/{module_code}",
+                }
+    return None
+
+
+async def _first_unviewed_klt(user_id: str) -> Any:
+    formations = await klt_canonical.list_canonical_klt_formations()
+    progress = await klt_canonical.get_user_klt_progress(user_id)
+    viewed = {p.module_code for p in progress if p.content_viewed_at}
+    for f in formations:
+        for module_code in f.module_codes_in_order:
+            if module_code not in viewed:
+                module = await klt_canonical.get_canonical_klt_module(
+                    f.klt_formation_code, module_code
+                )
+                return {
+                    "domain": "KLT",
+                    "formation_code": f.klt_formation_code,
+                    "formation_name": f.title,
+                    "module_code": module_code,
+                    "module_name": module.title if module else module_code,
+                    "route": f"/kiltikonet-canonical/{f.klt_formation_code}/{module_code}",
+                }
+    return None
+
+
+async def _first_unviewed_kor(user_id: str) -> Any:
+    formations = await kor_canonical.list_canonical_kor_formations()
+    progress = await kor_canonical.get_user_kor_progress(user_id)
+    viewed = {p.module_code for p in progress if p.content_viewed_at}
+    for f in formations:
+        for module_code in f.module_codes_in_order:
+            if module_code not in viewed:
+                module = await kor_canonical.get_canonical_kor_module(
+                    f.kor_formation_code, module_code
+                )
+                return {
+                    "domain": "KOR",
+                    "formation_code": f.kor_formation_code,
+                    "formation_name": f.title,
+                    "module_code": module_code,
+                    "module_name": module.title if module else module_code,
+                    "route": f"/kora-canonical/{f.kor_formation_code}/{module_code}",
+                }
+    return None
+
+
+async def get_first_unviewed_canonical_module(user_id: str) -> Any:
+    """CONVERGENCE_RUNTIME — the canonical equivalent of legacy's
+    `next_action` in `GET /user/learning-path`. Tried FMS, then KLT,
+    then KOR, in that order (mirrors `check_certification_eligibility`'s
+    own domain-precedence in `certification/service.py`); returns the
+    first canonical module across the three domains this user hasn't
+    yet viewed, or `None` if every domain is either exhausted or has no
+    content imported at all. Deliberately a real, precomputed `route`
+    string rather than a bare formation/module code pair — the three
+    canonical domains live under three different frontend route
+    prefixes (`/canonical`, `/kiltikonet-canonical`, `/kora-canonical`),
+    unlike legacy's single `/formations/:code/modules/:code` — a caller
+    building the URL itself would have to already know which domain
+    produced the result, exactly the kind of split-brain knowledge this
+    convergence module exists to keep out of every caller.
+    """
+    for finder in (_first_unviewed_fms, _first_unviewed_klt, _first_unviewed_kor):
+        result = await finder(user_id)
+        if result:
+            return result
+    return None
+
+
 async def get_canonical_progress_summary(user_id: str) -> Dict[str, Any]:
     """One converged, read-only view across all three canonical
     domains (FMS/KLT/KOR) for `user_id` — additive to, never replacing,

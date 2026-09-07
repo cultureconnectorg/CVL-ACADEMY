@@ -100,7 +100,7 @@ export default function Dashboard() {
               </div>
             </div>
             <Link
-              to={`/formations/${path.next_action.formation_code}/modules/${path.next_action.module_code}`}
+              to={path.next_action.route || `/formations/${path.next_action.formation_code}/modules/${path.next_action.module_code}`}
               data-testid="next-action-open"
               className="btn-primary"
             >
