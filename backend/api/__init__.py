@@ -11,11 +11,11 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from . import (assistants, auth, badges, canonical, certification, fms,
-               fms_lineage, formations, health, integrations, klt_canonical,
-               kor_canonical, learning, mentor, missions, onboarding, orgs,
-               physical_sessions, progression, quizzes, qualification,
-               skills, templates, wallet)
+from . import (assistants, auth, badges, canonical, certification, commerce,
+               fms, fms_lineage, formations, health, integrations,
+               klt_canonical, kor_canonical, learning, mentor, missions,
+               onboarding, orgs, physical_sessions, progression, quizzes,
+               qualification, skills, templates, wallet)
 
 router = APIRouter(prefix="/api")
 
@@ -44,5 +44,6 @@ for module in (
     assistants,
     wallet,
     integrations,
+    commerce,
 ):
     router.include_router(module.router)
