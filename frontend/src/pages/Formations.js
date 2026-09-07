@@ -19,8 +19,15 @@ function publicPathFromCatalogue(formations) {
     other_poles: formations.map((f) => ({ ...f, is_recommended: false, is_unlocked: true })),
     next_action: null,
     metier_vise: null,
+    canonical: { canonical_formations: [] },
   };
 }
+
+// CONVERGENCE_RUNTIME (reconciliation 2026-09-07, ACA-0006) — the three
+// canonical domains live under three different frontend route prefixes;
+// this is the one place that knowledge lives, so a card never has to
+// know which domain answered.
+const CANONICAL_ROUTE_PREFIX = { FMS: "/canonical", KLT: "/kiltikonet-canonical", KOR: "/kora-canonical" };
 
 export default function Formations() {
   const { t } = useI18n();
@@ -56,6 +63,19 @@ export default function Formations() {
     return [...path.own_pole, ...path.other_poles];
   }, [path]);
 
+  // ACA-0006 reconciliation — real cross-linking: a legacy formation
+  // whose code also has real canonical content gets a genuine link to
+  // it, keyed by the exact same formation_code (never inferred, never
+  // fuzzy-matched). `path.canonical.canonical_formations` is the same
+  // real, already-tested convergence data P0-G computes server-side.
+  const canonicalByCode = useMemo(() => {
+    const map = {};
+    for (const f of path?.canonical?.canonical_formations ?? []) {
+      map[f.formation_code] = f;
+    }
+    return map;
+  }, [path]);
+
   const totalModules = allFormations.reduce((n, f) => n + (f.modules_count || 0), 0);
   const visible = pole === "ALL" ? allFormations : allFormations.filter(f => f.pole === pole);
 
@@ -85,7 +105,7 @@ export default function Formations() {
             </div>
           </div>
           <Link
-            to={`/formations/${path.next_action.formation_code}/modules/${path.next_action.module_code}`}
+            to={path.next_action.route || `/formations/${path.next_action.formation_code}/modules/${path.next_action.module_code}`}
             data-testid="next-action-cta"
             className="btn-primary text-sm"
           >
@@ -137,6 +157,7 @@ export default function Formations() {
                 key={f.code}
                 f={f}
                 t={t}
+                canonical={canonicalByCode[f.code]}
                 focusedId={cardFocus.focusedId}
                 onCardFocus={cardFocus.focus}
                 onCardBlur={cardFocus.clear}
@@ -161,6 +182,7 @@ export default function Formations() {
                 key={f.code}
                 f={f}
                 t={t}
+                canonical={canonicalByCode[f.code]}
                 focusedId={cardFocus.focusedId}
                 onCardFocus={cardFocus.focus}
                 onCardBlur={cardFocus.clear}
@@ -173,20 +195,22 @@ export default function Formations() {
   );
 }
 
-function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur }) {
+const CANONICAL_ROUTE_LABEL = { FMS: "FMS canonique", KLT: "Kiltikonet canonique", KOR: "KORA canonique" };
+
+function FormationCard({ f, t, canonical, focusedId, onCardFocus, onCardBlur }) {
   const locked = !f.is_unlocked;
   const validated = f.validated_count > 0 && f.validated_count === f.modules_count;
   return (
     // TARGET -> APPROACH, other cards -> RECEDE, nothing focused -> CALM.
     // Driven by real DOM focus (keyboard tab or the click that's about to
     // navigate) on the Link below, never by :hover — NO_GENERIC_SCALE_HOVER.
-    <FocusFieldItem id={f.code} focusedId={focusedId} className="h-full">
+    <FocusFieldItem id={f.code} focusedId={focusedId} className="h-full flex flex-col gap-2">
       <Link
         to={`/formations/${f.code}`}
         data-testid={`formation-${f.code}`}
         onFocus={() => onCardFocus?.(f.code)}
         onBlur={() => onCardBlur?.()}
-        className={`h-full cvln-card p-6 group flex flex-col relative overflow-hidden ${locked ? "opacity-75" : ""}`}
+        className={`flex-1 cvln-card p-6 group flex flex-col relative overflow-hidden ${locked ? "opacity-75" : ""}`}
       >
         {locked && (
           <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 flex items-center justify-center text-white" data-testid={`lock-${f.code}`}>
@@ -239,6 +263,15 @@ function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur }) {
           </div>
         </div>
       </Link>
+      {canonical && (
+        <Link
+          to={`${CANONICAL_ROUTE_PREFIX[canonical.domain]}/${canonical.formation_code}`}
+          data-testid={`canonical-link-${f.code}`}
+          className="text-[11px] mono uppercase tracking-wider text-[--cvln-orange] hover:underline px-1"
+        >
+          → {CANONICAL_ROUTE_LABEL[canonical.domain]} ({canonical.modules_viewed}/{canonical.modules_total})
+        </Link>
+      )}
     </FocusFieldItem>
   );
 }
