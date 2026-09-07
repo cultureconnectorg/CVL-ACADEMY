@@ -64,8 +64,14 @@ function App() {
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
                 <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
-                <Route path="/formations" element={<Protected><Formations /></Protected>} />
-                <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
+                {/* ACA-0009 — public formation discovery: catalogue + detail
+                    are real pages a signed-out visitor can browse (backend
+                    already supports this via get_current_user_optional —
+                    api/formations.py). Layout itself doesn't require a
+                    user, so these render outside <Protected>; only the
+                    module *content* route below still requires a session. */}
+                <Route path="/formations" element={<Layout><Formations /></Layout>} />
+                <Route path="/formations/:code" element={<Layout><FormationDetail /></Layout>} />
                 <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
                 <Route path="/missions" element={<Protected><Missions /></Protected>} />
                 <Route path="/badges" element={<Protected><Badges /></Protected>} />

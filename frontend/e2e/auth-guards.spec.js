@@ -5,11 +5,16 @@ const { test, expect } = require("@playwright/test");
 // exact behavior `Protected` implements (`if (!user) return <Navigate
 // to="/" replace />`), and this suite proves it holds for each route
 // individually rather than trusting the shared wrapper by inspection alone.
+//
+// ACA-0009 (2026-09-07) — "/formations" and "/formations/:code" are
+// deliberately *not* in this list any more: real public formation
+// discovery, not a bug. See formations-discovery.spec.js for the
+// signed-out-visitor coverage those two routes now need instead. The
+// module-content route stays protected — discovery is public, the
+// lesson itself still requires a session.
 const PROTECTED_PATHS = [
   "/dashboard",
   "/roadmap",
-  "/formations",
-  "/formations/FMS-01",
   "/formations/FMS-01/modules/FMS-01-M01",
   "/missions",
   "/badges",

@@ -2,11 +2,29 @@ import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Lock, CheckCircle } from "iconoir-react";
 import { api } from "@/lib/api";
+import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { FocusFieldItem, useFocusField } from "@/lib/CvlnFocusField";
 
+// ACA-0009 — public formation discovery: `/user/learning-path` is a real
+// per-user endpoint (`get_current_user`, no anonymous fallback) — a
+// signed-out visitor never gets a personalized path. Rather than fake
+// one, an anonymous visitor gets the real, unfiltered public catalogue
+// (`GET /formations`, already optional-auth in api/formations.py) shaped
+// into the same `{ own_pole, other_poles, next_action }` contract this
+// page already renders, so the JSX below needs no branching.
+function publicPathFromCatalogue(formations) {
+  return {
+    own_pole: [],
+    other_poles: formations.map((f) => ({ ...f, is_recommended: false, is_unlocked: true })),
+    next_action: null,
+    metier_vise: null,
+  };
+}
+
 export default function Formations() {
   const { t } = useI18n();
+  const { user, loading: authLoading } = useAuth();
   const [path, setPath] = useState(null);
   const [poles, setPoles] = useState([]);
   const [pole, setPole] = useState("ALL");
@@ -16,11 +34,22 @@ export default function Formations() {
   const cardFocus = useFocusField();
 
   useEffect(() => {
-    Promise.all([
-      api.get("/user/learning-path").then(r => r.data),
-      api.get("/poles").then(r => r.data),
-    ]).then(([lp, p]) => { setPath(lp); setPoles(p); });
-  }, []);
+    if (authLoading) return;
+    if (user) {
+      Promise.all([
+        api.get("/user/learning-path").then(r => r.data),
+        api.get("/poles").then(r => r.data),
+      ]).then(([lp, p]) => { setPath(lp); setPoles(p); });
+    } else {
+      Promise.all([
+        api.get("/formations").then(r => r.data),
+        api.get("/poles").then(r => r.data),
+      ]).then(([formations, p]) => {
+        setPath(publicPathFromCatalogue(formations));
+        setPoles(p);
+      });
+    }
+  }, [user, authLoading]);
 
   const allFormations = useMemo(() => {
     if (!path) return [];
