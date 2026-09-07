@@ -376,6 +376,16 @@ class Mission(BaseModel):
     stade_required: str
     entity: str  # CVLN entity that gets outputs
     status_type: str = "open"  # open | featured | urgent
+    # RAIL 2 (Master -> Runtime Academy, 2026-09-06) — the "Opportunity"
+    # link in Learning -> Skill -> Evidence -> Assessment ->
+    # Certification -> Qualification -> Opportunity -> Mission. Additive,
+    # backward-compatible: default empty = open to everyone, exactly the
+    # behavior every mission had before this field existed. A non-empty
+    # list gates the mission on `qualification.has_any_of` — see
+    # `api/missions.py`. Opportunity itself is not a separate stored
+    # entity; this field *is* the eligibility view (see
+    # `docs/cvln_academy_master/RAIL2_MASTER_RUNTIME_INTEGRATION.md`).
+    required_qualification_codes: List[str] = Field(default_factory=list)
 
 
 class UserMission(BaseModel):

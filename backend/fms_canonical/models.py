@@ -27,6 +27,11 @@ from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from canonical_common.audience import Audience
+from canonical_common.audience import is_learner_facing as _is_learner_facing
+from canonical_common.audience import learner_facing_types, staff_only_types
+from canonical_common.audience import resource_audience as _resource_audience
+
 # The one archive this runtime binding was built and verified against
 # (DEC-002). A future archive gets a new version string; nothing here
 # assumes there will only ever be one.
@@ -45,7 +50,9 @@ CANONICAL_VERSION_CURRENT = "FMS_20260822_V1"
 # helper — never leaked by default.
 # ---------------------------------------------------------------------
 
-Audience = Literal["LEARNER", "TRAINER", "CORRECTOR", "JURY", "ADMIN", "INTERNAL"]
+# `Audience` itself now lives in `canonical_common.audience` (Rail 2:
+# this was byte-for-byte identical to klt_canonical's own copy — one
+# definition, imported here, never redefined).
 
 # Every real type from `fms_import/models.py`'s own `FmsResourceType` —
 # confirmed exhaustively against `docs/FMS_IMPORT_VALIDATION_REPORT.md`'s
@@ -93,25 +100,24 @@ RESOURCE_AUDIENCE: Dict[str, List[Audience]] = {
 
 # Backward-compatible derived sets (used by read_model.py's learner-safe
 # content lookup) — computed from RESOURCE_AUDIENCE, never maintained
-# separately, so the two can't drift apart.
-LEARNER_FACING_TYPES: frozenset = frozenset(
-    t for t, aud in RESOURCE_AUDIENCE.items() if "LEARNER" in aud
-)
-STAFF_ONLY_TYPES: frozenset = frozenset(
-    t for t, aud in RESOURCE_AUDIENCE.items() if "LEARNER" not in aud
-)
+# separately, so the two can't drift apart. Generic computation now
+# lives in canonical_common; only the mapping itself is local.
+LEARNER_FACING_TYPES: frozenset = learner_facing_types(RESOURCE_AUDIENCE)
+STAFF_ONLY_TYPES: frozenset = staff_only_types(RESOURCE_AUDIENCE)
 
 
 def resource_audience(resource_type: str) -> List[Audience]:
     """Fail-safe: an unrecognized type gets the most restrictive default
-    (`ADMIN`+`INTERNAL`), never `LEARNER`."""
-    return RESOURCE_AUDIENCE.get(resource_type, ["ADMIN", "INTERNAL"])
+    (`ADMIN`+`INTERNAL`), never `LEARNER`. Same public signature as
+    before this was extracted to `canonical_common` — no caller needs
+    to change."""
+    return _resource_audience(RESOURCE_AUDIENCE, resource_type)
 
 
 def is_learner_facing(resource_type: str) -> bool:
     """Fail-safe: an unrecognized type is treated as staff-only, never
     leaked by default."""
-    return "LEARNER" in resource_audience(resource_type)
+    return _is_learner_facing(RESOURCE_AUDIENCE, resource_type)
 
 
 # ---------------------------------------------------------------------

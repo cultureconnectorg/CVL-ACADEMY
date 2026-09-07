@@ -13,6 +13,7 @@ from typing import Dict, List, Optional
 from fastapi import HTTPException
 
 from db import db, utc_now_iso
+from qualification import maybe_issue_qualification
 from services.events import events
 from services.frek_core import frek_core
 from skills.progression import record_evidence
@@ -153,6 +154,13 @@ async def grade_attempt(
             currency="jcc",
             ref=attempt.certification_code,
             description=f"Certification {attempt.certification_code} réussie",
+        )
+        # RAIL 2 — Certification -> Qualification. A pure no-op whenever
+        # no QualificationDefinition names this certification_code (the
+        # case for every certification flow that predates this ticket:
+        # FMS, GMD, WAL, ...) — see qualification/service.py's docstring.
+        await maybe_issue_qualification(
+            attempt.user_id, attempt.certification_code, attempt_id
         )
 
     return await _get_attempt(attempt_id)

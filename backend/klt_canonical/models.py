@@ -31,6 +31,11 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from canonical_common.audience import Audience
+from canonical_common.audience import is_learner_facing as _is_learner_facing
+from canonical_common.audience import learner_facing_types
+from canonical_common.audience import resource_audience as _resource_audience
+
 KLT_CANONICAL_VERSION_CURRENT = "KLT_20260904_V1"
 
 # The 8 formations named in KLT_MASTER_MAP_v1 (docs/KILTIKONET_KLT0001_
@@ -73,7 +78,8 @@ StructuralStatus = Literal["COMPLETE", "PARTIAL"]
 # genuinely learner-facing content by default.
 # ---------------------------------------------------------------------
 
-Audience = Literal["LEARNER", "TRAINER", "CORRECTOR", "JURY", "ADMIN", "INTERNAL"]
+# `Audience` now lives in `canonical_common.audience` (Rail 2: this was
+# byte-for-byte identical to fms_canonical's own copy).
 
 RESOURCE_AUDIENCE: dict = {
     "module": ["LEARNER"],
@@ -99,16 +105,14 @@ RESOURCE_AUDIENCE: dict = {
 
 
 def resource_audience(resource_type: str) -> List[Audience]:
-    return RESOURCE_AUDIENCE.get(resource_type, ["ADMIN", "INTERNAL"])
+    return _resource_audience(RESOURCE_AUDIENCE, resource_type)
 
 
 def is_learner_facing(resource_type: str) -> bool:
-    return "LEARNER" in resource_audience(resource_type)
+    return _is_learner_facing(RESOURCE_AUDIENCE, resource_type)
 
 
-LEARNER_FACING_TYPES: frozenset = frozenset(
-    t for t, aud in RESOURCE_AUDIENCE.items() if "LEARNER" in aud
-)
+LEARNER_FACING_TYPES: frozenset = learner_facing_types(RESOURCE_AUDIENCE)
 
 
 # ---------------------------------------------------------------------
