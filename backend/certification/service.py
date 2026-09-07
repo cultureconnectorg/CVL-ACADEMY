@@ -8,11 +8,15 @@ signal that Rule 11 asks for).
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
+import fms_canonical
+import klt_canonical
+import kor_canonical
 from fastapi import HTTPException
 
 from db import db, utc_now_iso
+from lx import compute_status
 from qualification import maybe_issue_qualification
 from services.events import events
 from services.frek_core import frek_core
@@ -37,8 +41,111 @@ async def get_rubric(certification_code: str) -> Rubric:
     return Rubric(**doc)
 
 
+async def _check_legacy_eligibility(
+    user_id: str, formation_code: str
+) -> Optional[Tuple[bool, str]]:
+    """Returns `None` if `formation_code` isn't a legacy formation at
+    all (caller should try the canonical domains next); otherwise the
+    real (eligible, reason) verdict for this exact user."""
+    form = await db.formations.find_one({"code": formation_code}, {"_id": 0})
+    if not form:
+        return None
+    modules = form.get("modules", [])
+    if not modules:
+        return False, "Formation sans module — rien à valider avant certification."
+    progress_docs = await db.progress.find(
+        {"user_id": user_id}, {"_id": 0}
+    ).to_list(500)
+    prog_by_mod = {p["module_code"]: p for p in progress_docs}
+    incomplete = [
+        m["code"] for m in modules if compute_status(prog_by_mod.get(m["code"])) != "validated"
+    ]
+    if incomplete:
+        preview = ", ".join(incomplete[:5]) + ("…" if len(incomplete) > 5 else "")
+        return False, f"Modules non validés avant certification : {preview}"
+    return True, ""
+
+
+async def _check_canonical_eligibility(
+    user_id: str, formation_code: str
+) -> Optional[Tuple[bool, str]]:
+    """Same contract as `_check_legacy_eligibility`, tried across the
+    three canonical domains (FMS/KLT/KOR) in turn. Canonical's one
+    honest, server-recorded signal today is `content_viewed_at` (see
+    each domain's own progress.py docstring) — real content-viewed
+    coverage of every module is the strongest gate this domain can
+    honestly enforce right now; it is never relabeled "validated" or
+    "completed", the words the legacy path above earns by actually
+    clearing a quiz + mini-mission."""
+    fms_formation = await fms_canonical.get_canonical_formation(formation_code)
+    if fms_formation:
+        fms_progress = await fms_canonical.get_user_canonical_progress(
+            user_id, canonical_formation_code=formation_code
+        )
+        fms_viewed = {
+            p.canonical_module_code for p in fms_progress if p.content_viewed_at
+        }
+        missing = [c for c in fms_formation.module_codes_in_order if c not in fms_viewed]
+        if missing:
+            preview = ", ".join(missing[:5]) + ("…" if len(missing) > 5 else "")
+            return False, f"Modules canoniques non consultés avant certification : {preview}"
+        return True, ""
+
+    klt_formation = await klt_canonical.get_canonical_klt_formation(formation_code)
+    if klt_formation:
+        klt_progress = await klt_canonical.get_user_klt_progress(
+            user_id, klt_formation_code=formation_code
+        )
+        klt_viewed = {p.module_code for p in klt_progress if p.content_viewed_at}
+        missing = [c for c in klt_formation.module_codes_in_order if c not in klt_viewed]
+        if missing:
+            preview = ", ".join(missing[:5]) + ("…" if len(missing) > 5 else "")
+            return False, f"Modules canoniques non consultés avant certification : {preview}"
+        return True, ""
+
+    kor_formation = await kor_canonical.get_canonical_kor_formation(formation_code)
+    if kor_formation:
+        kor_progress = await kor_canonical.get_user_kor_progress(
+            user_id, kor_formation_code=formation_code
+        )
+        kor_viewed = {p.module_code for p in kor_progress if p.content_viewed_at}
+        missing = [c for c in kor_formation.module_codes_in_order if c not in kor_viewed]
+        if missing:
+            preview = ", ".join(missing[:5]) + ("…" if len(missing) > 5 else "")
+            return False, f"Modules canoniques non consultés avant certification : {preview}"
+        return True, ""
+
+    return None
+
+
+async def check_certification_eligibility(
+    user_id: str, formation_code: str
+) -> Tuple[bool, str]:
+    """CERT-01 (Audit Chirurgical 2026-09-07) — real, server-enforced
+    eligibility gate. `start_attempt` used to check only that a rubric
+    existed for `certification_code`; nothing stopped a candidate who
+    had never opened a single module from starting (and, once graded,
+    passing) a certification attempt. Tries the legacy formation first,
+    then each canonical domain in turn; a `formation_code` that matches
+    NONE of them is rejected outright rather than silently allowed —
+    an unrecognized formation_code on a rubric is an admin/data error,
+    never a reason to skip the gate."""
+    legacy = await _check_legacy_eligibility(user_id, formation_code)
+    if legacy is not None:
+        return legacy
+    canonical = await _check_canonical_eligibility(user_id, formation_code)
+    if canonical is not None:
+        return canonical
+    return False, f"Formation « {formation_code} » introuvable (ni legacy, ni canonique)."
+
+
 async def start_attempt(user_id: str, certification_code: str) -> CertificationAttempt:
     rubric = await get_rubric(certification_code)
+    eligible, reason = await check_certification_eligibility(
+        user_id, rubric.formation_code
+    )
+    if not eligible:
+        raise HTTPException(status_code=403, detail=reason)
     prior = await db.certification_attempts.count_documents(
         {"user_id": user_id, "certification_code": certification_code}
     )

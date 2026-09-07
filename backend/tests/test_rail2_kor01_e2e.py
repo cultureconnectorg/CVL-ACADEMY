@@ -60,6 +60,7 @@ from certification.models import GradeInput, Rubric, RubricCriterion, RubricInpu
 from certification.service import (get_rubric, grade_attempt, start_attempt,
                                    submit_attempt)
 from kor_canonical.import_pipeline import import_kor_docs
+from kor_canonical.progress import record_content_viewed
 from kor_canonical.read_model import (get_canonical_kor_formation,
                                       list_canonical_kor_skills)
 from models import Mission, User
@@ -171,6 +172,16 @@ async def test_kor_formation_full_chain_learning_to_mission(
     assert formation.fully_complete is True
     assert formation.module_count == expected_skill_count
     assert formation.unresolved_skill_ids == []
+
+    # ---- 1b. CERT-01 (Audit Chirurgical 2026-09-07): the candidate
+    # actually opens every real module before certification is even
+    # attemptable — this is exactly the server-enforced eligibility
+    # gate `certification.service.check_certification_eligibility` now
+    # requires; skipping it (as this test previously did) would 403 at
+    # `start_attempt` below, same as it would for a real candidate who
+    # never opened a single module.
+    for module_code in formation.module_codes_in_order:
+        await record_content_viewed(user.id, formation_code, module_code)
 
     # ---- 2. Skill + Evidence: register and acquire all real skills ---
     kor_skills = await list_canonical_kor_skills(formation_code)
