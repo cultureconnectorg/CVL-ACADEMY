@@ -18,7 +18,17 @@ router = APIRouter(
 
 
 @router.get("/quiz")
-async def get_module_quiz(formation_code: str, module_code: str):
+async def get_module_quiz(
+    formation_code: str, module_code: str, current: User = Depends(get_current_user)
+):
+    """AUTH-01 (Audit Chirurgical 2026-09-07) — real learning content,
+    not catalogue discovery. `/formations` and `/formations/{code}`
+    (api/formations.py) are deliberately public per ACA-0009 (`PUBLIC_
+    DISCOVERY = TRUE`); a quiz's questions/choices are the protected
+    learning material itself (`PUBLIC_LEARNING = FALSE`) — correct
+    answers were already hidden from the response, but the questions
+    and the full module object were reachable with no session at all
+    before this fix."""
     doc = await db.formations.find_one({"code": formation_code}, {"_id": 0})
     if not doc:
         raise HTTPException(status_code=404, detail="Formation introuvable")

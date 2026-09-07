@@ -48,13 +48,20 @@ async def create_rubric(
 
 
 @router.get("/rubrics", response_model=List[Rubric])
-async def list_rubrics():
+async def list_rubrics(current: User = Depends(get_current_user)):
+    """AUTH-01 sweep (Audit Chirurgical 2026-09-07) — a rubric names the
+    exact grading criteria (weights, eliminatory skills, mention caps):
+    real, protected certification content, not catalogue metadata. Any
+    signed-in user (not staff-only — a candidate legitimately consults
+    what they'll be graded on), never an anonymous visitor."""
     docs = await db.certification_rubrics.find({}, {"_id": 0}).to_list(200)
     return [Rubric(**d) for d in docs]
 
 
 @router.get("/{certification_code}/rubric", response_model=Rubric)
-async def read_rubric(certification_code: str):
+async def read_rubric(
+    certification_code: str, current: User = Depends(get_current_user)
+):
     return await get_rubric(certification_code)
 
 
