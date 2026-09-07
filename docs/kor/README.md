@@ -37,7 +37,8 @@ selon la méthode `AUDIT → CANONICALIZE → FREEZE → BUILD → TEST → VERI
 | `KOR-09` | Développement d'audience diaspora | 11 | 11/11 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`→`08` ; `KORA_PRODUCT_GAP` CRM/A-B testing à grande échelle inchangé) |
 | `KOR-10` | Modèle économique streaming | 10 | 10/10 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`→`09` ; vigilance CVE et citation Wallet/JCC réelles préservées) |
 | `KOR-11` | Trust, Safety & Content Governance | 13 | 13/13 | `BUILT`, `PARTIAL_PACKAGE`, reclassifié depuis `DRAFTED` — gabarit compact d'origine entièrement reconstruit au gabarit flagship 14-sections (identique à `KOR-01`→`10`), les 13/13 modules ; `READY_FOR_FREK_PROOF = FALSE` préservé partout (Trust & Safety n'émet aucun signal de preuve créateur, par conception) |
-| `KOR-12`→`15` | 4 derniers angles métier KORA | variable | 100% par formation | `BUILT`, `DRAFTED` (chaque `REFERENTIAL.md` self-déclare `STATUS = PROPOSED` pour au moins un scénario de cas ; même gabarit compact que `KOR-11` avant sa reconstruction, non encore engagé) |
+| `KOR-12` | Streaming Data & Cultural Intelligence | 13 | 13/13 | `BUILT`, `PARTIAL_PACKAGE`, reclassifié depuis `DRAFTED` — gabarit flagship 14-sections, 13/13 modules ; `CAPABILITY_NOT_CONNECTED` (Brain = certification Academy, jamais moteur de recommandation KORA) préservé et explicité |
+| `KOR-13`→`15` | 3 derniers angles métier KORA | variable | 100% par formation | `BUILT`, `DRAFTED` (chaque `REFERENTIAL.md` self-déclare `STATUS = PROPOSED` pour au moins un scénario de cas ; même gabarit compact que `KOR-11`/`12` avant leur reconstruction, non encore engagé) |
 
 **Rappel** : `BUILT` signifie que le package canonique existe et que
 `QUALITY_GATES.md` de la formation rapporte 100% de couverture
