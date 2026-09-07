@@ -19,6 +19,7 @@ from lx import (
     phase_completion_flags,
 )
 from models import User
+from services.canonical_convergence import get_canonical_progress_summary
 from services.frek_core import frek_core
 
 router = APIRouter(tags=["learning"])
@@ -321,9 +322,19 @@ async def user_learning_path(current: User = Depends(get_current_user)):
         if next_action:
             break
 
+    # CAN-01 (Audit Chirurgical 2026-09-07) — additive convergence: a
+    # learner progressing through FMS-canonical/Kiltikonet/KORA content
+    # is real, distinct from `own_pole`/`other_poles`/`next_action`
+    # above (which stay legacy-only, untouched), and reported under its
+    # own key rather than silently absent from the one "your learning
+    # path" surface every learner actually looks at. See
+    # services/canonical_convergence.py module docstring.
+    canonical = await get_canonical_progress_summary(current.id)
+
     return {
         "own_pole": own,
         "other_poles": others,
         "next_action": next_action,
         "metier_vise": current.metier_vise,
+        "canonical": canonical,
     }

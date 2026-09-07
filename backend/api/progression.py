@@ -8,6 +8,7 @@ from auth import get_current_user, user_public
 from db import db
 from lifecycle import is_returning_session
 from models import User
+from services.canonical_convergence import get_canonical_progress_summary
 
 router = APIRouter(tags=["progression"])
 
@@ -54,6 +55,11 @@ async def frek_profile(current: User = Depends(get_current_user)):
     ]
     returning = is_returning_session(current.created_at, refresh_stamps)
 
+    # CAN-01/CAN-02 (Audit Chirurgical 2026-09-07) — additive convergence,
+    # never merged into `modules_completed` above (see
+    # services/canonical_convergence.py module docstring for why).
+    canonical = await get_canonical_progress_summary(current.id)
+
     return {
         "user": user_public(current).model_dump(),
         "stade_progress_pct": pct,
@@ -63,6 +69,7 @@ async def frek_profile(current: User = Depends(get_current_user)):
         "signals": current.signals,
         "recent_signals": signals[:20],
         "returning": returning,
+        "canonical": canonical,
     }
 
 
@@ -80,10 +87,15 @@ async def progression_summary(current: User = Depends(get_current_user)):
     ).to_list(1)
     total = (total_modules_doc[0]["total"] if total_modules_doc else 0) or 0
     global_pct = int((completed / total) * 100) if total else 0
+
+    # CAN-01/CAN-02 — see frek_profile() above for the same note.
+    canonical = await get_canonical_progress_summary(current.id)
+
     return {
         "completed_modules": completed,
         "total_modules": total,
         "global_pct": global_pct,
         "stade": current.stade,
         "cc_credits": current.cc_credits,
+        "canonical": canonical,
     }
