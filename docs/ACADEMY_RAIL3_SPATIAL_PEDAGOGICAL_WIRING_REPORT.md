@@ -1,8 +1,27 @@
 # Rail 3 — Finir Spatial Learning : rapport de câblage
 
 **Statut : DONE (scope volontairement resserré, écarts documentés ci-dessous).**
-**Date : 2026-09-07.**
-**Flags : `REACT_APP_ACADEMY_SPATIAL_HUB_ENABLED`, `REACT_APP_ACADEMY_SPATIAL_ENVIRONMENT` — défaut `false` tous les deux. Aucun comportement existant ne change sans action déployeur explicite.**
+**Date : 2026-09-07 (corrigé le même jour, voir §11).**
+**Flags : `REACT_APP_ACADEMY_SPATIAL_HUB_ENABLED`, `REACT_APP_ACADEMY_SPATIAL_ENVIRONMENT`, `REACT_APP_ACADEMY_SPATIAL_AUDIO`, `REACT_APP_ACADEMY_SPATIAL_HAPTICS` — défaut `false` pour les quatre. Aucun comportement existant ne change sans action déployeur explicite.**
+
+## 11. Correction post-livraison — "j'ai pas l'impression que c'est au niveau de ce que nous avions commencé"
+
+Retour reçu juste après la première livraison de ce rapport : le niveau de reprise ne correspondait pas au travail H0.8-H0.10 arrêté avant le chantier corpus. Vérification faite (`grep` sur tout le repo) : exact. La première passe ne branchait que `attention.js` (les formules statiques de profondeur), animées par un tween Framer Motion à durée fixe. Restaient **construits, testés, mais jamais importés en production** : `physics.js` (le vrai ressort `rAF`), `cadence.js` (classificateur de cadence), `audio.js` et `haptics.js` (les 8 événements sonores / 5 patterns vibratoires) — zéro import hors leurs propres tests.
+
+Corrigé le même jour :
+
+- **`lib/useDepthPhysics.js`** (nouveau) — enveloppe React de `spatial/physics.js`'s `makeRailPhysics`, sans aucune math propre (le fichier physics.js reste inchangé, constantes STIFFNESS=280/DAMPING=33 non retouchées). Remplace le tween Framer Motion fixe dans `SpatialHub.jsx` (un ressort par nœud) et `Roadmap.js` (un ressort par étape). `reduced` → `jump()` instantané, mais le callback `onSettle` (retour audio/haptique) est quand même appelé — l'accessibilité ne supprime que le mouvement visuel, jamais le retour non-visuel.
+- **`SpatialHub.jsx`** — restructuré en `SpatialNode` (un composant par nœud, chacun avec son propre `useDepthPhysics`, puisqu'un hook ne peut pas être appelé par itération dans `.map()` du parent). Cadence réelle trackée sur chaque ArrowLeft/Right (`cadence.js`) ; celle-ci alimente le throttle propre à `audio.js` (`getCadenceState`). Audio/haptique réels tirés sur des événements réels seulement : `NAV_MOVE` (déplacement réel), `FOCUS_LOCK` (le ressort du nœud focalisé se stabilise réellement — jamais au montage), `CONFIRM` (activation réelle), `BLOCKED` (bord du rail atteint, ou activation d'un nœud verrouillé/inéligible). `ENTER_DEPTH`/`RETURN_DEPTH`/`CONTEXT_OPEN`/`CONTEXT_CLOSE` restent non utilisés ici — ils appartiennent aux transitions de route (`RouteTransition.jsx`/`topology.js`), jamais forcés à un sens qu'ils n'ont pas dans ce rail.
+- **`lib/usePedagogicalGraph.js`** — ajout d'un refetch réel sur `window.focus` + une fonction `refetch` exposée. Nécessaire pour que le ressort ait une vraie raison de bouger : la distance pédagogique est stable *à l'intérieur* d'un montage tant que rien de réel ne change côté serveur (comportement correct — la distance reflète l'intention réelle, pas le parcours clavier de l'apprenant). Sans un déclencheur réel de re-fetch, `physics.js` n'aurait jamais eu de nouveau `target` à atteindre après le premier rendu, et son intégration serait restée strictement inerte. Revenir sur l'onglet est le déclencheur honnête choisi (une progression réelle peut avoir eu lieu ailleurs pendant l'absence).
+- **`pages/Roadmap.js`** — `StageDepthCard` (nouveau) utilise `useDepthPhysics` au lieu du tween fixe, même moteur que SpatialHub.
+
+**Preuve empirique du retarget réel** (backend `MOCK_DB=1`, utilisateur réel onboardé sur KOR) : un deuxième appel réel à `/user/learning-path` (intercepté uniquement pour fournir une deuxième valeur réelle et déterministe de `next_action` — méthode divulguée, pas un flux CI qui fabrique une fausse UI) a été servi après un déclenchement réel de l'événement `window.focus`. Résultat mesuré sur 40 frames : le nœud `aria-current="true"` passe réellement de `spatial-hub-node-formation-KOR-01` à `spatial-hub-node-formation-KOR-02`, avec **14 positions X distinctes** entre les deux (282px → 318px) — un vrai déplacement multi-frame du ressort, jamais un saut instantané. Captures : `04b_dashboard_real_intention_kor01.png` (avant) et `04c_dashboard_after_real_retarget.png` (après, KOR-02 devenu l'intention réelle). `04d_dashboard_rail_edge_blocked.png` prouve que 50 ArrowRight consécutifs atteignent réellement le bout du rail sans crash (chemin BLOCKED).
+
+Vérification technique répétée après correction : Jest 147/147, ESLint propre, build production OK, Playwright e2e 73/73 (flags OFF, zéro régression). Backend non touché par cette correction.
+
+**Fichiers ajoutés/modifiés par cette correction** : nouveau `frontend/src/lib/useDepthPhysics.js` ; modifiés `frontend/src/components/SpatialHub.jsx`, `frontend/src/pages/Roadmap.js`, `frontend/src/lib/usePedagogicalGraph.js`.
+
+Ce que cette correction ne change pas : la doctrine, le graphe pédagogique (`pedagogicalGraph.js`, inchangé), les gates de sortie du §0 — toujours honorés, désormais avec le niveau de moteur réellement attendu.
 
 ## 0. Mandat reçu, reproduit intégralement
 
@@ -87,21 +106,24 @@ Nouveau composant monté dans `Layout.js` : un halo de fond dont la teinte est l
 
 ## 8. Fichiers touchés
 
-Modifiés : `frontend/.env.example`, `frontend/src/components/Layout.js`, `frontend/src/lib/featureFlags.js`, `frontend/src/lib/featureFlags.test.js`, `frontend/src/pages/Dashboard.js`, `frontend/src/pages/Roadmap.js`.
+Modifiés (livraison initiale) : `frontend/.env.example`, `frontend/src/components/Layout.js`, `frontend/src/lib/featureFlags.js`, `frontend/src/lib/featureFlags.test.js`, `frontend/src/pages/Dashboard.js`, `frontend/src/pages/Roadmap.js`.
 
-Nouveaux : `frontend/src/components/AcademyBackdrop.jsx`, `frontend/src/components/SpatialHub.jsx`, `frontend/src/lib/pedagogicalGraph.js`, `frontend/src/lib/pedagogicalGraph.test.js`, `frontend/src/lib/usePedagogicalGraph.js`.
+Nouveaux (livraison initiale) : `frontend/src/components/AcademyBackdrop.jsx`, `frontend/src/components/SpatialHub.jsx`, `frontend/src/lib/pedagogicalGraph.js`, `frontend/src/lib/pedagogicalGraph.test.js`, `frontend/src/lib/usePedagogicalGraph.js`.
 
-Backend : aucun fichier touché cette passe.
+Modifiés/nouveaux par la correction du §11 : nouveau `frontend/src/lib/useDepthPhysics.js` ; modifiés `frontend/src/components/SpatialHub.jsx`, `frontend/src/pages/Roadmap.js`, `frontend/src/lib/usePedagogicalGraph.js`.
+
+Backend : aucun fichier touché, ni la livraison initiale ni la correction.
 
 ## 9. Explicitement hors périmètre cette passe (décision de scope assumée, pas un oubli)
 
-Conformément au tableau de verdicts REUSE/EXTEND/WRAP/REPLACE-BLOCKED de `docs/SPATIAL_H1_INTEGRATION_PLAN.md`, cette passe s'est délibérément concentrée sur les deux items les moins risqués et les mieux validés (Dashboard, Roadmap). Restent non traités :
+Conformément au tableau de verdicts REUSE/EXTEND/WRAP/REPLACE-BLOCKED de `docs/SPATIAL_H1_INTEGRATION_PLAN.md`, cette passe s'est délibérément concentrée sur les deux items les moins risqués et les mieux validés (Dashboard, Roadmap) — désormais avec le moteur complet (`physics.js`/`cadence.js`/`audio.js`/`haptics.js`, §11). Restent non traités :
 
-- `Missions.js`, `Badges.js`, `FrekProfile.js`, `ModuleJourney.js` — non convertis au traitement par paliers d'attention.
+- `Missions.js`, `Badges.js`, `FrekProfile.js`, `ModuleJourney.js` — non convertis au traitement par paliers d'attention, donc n'ont pas non plus le moteur physics/cadence/audio/haptics.
 - Swipe mobile / snap à la vélocité — non câblé.
 - Transitions FLIP carte-formation → module — non étendues.
 - Assets visuels d'environnement réels (imagerie) — non commandés ; le fond reste un dégradé de couleur de pôle.
 - Persistance vraiment inter-route du fond (sans jamais se remonter) — nécessite une restructuration `App.js` en routes de disposition, hors autorisation de cette passe (voir §5).
+- `topology.js`/`routeTopologyMap.js` restent utilisés uniquement par `RouteTransition.jsx` (câblé lors d'une passe antérieure) — les événements audio `ENTER_DEPTH`/`RETURN_DEPTH`/`CONTEXT_OPEN`/`CONTEXT_CLOSE` n'ont pas de point d'ancrage réel dans ce rail et restent non déclenchés.
 
 Ces items restent dans le plan H1 pour une prochaine passe explicitement autorisée.
 

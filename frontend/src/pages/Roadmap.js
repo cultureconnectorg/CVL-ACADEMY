@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18n.jsx";
 import { FocusFieldItem } from "@/lib/CvlnFocusField";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { computeDepthStyle } from "@/lib/spatial/attention";
+import { useDepthPhysics } from "@/lib/useDepthPhysics";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 const STAGE_CODES = ["graine", "pousse", "racine", "branches", "arbre", "foret"];
@@ -13,6 +14,40 @@ const STAGE_SIGNAL = {
   graine: "FREK-TIME", pousse: "FREK-WORK", racine: "FREK-SCORE",
   branches: "FREK-LINK", arbre: "FREK-CERT", foret: "FREK-CONTRIB",
 };
+
+/** RAIL 3 continuous-depth wrapper — corrected the same day it was first
+ * shipped ("j'ai pas l'impression que c'est au niveau de ce que nous
+ * avions commencé"): the first pass drove this with a fixed-duration
+ * Framer Motion tween. This is `spatial/physics.js`'s real rAF spring
+ * (via `useDepthPhysics`), the same engine H0.9 built and verified — not
+ * a re-derivation, the actual module, unmodified. A dedicated component
+ * because `useDepthPhysics` is a real hook and hooks can't be called
+ * per-iteration inside `STAGES.map()` in the parent. */
+function StageDepthCard({ s, i, currentIdx, active, done, reduced, t }) {
+  const targetDistance = currentIdx === -1 ? 0 : i - currentIdx;
+  const distance = useDepthPhysics(targetDistance, { reduced });
+  const depth = computeDepthStyle(distance);
+  const style = reduced
+    ? { opacity: depth.opacity, transform: `scale(${Math.max(depth.scale, 0.94)})` }
+    : {
+        opacity: depth.opacity,
+        filter: `saturate(${depth.saturate}) contrast(${depth.contrast})`,
+        transform: `translateY(${depth.translateY}px) translateZ(${depth.translateZ}px) scale(${depth.scale})`,
+        zIndex: depth.zIndex,
+      };
+  return (
+    <motion.div
+      data-testid={`stage-${s.code}`}
+      data-tier={depth.tier}
+      aria-current={active ? "true" : undefined}
+      style={style}
+      className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col
+        ${active ? "border-2 border-[--cvln-orange]" : ""}`}
+    >
+      <StageCardBody s={s} done={done} active={active} t={t} />
+    </motion.div>
+  );
+}
 
 /** Shared card body — identical markup whichever wrapper (FocusFieldItem
  * or the RAIL 3 continuous-depth motion.div) renders it, so the two
@@ -72,29 +107,17 @@ export default function Roadmap() {
           // `currentStageCode`. Continuous, never a second progression
           // source: `currentIdx` is the one real signal both branches use.
           if (FEATURE_FLAGS.SPATIAL_HUB_ENABLED) {
-            const distance = currentIdx === -1 ? 0 : i - currentIdx;
-            const depth = computeDepthStyle(distance);
-            const style = reduced
-              ? { opacity: depth.opacity, transform: `scale(${Math.max(depth.scale, 0.94)})` }
-              : {
-                  opacity: depth.opacity,
-                  filter: `saturate(${depth.saturate}) contrast(${depth.contrast})`,
-                  transform: `translateY(${depth.translateY}px) translateZ(${depth.translateZ}px) scale(${depth.scale})`,
-                };
             return (
-              <motion.div
+              <StageDepthCard
                 key={s.code}
-                data-testid={`stage-${s.code}`}
-                data-tier={depth.tier}
-                aria-current={active ? "true" : undefined}
-                animate={style}
-                transition={{ duration: reduced ? 0.15 : 0.45, ease: [0.22, 1, 0.36, 1] }}
-                style={{ zIndex: depth.zIndex }}
-                className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col
-                  ${active ? "border-2 border-[--cvln-orange]" : ""}`}
-              >
-                <StageCardBody s={s} done={done} active={active} t={t} />
-              </motion.div>
+                s={s}
+                i={i}
+                currentIdx={currentIdx}
+                active={active}
+                done={done}
+                reduced={reduced}
+                t={t}
+              />
             );
           }
 
