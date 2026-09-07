@@ -39,10 +39,13 @@ fenêtre éditoriale.
 2. Construire un calendrier de releases distinct par créateur.
 3. Vérifier que ce calendrier reste réaliste, pas optimiste.
 
-## Exemple
+## Exemples
 
 Le Lanbi Collective livre mensuellement, Kajou Studio bimensuellement —
-deux calendriers distincts, pas un calendrier unique forcé.
+deux calendriers distincts, pas un calendrier unique forcé. À
+l'inverse, construire un calendrier sur un rythme espéré plutôt que sur
+le rythme réellement observé forcerait à le réviser après chaque
+retard, plutôt que d'anticiper une cadence réaliste dès le départ.
 
 ## Cas
 
@@ -54,6 +57,9 @@ CASE.md`).
 - Imposer un rythme unique à des créateurs aux capacités différentes.
 - Confondre calendrier de releases technique et programmation
   éditoriale (`KOR-04`).
+- Construire le calendrier sur un rythme espéré plutôt que sur le
+  rythme réellement observé, le rendant intenable dès la première
+  livraison.
 
 ## Activité
 

@@ -37,11 +37,15 @@ DEFERRED` au-delà de cette échelle).
 2. Le maintenir à jour à chaque étape du flux (M03-M07).
 3. Documenter explicitement la limite d'échelle de cette méthode.
 
-## Exemple
+## Exemples
 
 Le registre indique "Rasin ép.0 — publié — 04/09" et "Kajou Studio
 ép.1 — en contrôle qualité — 10/09" — à jour et lisible en un coup
-d'œil pour deux créateurs.
+d'œil pour deux créateurs. À l'inverse, mettre à jour le registre
+seulement en fin de semaine plutôt qu'à chaque étape franchie
+laisserait un état affiché périmé pendant plusieurs jours — un
+registre n'est utile que s'il reflète l'état réel au moment où on le
+consulte.
 
 ## Cas
 
@@ -53,6 +57,9 @@ CASE.md`).
 - Laisser le registre se désynchroniser de la réalité.
 - Prétendre qu'une méthode manuelle tiendrait à grande échelle sans le
   dire.
+- Mettre à jour le registre par lot en fin de semaine plutôt qu'à
+  chaque étape franchie, le laissant afficher un état périmé une
+  bonne partie du temps.
 
 ## Activité
 

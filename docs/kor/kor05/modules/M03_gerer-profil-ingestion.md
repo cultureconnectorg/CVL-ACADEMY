@@ -39,10 +39,14 @@ sophistiqué.
 3. Communiquer la convention au créateur sans lui imposer un outil
    lourd.
 
-## Exemple
+## Exemples
 
 `lanbi_rasin_ep0_v3_20260904.mp3` plutôt que `episode final
-(1) (2).mp3`.
+(1) (2).mp3`. À l'inverse, appliquer la convention seulement aux
+nouveaux fichiers reçus, sans renommer ceux déjà ingérés, ferait
+cohabiter deux systèmes de nommage — la convention ne protège que si
+elle est appliquée rétroactivement, pas seulement à partir
+d'aujourd'hui.
 
 ## Cas
 
@@ -53,6 +57,9 @@ L'ingestion porte sur les fichiers réels de *Rasin* et de Kajou Studio
 
 - Ne pas versionner, risquant l'écrasement de fichiers.
 - Imposer une convention trop complexe, jamais suivie.
+- Appliquer la convention seulement aux nouveaux fichiers, laissant
+  les fichiers déjà ingérés dans l'ancien système sans nommage
+  cohérent.
 
 ## Activité
 

@@ -37,10 +37,14 @@ conforme aux standards minimaux) avant de passer à la publication.
 3. Signaler au créateur un défaut détecté, sans commentaire sur le
    fond créatif.
 
-## Exemple
+## Exemples
 
 Un fichier livré dans un format propriétaire non standard est signalé
-et une conversion demandée — sans aucun commentaire sur le contenu.
+et une conversion demandée — sans aucun commentaire sur le contenu. À
+l'inverse, valider un fichier au format correct sans vérifier sa durée
+réelle laisserait passer un fichier trop court ou trop long pour le
+calendrier de diffusion prévu — la checklist doit couvrir tous les
+critères convenus, pas seulement le plus visible.
 
 ## Cas
 
@@ -51,6 +55,8 @@ CASE.md`).
 
 - Mélanger retour technique et jugement créatif.
 - Ne pas vérifier systématiquement, se fiant à une impression.
+- Valider un fichier sur un seul critère (le format) sans vérifier
+  les autres critères convenus de la checklist (durée, intégrité).
 
 ## Activité
 

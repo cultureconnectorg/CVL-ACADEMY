@@ -39,6 +39,8 @@ Le dossier porte sur les opérations réelles du cas (`case/CASE.md`).
 
 - Présenter l'incident sans le relier à sa cause opérationnelle.
 - Ignorer la limite d'échelle reconnue en M08 dans la défense.
+- Formuler un bilan réflexif qui ne reconnaisse aucune difficulté
+  réelle rencontrée dans la gestion des deux créateurs.
 
 ## Activité
 

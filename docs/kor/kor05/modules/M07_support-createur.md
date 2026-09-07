@@ -35,12 +35,15 @@ l'instant, cela affaiblit l'autonomie du créateur à long terme.
 2. Répondre en expliquant le "comment", pas en faisant le travail.
 3. Documenter la réponse pour référence future.
 
-## Exemple
+## Exemples
 
 Face à « je sais pas comment vous envoyer le fichier », répondre en
 expliquant le processus (pas en demandant simplement d'envoyer par un
 autre canal sans explication) permet à Kajou Studio de refaire seul la
-prochaine fois.
+prochaine fois. À l'inverse, répondre avec un vocabulaire technique non
+adapté (« utilise le protocole FTP du CDN ») laisserait Kajou Studio
+aussi démuni qu'une absence de réponse — le support doit s'adapter au
+niveau réel du créateur, pas seulement exister.
 
 ## Cas
 
@@ -51,6 +54,8 @@ CASE.md`).
 
 - Faire le travail à la place du créateur pour aller plus vite.
 - Répondre de façon condescendante à une question maladroite.
+- Répondre avec un vocabulaire technique non adapté au niveau du
+  créateur, le laissant aussi démuni qu'une absence de réponse.
 
 ## Activité
 

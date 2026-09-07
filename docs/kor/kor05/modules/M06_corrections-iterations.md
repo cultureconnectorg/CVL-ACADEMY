@@ -38,11 +38,14 @@ seulement le flux technique qui l'entoure.
 3. Rediriger les demandes majeures vers le créateur, sans s'y
    substituer.
 
-## Exemple
+## Exemples
 
 Une métadonnée manquante est corrigée directement ; une demande de
 "refaire le montage" est redirigée vers le Lanbi Collective, pas
-traitée par Kessy.
+traitée par Kessy. À l'inverse, rediriger une demande créative sans
+expliquer pourquoi elle sort du mandat opérationnel laisserait le
+Lanbi Collective incompris et frustré — la redirection doit
+s'accompagner d'une explication claire du partage des rôles.
 
 ## Cas
 
@@ -52,6 +55,9 @@ Les demandes portent sur les créateurs réels du cas (`case/CASE.md`).
 
 - Traiter une refonte créative à la place du créateur.
 - Ralentir une correction mineure par excès de procédure.
+- Rediriger une demande créative vers le créateur sans expliquer
+  pourquoi elle sort du mandat opérationnel, laissant le partage des
+  rôles incompris.
 
 ## Activité
 

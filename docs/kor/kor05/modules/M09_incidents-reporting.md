@@ -36,12 +36,14 @@ cause pour éviter une répétition (ici, renforcer la convention de M03).
 2. Restaurer si possible, ou communiquer clairement si impossible.
 3. Documenter la cause et une mesure corrective (liée à M03).
 
-## Exemple
+## Exemples
 
 Une version antérieure de *Rasin* écrase la version finale ; Kessy
 identifie qu'une copie de sauvegarde existe, restaure, informe le
 Lanbi Collective de l'incident et renforce la convention de
-versionnement.
+versionnement. À l'inverse, si aucune sauvegarde n'existait, prétendre
+qu'une restauration reste possible retarderait inutilement une
+communication honnête sur une perte réelle et irréversible.
 
 ## Cas
 
@@ -51,6 +53,9 @@ L'incident porte sur le fichier réel du cas (`case/CASE.md`).
 
 - Cacher l'incident au créateur affecté.
 - Réparer sans comprendre ni traiter la cause.
+- Prétendre qu'une restauration reste possible alors qu'aucune
+  sauvegarde n'existe réellement, retardant une communication honnête
+  sur une perte irréversible.
 
 ## Activité
 

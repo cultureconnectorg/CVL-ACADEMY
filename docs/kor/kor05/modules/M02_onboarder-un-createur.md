@@ -34,10 +34,14 @@ sous une procédure lourde qu'il n'appliquera pas.
 2. Rédiger un parcours court, pas un manuel exhaustif.
 3. Prévoir un point de contact pour les questions (M07).
 
-## Exemple
+## Exemples
 
 Un document d'une page (convention de nommage, dossier de dépôt,
-contact) vaut mieux qu'un guide de 20 pages jamais lu.
+contact) vaut mieux qu'un guide de 20 pages jamais lu. À l'inverse,
+transmettre l'ensemble des informations en un seul appel oral, sans
+support écrit auquel se référer ensuite, forcerait Kajou Studio à tout
+retenir de mémoire dès le premier jour — un onboarding minimal reste
+aussi un onboarding consultable, pas seulement bref.
 
 ## Cas
 
@@ -47,6 +51,8 @@ L'onboarding porte sur Kajou Studio réellement (`case/CASE.md`).
 
 - Produire un onboarding trop lourd, jamais suivi.
 - Omettre l'essentiel (où déposer, comment nommer).
+- Transmettre l'essentiel oralement sans support écrit consultable,
+  obligeant le créateur à tout retenir dès le premier échange.
 
 ## Activité
 

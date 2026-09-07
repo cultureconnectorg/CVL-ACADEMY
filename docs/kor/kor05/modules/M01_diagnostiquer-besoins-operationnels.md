@@ -37,10 +37,14 @@ un jugement sur le premier.
    relève de l'organisation (mandat `KOR-05`).
 3. Formuler un diagnostic par créateur.
 
-## Exemple
+## Exemples
 
 Le Lanbi Collective livre un excellent contenu mais sans convention de
-nommage — un problème opérationnel, pas créatif.
+nommage — un problème opérationnel, pas créatif. À l'inverse, une
+première impression pourrait faire croire que Kajou Studio, maladroit
+dans sa livraison, manque de talent créatif — alors que le problème
+n'est qu'un manque de repères opérationnels, pas un jugement à porter
+sur son travail créatif.
 
 ## Cas
 
@@ -52,6 +56,9 @@ CASE.md`).
 - Confondre qualité créative et organisation opérationnelle.
 - Diagnostiquer les deux créateurs de la même façon sans distinguer
   leurs besoins réels.
+- Juger la compétence créative d'un créateur sur la base de désordre
+  purement opérationnel, sans vérifier ce qui relève réellement de
+  chaque registre.
 
 ## Activité
 
