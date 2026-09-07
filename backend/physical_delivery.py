@@ -29,7 +29,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import List, Literal, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 from pymongo import ReturnDocument
@@ -149,6 +149,33 @@ async def list_sessions_for_formation(
         query["starts_at"] = {"$gte": utc_now_iso()}
     docs = (
         await db.physical_sessions.find(query, {"_id": 0}).sort("starts_at", 1).to_list(200)
+    )
+    return [TrainingSession(**d) for d in docs]
+
+
+async def list_sessions_for_trainer(trainer_user_id: str) -> List[TrainingSession]:
+    """Trainer UX (PHYSICAL/HYBRID assessment architecture, 2026-09-07)
+    — every real session this trainer was actually assigned to, past
+    or future, so they can reach the roster of a session that already
+    happened (attendance/practical assessment recorded after the
+    fact, a real workflow, not just same-day)."""
+    docs = (
+        await db.physical_sessions.find(
+            {"trainer_user_id": trainer_user_id}, {"_id": 0}
+        )
+        .sort("starts_at", -1)
+        .to_list(200)
+    )
+    return [TrainingSession(**d) for d in docs]
+
+
+async def list_all_sessions(include_past: bool = True) -> List[TrainingSession]:
+    """Admin oversight — every real session, any formation. Never
+    fabricates rows; a genuinely empty result means no session has
+    ever been scheduled."""
+    query: Dict[str, Any] = {} if include_past else {"starts_at": {"$gte": utc_now_iso()}}
+    docs = (
+        await db.physical_sessions.find(query, {"_id": 0}).sort("starts_at", -1).to_list(500)
     )
     return [TrainingSession(**d) for d in docs]
 

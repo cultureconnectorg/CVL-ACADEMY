@@ -28,8 +28,10 @@ from physical_delivery import (
     create_session,
     enroll,
     get_session,
+    list_all_sessions,
     list_locations,
     list_sessions_for_formation,
+    list_sessions_for_trainer,
     mark_attendance,
     my_enrollments,
     session_attendance,
@@ -132,6 +134,16 @@ async def admin_create_session(
 @router.get("/formations/{formation_code}/physical-sessions", response_model=List[TrainingSession])
 async def formation_sessions(formation_code: str, current: User = Depends(get_current_user)):
     return await list_sessions_for_formation(formation_code)
+
+
+@router.get("/physical-sessions/assigned", response_model=List[TrainingSession])
+async def assigned_sessions(current: User = Depends(require_role(*SESSION_OPS_ROLES))):
+    """Trainer UX — every real session this trainer was assigned to
+    (past or future, so a roster stays reachable after the fact).
+    Admin-tier sees every session, for oversight."""
+    if current.role in ADMIN_ROLES:
+        return await list_all_sessions()
+    return await list_sessions_for_trainer(current.id)
 
 
 @router.post("/physical-sessions/{session_id}/enroll", response_model=Enrollment)

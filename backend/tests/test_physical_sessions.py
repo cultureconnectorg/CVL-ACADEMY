@@ -31,6 +31,8 @@ from physical_delivery import (
     create_session,
     enroll,
     has_bookable_session,
+    list_all_sessions,
+    list_sessions_for_trainer,
     mark_attendance,
     my_enrollments,
     session_attendance,
@@ -294,3 +296,55 @@ async def test_delivery_architecture_ignores_past_session(phys_db):
     arch = await get_delivery_architecture("KOR-01")
     physical = next(m for m in arch.delivery_modes if m.mode == "PHYSICAL")
     assert physical.status == "ELIGIBLE_PENDING_OFFER"
+
+
+# --------------------------------------------------------------------
+# Trainer UX — GET /physical-sessions/assigned (service-layer functions
+# api/physical_sessions.py's `assigned_sessions` dispatches to).
+# --------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_list_sessions_for_trainer_returns_only_their_own(phys_db):
+    await _seed_formation(phys_db, "KOR-01")
+    loc = await _seed_location(phys_db, capacity=5)
+    mine = await create_session(
+        TrainingSession(
+            formation_code="KOR-01", location_id=loc.id,
+            starts_at=_future_iso(), ends_at=_future_iso(hours=4),
+            capacity=5, trainer_user_id="trainer-1", created_by="admin-1",
+        )
+    )
+    await create_session(
+        TrainingSession(
+            formation_code="KOR-01", location_id=loc.id,
+            starts_at=_future_iso(), ends_at=_future_iso(hours=4),
+            capacity=5, trainer_user_id="trainer-2", created_by="admin-1",
+        )
+    )
+
+    sessions = await list_sessions_for_trainer("trainer-1")
+    assert [s.id for s in sessions] == [mine.id]
+
+
+@pytest.mark.asyncio
+async def test_list_all_sessions_is_a_real_unfiltered_admin_view(phys_db):
+    await _seed_formation(phys_db, "KOR-01")
+    loc = await _seed_location(phys_db, capacity=5)
+    a = await create_session(
+        TrainingSession(
+            formation_code="KOR-01", location_id=loc.id,
+            starts_at=_future_iso(), ends_at=_future_iso(hours=4),
+            capacity=5, trainer_user_id="trainer-1", created_by="admin-1",
+        )
+    )
+    b = await create_session(
+        TrainingSession(
+            formation_code="KOR-01", location_id=loc.id,
+            starts_at=_future_iso(hours=-10), ends_at=_future_iso(hours=-6),
+            capacity=5, trainer_user_id="trainer-2", created_by="admin-1",
+        )
+    )
+
+    sessions = await list_all_sessions()
+    assert {s.id for s in sessions} == {a.id, b.id}
