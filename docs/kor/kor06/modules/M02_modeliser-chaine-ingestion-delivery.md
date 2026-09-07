@@ -37,11 +37,14 @@ possible distinct.
 2. Identifier un point de défaillance possible par étape.
 3. Schématiser la chaîne complète.
 
-## Exemple
+## Exemples
 
 Une validation technique manquante pourrait laisser passer un fichier
 corrompu jusqu'à la livraison, où il échouerait à la lecture — un point
-de défaillance identifiable en amont.
+de défaillance identifiable en amont. À l'inverse, omettre l'étape de
+transcodage du schéma parce qu'elle échoue rarement laisserait un
+point de défaillance réel non documenté — la fréquence supposée d'une
+panne ne justifie pas l'absence d'une étape du schéma.
 
 ## Cas
 
@@ -51,6 +54,8 @@ La chaîne porte sur un épisode réel de *Rasin* (`case/CASE.md`).
 
 - Sauter des étapes dans le schéma, produisant une chaîne incomplète.
 - Ne pas identifier de point de défaillance réaliste par étape.
+- Omettre une étape du schéma parce qu'elle échoue rarement, alors
+  que la fréquence supposée d'une panne ne justifie pas son absence.
 
 ## Activité
 

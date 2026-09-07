@@ -37,11 +37,15 @@ tomber en panne indépendamment des autres.
    distribution dépend du flux).
 3. Documenter cette cartographie.
 
-## Exemple
+## Exemples
 
 Une panne de l'hébergement de fichiers rend les épisodes existants
 inaccessibles même si le catalogue et les flux fonctionnent — les
-composants sont liés mais distincts.
+composants sont liés mais distincts. À l'inverse, une panne du
+catalogue (métadonnées manquantes) peut sembler identique à une panne
+d'hébergement du point de vue de l'auditeur (contenu absent) — pourtant
+les corriger nécessite d'intervenir sur des composants entièrement
+différents.
 
 ## Cas
 
@@ -52,6 +56,9 @@ La cartographie porte sur Anba Tonèl Host réellement (`case/CASE.md`).
 - Traiter le DSP comme une boîte noire unique sans composants
   distincts.
 - Ignorer les dépendances entre composants.
+- Diagnostiquer une panne par son seul symptôme visible (contenu
+  manquant) sans identifier lequel des composants distincts en est la
+  cause réelle.
 
 ## Activité
 

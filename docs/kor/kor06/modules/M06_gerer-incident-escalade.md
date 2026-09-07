@@ -39,11 +39,15 @@ gravité), pas par réflexe ni par évitement.
 3. Décider si l'incident nécessite une escalade, selon des critères
    liés au SLA/SLO de M05.
 
-## Exemple
+## Exemples
 
 Une indisponibilité de 5 minutes reste sous le seuil du SLO — gérée
 sans escalade. Une indisponibilité de 2 heures dépasserait le seuil et
-justifierait une escalade formelle.
+justifierait une escalade formelle. À l'inverse, escalader parce que le
+Lanbi Collective exprime une frustration visible, alors que
+l'indisponibilité reste sous le seuil du SLO, ferait dépendre
+l'escalade de la pression perçue plutôt que du critère objectif déjà
+fixé.
 
 ## Cas
 
@@ -54,6 +58,8 @@ CASE.md`).
 
 - Ne pas communiquer avec le créateur affecté pendant l'incident.
 - Escalader systématiquement ou jamais, sans critère lié au SLA/SLO.
+- Escalader (ou refuser d'escalader) sous la pression visible d'un
+  créateur mécontent plutôt que selon le seuil objectif déjà fixé.
 
 ## Activité
 

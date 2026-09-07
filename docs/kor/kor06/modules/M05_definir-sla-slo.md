@@ -38,12 +38,15 @@ est pire que ne pas en avoir.
 3. Décider si un SLA formel est tenable, ou si le SLO reste interne
    pour l'instant.
 
-## Exemple
+## Exemples
 
 Une disponibilité de 99,5% (environ 3,5h d'indisponibilité par mois)
 est réaliste pour une structure moyenne sans infrastructure redondante
 complète — promettre 99,99% serait irréaliste sans investissement
-majeur.
+majeur. À l'inverse, communiquer ce SLO interne aux créateurs comme
+s'il s'agissait d'un engagement contractuel ferme créerait une attente
+de recours en cas de non-respect qu'aucun SLA formel ne prévoit
+réellement.
 
 ## Cas
 
@@ -55,6 +58,9 @@ CASE.md`), compte tenu de ses moyens réels.
 - Fixer un objectif ambitieux sans vérifier les moyens réels de le
   tenir.
 - Confondre SLO interne et SLA contractuel.
+- Communiquer un SLO interne aux créateurs comme s'il s'agissait d'un
+  engagement contractuel, créant une attente de recours qui n'existe
+  pas réellement.
 
 ## Activité
 

@@ -37,11 +37,14 @@ important que leur existence.
 2. Fixer un seuil d'alerte réaliste, ni trop sensible ni trop tardif.
 3. Documenter le plan de monitoring et son lien avec le SLA/SLO de M05.
 
-## Exemple
+## Exemples
 
 Un seuil d'alerte sur le temps de réponse (>2 secondes pendant plus de
 2 minutes) aurait signalé la saturation bien avant le signalement du
-Lanbi Collective.
+Lanbi Collective. À l'inverse, ne monitorer que ce seul indicateur
+(celui qui a révélé précisément cet incident) laisserait d'autres
+pannes plausibles, comme celles identifiées en M01/M02 (catalogue,
+flux), sans aucune détection.
 
 ## Cas
 
@@ -52,6 +55,9 @@ CASE.md`).
 
 - Fixer des seuils si sensibles qu'ils génèrent une fatigue d'alerte.
 - Ne relier le monitoring à aucun seuil du SLA/SLO.
+- Monitorer uniquement l'indicateur ayant révélé cet incident précis,
+  laissant sans détection d'autres pannes plausibles identifiées
+  ailleurs dans la chaîne.
 
 ## Activité
 

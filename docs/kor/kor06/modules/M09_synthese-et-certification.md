@@ -40,6 +40,8 @@ CASE.md`).
 - Présenter les livrables sans les relier entre eux.
 - Ne pas assumer les limites réelles d'une structure de taille
   moyenne.
+- Formuler un bilan réflexif qui n'admette aucune difficulté réelle
+  rencontrée dans la gestion de l'incident ou du monitoring.
 
 ## Activité
 

@@ -40,11 +40,15 @@ représentés.
 3. Proposer une priorisation réaliste (pas une couverture totale
    immédiate).
 
-## Exemple
+## Exemples
 
 Un créneau de maintenance choisi en pleine nuit pour les Caraïbes
 affecterait la journée en Europe — un compromis (créneau à faible
-audience pour les deux zones) doit être trouvé.
+audience pour les deux zones) doit être trouvé. À l'inverse, ne
+considérer que les deux territoires les plus représentés en ignorant
+totalement l'Amérique du Nord parce qu'elle est numériquement plus
+petite laisserait ce public sans aucune prise en compte — une
+priorisation réaliste n'exige pas de l'exclure complètement.
 
 ## Cas
 
@@ -56,6 +60,9 @@ CASE.md`).
 - Ignorer les fuseaux horaires dans la planification de maintenance.
 - Proposer une couverture infrastructurelle totale non réaliste pour
   la taille de la structure.
+- Ignorer totalement un territoire réel du public sous prétexte qu'il
+  est numériquement plus petit, au lieu de le prioriser différemment
+  sans l'exclure.
 
 ## Activité
 

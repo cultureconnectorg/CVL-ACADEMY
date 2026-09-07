@@ -41,12 +41,16 @@ diagnostic.
 3. Documenter comment distinguer un problème CDN d'un problème player
    face à un signalement d'auditeur.
 
-## Exemple
+## Exemples
 
 Un auditeur en Guyane signale une lecture saccadée alors qu'un auditeur
 à Paris n'a aucun problème — indice probable d'un problème CDN
 (distance), pas de player (qui affecterait tous les auditeurs
-également).
+également). À l'inverse, des signalements venant de plusieurs pays
+différents mais partageant tous la même version d'application
+suggèrent un problème de player (bug de version) plutôt qu'un problème
+CDN — la distinction ne se limite pas à la seule géographie, il faut
+aussi croiser la version d'application utilisée.
 
 ## Cas
 
@@ -57,6 +61,9 @@ CASE.md`).
 
 - Confondre systématiquement problème CDN et problème player.
 - Ignorer la dimension géographique dans le diagnostic.
+- Conclure trop vite à un problème CDN dès que plusieurs pays sont
+  concernés, sans vérifier si les signalements partagent plutôt une
+  même version d'application.
 
 ## Activité
 
