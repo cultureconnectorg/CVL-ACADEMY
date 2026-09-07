@@ -58,8 +58,13 @@ class SessionInput(BaseModel):
 async def admin_create_location(
     payload: LocationInput, current: User = Depends(require_role(*STAFF_ROLES))
 ):
-    loc = Location(name=payload.name, address=payload.address, city=payload.city,
-                    territoire=payload.territoire, capacity=payload.capacity)
+    loc = Location(
+        name=payload.name,
+        address=payload.address,
+        city=payload.city,
+        territoire=payload.territoire,
+        capacity=payload.capacity,
+    )
     return await create_location(loc)
 
 

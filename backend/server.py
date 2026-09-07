@@ -20,10 +20,39 @@ from template_engine import seed_default_definitions
 
 app = FastAPI(title="CVLN Academy OS", version="0.1")
 
+# OPS-02 (Audit Chirurgical 2026-09-07) — a wildcard CORS_ORIGINS with
+# allow_credentials=True let ANY site make credentialed (cookie/
+# Authorization-header) requests against this API. The previous version
+# defaulted straight to "*" with no distinction between a local/preview
+# checkout (where that convenience is fine and expected — zero .env
+# config to get a fresh clone running) and a real production
+# deployment (where it is a real, silent security misconfiguration).
+# ENVIRONMENT defaults to "development" so every existing checkout that
+# never set it keeps booting exactly as before; only ENVIRONMENT=
+# production changes behavior, and it fails CLOSED (raises at import,
+# same fail-closed philosophy as ensure_indexes() in on_startup() below
+# and the same pattern db.py already uses for its own required env
+# vars) rather than silently falling back to a wildcard.
+ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").strip().lower()
+_cors_origins_raw = os.environ.get("CORS_ORIGINS", "*").strip()
+
+if ENVIRONMENT == "production":
+    if not _cors_origins_raw or _cors_origins_raw == "*":
+        raise RuntimeError(
+            "ENVIRONMENT=production requires a real, explicit CORS_ORIGINS "
+            "allowlist (comma-separated origins, e.g. "
+            "\"https://academy.cvln.example,https://admin.cvln.example\") — "
+            "an unset or wildcard CORS_ORIGINS in production is a security "
+            "misconfiguration, not a default to silently fall back to."
+        )
+    cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()]
+else:
+    cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()] or ["*"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
+    allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -41,8 +70,31 @@ logger = logging.getLogger("cvln")
 @app.on_event("startup")
 async def on_startup():
     register_integration_subscribers()
+
+    # OPS-01 (Audit Chirurgical 2026-09-07) — fail CLOSED, not open.
+    # ensure_indexes() creates every unique/partial index this session's
+    # atomicity fixes actually depend on for their real guarantee
+    # (wallet-ledger idempotency, badge dedup, physical-enrollment
+    # dedup, FMS provenance dedup, ...). The previous version wrapped
+    # this in the same broad try/except as the seed calls below, so an
+    # index that failed to create (a conflicting pre-existing document,
+    # a transient Mongo error) logged an exception and let the app boot
+    # anyway — serving real traffic with none of those DB-enforced
+    # guarantees in place, while every code path that assumes them
+    # (DuplicateKeyError handlers, CAS filters) would misbehave in ways
+    # invisible until the exact race they exist to prevent actually
+    # happens. Left unguarded here on purpose: FastAPI/uvicorn treats an
+    # exception raised from a startup event as a hard boot failure —
+    # exactly what an orchestrator's health/readiness check should see
+    # instead of a silently degraded instance.
+    await ensure_indexes()
+
+    # Seed data (catalogue/demo content, template definitions, the
+    # module-lineage matrix) is NOT a correctness/security invariant —
+    # a failure here means some optional content is missing, never that
+    # a guarantee this app makes to a user is broken. Deliberately still
+    # best-effort/logged-not-fatal, unlike ensure_indexes() above.
     try:
-        await ensure_indexes()
         await seed_if_empty()
         await seed_default_definitions()
         inserted, skipped = await seed_initial_matrix()

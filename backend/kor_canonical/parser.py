@@ -39,6 +39,7 @@ def extract_heading_title(text: str) -> Optional[str]:
     m = _TITLE_RE.search(text)
     return m.group(1) if m else None
 
+
 # A bare prerequisite value is always exactly one prior module number in
 # this corpus (confirmed across all 14 KOR-01 module files this
 # session): "Aucun" (no prerequisite) or "M03" (never "KOR01-M03", never

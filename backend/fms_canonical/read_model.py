@@ -35,6 +35,7 @@ from .models import (
     CanonicalSkillDefinition,
     is_learner_facing,
 )
+from .module_map_extract import extract_module_map_entries
 
 # ACA-0019 — formation-level learner-facing types beyond `module` itself
 # (which get_canonical_module already serves per-module). `cas_fil_rouge`
@@ -42,7 +43,6 @@ from .models import (
 # title) so this list is only the two types that had *no* read-model
 # access point at all before this.
 _FORMATION_LEVEL_LEARNER_TYPES: List[str] = ["templates_etudiants", "guide_candidat"]
-from .module_map_extract import extract_module_map_entries
 
 # A genuine Skill ID is always a single digit after its bloc letter
 # (confirmed against every real Skill IDs Registry read this session:
