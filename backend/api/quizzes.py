@@ -73,8 +73,11 @@ async def submit_module_quiz(
 
     signal = mod.get("frek_signal", "FREK-WORK").split(" ")[0]
     cc_earned = 0
+    first_pass = False
 
-    # Increment attempts always
+    # Attempt count + latest score are recorded on every submission,
+    # pass or fail — a real pedagogical re-attempt is always allowed
+    # and always tracked.
     await db.progress.update_one(
         {"user_id": current.id, "module_code": module_code},
         {
@@ -90,43 +93,46 @@ async def submit_module_quiz(
     )
 
     if result["passed"]:
-        cc_earned = int(mod.get("duration_h", 4))
-        await frek_core.emit_signal(
-            current.id,
-            signal,
+        # ECON-02 (Audit Chirurgical 2026-09-07) — the first pass credits
+        # CC exactly once; a further passing re-attempt on an
+        # already-passed quiz updates the recorded score above but must
+        # never re-credit. The transition itself
+        # (quiz_passed != True -> True) is the concurrency guard, same
+        # compare-and-swap pattern as ECON-01's mission fix: `$ne: True`
+        # matches both a missing field (first-ever attempt) and an
+        # explicit `False`, so under real concurrency at most one
+        # caller's filter can still match by the time it executes.
+        cas = await db.progress.update_one(
             {
-                "formation": formation_code,
-                "module": module_code,
-                "score": result["score"],
+                "user_id": current.id,
+                "module_code": module_code,
+                "quiz_passed": {"$ne": True},
             },
+            {"$set": {"quiz_passed": True, "quiz_passed_at": utc_now_iso()}},
         )
-        await frek_core.emit_signal(
-            current.id,
-            "FREK-SCORE",
-            {
-                "score": result["score"],
-                "module": module_code,
-            },
-        )
-        # Mark quiz passed — BUT module isn't "completed" until mini-mission committed.
-        await db.progress.update_one(
-            {"user_id": current.id, "module_code": module_code},
-            {
-                "$set": {
-                    "quiz_passed": True,
-                    "quiz_score": result["score"],
-                    "quiz_passed_at": utc_now_iso(),
-                }
-            },
-            upsert=True,
-        )
-        new_cc = current.cc_credits + cc_earned
-        new_stade = frek_core.resolve_stade(new_cc)
-        await db.users.update_one(
-            {"id": current.id},
-            {"$set": {"cc_credits": new_cc, "stade": new_stade}},
-        )
-        await award_threshold_badges(current.id, new_cc)
+        first_pass = cas.modified_count == 1
+
+        if first_pass:
+            cc_earned = int(mod.get("duration_h", 4))
+            await frek_core.emit_signal(
+                current.id,
+                signal,
+                {
+                    "formation": formation_code,
+                    "module": module_code,
+                    "score": result["score"],
+                },
+            )
+            await frek_core.emit_signal(
+                current.id,
+                "FREK-SCORE",
+                {
+                    "score": result["score"],
+                    "module": module_code,
+                },
+            )
+            new_cc, _new_stade = await frek_core.credit_cc(current.id, cc_earned)
+            await award_threshold_badges(current.id, new_cc)
 
     return QuizResult(
         score=result["score"],
@@ -134,5 +140,5 @@ async def submit_module_quiz(
         correct=result["correct"],
         total=result["total"],
         cc_earned=cc_earned,
-        signal_emitted=signal if result["passed"] else "",
+        signal_emitted=signal if first_pass else "",
     )
