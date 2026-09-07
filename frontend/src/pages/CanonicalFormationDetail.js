@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import BackButton from "@/components/BackButton";
 import { getCanonicalFormation, listCanonicalModules } from "@/lib/canonicalApi";
-import { formatPrerequisiteLabel } from "@/lib/canonicalDisplay";
+import { formatLearnerResourceTypeLabel, formatPrerequisiteLabel } from "@/lib/canonicalDisplay";
 
 /** ACA-0006 — real canonical module list for one métier, ordered exactly
  * as the archive's own Master Module Map — never re-sorted. */
@@ -11,6 +11,11 @@ export default function CanonicalFormationDetail() {
   const [formation, setFormation] = useState(null);
   const [modules, setModules] = useState(null);
   const [error, setError] = useState(null);
+  // ACA-0019 — which learner_resources card (if any) is expanded. At
+  // most one open at a time, closed by default: these bodies can be
+  // long (a full case study, a template), never dumped on screen
+  // unrequested.
+  const [openResourceIdx, setOpenResourceIdx] = useState(null);
 
   useEffect(() => {
     Promise.all([
@@ -39,6 +44,54 @@ export default function CanonicalFormationDetail() {
             {formation.metier_name}
           </h1>
         </>
+      )}
+
+      {/* ACA-0019 — real formation-level learner resources (the
+          continuing case, blank student templates, the candidate
+          guide) — previously parsed and classified LEARNER but never
+          served to any surface. Never per-module: the source itself
+          doesn't scope these to one module (see the backend model's
+          own docstring), so they sit here, above the module list. */}
+      {formation && formation.learner_resources && formation.learner_resources.length > 0 && (
+        <div className="mt-10" data-testid="canonical-learner-resources">
+          <h2 className="font-display font-bold text-xl tracking-tight">Ressources</h2>
+          <div className="mt-3 space-y-2">
+            {formation.learner_resources.map((res, idx) => {
+              const open = openResourceIdx === idx;
+              return (
+                <div
+                  key={`${res.resource_type}-${idx}`}
+                  className="cvln-card p-4"
+                  data-testid={`canonical-learner-resource-${res.resource_type}`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenResourceIdx(open ? null : idx)}
+                    className="w-full flex items-center justify-between gap-4 text-left"
+                    aria-expanded={open}
+                    data-testid={`canonical-learner-resource-toggle-${res.resource_type}`}
+                  >
+                    <div>
+                      <div className="text-[11px] mono uppercase tracking-wider text-[--cvln-ink-2]">
+                        {formatLearnerResourceTypeLabel(res.resource_type)}
+                      </div>
+                      <div className="font-semibold">{res.title}</div>
+                    </div>
+                    <span className="text-[--cvln-ink-2] text-sm">{open ? "−" : "+"}</span>
+                  </button>
+                  {open && (
+                    <pre
+                      className="mt-4 whitespace-pre-wrap font-sans text-sm leading-relaxed"
+                      data-testid={`canonical-learner-resource-content-${res.resource_type}`}
+                    >
+                      {res.content_markdown}
+                    </pre>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       <div className="mt-8 space-y-2" data-testid="canonical-module-list">

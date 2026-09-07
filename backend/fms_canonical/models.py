@@ -179,6 +179,36 @@ class CanonicalModule(BaseModel):
     content_source_file: Optional[str] = None
 
 
+LearnerResourceType = Literal["cas_fil_rouge", "templates_etudiants", "guide_candidat"]
+
+
+class CanonicalLearnerResource(BaseModel):
+    """ACA-0019 — a real, formation-level learner-facing resource beyond
+    the per-module lesson content: the continuing case, blank student
+    templates, the candidate orientation guide. These three real types
+    were parsed and classified `LEARNER` in `RESOURCE_AUDIENCE` above but
+    never actually returned to any endpoint before this — `get_canonical_
+    module` only ever served the `module` type. Never per-module: the
+    real archive's own filename convention (`fms_import/parser.py`'s
+    `_infer_code`) only assigns a module number to `module`/`blueprint`
+    files — these three types are formation-scoped in the source, so
+    matching one to a specific module here would be fabricated linkage,
+    not extracted fact.
+
+    `resource_type` is restricted to `LearnerResourceType` — a query bug
+    that fetched the wrong `type` value fails to construct this model
+    rather than silently leaking staff-only content; the read model also
+    still checks `is_learner_facing()` before ever building one (defense
+    in depth, not the only guard)."""
+
+    model_config = ConfigDict(extra="ignore")
+
+    resource_type: LearnerResourceType
+    title: str
+    content_markdown: str
+    source_file: str
+
+
 class CanonicalFormation(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -203,6 +233,11 @@ class CanonicalFormation(BaseModel):
     # (docs/ACADEMY_FMS_CANONICAL_DELTA_MATRIX.md §3).
     has_dedicated_skill_registry: bool = False
     has_infrastructure_doc: bool = False
+
+    # ACA-0019 — the real formation-level learner-facing resources this
+    # métier's archive actually has (never fabricated to a fixed count —
+    # can be empty, one, or several per type).
+    learner_resources: List[CanonicalLearnerResource] = Field(default_factory=list)
 
 
 class CanonicalSkillDefinition(BaseModel):

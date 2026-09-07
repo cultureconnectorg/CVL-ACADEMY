@@ -127,6 +127,16 @@ Instructions de notation confidentielles — ne jamais montrer à l'apprenant.
 Cite FMS01-A1 pour le barème.
 """
 
+TEMPLATES_ETUDIANTS_MD = """# FMS-01 — Templates étudiants
+
+Gabarit vierge que l'apprenant remplit pour son diagnostic.
+"""
+
+GUIDE_CANDIDAT_MD = """# FMS-01 — Guide Candidat
+
+Orientation pour le candidat avant l'entrée en formation.
+"""
+
 
 def _zip_bytes(files: dict) -> bytes:
     buf = BytesIO()
@@ -144,6 +154,8 @@ FIXTURE_FILES = {
     "FMS_Fixture/10_FMS01_Cas_Fil_Rouge_Anais_Solaine.md": CAS_FIL_ROUGE_MD,
     "FMS_Fixture/27_FMS01_Skill_IDs_Registry.md": SKILL_IDS_REGISTRY_MD,
     "FMS_Fixture/55_FMS01_Guide_Correcteur.md": GUIDE_CORRECTEUR_MD,
+    "FMS_Fixture/60_FMS01_Templates_Etudiants.md": TEMPLATES_ETUDIANTS_MD,
+    "FMS_Fixture/61_FMS01_Guide_Candidat.md": GUIDE_CANDIDAT_MD,
     # Deliberately unrecognizable — no FILENAME_TYPE_HINTS substring
     # matches "mystere" — exercises the unparsed path the real archive
     # never triggers.
@@ -363,6 +375,55 @@ async def test_staff_resource_never_leaks_as_module_content(canon_db):
     assert "barème" not in module.content_markdown
 
 
+# ---------------------------------------------------------------------
+# 14b. ACA-0019 — formation-level learner resources actually served
+# (cas_fil_rouge body, templates_etudiants, guide_candidat — previously
+# parsed and classified LEARNER but never returned by any endpoint).
+# ---------------------------------------------------------------------
+
+
+async def test_learner_resources_include_cas_fil_rouge_body(canon_db):
+    await _import_fixture()
+    formation = await get_canonical_formation("FMS-01")
+    cas = next(
+        (r for r in formation.learner_resources if r.resource_type == "cas_fil_rouge"),
+        None,
+    )
+    assert cas is not None
+    assert "Anaïs Solaine" in cas.content_markdown
+
+
+async def test_learner_resources_include_templates_and_guide_candidat(canon_db):
+    await _import_fixture()
+    formation = await get_canonical_formation("FMS-01")
+    types_present = {r.resource_type for r in formation.learner_resources}
+    assert "templates_etudiants" in types_present
+    assert "guide_candidat" in types_present
+
+    templates = next(
+        r for r in formation.learner_resources if r.resource_type == "templates_etudiants"
+    )
+    assert "Gabarit vierge" in templates.content_markdown
+
+    guide = next(
+        r for r in formation.learner_resources if r.resource_type == "guide_candidat"
+    )
+    assert "Orientation pour le candidat" in guide.content_markdown
+
+
+async def test_learner_resources_never_include_staff_only_types(canon_db):
+    """Guide Correcteur (CORRECTOR-only) is real, imported, and formation-
+    scoped just like the resources above — proves the type restriction
+    is real filtering, not an accident of which fixture files exist."""
+    await _import_fixture()
+    formation = await get_canonical_formation("FMS-01")
+    types_present = {r.resource_type for r in formation.learner_resources}
+    assert "guide_correcteur" not in types_present
+    assert not any(
+        "confidentielles" in r.content_markdown for r in formation.learner_resources
+    )
+
+
 def test_guide_correcteur_is_not_learner_facing():
     assert is_learner_facing("guide_correcteur") is False
     assert "guide_correcteur" in STAFF_ONLY_TYPES
@@ -532,17 +593,19 @@ def test_read_routes_require_real_authentication():
 
 async def test_import_is_idempotent(canon_db):
     report1, prov1, inserted1, updated1 = await _import_fixture()
-    assert report1.resources_created == 7  # 7 real types, 1 unparsed excluded
-    assert inserted1 == 8  # all 8 real ZIP entries get a provenance row
+    # ACA-0019 added 2 real fixture files (templates_etudiants,
+    # guide_candidat): 9 real types, 1 unparsed excluded, 10 total.
+    assert report1.resources_created == 9
+    assert inserted1 == 10  # all 10 real ZIP entries get a provenance row
     assert updated1 == 0
 
     report2, prov2, inserted2, updated2 = await _import_fixture()
-    assert report2.resources_created == 7
+    assert report2.resources_created == 9
     assert inserted2 == 0
-    assert updated2 == 8  # same 8 rows re-written, never duplicated
+    assert updated2 == 10  # same 10 rows re-written, never duplicated
 
-    assert await canon_db.fms_resources.count_documents({}) == 7
-    assert await canon_db.fms_resource_provenance.count_documents({}) == 8
+    assert await canon_db.fms_resources.count_documents({}) == 9
+    assert await canon_db.fms_resource_provenance.count_documents({}) == 10
 
 
 # ---------------------------------------------------------------------
@@ -552,7 +615,7 @@ async def test_import_is_idempotent(canon_db):
 
 def test_zip_inventory_accounts_for_every_file_including_unparsed():
     records = build_zip_inventory(FIXTURE_ZIP)
-    assert len(records) == 8  # every real entry in FIXTURE_FILES, none dropped
+    assert len(records) == 10  # every real entry in FIXTURE_FILES, none dropped
     assert count_zip_files(FIXTURE_ZIP) == len(records)
 
     unparsed = [r for r in records if r.parsing_status != "parsed"]
@@ -576,7 +639,7 @@ async def test_provenance_never_overwritten_by_import_report_gap(canon_db):
     canonique... avec son statut de parsing'."""
     await _import_fixture()
     all_prov = await canon_db.fms_resource_provenance.find({}, {"_id": 0}).to_list(100)
-    assert len(all_prov) == 8
+    assert len(all_prov) == 10
     mystere = next(
         p for p in all_prov if p["original_filename"] == "999_FMS01_Mystere.md"
     )

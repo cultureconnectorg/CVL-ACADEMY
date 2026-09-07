@@ -29,11 +29,19 @@ from .models import (
     CANONICAL_VERSION_CURRENT,
     CanonicalAssessmentRefs,
     CanonicalFormation,
+    CanonicalLearnerResource,
     CanonicalModule,
     CanonicalPrerequisites,
     CanonicalSkillDefinition,
     is_learner_facing,
 )
+
+# ACA-0019 — formation-level learner-facing types beyond `module` itself
+# (which get_canonical_module already serves per-module). `cas_fil_rouge`
+# is handled separately below (its own find_one already existed for the
+# title) so this list is only the two types that had *no* read-model
+# access point at all before this.
+_FORMATION_LEVEL_LEARNER_TYPES: List[str] = ["templates_etudiants", "guide_candidat"]
 from .module_map_extract import extract_module_map_entries
 
 # A genuine Skill ID is always a single digit after its bloc letter
@@ -130,6 +138,43 @@ async def get_canonical_formation(
         > 0
     )
 
+    # ACA-0019 — real formation-level learner-facing resources: the
+    # continuing case's own body (only its title was ever surfaced
+    # before), plus every real templates_etudiants/guide_candidat
+    # document this métier's archive actually has. `is_learner_facing`
+    # is checked again here even though these types are already known
+    # LEARNER-only — defense in depth, not the only guard, per the model
+    # docstring.
+    learner_resources: List[CanonicalLearnerResource] = []
+    if (
+        cas_fil_rouge_doc
+        and cas_fil_rouge_doc.get("body_markdown")
+        and is_learner_facing(cas_fil_rouge_doc.get("type", ""))
+    ):
+        learner_resources.append(
+            CanonicalLearnerResource(
+                resource_type="cas_fil_rouge",
+                title=cas_fil_rouge_doc.get("title") or "Cas fil rouge",
+                content_markdown=cas_fil_rouge_doc["body_markdown"],
+                source_file=cas_fil_rouge_doc.get("source_file", ""),
+            )
+        )
+    for rtype in _FORMATION_LEVEL_LEARNER_TYPES:
+        async for doc in db.fms_resources.find(
+            {"type": rtype, "formation_code": formation_code}
+        ):
+            body = doc.get("body_markdown")
+            if not body or not is_learner_facing(doc.get("type", "")):
+                continue
+            learner_resources.append(
+                CanonicalLearnerResource(
+                    resource_type=rtype,
+                    title=doc.get("title") or rtype,
+                    content_markdown=body,
+                    source_file=doc.get("source_file", ""),
+                )
+            )
+
     return CanonicalFormation(
         canonical_formation_code=formation_code,
         metier_number=formation_code.split("-")[-1],
@@ -140,6 +185,7 @@ async def get_canonical_formation(
         pedagogical_case_title=pedagogical_case_title,
         has_dedicated_skill_registry=has_dedicated_skill_registry,
         has_infrastructure_doc=has_infrastructure_doc,
+        learner_resources=learner_resources,
     )
 
 

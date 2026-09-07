@@ -37,3 +37,18 @@ export function formatAudienceLabel(audience) {
   if (!audience || audience.length === 0) return "Non classifié";
   return audience.join(", ");
 }
+
+/** ACA-0019 — labels for the real formation-level learner resources
+ * (backend/fms_canonical/models.py's `LearnerResourceType`) — mirrors
+ * fms_import/models.py's own RESOURCE_TYPE_LABELS wording rather than
+ * inventing new copy. An unrecognized value (should never happen for a
+ * real archive) falls back to the raw type, never a blank label. */
+const LEARNER_RESOURCE_TYPE_LABELS = {
+  cas_fil_rouge: "Cas fil rouge",
+  templates_etudiants: "Templates étudiants",
+  guide_candidat: "Guide candidat",
+};
+
+export function formatLearnerResourceTypeLabel(resourceType) {
+  return LEARNER_RESOURCE_TYPE_LABELS[resourceType] || resourceType;
+}

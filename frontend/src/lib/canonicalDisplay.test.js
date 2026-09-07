@@ -1,6 +1,7 @@
 import {
   deriveModuleActionLabel,
   formatAudienceLabel,
+  formatLearnerResourceTypeLabel,
   formatPrerequisiteLabel,
 } from "@/lib/canonicalDisplay";
 
@@ -53,6 +54,20 @@ describe("canonicalDisplay.js (ACA-0006)", () => {
     test("empty/missing -> explicit 'unclassified', not blank", () => {
       expect(formatAudienceLabel([])).toBe("Non classifié");
       expect(formatAudienceLabel(undefined)).toBe("Non classifié");
+    });
+  });
+
+  describe("formatLearnerResourceTypeLabel (ACA-0019)", () => {
+    test("known types get the real French label", () => {
+      expect(formatLearnerResourceTypeLabel("cas_fil_rouge")).toBe("Cas fil rouge");
+      expect(formatLearnerResourceTypeLabel("templates_etudiants")).toBe(
+        "Templates étudiants"
+      );
+      expect(formatLearnerResourceTypeLabel("guide_candidat")).toBe("Guide candidat");
+    });
+
+    test("an unrecognized type falls back to the raw value, never blank", () => {
+      expect(formatLearnerResourceTypeLabel("some_future_type")).toBe("some_future_type");
     });
   });
 });
