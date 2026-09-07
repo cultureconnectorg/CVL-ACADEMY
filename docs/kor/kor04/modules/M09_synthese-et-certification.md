@@ -41,6 +41,8 @@ Le dossier porte sur la programmation réelle du cas (`case/CASE.md`).
   d'ensemble.
 - Éviter de défendre l'arbitrage de diversité, le présentant comme
   allant de soi.
+- Formuler un bilan réflexif qui n'admette aucune difficulté réelle
+  rencontrée durant la programmation.
 
 ## Activité
 

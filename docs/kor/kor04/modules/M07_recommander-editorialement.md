@@ -41,12 +41,15 @@ frontière avec `KOR-12`, non construit).
 3. Vérifier qu'aucune formulation ne suggère une donnée réelle
    inexistante.
 
-## Exemple
+## Exemples
 
 Formulation correcte : « Notre choix : après *Rasin*, on vous
 recommande *Gwo Siwo* pour sa richesse musicale. » Formulation à
 proscrire : « 87% des auditeurs de *Rasin* ont aussi aimé *Gwo Siwo* »
-(chiffre fabriqué, aucune donnée réelle).
+(chiffre fabriqué, aucune donnée réelle). Un autre choix correct :
+signer explicitement la recommandation (« Naïma vous recommande... »)
+pour qu'elle reste lisible comme un jugement humain assumé, sans
+laisser planer le doute qu'elle proviendrait d'un système.
 
 ## Cas
 
@@ -58,6 +61,9 @@ CASE.md`).
 - Fabriquer une statistique pour crédibiliser une recommandation
   humaine.
 - Cacher que la recommandation est un choix humain assumé.
+- Utiliser une formulation ambiguë (« recommandé pour vous ») qui
+  pourrait laisser croire à une personnalisation algorithmique
+  inexistante.
 
 ## Activité
 

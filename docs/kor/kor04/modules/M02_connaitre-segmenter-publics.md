@@ -35,10 +35,14 @@ courte).
 2. Identifier un public potentiel non encore atteint.
 3. Noter les écarts entre les trois contenus.
 
-## Exemple
+## Exemples
 
 *Gwo Siwo* a un public de connaisseurs musicaux plus âgés ; *Anlè
 Lakou* pourrait attirer un public plus jeune si contextualisée (M06).
+À l'inverse, supposer que le public de *Rasin* sur *Dyaspora FM* se
+transpose à l'identique sur *Rézo Kilti* ignorerait que le canal et le
+format changent qui regarde réellement — un public acquis sur un canal
+n'est pas automatiquement le même public sur un autre.
 
 ## Cas
 
@@ -49,6 +53,9 @@ CASE.md`).
 
 - Supposer un public identique pour tous les contenus.
 - Ignorer le public potentiel au profit du seul public déjà acquis.
+- Confondre le public visé sur un canal (ex. `Dyaspora FM`) avec le
+  public réellement atteint sur un autre canal (`Rézo Kilti`), sans
+  vérifier que les deux se recoupent.
 
 ## Activité
 

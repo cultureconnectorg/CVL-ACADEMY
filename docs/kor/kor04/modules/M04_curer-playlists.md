@@ -37,11 +37,14 @@ jamais les modifier — la frontière avec le travail de création
 2. Ordonner la playlist pour créer une progression cohérente.
 3. Vérifier qu'aucun contenu n'a été modifié dans le processus.
 
-## Exemple
+## Exemples
 
 La semaine de *Rasin* peut inclure en complément un extrait de *Gwo
 Siwo* évoquant un thème voisin (mémoire musicale familiale) — assemblé,
-pas réécrit.
+pas réécrit. À l'inverse, assembler une playlist sur le seul critère
+d'un genre musical commun, sans lien thématique réel avec la mise en
+avant de la semaine, produirait un assemblage cohérent en surface mais
+sans la progression que la playlist est censée créer.
 
 ## Cas
 
@@ -52,6 +55,8 @@ Les playlists portent sur le catalogue réel du cas (`case/CASE.md`).
 - Modifier un contenu pour qu'il "colle" mieux à la playlist (relève de
   `KOR-02`, hors mandat ici).
 - Assembler sans logique de progression.
+- Assembler sur un seul critère de surface (même genre musical) sans
+  vérifier le lien thématique réel avec la mise en avant de la semaine.
 
 ## Activité
 

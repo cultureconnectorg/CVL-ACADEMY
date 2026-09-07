@@ -36,11 +36,14 @@ moins connu).
    diversité (réservée à M05).
 3. Vérifier que l'ordre proposé sert la ligne éditoriale de M01.
 
-## Exemple
+## Exemples
 
 Semaine 1 : *Rasin* (attire l'audience) ; semaine 2 : *Anlè Lakou*
 (contextualisée, profite de l'audience attirée) ; etc. — un ordre
-possible parmi d'autres, à confirmer en M05.
+possible parmi d'autres, à confirmer en M05. À l'inverse, caler l'ordre
+sur la seule disponibilité des créateurs (qui est libre quand) plutôt
+que sur une logique d'exposition produirait un calendrier techniquement
+faisable, mais sans aucune cohérence avec la ligne éditoriale de M01.
 
 ## Cas
 
@@ -51,6 +54,8 @@ Le calendrier porte sur les 4 semaines réelles du cas (`case/CASE.md`).
 - Grouper le contenu connu en premier et l'inconnu en dernier
   (minimise son exposition).
 - Construire un calendrier sans lien avec la ligne éditoriale de M01.
+- Caler l'ordre du calendrier sur la disponibilité des créateurs
+  plutôt que sur une logique d'exposition cohérente.
 
 ## Activité
 

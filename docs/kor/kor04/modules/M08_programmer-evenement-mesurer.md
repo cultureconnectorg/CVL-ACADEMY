@@ -38,11 +38,15 @@ présentée comme une mesure quantitative précise qui n'existe pas.
 3. Documenter les résultats réels de l'événement (ou une simulation
    honnête si non tenu).
 
-## Exemple
+## Exemples
 
 Indicateur honnête : « Les trois créateurs ont confirmé leur
 participation, 12 messages de retour ont été recueillis » — pas
-« 5000 vues » (donnée fabriquée, aucun système ne la produit).
+« 5000 vues » (donnée fabriquée, aucun système ne la produit). À
+l'inverse, extrapoler ces 12 retours qualitatifs en un pourcentage
+(« 100% de satisfaction ») donnerait une fausse précision statistique à
+un échantillon non représentatif — l'honnêteté porte autant sur la
+nature du chiffre que sur son existence.
 
 ## Cas
 
@@ -53,6 +57,9 @@ L'événement porte sur la clôture réelle du mois du patrimoine
 
 - Inventer des chiffres d'audience non mesurables réellement.
 - Programmer un événement sans lien avec la ligne éditoriale du mois.
+- Extrapoler un petit nombre de retours qualitatifs en une statistique
+  précise, donnant une fausse rigueur à un échantillon non
+  représentatif.
 
 ## Activité
 

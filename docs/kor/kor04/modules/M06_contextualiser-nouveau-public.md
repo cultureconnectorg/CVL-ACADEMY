@@ -38,11 +38,15 @@ public connaît déjà) — le contenu lui-même reste inchangé.
 3. Vérifier qu'aucune modification n'est apportée au contenu
    d'*Anlè Lakou* lui-même.
 
-## Exemple
+## Exemples
 
 « Si l'histoire intime de Man Rosa vous a touché, découvrez *Anlè
 Lakou*, qui raconte la vie de quartier avec la même attention aux
-détails du quotidien. »
+détails du quotidien. » À l'inverse, un texte générique comme « Un
+contenu à découvrir absolument ! », réutilisable pour n'importe quel
+contenu inconnu, ne construit aucun pont réel avec le public de
+*Rasin* — la contextualisation doit nommer explicitement ce que le
+public connaît déjà, pas se contenter d'un enthousiasme non spécifique.
 
 ## Cas
 
@@ -54,6 +58,9 @@ La contextualisation porte sur *Anlè Lakou* réellement, dans le cas
 - Survendre le contenu au point de décevoir à l'écoute/au visionnage.
 - Modifier le contenu lui-même plutôt que son seul texte de
   présentation.
+- Rédiger une contextualisation générique, réutilisable pour
+  n'importe quel contenu, qui ne nomme aucun pont réel avec ce que le
+  public cible connaît déjà.
 
 ## Activité
 

@@ -39,11 +39,15 @@ doit guider chaque décision suivante.
 3. Vérifier que le catalogue disponible (*Rasin*, *Gwo Siwo*, *Anlè
    Lakou*) peut réellement servir cette ligne.
 
-## Exemple
+## Exemples
 
 Ligne éditoriale : « Montrer la diversité des mémoires diaspora, des
 plus visibles aux moins connues » — oriente déjà la tension à venir en
-M05.
+M05. À l'inverse, une ligne comme « Mettre en valeur notre patrimoine »
+ne permettrait de trancher aucune décision réelle : face au choix
+concret entre *Rasin* (populaire) et *Anlè Lakou* (inconnue), elle ne
+dirait rien — une ligne éditoriale utile doit permettre de répondre à
+ce type de question, pas seulement bien sonner.
 
 ## Cas
 
@@ -53,6 +57,9 @@ Le diagnostic porte sur le catalogue réel du cas (`case/CASE.md`).
 
 - Programmer par disponibilité plutôt que par ligne éditoriale.
 - Formuler une ligne éditoriale trop vague pour guider une décision.
+- Rédiger la ligne éditoriale après avoir déjà décidé du calendrier,
+  la faisant justifier une décision prise à l'envers plutôt que la
+  guider.
 
 ## Activité
 

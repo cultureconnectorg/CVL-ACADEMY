@@ -41,12 +41,16 @@ par *Rasin* comme tremplin vers les autres.
    renforcée pour les moins connus).
 3. Documenter la décision et sa justification.
 
-## Exemple
+## Exemples
 
 Programmer *Rasin* en semaine 1 puis *Anlè Lakou* en semaine 2, en
 utilisant explicitement l'audience de *Rasin* pour introduire *Anlè
 Lakou* ("si vous avez aimé Rasin, découvrez...") — sert les deux
-objectifs plutôt que d'en sacrifier un.
+objectifs plutôt que d'en sacrifier un. À l'inverse, programmer *Anlè
+Lakou* en semaine 1, isolée, sans aucun pont vers un public existant, en
+misant sur la seule qualité du contenu pour attirer une audience qui
+n'existe pas encore, risquerait de la voir passer inaperçue faute de
+tremplin.
 
 ## Cas
 
@@ -56,8 +60,11 @@ L'arbitrage porte sur le calendrier réel du cas (`case/CASE.md`).
 
 - Exclure *Rasin* par principe de diversité, sacrifiant un contenu de
   qualité déjà validé.
-- Programmer *Rasin* partout sans same jamais de place réelle aux
+- Programmer *Rasin* partout sans jamais laisser de place réelle aux
   autres.
+- Programmer un contenu moins connu en position isolée, sans aucun
+  pont vers une audience existante, en misant sur sa seule qualité
+  pour se faire remarquer.
 
 ## Activité
 
