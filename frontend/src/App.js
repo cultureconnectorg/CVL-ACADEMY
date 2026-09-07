@@ -8,6 +8,7 @@ import { I18nProvider } from "@/lib/i18n.jsx";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
 import { RouteTransition } from "@/lib/RouteTransition";
+import { useScrollRestoration } from "@/lib/useScrollRestoration";
 
 const Landing = lazy(() => import("@/pages/Landing"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
@@ -43,6 +44,15 @@ function PageFallback() {
   return <div className="p-10 text-[--cvln-ink-2]">…</div>;
 }
 
+// ACA-0023 (scroll slice) — must be inside <BrowserRouter> (useLocation/
+// useNavigationType need Router context) and outside <Suspense>/
+// <RouteTransition> so it observes every navigation regardless of what
+// lazy chunk is or isn't loaded yet. Renders nothing — side-effect only.
+function ScrollRestoration() {
+  useScrollRestoration();
+  return null;
+}
+
 function Protected({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
@@ -57,6 +67,7 @@ function App() {
     <I18nProvider>
       <AuthProvider>
         <BrowserRouter>
+          <ScrollRestoration />
           <Suspense fallback={<PageFallback />}>
             <RouteTransition>
               <Routes>
