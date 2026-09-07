@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { ArrowRight, Coins, Medal1st, GraduationCap, Sparks } from "iconoir-react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
+import { ArrowRight, Coins, Medal1st, GraduationCap, Sparks, Xmark } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { usePedagogicalGraph } from "@/lib/usePedagogicalGraph";
 import SpatialHub from "@/components/SpatialHub";
+import { useReducedMotion } from "@/lib/useReducedMotion";
 
 const STADE_EMOJI = {
   graine: "🌱", pousse: "🌿", racine: "🌳",
@@ -16,11 +18,29 @@ const STADE_EMOJI = {
 export default function Dashboard() {
   const { user, refreshMe } = useAuth();
   const { t } = useI18n();
+  const location = useLocation();
+  const nav = useNavigate();
   const [prof, setProf] = useState(null);
   const [missions, setMissions] = useState([]);
   const [badges, setBadges] = useState([]);
   const [summary, setSummary] = useState(null);
   const [path, setPath] = useState(null);
+
+  // FIRST_VALUE = CONTINUOUS_DASHBOARD_REVEAL (Founder decision,
+  // W-FUNNEL-2, 2026-09-07) — no separate /activation route: the real
+  // `POST /onboarding/complete` response, carried here via router
+  // `state` (see Onboarding.js's `submit()`), becomes a one-time,
+  // non-blocking reveal on this exact page. Read once on mount, then
+  // the state is cleared from history immediately — a refresh or a
+  // later visit (even via back button) never re-triggers it, with no
+  // new persisted flag needed.
+  const [reveal] = useState(location.state?.justOnboarded ? location.state.onboardingResult : null);
+  useEffect(() => {
+    if (location.state?.justOnboarded) {
+      nav(location.pathname, { replace: true, state: {} });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -50,6 +70,8 @@ export default function Dashboard() {
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="dashboard-page">
+      {reveal && <FirstValueReveal result={reveal} user={user} t={t} />}
+
       {/* Hero */}
       <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
         <div>
@@ -272,4 +294,98 @@ function nextStade(s) {
   const order = ["graine","pousse","racine","branches","arbre","foret"];
   const i = order.indexOf(s);
   return order[Math.min(i + 1, order.length - 1)];
+}
+
+/** FIRST_VALUE = CONTINUOUS_DASHBOARD_REVEAL (Founder decision,
+ * W-FUNNEL-2, 2026-09-07) — a one-time, non-blocking, dismissible
+ * banner composed entirely from `result`, the real `POST /onboarding/
+ * complete` response (never refetched, never fabricated): a
+ * recommended formation only when the backend actually named one, a
+ * first mission only when one was actually pre-accepted, a badge/
+ * signal count only when real. No CC/progression number is invented
+ * here — Dashboard's own cards below already show those honestly,
+ * from their own already-real sources. Uses the app's existing motion
+ * primitive (`framer-motion`, the same dependency Roadmap.js's spatial
+ * rail already uses) — respects prefers-reduced-motion. */
+function FirstValueReveal({ result, user, t }) {
+  const [open, setOpen] = useState(true);
+  const reduced = useReducedMotion();
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          data-testid="first-value-reveal"
+          initial={reduced ? { opacity: 0 } : { opacity: 0, y: -16, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={reduced ? { opacity: 0 } : { opacity: 0, y: -12, scale: 0.98 }}
+          transition={{ duration: reduced ? 0.15 : 0.4, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-8 cvln-card p-6 relative overflow-hidden border-2 border-[--cvln-orange]/30"
+        >
+          <button
+            data-testid="first-value-reveal-close"
+            onClick={() => setOpen(false)}
+            aria-label={t("close")}
+            className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-[--cvln-ink-2]"
+          >
+            <Xmark width={16} height={16} />
+          </button>
+
+          <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
+            {t("onboarding_p.launched_eyebrow")}
+          </div>
+          <h2 className="font-display font-black text-2xl md:text-3xl tracking-tight mt-2 pr-10">
+            {t("onboarding_p.welcome")} {user?.display_name?.split(" ")[0]}.
+          </h2>
+          {(result?.signals_emitted?.length > 0 || result?.badge_earned) && (
+            <p className="text-[--cvln-ink-2] mt-2 max-w-xl text-sm">
+              {result.signals_emitted?.length > 0 && (
+                <>{result.signals_emitted.length} {t("onboarding_p.signals_emitted")} </>
+              )}
+              {result.badge_earned && (
+                <>
+                  <strong className="text-[--cvln-ink]">{result.badge_earned.name}</strong> {t("onboarding_p.delivered")}
+                </>
+              )}
+            </p>
+          )}
+
+          {(result?.recommended_formation || result?.recommended_mission) && (
+            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+              {result.recommended_formation && (
+                <div className="rounded-2xl border border-black/10 p-4" data-testid="reveal-formation">
+                  <div className="text-[10px] mono uppercase tracking-[0.2em] font-bold text-[--cvln-orange]">
+                    {t("onboarding_p.recommended_formation")}
+                  </div>
+                  <div className="font-display font-bold text-lg mt-1">
+                    {result.recommended_formation.name}
+                  </div>
+                  <Link
+                    to={`/formations/${result.recommended_formation.code}`}
+                    data-testid="reveal-formation-open"
+                    className="btn-primary text-sm mt-3 inline-flex"
+                  >
+                    {t("onboarding_p.open_formation")} <ArrowRight width={14} height={14} className="ml-1.5" />
+                  </Link>
+                </div>
+              )}
+              {result.recommended_mission && (
+                <div className="rounded-2xl border border-black/10 p-4" data-testid="reveal-mission">
+                  <div className="text-[10px] mono uppercase tracking-[0.2em] font-bold text-[--cvln-orange]">
+                    {t("onboarding_p.first_mission")}
+                  </div>
+                  <div className="font-display font-bold text-lg mt-1">
+                    {result.recommended_mission.title}
+                  </div>
+                  <Link to="/missions" data-testid="reveal-mission-open" className="btn-outline text-sm mt-3 inline-flex">
+                    {t("onboarding_p.see_my_missions")}
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
 }

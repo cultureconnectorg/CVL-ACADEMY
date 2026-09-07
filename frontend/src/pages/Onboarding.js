@@ -22,16 +22,18 @@ export default function Onboarding() {
     objectif_perso: "",
   });
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState(null);
 
   useEffect(() => {
     api.get("/onboarding/options").then((r) => setOptions(r.data));
   }, []);
 
   useEffect(() => {
-    // Only auto-redirect if user is already onboarded and we're not showing a fresh result.
-    if (user && user.onboarding_completed && !result) nav("/dashboard", { replace: true });
-  }, [user, nav, result]);
+    // A returning, already-onboarded user landing on /onboarding
+    // directly (e.g. a stale bookmark) goes straight to the real
+    // Dashboard — no reveal state here, since this isn't the moment
+    // completion actually happened (see `submit()` above for that).
+    if (user && user.onboarding_completed) nav("/dashboard", { replace: true });
+  }, [user, nav]);
 
   const canNext = useMemo(() => {
     if (step === 0) return !!choices.lang;
@@ -48,9 +50,18 @@ export default function Onboarding() {
     setSubmitting(true);
     try {
       const { data } = await api.post("/onboarding/complete", choices);
-      setResult(data);
       await refreshMe();
       toast.success(t("onboarding_p.success_toast"));
+      // FIRST_VALUE = CONTINUOUS_DASHBOARD_REVEAL (Founder decision,
+      // W-FUNNEL-2, 2026-09-07) — no separate /activation screen, no
+      // separate onboarding "result" screen either: onboarding
+      // completion goes straight to the real Dashboard, carrying the
+      // real `POST /onboarding/complete` response (recommended
+      // formation/mission, badge, signals — genuine backend data, never
+      // refetched or fabricated) so Dashboard can render its one-time,
+      // non-blocking reveal from it. `state` only — nothing persisted,
+      // so it naturally never re-fires on a later visit.
+      nav("/dashboard", { replace: true, state: { justOnboarded: true, onboardingResult: data } });
     } catch (e) {
       toast.error(e?.response?.data?.detail || t("onboarding_p.error_toast"));
     } finally {
@@ -201,7 +212,7 @@ export default function Onboarding() {
           )}
 
           {/* STEP 4 — Récap + submit */}
-          {step === 4 && !result && (
+          {step === 4 && (
             <StepShell
               kicker={t("onboarding_p.step5_kicker")}
               title={t("onboarding_p.step5_title")}
@@ -223,123 +234,37 @@ export default function Onboarding() {
             </StepShell>
           )}
 
-          {/* Final — result */}
-          {result && (
-            <div data-testid="onboarding-result" className="fade-in">
-              <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
-                {t("onboarding_p.launched_eyebrow")}
-              </div>
-              <h2 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-3">
-                {t("onboarding_p.welcome")} {user.display_name.split(" ")[0]}.
-              </h2>
-              <p className="text-[--cvln-ink-2] mt-3 max-w-xl">
-                {result.signals_emitted.length} {t("onboarding_p.signals_emitted")}{" "}
-                <strong className="text-[--cvln-ink]">{result.badge_earned?.name}</strong> {t("onboarding_p.delivered")}
-              </p>
-
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                {result.recommended_formation && (
-                  <div className="cvln-card p-6" data-testid="reco-formation">
-                    <div className="text-[11px] mono uppercase tracking-[0.2em] font-bold text-[--cvln-orange]">
-                      {t("onboarding_p.recommended_formation")}
-                    </div>
-                    <div
-                      className="inline-flex items-center gap-2 px-2 py-1 rounded-full text-[10px] font-bold text-white mt-3"
-                      style={{ background: result.recommended_formation.pole_color }}
-                    >
-                      {result.recommended_formation.pole_name} · {result.recommended_formation.code}
-                    </div>
-                    <div className="font-display font-bold text-2xl mt-2">
-                      {result.recommended_formation.name}
-                    </div>
-                    <div className="text-sm text-[--cvln-ink-2] mt-2">
-                      {result.recommended_formation.description}
-                    </div>
-                    <div className="text-xs mono text-[--cvln-ink-2] mt-3">
-                      {result.recommended_formation.duration_h}h · {result.recommended_formation.cc} CC · {result.recommended_formation.modules_count} {t("modules").toLowerCase()}
-                    </div>
-                    <button
-                      data-testid="reco-formation-start"
-                      onClick={() => nav(`/formations/${result.recommended_formation.code}`)}
-                      className="btn-primary mt-5"
-                    >
-                      {t("onboarding_p.open_formation")} <ArrowRight width={16} height={16} className="ml-2" />
-                    </button>
-                  </div>
-                )}
-                {result.recommended_mission && (
-                  <div className="cvln-card p-6" data-testid="reco-mission">
-                    <div className="text-[11px] mono uppercase tracking-[0.2em] font-bold text-[--cvln-orange]">
-                      {t("onboarding_p.first_mission")}
-                    </div>
-                    <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2] mt-3">
-                      {result.recommended_mission.pole} · {result.recommended_mission.entity}
-                    </div>
-                    <div className="font-display font-bold text-2xl mt-1">
-                      {result.recommended_mission.title}
-                    </div>
-                    <div className="text-sm text-[--cvln-ink-2] mt-2">
-                      {result.recommended_mission.description}
-                    </div>
-                    <div className="text-xs mono text-[--cvln-orange] font-bold mt-3">
-                      +{result.recommended_mission.cc_reward} CC · {t("onboarding_p.already_accepted")}
-                    </div>
-                    <button
-                      data-testid="reco-mission-open"
-                      onClick={() => nav("/missions")}
-                      className="btn-outline mt-5"
-                    >
-                      {t("onboarding_p.see_my_missions")}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-8">
-                <button
-                  data-testid="onboarding-goto-dashboard"
-                  onClick={() => nav("/dashboard")}
-                  className="btn-primary"
-                >
-                  {t("onboarding_p.goto_dashboard")} <ArrowRight width={16} height={16} className="ml-2" />
-                </button>
-              </div>
-            </div>
-          )}
-
           {/* Nav buttons */}
-          {!result && (
-            <div className="mt-10 flex items-center justify-between">
+          <div className="mt-10 flex items-center justify-between">
+            <button
+              data-testid="onboarding-prev"
+              onClick={prev}
+              disabled={step === 0}
+              className="btn-outline text-sm disabled:opacity-40"
+            >
+              <NavArrowLeft width={16} height={16} className="mr-1" /> {t("onboarding_p.back")}
+            </button>
+            {step < STEPS.length - 1 ? (
               <button
-                data-testid="onboarding-prev"
-                onClick={prev}
-                disabled={step === 0}
-                className="btn-outline text-sm disabled:opacity-40"
+                data-testid="onboarding-next"
+                onClick={next}
+                disabled={!canNext}
+                className="btn-primary disabled:opacity-40"
               >
-                <NavArrowLeft width={16} height={16} className="mr-1" /> {t("onboarding_p.back")}
+                {t("onboarding_p.continue_btn")} <ArrowRight width={16} height={16} className="ml-2" />
               </button>
-              {step < STEPS.length - 1 ? (
-                <button
-                  data-testid="onboarding-next"
-                  onClick={next}
-                  disabled={!canNext}
-                  className="btn-primary disabled:opacity-40"
-                >
-                  {t("onboarding_p.continue_btn")} <ArrowRight width={16} height={16} className="ml-2" />
-                </button>
-              ) : (
-                <button
-                  data-testid="onboarding-submit"
-                  onClick={submit}
-                  disabled={submitting}
-                  className="btn-primary disabled:opacity-40"
-                >
-                  {submitting ? t("onboarding_p.generating") : t("onboarding_p.launch")}
-                  <Sparks width={16} height={16} className="ml-2" />
-                </button>
-              )}
-            </div>
-          )}
+            ) : (
+              <button
+                data-testid="onboarding-submit"
+                onClick={submit}
+                disabled={submitting}
+                className="btn-primary disabled:opacity-40"
+              >
+                {submitting ? t("onboarding_p.generating") : t("onboarding_p.launch")}
+                <Sparks width={16} height={16} className="ml-2" />
+              </button>
+            )}
+          </div>
         </div>
       </main>
     </div>
