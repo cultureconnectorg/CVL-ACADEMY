@@ -40,10 +40,14 @@ catégories plutôt qu'une case unique.
 3. Documenter le territoire d'origine culturelle (pas seulement le
    territoire de diffusion, distinct de `KOR-07`).
 
-## Exemple
+## Exemples
 
 Langues : créole (majoritaire), français (segments) — les deux
-documentées, pas seulement la langue dominante.
+documentées, pas seulement la langue dominante. À l'inverse, inventer
+une combinaison de genres si spécifique qu'aucune autre entrée du
+catalogue ne l'utiliserait romprait l'intérêt d'une taxonomie partagée
+— une combinaison doit rester réutilisable, pas sur mesure pour un
+seul contenu.
 
 ## Cas
 
@@ -54,6 +58,8 @@ La normalisation porte sur l'épisode réel du cas (`case/CASE.md`).
 - Documenter une seule langue quand plusieurs sont réellement
   présentes.
 - Forcer un genre unique pour un contenu hybride.
+- Inventer une combinaison de genres si spécifique qu'elle ne serait
+  réutilisable pour aucun autre contenu du catalogue.
 
 ## Activité
 

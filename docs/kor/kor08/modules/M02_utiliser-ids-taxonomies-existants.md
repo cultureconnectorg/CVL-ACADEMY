@@ -39,11 +39,16 @@ standards et à orienter vers la bonne ressource, pas à les délivrer.
    circuit équivalent), pas un système `KOR-08`.
 3. Rédiger la note de pont recommandant cette orientation.
 
-## Exemple
+## Exemples
 
 Une note correcte : « Pour un ISRC réel, le Lanbi Collective devrait se
 tourner vers un service de type LabelOS (`LOS-02`) — ce module ne
-délivre pas cet identifiant, il en explique le rôle. »
+délivre pas cet identifiant, il en explique le rôle. » À l'inverse, une
+note de pont qui se contente de « consultez un spécialiste » sans
+préciser lequel des standards (ISRC pour l'enregistrement, ISWC pour
+la composition) s'applique à quel besoin laisserait le Lanbi Collective
+aussi perdu qu'avant — orienter, ce n'est pas déléguer sans expliquer
+pourquoi.
 
 ## Cas
 
@@ -54,6 +59,8 @@ La note porte sur le besoin réel identifié en M01 (`case/CASE.md`).
 - Prétendre expliquer en détail la procédure d'obtention d'un ISRC (hors
   mandat, relève de LabelOS).
 - Ignorer l'existence de ces standards par méconnaissance.
+- Orienter vers LabelOS sans préciser lequel des standards s'applique
+  à quel besoin, laissant le créateur aussi perdu qu'avant.
 
 ## Activité
 

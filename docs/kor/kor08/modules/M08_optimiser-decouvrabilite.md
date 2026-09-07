@@ -39,11 +39,16 @@ les métadonnées.
 2. Vérifier que chaque mot-clé choisi reflète fidèlement le contenu.
 3. Éviter tout mot-clé populaire sans rapport réel avec le contenu.
 
-## Exemple
+## Exemples
 
 Mots-clés fidèles : "mémoire familiale", "diaspora caribéenne",
 "créole", "valise", "transmission orale". À éviter : mots-clés
-tendance sans rapport réel juste pour la visibilité.
+tendance sans rapport réel juste pour la visibilité. À l'inverse,
+choisir des mots-clés fidèles mais si spécifiques qu'aucun auditeur
+réel ne les taperait (un terme savant peu usité) rendrait le contenu
+tout aussi peu découvrable qu'un bourrage de mots-clés populaires sans
+rapport — la fidélité ne suffit pas si personne ne cherche avec ces
+termes.
 
 ## Cas
 
@@ -54,6 +59,8 @@ CASE.md`).
 
 - Utiliser des mots-clés populaires sans rapport avec le contenu réel.
 - Négliger les termes que le public cible utiliserait réellement.
+- Choisir des mots-clés fidèles mais trop spécifiques ou savants pour
+  correspondre à ce qu'un auditeur réel taperait réellement.
 
 ## Activité
 

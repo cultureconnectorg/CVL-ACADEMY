@@ -41,11 +41,15 @@ une preuve qui n'existe pas.
    en fabriquer de nouveaux).
 3. Vérifier la cohérence de l'enrichissement avec les crédits (M03).
 
-## Exemple
+## Exemples
 
 Contexte correct : « Cette histoire documente une mémoire familiale de
 dispersion diaspora, avec le consentement de la narratrice » — informe
-sans réduire Man Rosa à un archétype.
+sans réduire Man Rosa à un archétype. À l'inverse, affirmer un
+consentement « plein et documenté » alors qu'il n'a été donné
+qu'informellement surstaterait la certitude de la provenance —
+l'enrichissement doit rester fidèle à ce qui est réellement vérifié,
+pas embelli.
 
 ## Cas
 
@@ -56,6 +60,9 @@ CASE.md`).
 
 - Rédiger un contexte qui exotise, contredisant `KOR-02`/M09.
 - Inventer une provenance FREK qui n'existe pas réellement.
+- Affirmer une certitude de provenance ou de consentement plus forte
+  que ce qui est réellement vérifié, embellissant l'enrichissement
+  plutôt que de le documenter fidèlement.
 
 ## Activité
 

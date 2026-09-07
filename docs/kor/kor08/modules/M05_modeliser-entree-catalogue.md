@@ -38,11 +38,15 @@ mutuellement (un même contenu, deux vues) sans se dupliquer.
 2. Exclure les champs de gestion de droits (hors mandat, LabelOS).
 3. Structurer l'entrée catalogue complète.
 
-## Exemple
+## Exemples
 
 Champs d'exploitation : titre, description, crédits (M03), genre/
 langue (M04), durée, date. Champs hors mandat : taux de royalties,
-statut ISRC — renvoyés à LabelOS.
+statut ISRC — renvoyés à LabelOS. À l'inverse, inclure un champ de
+gestion de droits déguisé sous un intitulé neutre (« note
+additionnelle » contenant en réalité un taux de royalties) reviendrait
+à dupliquer le rôle de LabelOS sans le nommer — la frontière porte sur
+le contenu réel du champ, pas seulement sur son intitulé.
 
 ## Cas
 
@@ -53,6 +57,9 @@ Le modèle porte sur *Rasin* réellement (`case/CASE.md`).
 - Inclure des champs de gestion de droits dans le modèle
   d'exploitation, dupliquant le rôle de LabelOS.
 - Omettre un champ essentiel à la découvrabilité.
+- Inclure un champ de gestion de droits sous un intitulé neutre qui
+  masque son contenu réel, dupliquant discrètement le rôle de
+  LabelOS.
 
 ## Activité
 

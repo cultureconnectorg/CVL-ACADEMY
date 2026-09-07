@@ -40,12 +40,15 @@ avant d'en inventer un nouveau.
 2. Vérifier si un standard existant (LabelOS) couvre déjà ce besoin.
 3. Recommander l'usage du standard existant plutôt que l'invention.
 
-## Exemple
+## Exemples
 
 Le Lanbi Collective envisage un code interne "RASIN-EP0" — ce n'est
 pas un identifiant industrie reconnu (ISRC) mais peut servir de
 référence interne, tant qu'il n'est pas confondu avec un véritable
-ISRC.
+ISRC. À l'inverse, conclure qu'aucun standard n'est pertinent parce que
+le Lanbi Collective est une petite structure indépendante ignorerait
+qu'ISRC/ISWC s'appliquent quelle que soit la taille du producteur — la
+petite échelle ne dispense pas du diagnostic.
 
 ## Cas
 
@@ -57,6 +60,8 @@ Le diagnostic porte sur *Rasin* réellement (`case/CASE.md`).
   standard.
 - Confondre une référence interne avec un identifiant industrie
   reconnu.
+- Conclure qu'aucun standard industrie n'est pertinent du seul fait
+  que le producteur est une petite structure indépendante.
 
 ## Activité
 

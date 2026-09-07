@@ -41,6 +41,8 @@ Le dossier porte sur l'opération réelle de métadonnées de *Rasin*
 - Présenter les livrables sans les relier à la frontière LabelOS
   posée en M01/M02.
 - Minimiser ou ignorer l'incertitude persistante du chant traditionnel.
+- Formuler un bilan réflexif qui n'admette aucune difficulté réelle
+  rencontrée dans la tenue de la frontière avec LabelOS.
 
 ## Activité
 

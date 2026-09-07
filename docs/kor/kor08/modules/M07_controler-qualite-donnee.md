@@ -37,11 +37,15 @@ seulement l'absence d'erreur de frappe.
 2. Appliquer la checklist à l'entrée catalogue complète.
 3. Documenter les corrections apportées.
 
-## Exemple
+## Exemples
 
 Une incohérence type : l'enrichissement culturel mentionne "narratrice
 principale" mais le crédit dit "invitée" — à corriger avant
-publication.
+publication. À l'inverse, ne recontrôler que les champs récemment
+modifiés, en supposant que les champs plus anciens restent cohérents,
+laisserait passer une incohérence apparue après coup (comme un
+enrichissement culturel écrit après un crédit qui, lui, n'a jamais été
+relu depuis).
 
 ## Cas
 
@@ -52,6 +56,8 @@ CASE.md`).
 
 - Vérifier la complétude sans vérifier la cohérence inter-champs.
 - Ignorer une incohérence mineure en apparence.
+- Ne recontrôler que les champs récemment modifiés, en supposant à
+  tort que les champs plus anciens restent cohérents avec eux.
 
 ## Activité
 

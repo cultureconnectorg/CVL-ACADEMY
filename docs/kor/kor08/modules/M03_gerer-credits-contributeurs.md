@@ -38,11 +38,15 @@ doit être crédité avec la réserve appropriée, pas ignoré ni inventé.
 3. Documenter la réserve pour toute contribution à l'origine
    incertaine.
 
-## Exemple
+## Exemples
 
 Crédit correct : « Man Rosa — témoin et narratrice principale » plutôt
 que « Man Rosa — invitée ». Pour le chant : « Interprète non identifié
-— origine en cours de vérification » plutôt qu'un nom inventé.
+— origine en cours de vérification » plutôt qu'un nom inventé. À
+l'inverse, attribuer à un contributeur un rôle précis mais deviné
+(« ingénieur du son ») sans vérifier ce qu'il a réellement fait serait
+tout aussi problématique qu'un rôle générique — la précision du terme
+ne vaut rien si elle est fausse.
 
 ## Cas
 
@@ -53,6 +57,8 @@ CASE.md`).
 
 - Utiliser des rôles génériques qui minimisent la contribution réelle.
 - Inventer un nom de contributeur pour combler une incertitude.
+- Attribuer un rôle précis mais deviné à un contributeur, sans
+  vérifier ce qu'il a réellement fait.
 
 ## Activité
 
