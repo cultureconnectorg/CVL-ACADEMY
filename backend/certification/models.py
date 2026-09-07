@@ -37,6 +37,22 @@ from pydantic import BaseModel, Field
 CertificationLevel = Literal["N1", "N2", "A01"]
 AttemptStatus = Literal["in_progress", "submitted", "graded", "passed", "failed"]
 
+# PHYSICAL/HYBRID assessment architecture (Founder decision, 2026-09-07):
+# "REUSE_WHERE_SEMANTICALLY_COMPATIBLE" / "NEW_PARALLEL_RUBRIC_SYSTEM =
+# FORBIDDEN" — a physical "observed exercise" is graded through this
+# exact same Rubric + CertificationAttempt + compute_scores engine, not
+# a second one. `assessment_kind` is the one new field that lets a
+# rubric (and the attempt graded against it) declare which real-world
+# thing it evaluates:
+#   "certification" (default — every rubric before this decision keeps
+#     this value unchanged) — the final, credential-granting attempt.
+#   "practical" — an observed physical exercise. Passing one is real
+#     evidence (never auto-certification) that feeds into a *separate*
+#     "certification"-kind attempt's eligibility when a
+#     PhysicalAssessmentRequirement names it as required (see
+#     certification/service.py's `check_full_eligibility`).
+AssessmentKind = Literal["certification", "practical"]
+
 
 def _uid() -> str:
     return str(uuid.uuid4())
@@ -88,6 +104,7 @@ class Rubric(BaseModel):
     criteria: List[RubricCriterion] = Field(default_factory=list)
     cap_rules: List[RubricCapRule] = Field(default_factory=list)
     mention_thresholds: List[MentionThreshold] = Field(default_factory=list)
+    assessment_kind: AssessmentKind = "certification"
     created_at: str = Field(default_factory=_now)
 
 
@@ -99,6 +116,7 @@ class RubricInput(BaseModel):
     criteria: List[RubricCriterion]
     cap_rules: List[RubricCapRule] = Field(default_factory=list)
     mention_thresholds: List[MentionThreshold] = Field(default_factory=list)
+    assessment_kind: AssessmentKind = "certification"
 
 
 class GradeInput(BaseModel):
@@ -123,6 +141,12 @@ class CertificationAttempt(BaseModel):
     rubric_version: str
     attempt_number: int = 1
     status: AttemptStatus = "in_progress"
+    assessment_kind: AssessmentKind = "certification"
+    # Set only for a "practical" attempt — the real physical_delivery.py
+    # TrainingSession this observed exercise happened at, and whose real
+    # AttendanceRecord (present=True) gated starting it. `None` for every
+    # "certification"-kind attempt, exactly as before this field existed.
+    session_id: Optional[str] = None
     raw_scores: Dict[str, float] = Field(default_factory=dict)  # criterion_id -> score
     score_by_competency: Dict[str, float] = Field(
         default_factory=dict
@@ -152,3 +176,32 @@ class AttemptSummary(BaseModel):
     mention: Optional[str] = None
     created_at: str
     graded_at: Optional[str] = None
+
+
+class PhysicalAssessmentRequirement(BaseModel):
+    """A real, explicitly staff-configured link from a FINAL
+    ("certification"-kind) `certification_code` to the "practical"-kind
+    `certification_code` a candidate must pass first.
+
+    `PHYSICAL_ASSESSMENT_REQUIRED_WHERE_SOURCE_REQUIRES_IT = TRUE`
+    (Founder decision) is honored by never fabricating this record: its
+    absence for a given `certification_code` means no practical
+    assessment gates it (today's certification behavior, byte-for-byte
+    unchanged) — it is never assumed True by a default or a heuristic,
+    only ever created by an explicit admin/staff action naming a real
+    practical rubric that already exists.
+    """
+
+    id: str = Field(default_factory=_uid)
+    certification_code: str  # the FINAL certification this gates
+    formation_code: str
+    practical_certification_code: str  # a Rubric with assessment_kind="practical"
+    required: bool = True
+    created_by: str
+    created_at: str = Field(default_factory=_now)
+
+
+class PhysicalAssessmentRequirementInput(BaseModel):
+    formation_code: str
+    practical_certification_code: str
+    required: bool = True

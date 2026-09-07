@@ -19,7 +19,17 @@ from typing import List, Literal, Optional
 from pydantic import BaseModel, Field
 
 SkillState = Literal["not_started", "in_progress", "acquired"]
-EvidenceType = Literal["quiz", "deliverable", "mini_mission", "certification"]
+# "physical_assessment" (Founder decision, PHYSICAL/HYBRID assessment
+# architecture, 2026-09-07): a jury/trainer-graded practical/observed-
+# exercise attempt (certification/models.py's `assessment_kind ==
+# "practical"`) records evidence under this type, never "certification"
+# — ATTENDANCE != ASSESSMENT != CERTIFICATION means a practical pass is
+# real evidence, but not itself the authoritative certification sign-off
+# that jumps a skill straight to "acquired" (see `_recompute_user_skill`
+# below: only "certification" does that). AUTO_SKILL_AWARD = FORBIDDEN.
+EvidenceType = Literal[
+    "quiz", "deliverable", "mini_mission", "certification", "physical_assessment"
+]
 
 
 def _uid() -> str:

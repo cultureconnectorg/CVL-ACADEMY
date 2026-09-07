@@ -15,17 +15,25 @@ import klt_canonical
 import kor_canonical
 from fastapi import HTTPException
 
+import physical_delivery
 from db import db, utc_now_iso
 from lx import compute_status
 from qualification import maybe_issue_qualification
 from services.canonical_convergence import get_canonical_authority
 from services.events import events
 from services.frek_core import frek_core
+from skills.models import EvidenceType
 from skills.progression import record_evidence
 from wallet import credit as wallet_credit
 
 from .attestation import make_jury_signature
-from .models import CertificationAttempt, GradeInput, Rubric
+from .models import (
+    CertificationAttempt,
+    GradeInput,
+    PhysicalAssessmentRequirement,
+    PhysicalAssessmentRequirementInput,
+    Rubric,
+)
 from .scoring import compute_scores
 
 CERTIFICATION_JCC_REWARD = 50.0
@@ -163,11 +171,215 @@ async def check_certification_eligibility(
     return False, f"Formation « {formation_code} » introuvable (ni legacy, ni canonique)."
 
 
+# --------------------------------------------------------------------
+# PHYSICAL/HYBRID assessment architecture (Founder decision, 2026-09-07)
+#
+# ATTENDANCE != ASSESSMENT != SKILL_VALIDATION != CERTIFICATION.
+# EXISTING_RUBRIC_ENGINE = REUSE_WHERE_SEMANTICALLY_COMPATIBLE;
+# NEW_PARALLEL_RUBRIC_SYSTEM = FORBIDDEN — a "practical" attempt below
+# is a real `CertificationAttempt` against a real `Rubric`, graded by
+# the exact same `grade_attempt`/`compute_scores` this file already
+# has. The only new thing is what gates *starting* one (real attendance,
+# not module completion) and how its pass composes into a FINAL
+# ("certification"-kind) attempt's eligibility — never instead of it,
+# never auto-granting it (AUTO_CERTIFICATION = FORBIDDEN).
+# --------------------------------------------------------------------
+
+
+async def _digital_content_exists(formation_code: str) -> bool:
+    """Whether `formation_code` has ANY real digital (legacy or
+    canonical) content at all — existence only, not completion. Lets
+    `check_full_eligibility` tell a genuine physical-only formation
+    (this returns False — the digital leg simply does not apply) apart
+    from a hybrid formation with real digital content the candidate
+    just hasn't finished (this returns True — the digital leg must
+    still be checked for real completion, per HYBRID_DOUBLE_CREDIT =
+    FORBIDDEN: a practical pass alone can never cover for unfinished
+    digital content when both channels are real)."""
+    if await db.formations.find_one({"code": formation_code}, {"_id": 0, "code": 1}):
+        return True
+    if await fms_canonical.get_canonical_formation(formation_code):
+        return True
+    if await klt_canonical.get_canonical_klt_formation(formation_code):
+        return True
+    if await kor_canonical.get_canonical_kor_formation(formation_code):
+        return True
+    return False
+
+
+async def get_physical_assessment_requirement(
+    certification_code: str,
+) -> Optional[PhysicalAssessmentRequirement]:
+    doc = await db.physical_assessment_requirements.find_one(
+        {"certification_code": certification_code}, {"_id": 0}
+    )
+    return PhysicalAssessmentRequirement(**doc) if doc else None
+
+
+async def set_physical_assessment_requirement(
+    certification_code: str, inp: PhysicalAssessmentRequirementInput, created_by: str
+) -> PhysicalAssessmentRequirement:
+    """Staff-only (see api/certification.py's RBAC). Validates both
+    certification_codes are real, already-created rubrics, and that the
+    named practical rubric really is `assessment_kind == "practical"` —
+    never lets a requirement point at a rubric that doesn't exist or
+    isn't actually a practical one, which would silently make the gate
+    below unsatisfiable or meaningless."""
+    final_rubric = await get_rubric(certification_code)
+    practical_rubric = await get_rubric(inp.practical_certification_code)
+    if practical_rubric.assessment_kind != "practical":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"« {inp.practical_certification_code} » n'est pas un référentiel "
+                "d'évaluation pratique (assessment_kind != 'practical')."
+            ),
+        )
+    requirement = PhysicalAssessmentRequirement(
+        certification_code=certification_code,
+        formation_code=final_rubric.formation_code,
+        practical_certification_code=inp.practical_certification_code,
+        required=inp.required,
+        created_by=created_by,
+    )
+    await db.physical_assessment_requirements.update_one(
+        {"certification_code": certification_code},
+        {"$set": requirement.model_dump()},
+        upsert=True,
+    )
+    return requirement
+
+
+async def list_physical_assessment_requirements() -> List[PhysicalAssessmentRequirement]:
+    docs = await db.physical_assessment_requirements.find({}, {"_id": 0}).to_list(500)
+    return [PhysicalAssessmentRequirement(**d) for d in docs]
+
+
+async def _passed_practical_attempt(user_id: str, practical_certification_code: str) -> bool:
+    doc = await db.certification_attempts.find_one(
+        {
+            "user_id": user_id,
+            "certification_code": practical_certification_code,
+            "status": "passed",
+        },
+        {"_id": 0, "id": 1},
+    )
+    return doc is not None
+
+
+async def check_full_eligibility(user_id: str, certification_code: str) -> Tuple[bool, str]:
+    """The real, composed gate `start_attempt` uses for a FINAL
+    (`assessment_kind == "certification"`) rubric.
+
+    - No `PhysicalAssessmentRequirement` configured for this
+      certification_code -> byte-identical to `check_certification_
+      eligibility` alone (every rubric that predates this decision,
+      and every rubric nobody has explicitly gated with a practical
+      requirement, is completely unaffected).
+    - A requirement IS configured and `required` -> HYBRID composition,
+      AND not OR: the candidate must clear every leg that actually
+      applies —
+        * digital leg: only applies when the formation has any real
+          digital content at all (`_digital_content_exists`); when it
+          does, the real existing eligibility check still runs in
+          full — a passed practical assessment never substitutes for
+          real, unfinished digital content.
+        * physical leg: a real, server-recorded PASSED
+          `CertificationAttempt` against the configured
+          `practical_certification_code` — never inferred from
+          attendance alone (ATTENDANCE != CERTIFICATION).
+    """
+    rubric = await get_rubric(certification_code)
+    requirement = await get_physical_assessment_requirement(certification_code)
+    if not requirement or not requirement.required:
+        return await check_certification_eligibility(user_id, rubric.formation_code)
+
+    if await _digital_content_exists(rubric.formation_code):
+        eligible, reason = await check_certification_eligibility(
+            user_id, rubric.formation_code
+        )
+        if not eligible:
+            return False, reason
+
+    if not await _passed_practical_attempt(
+        user_id, requirement.practical_certification_code
+    ):
+        return (
+            False,
+            "Évaluation pratique requise non validée avant cette certification.",
+        )
+
+    return True, ""
+
+
+async def start_practical_attempt(
+    user_id: str, certification_code: str, session_id: str
+) -> CertificationAttempt:
+    """Starts a "practical"-kind attempt — gated on real, server-
+    recorded attendance at the named physical session, never on module
+    completion (a practical rubric has nothing to do with digital
+    content). ATTENDANCE != ASSESSMENT still holds: attendance only
+    unlocks being observed/graded, it is not itself the evidence — the
+    evidence is whatever `grade_attempt` records once a jury/trainer
+    actually grades this attempt."""
+    rubric = await get_rubric(certification_code)
+    if rubric.assessment_kind != "practical":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"« {certification_code} » n'est pas un référentiel d'évaluation "
+                "pratique — utilisez le parcours de certification standard."
+            ),
+        )
+    session = await physical_delivery.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session physique introuvable.")
+    if session.formation_code != rubric.formation_code:
+        raise HTTPException(
+            status_code=400,
+            detail="Cette session ne correspond pas à la formation de ce référentiel.",
+        )
+    attended = await db.physical_attendance.find_one(
+        {"session_id": session_id, "user_id": user_id, "present": True},
+        {"_id": 0, "id": 1},
+    )
+    if not attended:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Présence non constatée pour cette session — l'évaluation "
+                "pratique nécessite une présence réelle enregistrée."
+            ),
+        )
+    prior = await db.certification_attempts.count_documents(
+        {"user_id": user_id, "certification_code": certification_code}
+    )
+    attempt = CertificationAttempt(
+        user_id=user_id,
+        certification_code=certification_code,
+        formation_code=rubric.formation_code,
+        level=rubric.level,
+        rubric_version=rubric.version,
+        attempt_number=prior + 1,
+        assessment_kind="practical",
+        session_id=session_id,
+    )
+    await db.certification_attempts.insert_one(attempt.model_dump())
+    return attempt
+
+
 async def start_attempt(user_id: str, certification_code: str) -> CertificationAttempt:
     rubric = await get_rubric(certification_code)
-    eligible, reason = await check_certification_eligibility(
-        user_id, rubric.formation_code
-    )
+    if rubric.assessment_kind == "practical":
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"« {certification_code} » est un référentiel d'évaluation "
+                "pratique — utilisez le parcours d'évaluation physique "
+                "(session requise)."
+            ),
+        )
+    eligible, reason = await check_full_eligibility(user_id, certification_code)
     if not eligible:
         raise HTTPException(status_code=403, detail=reason)
     prior = await db.certification_attempts.count_documents(
@@ -251,18 +463,36 @@ async def grade_attempt(
         },
     )
 
-    # Record skill evidence for every criterion the candidate cleared, and
-    # emit the FREK-CERT signal once the whole attempt passed.
+    # PHYSICAL/HYBRID assessment architecture (Founder decision,
+    # 2026-09-07) — "do not confuse delivery evidence with
+    # certification": a "practical" attempt's evidence is recorded
+    # under its own `evidence_type` ("physical_assessment"), which
+    # `skills/progression.py`'s `_recompute_user_skill` does NOT treat
+    # as an automatic jump to "acquired" the way "certification" does
+    # (AUTO_SKILL_AWARD = FORBIDDEN) — a graded practical pass is real
+    # evidence, never itself the authoritative sign-off a final
+    # certification's grading already is. Every existing call site
+    # (a "certification"-kind attempt) is byte-for-byte unchanged.
+    is_practical = attempt.assessment_kind == "practical"
+    evidence_type: EvidenceType = "physical_assessment" if is_practical else "certification"
     for c in rubric.criteria:
         if c.skill_id and score_by_competency.get(c.id, 0) >= rubric.pass_threshold_pct:
             await record_evidence(
                 user_id=attempt.user_id,
                 skill_id=c.skill_id,
-                evidence_type="certification",
+                evidence_type=evidence_type,
                 ref=attempt_id,
                 detail=f"{attempt.certification_code} — {c.label}",
             )
-    if passed:
+
+    # AUTO_CERTIFICATION = FORBIDDEN: a passed "practical" attempt is a
+    # real prerequisite `check_full_eligibility` can later require for a
+    # FINAL certification_code (via PhysicalAssessmentRequirement) — it
+    # never itself emits the FREK-CERT signal, credits the certification
+    # JCC reward, or issues a qualification. Those effects stay scoped
+    # to an actual "certification"-kind pass, exactly as before this
+    # architecture existed.
+    if passed and not is_practical:
         await frek_core.emit_signal(
             attempt.user_id,
             "FREK-CERT",
