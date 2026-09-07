@@ -12,7 +12,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from . import (assistants, auth, badges, canonical, certification, commerce,
-               fms, fms_lineage, formations, health, integrations,
+               fms, fms_lineage, formations, frk_canonical, health, integrations,
                klt_canonical, kor_canonical, learning, mentor, missions,
                onboarding, orgs, physical_sessions, progression, quizzes,
                qualification, skills, templates, wallet)
@@ -36,6 +36,7 @@ for module in (
     canonical,
     klt_canonical,
     kor_canonical,
+    frk_canonical,
     skills,
     certification,
     qualification,

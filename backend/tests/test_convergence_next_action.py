@@ -21,6 +21,7 @@ from mongomock_motor import AsyncMongoMockClient
 
 import api.learning as learning_module
 import fms_canonical
+import frk_canonical
 import klt_canonical
 import kor_canonical
 from fms_canonical.models import CanonicalFormation, CanonicalModule, CanonicalModuleProgress
@@ -63,6 +64,7 @@ def empty_canonical(monkeypatch):
         (fms_canonical, ("list_canonical_formations", "get_user_canonical_progress")),
         (klt_canonical, ("list_canonical_klt_formations", "get_user_klt_progress")),
         (kor_canonical, ("list_canonical_kor_formations", "get_user_kor_progress")),
+        (frk_canonical, ("list_canonical_frk_formations", "get_user_frk_progress")),
     ):
         monkeypatch.setattr(module, fn_names[0], empty_list)
         monkeypatch.setattr(module, fn_names[1], empty_progress)
@@ -103,6 +105,8 @@ def fms_has_unviewed_module(monkeypatch):
     monkeypatch.setattr(klt_canonical, "get_user_klt_progress", empty_progress)
     monkeypatch.setattr(kor_canonical, "list_canonical_kor_formations", empty_list)
     monkeypatch.setattr(kor_canonical, "get_user_kor_progress", empty_progress)
+    monkeypatch.setattr(frk_canonical, "list_canonical_frk_formations", empty_list)
+    monkeypatch.setattr(frk_canonical, "get_user_frk_progress", empty_progress)
 
 
 @pytest.fixture
@@ -161,6 +165,8 @@ def only_klt_has_unviewed_module(monkeypatch):
 
     monkeypatch.setattr(kor_canonical, "list_canonical_kor_formations", empty_list)
     monkeypatch.setattr(kor_canonical, "get_user_kor_progress", empty_progress)
+    monkeypatch.setattr(frk_canonical, "list_canonical_frk_formations", empty_list)
+    monkeypatch.setattr(frk_canonical, "get_user_frk_progress", empty_progress)
 
 
 # --------------------------------------------------------------------

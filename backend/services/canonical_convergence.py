@@ -42,6 +42,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 
 import fms_canonical
+import frk_canonical
 import klt_canonical
 import kor_canonical
 
@@ -55,6 +56,7 @@ CANONICAL_ROUTE_PREFIX: Dict[str, str] = {
     "FMS": "/canonical",
     "KLT": "/kiltikonet-canonical",
     "KOR": "/kora-canonical",
+    "FRK": "/frek-canonical",
 }
 
 
@@ -119,6 +121,28 @@ async def _kor_summary(user_id: str) -> List[Dict[str, Any]]:
             "modules_total": f.module_count,
             "modules_viewed": viewed_by_formation.get(f.kor_formation_code, 0),
             "route": f"{CANONICAL_ROUTE_PREFIX['KOR']}/{f.kor_formation_code}",
+        }
+        for f in formations
+    ]
+
+
+async def _frk_summary(user_id: str) -> List[Dict[str, Any]]:
+    formations = await frk_canonical.list_canonical_frk_formations()
+    progress = await frk_canonical.get_user_frk_progress(user_id)
+    viewed_by_formation: Dict[str, int] = {}
+    for p in progress:
+        if p.content_viewed_at:
+            viewed_by_formation[p.frk_formation_code] = (
+                viewed_by_formation.get(p.frk_formation_code, 0) + 1
+            )
+    return [
+        {
+            "domain": "FRK",
+            "formation_code": f.frk_formation_code,
+            "formation_name": f.title,
+            "modules_total": f.module_count,
+            "modules_viewed": viewed_by_formation.get(f.frk_formation_code, 0),
+            "route": f"{CANONICAL_ROUTE_PREFIX['FRK']}/{f.frk_formation_code}",
         }
         for f in formations
     ]
@@ -235,23 +259,53 @@ async def _first_unviewed_kor(user_id: str) -> Any:
     return None
 
 
+async def _first_unviewed_frk(user_id: str) -> Any:
+    formations = await frk_canonical.list_canonical_frk_formations()
+    progress = await frk_canonical.get_user_frk_progress(user_id)
+    viewed = {p.module_code for p in progress if p.content_viewed_at}
+    for f in formations:
+        for module_code in f.module_codes_in_order:
+            if module_code not in viewed:
+                module = await frk_canonical.get_canonical_frk_module(
+                    f.frk_formation_code, module_code
+                )
+                return {
+                    "domain": "FRK",
+                    "formation_code": f.frk_formation_code,
+                    "formation_name": f.title,
+                    "module_code": module_code,
+                    "module_name": module.title if module else module_code,
+                    "route": f"{CANONICAL_ROUTE_PREFIX['FRK']}/{f.frk_formation_code}/{module_code}",
+                }
+    return None
+
+
 async def get_first_unviewed_canonical_module(user_id: str) -> Any:
     """CONVERGENCE_RUNTIME — the canonical equivalent of legacy's
     `next_action` in `GET /user/learning-path`. Tried FMS, then KLT,
-    then KOR, in that order (mirrors `check_certification_eligibility`'s
-    own domain-precedence in `certification/service.py`); returns the
-    first canonical module across the three domains this user hasn't
-    yet viewed, or `None` if every domain is either exhausted or has no
+    then KOR, then FRK, in that order (mirrors `check_certification_
+    eligibility`'s own domain-precedence in `certification/service.py`;
+    FRK tried last — added after the other three were already the
+    established precedence, and never meant to preempt them for an
+    existing learner mid-way through one of them); returns the first
+    canonical module across the four domains this user hasn't yet
+    viewed, or `None` if every domain is either exhausted or has no
     content imported at all. Deliberately a real, precomputed `route`
-    string rather than a bare formation/module code pair — the three
-    canonical domains live under three different frontend route
-    prefixes (`/canonical`, `/kiltikonet-canonical`, `/kora-canonical`),
-    unlike legacy's single `/formations/:code/modules/:code` — a caller
-    building the URL itself would have to already know which domain
-    produced the result, exactly the kind of split-brain knowledge this
-    convergence module exists to keep out of every caller.
+    string rather than a bare formation/module code pair — the four
+    canonical domains live under four different frontend route
+    prefixes (`/canonical`, `/kiltikonet-canonical`, `/kora-canonical`,
+    `/frek-canonical`), unlike legacy's single `/formations/:code/
+    modules/:code` — a caller building the URL itself would have to
+    already know which domain produced the result, exactly the kind of
+    split-brain knowledge this convergence module exists to keep out of
+    every caller.
     """
-    for finder in (_first_unviewed_fms, _first_unviewed_klt, _first_unviewed_kor):
+    for finder in (
+        _first_unviewed_fms,
+        _first_unviewed_klt,
+        _first_unviewed_kor,
+        _first_unviewed_frk,
+    ):
         result = await finder(user_id)
         if result:
             return result
@@ -269,12 +323,13 @@ async def get_canonical_progress_summary(user_id: str) -> Dict[str, Any]:
     directly) — this is a convergence of existing, already-correct
     reads, not a new query surface.
     """
-    fms, klt, kor = (
+    fms, klt, kor, frk = (
         await _fms_summary(user_id),
         await _klt_summary(user_id),
         await _kor_summary(user_id),
+        await _frk_summary(user_id),
     )
-    formations = fms + klt + kor
+    formations = fms + klt + kor + frk
     modules_total = sum(f["modules_total"] for f in formations)
     modules_viewed = sum(f["modules_viewed"] for f in formations)
     return {

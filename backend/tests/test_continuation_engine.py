@@ -65,6 +65,7 @@ def no_canonical(monkeypatch):
     import fms_canonical
     import klt_canonical
     import kor_canonical
+    import frk_canonical
 
     async def empty_list(*_a, **_kw):
         return []
@@ -76,6 +77,7 @@ def no_canonical(monkeypatch):
         (fms_canonical, ("list_canonical_formations", "get_user_canonical_progress")),
         (klt_canonical, ("list_canonical_klt_formations", "get_user_klt_progress")),
         (kor_canonical, ("list_canonical_kor_formations", "get_user_kor_progress")),
+        (frk_canonical, ("list_canonical_frk_formations", "get_user_frk_progress")),
     ):
         monkeypatch.setattr(module, fn_names[0], empty_list)
         monkeypatch.setattr(module, fn_names[1], empty_progress)

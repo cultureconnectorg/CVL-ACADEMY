@@ -87,11 +87,14 @@ async def db_and_authority(monkeypatch):
 
     import klt_canonical
     import kor_canonical
+    import frk_canonical
 
     monkeypatch.setattr(klt_canonical, "list_canonical_klt_formations", empty_list)
     monkeypatch.setattr(klt_canonical, "get_user_klt_progress", empty_progress)
     monkeypatch.setattr(kor_canonical, "list_canonical_kor_formations", empty_list)
     monkeypatch.setattr(kor_canonical, "get_user_kor_progress", empty_progress)
+    monkeypatch.setattr(frk_canonical, "list_canonical_frk_formations", empty_list)
+    monkeypatch.setattr(frk_canonical, "get_user_frk_progress", empty_progress)
 
     return mock_db
 

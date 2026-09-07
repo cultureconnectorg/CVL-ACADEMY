@@ -33,6 +33,9 @@ const CanonicalKltModuleView = lazy(() => import("@/pages/CanonicalKltModuleView
 const CanonicalKorFormations = lazy(() => import("@/pages/CanonicalKorFormations"));
 const CanonicalKorFormationDetail = lazy(() => import("@/pages/CanonicalKorFormationDetail"));
 const CanonicalKorModuleView = lazy(() => import("@/pages/CanonicalKorModuleView"));
+const CanonicalFrkFormations = lazy(() => import("@/pages/CanonicalFrkFormations"));
+const CanonicalFrkFormationDetail = lazy(() => import("@/pages/CanonicalFrkFormationDetail"));
+const CanonicalFrkModuleView = lazy(() => import("@/pages/CanonicalFrkModuleView"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
@@ -112,6 +115,13 @@ function App() {
                 <Route path="/kora-canonical" element={<Protected><CanonicalKorFormations /></Protected>} />
                 <Route path="/kora-canonical/:formationCode" element={<Protected><CanonicalKorFormationDetail /></Protected>} />
                 <Route path="/kora-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKorModuleView /></Protected>} />
+                {/* "raccorder ces corpus au même runtime/funnel Academy"
+                    (Founder, 2026-09-07) — canonical FREK runtime binding,
+                    read-only pages, separate tree. First of the 16 markdown-
+                    only Master 2D domains connected to the real runtime. */}
+                <Route path="/frek-canonical" element={<Protected><CanonicalFrkFormations /></Protected>} />
+                <Route path="/frek-canonical/:formationCode" element={<Protected><CanonicalFrkFormationDetail /></Protected>} />
+                <Route path="/frek-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalFrkModuleView /></Protected>} />
                 <Route
                   path="/trainer"
                   element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}

@@ -28,6 +28,7 @@ from mongomock_motor import AsyncMongoMockClient
 import api.learning as learning_module
 import api.progression as progression_module
 import fms_canonical
+import frk_canonical
 import klt_canonical
 import kor_canonical
 from fms_canonical.models import CanonicalFormation, CanonicalModule, CanonicalModuleProgress
@@ -131,6 +132,20 @@ def stub_canonical(monkeypatch):
     monkeypatch.setattr(kor_canonical, "list_canonical_kor_formations", kor_formations)
     monkeypatch.setattr(kor_canonical, "get_user_kor_progress", kor_progress)
 
+    # FRK deliberately empty — this suite's assertions below (12 total
+    # modules, 2 viewed) are FMS+KLT+KOR sums fixed before FRK existed;
+    # keeping FRK's contribution at zero preserves those exact numbers
+    # rather than rewriting every assertion for a fourth domain this
+    # suite isn't about.
+    async def frk_empty_list(*_a, **_kw):
+        return []
+
+    async def frk_empty_progress(*_a, **_kw):
+        return []
+
+    monkeypatch.setattr(frk_canonical, "list_canonical_frk_formations", frk_empty_list)
+    monkeypatch.setattr(frk_canonical, "get_user_frk_progress", frk_empty_progress)
+
 
 @pytest.mark.asyncio
 async def test_summary_sums_across_all_three_domains(stub_canonical):
@@ -174,6 +189,8 @@ async def test_empty_corpus_never_divides_by_zero(monkeypatch):
     monkeypatch.setattr(klt_canonical, "get_user_klt_progress", empty_progress)
     monkeypatch.setattr(kor_canonical, "list_canonical_kor_formations", empty_list)
     monkeypatch.setattr(kor_canonical, "get_user_kor_progress", empty_progress)
+    monkeypatch.setattr(frk_canonical, "list_canonical_frk_formations", empty_list)
+    monkeypatch.setattr(frk_canonical, "get_user_frk_progress", empty_progress)
 
     from services.canonical_convergence import get_canonical_progress_summary
 

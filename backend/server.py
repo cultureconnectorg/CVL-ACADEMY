@@ -119,13 +119,17 @@ async def on_startup():
         try:
             from kor_canonical.import_pipeline import import_kor_docs
             from klt_canonical.import_pipeline import import_klt_docs
+            from frk_canonical.import_pipeline import import_frk_docs
 
             kor_report = await import_kor_docs()
             klt_report = await import_klt_docs()
+            frk_report = await import_frk_docs()
             logger.info(
-                "MOCK_DB preview import: KOR %s formations, KLT %s formations",
+                "MOCK_DB preview import: KOR %s formations, KLT %s formations, "
+                "FRK %s formations",
                 kor_report.formations_found,
                 klt_report.formations_found,
+                frk_report.formations_found,
             )
         except Exception as e:  # noqa: BLE001
             logger.exception("MOCK_DB preview canonical import failed: %s", e)
