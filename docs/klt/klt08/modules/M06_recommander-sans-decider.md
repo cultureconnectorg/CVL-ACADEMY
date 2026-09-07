@@ -49,7 +49,11 @@ recommandation, quelle que soit l'échelle.
 solutions d'accessibilité, à valider par le réseau" est une
 recommandation ; "les opérateurs doivent documenter systématiquement
 leurs solutions d'accessibilité" formulée comme une instruction dépasse
-le rôle d'audit.
+le rôle d'audit. À l'inverse, une recommandation si prudente qu'elle
+n'identifie aucun point précis ("le réseau pourrait envisager de
+réfléchir à l'accessibilité") ne serait plus actionnable du tout —
+recommander sans décider n'est pas recommander sans rien dire de
+précis.
 
 ## Cas
 
@@ -59,6 +63,8 @@ Note de recommandations pour l'audit réseau incluant Mémoire Vive.
 
 - Formuler une recommandation comme une instruction impérative.
 - Produire des recommandations génériques non actionnables.
+- Diluer une recommandation par prudence excessive au point qu'elle
+  n'identifie plus aucun point précis à décider.
 
 ## Activité
 

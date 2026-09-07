@@ -47,7 +47,11 @@ occulter un vrai point d'attention.
 Répondre à une question de Mémoire Vive sur le calendrier du réseau tout
 en notant, dans le suivi, que le point de vigilance sur le cumul de
 rôles n'a toujours pas de garde-fou est correct ; répondre à la question
-sans revenir sur ce point de vigilance connu ne l'est pas.
+sans revenir sur ce point de vigilance connu ne l'est pas. À l'inverse,
+escalader immédiatement une demande de routine anodine (une question de
+calendrier) comme si elle révélait un signal de tension serait une
+sur-réaction disproportionnée — la vigilance porte sur le point
+réellement identifié, pas sur chaque échange banal.
 
 ## Cas
 
@@ -59,6 +63,8 @@ fragilité de gouvernance déjà identifiée.
 - Traiter la relation opérateur uniquement comme un flux de demandes,
   sans vigilance sur les points connus.
 - Éviter de mentionner une fragilité par crainte de dégrader la relation.
+- Escalader une demande de routine anodine comme si elle révélait une
+  tension, sans lien avec un point de vigilance réellement identifié.
 
 ## Activité
 

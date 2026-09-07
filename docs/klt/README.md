@@ -58,6 +58,16 @@ formations n'a de badge** — formations `NEW`, sans équivalent legacy.
 Voir chaque `CERTIFICATION_MODEL.md` : certification **partielle**
 uniquement.
 
+**Profondeur de module approfondie (17/17 modules construits)** — même
+traitement que `KOR-03`→`15` : chaque module déjà `BUILT` est passé de 1
+à 2 exemples contrastés et de 2 à 3 erreurs fréquentes documentées,
+sans toucher au périmètre buildable ni aux compétences `BLOCKED`. Les 4
+compétences bloquées (`KLT-06`/C5-C6 Observatory, `KLT-07`/C4 Network,
+`KLT-08`/C4 Compliance) restent explicitement non construites, non
+simulées — conformément à `NO_FAKE_OBSERVATORY`/`NO_FAKE_NETWORK`/
+`NO_FAKE_COMPLIANCE` : la profondeur ajoutée porte uniquement sur ce qui
+est déjà réellement construit.
+
 **Total : 207 documents pédagogiques** (139 + 68) sous `docs/klt/`, plus
 8 documents de gouvernance/décision à la racine `docs/`.
 

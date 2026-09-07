@@ -46,7 +46,11 @@ cette décision future possible et traçable ; il ne la préempte pas.
 "Dossier d'onboarding constitué, recommandation favorable sous réserve
 de garde-fous de gouvernance" est correct ; "Mémoire Vive est
 maintenant opérateur relais" ne l'est pas — aucune licence n'a été
-réellement octroyée.
+réellement octroyée. À l'inverse, lister la fragilité de gouvernance
+déjà connue (`KLT-04`/M02) comme un critère explicitement vérifié dans
+le dossier renforce sa traçabilité ; omettre ce critère parce qu'il
+n'est "pas encore résolu" laisserait le dossier incomplet sur un point
+déjà identifié.
 
 ## Cas
 
@@ -59,6 +63,8 @@ relais.
   accordée.
 - Omettre un critère réel de vérification (maturité organisationnelle
   déjà identifiée comme fragile en `KLT-04`/M02).
+- Écarter un critère de vérification du dossier au motif qu'il n'est pas
+  encore résolu, au lieu de le documenter comme un point ouvert.
 
 ## Activité
 

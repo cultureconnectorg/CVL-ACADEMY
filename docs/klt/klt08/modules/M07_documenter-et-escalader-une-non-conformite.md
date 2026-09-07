@@ -49,7 +49,11 @@ M06.
 opérateurs, escaladée à la gouvernance réseau pour décision de
 systématisation" est une escalade correcte ; imposer directement une
 nouvelle règle aux opérateurs sans passer par la gouvernance réseau
-dépasse le rôle d'audit.
+dépasse le rôle d'audit. À l'inverse, escalader chaque écart mineur et
+isolé (un seul opérateur, un retard ponctuel de quelques jours) au même
+niveau de gouvernance qu'une non-conformité systémique saturerait
+l'instance décisionnaire — l'escalade doit rester proportionnée à la
+portée réelle du constat.
 
 ## Cas
 
@@ -62,6 +66,9 @@ l'accessibilité PMR entre opérateurs.
   d'audit.
 - Escalader sans documentation suffisante pour permettre une décision
   informée.
+- Escalader un écart mineur et isolé au même niveau de gouvernance
+  qu'une non-conformité systémique, sans proportionner l'escalade à sa
+  portée réelle.
 
 ## Activité
 

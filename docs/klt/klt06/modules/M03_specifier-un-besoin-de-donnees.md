@@ -49,7 +49,12 @@ Traduire "des données sur l'impact" en "combien de jeunes du collège ont
 participé à l'atelier, quel a été le retour qualitatif recueilli en M08
 (`KLT-01`), sur quelle échelle de temps" est une spécification
 exploitable ; laisser la demande vague et produire "un rapport d'impact"
-générique ne l'est pas.
+générique ne l'est pas. À l'inverse, proposer de mesurer "le nombre de
+retours qualitatifs recueillis en M08, avec la méthode de collecte déjà
+en place" reste dans les moyens réellement disponibles ; promettre de
+mesurer "la satisfaction globale des jeunes du quartier" supposerait un
+dispositif d'enquête qui n'existe pas — une spécification qui dépasse
+silencieusement les moyens disponibles.
 
 ## Cas
 
@@ -61,6 +66,8 @@ Fiche de spécification pour la demande du chef de projet culturel sur
 - Répondre directement à une demande vague sans la faire préciser.
 - Promettre une donnée qui n'est pas réellement mesurable avec les
   moyens disponibles.
+- Accepter de mesurer quelque chose qui suppose un dispositif de
+  collecte non existant, sans le signaler au demandeur.
 
 ## Activité
 

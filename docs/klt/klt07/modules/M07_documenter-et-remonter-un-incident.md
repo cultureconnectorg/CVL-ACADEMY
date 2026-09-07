@@ -51,7 +51,11 @@ documenter l'incident et proposer que la clarification du périmètre
 "opérateur relais" soit systématisée dans le futur processus
 d'onboarding, est une remontée utile ; corriger la confusion sans rien
 documenter laisse le réseau exposé au même incident avec le prochain
-candidat.
+candidat. À l'inverse, remonter cette même confusion comme un incident
+technique majeur nécessitant une intervention réseau immédiate
+surestimerait sa gravité réelle — un incident de périmètre de rôle,
+corrigé directement avec l'opérateur, appelle une documentation et une
+leçon, pas une escalade d'urgence disproportionnée.
 
 ## Cas
 
@@ -63,6 +67,9 @@ identifiée chez Mémoire Vive.
 - Corriger un incident sans le documenter ni le remonter.
 - Minimiser un incident relationnel/de périmètre parce qu'il n'est pas
   technique.
+- Surestimer la gravité d'un incident de périmètre déjà corrigé en le
+  traitant comme une urgence technique nécessitant une escalade
+  disproportionnée.
 
 ## Activité
 

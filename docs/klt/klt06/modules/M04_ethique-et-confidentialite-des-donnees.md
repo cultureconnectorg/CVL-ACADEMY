@@ -48,7 +48,13 @@ est un dépassement de consentement, pas une optimisation.
 
 Citer un extrait de l'interview mémorielle déjà utilisé, dans le
 périmètre convenu à l'origine, est légitime ; le citer dans un nouveau
-rapport diffusé plus largement sans revalidation est un dépassement.
+rapport diffusé plus largement sans revalidation est un dépassement. À
+l'inverse, citer une statistique agrégée dérivée de plusieurs
+interviews, sans identifier aucune personne, reste un usage prudent
+même hors du périmètre initial exact ; citer nommément le Doyen dans un
+nouveau rapport diffusé publiquement, même en paraphrasant ses propos,
+dépasse le consentement initial si ce périmètre de diffusion n'a pas
+été validé.
 
 ## Cas
 
@@ -61,6 +67,8 @@ de l'interview mémorielle du Doyen dans l'analyse d'impact.
   consentement initial, même pour "enrichir" une analyse.
 - Traiter la question du consentement comme un détail administratif
   plutôt qu'une limite réelle.
+- Croire qu'une paraphrase ou une anonymisation partielle suffit à
+  s'affranchir de revalider le périmètre du consentement.
 
 ## Activité
 

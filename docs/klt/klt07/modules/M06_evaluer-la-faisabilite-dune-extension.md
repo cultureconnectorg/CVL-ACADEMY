@@ -49,7 +49,12 @@ l'ambition.
 
 "L'ambition est réaliste à moyen terme, sous condition qu'un garde-fou
 sur le cumul de rôles soit formalisé" est une évaluation honnête ;
-"l'ambition est prématurée, point final" ignore la nuance possible.
+"l'ambition est prématurée, point final" ignore la nuance possible. À
+l'inverse, recommander une extension immédiate "parce que le candidat
+est motivé" sans mentionner la fragilité de gouvernance déjà connue
+serait aussi malhonnête que le refus sans condition — l'évaluation doit
+croiser la motivation réelle avec les fragilités réellement identifiées,
+jamais l'une sans l'autre.
 
 ## Cas
 
@@ -61,6 +66,8 @@ s'appuyant sur la fragilité de gouvernance déjà identifiée.
 - Encourager une extension sans tenir compte des fragilités connues.
 - Rejeter une ambition sans proposer de conditions pour la rendre
   possible plus tard.
+- Fonder une recommandation favorable sur la seule motivation perçue du
+  candidat, sans croiser les fragilités réellement identifiées.
 
 ## Activité
 

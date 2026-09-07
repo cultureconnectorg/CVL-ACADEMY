@@ -50,7 +50,13 @@ aujourd'hui.
 
 "Mémoire Vive est actuellement une association locale, pas un opérateur
 territorial licencié" est un cadrage correct ; présumer un statut
-d'opérateur non encore accordé serait une erreur.
+d'opérateur non encore accordé serait une erreur. À l'inverse, dire "le
+territoire de Mémoire Vive ferait partie des zones non couvertes selon
+la dernière carte connue du master plan" nomme correctement la limite
+de la source (une carte connue, pas un accès Network réel) ; affirmer
+"ce territoire n'est couvert par aucun opérateur" sans préciser que
+cette information vient d'une source ancienne et non vérifiée
+présenterait une donnée incertaine comme un fait établi.
 
 ## Cas
 
@@ -62,6 +68,8 @@ opérateur relais.
 - Traiter un candidat opérateur comme s'il était déjà licencié.
 - Décrire l'état de couverture territoriale comme s'il était connu, sans
   accès Network réel.
+- Citer une information de couverture issue d'une source ancienne sans
+  préciser qu'elle n'a pas été vérifiée via un accès Network réel.
 
 ## Activité
 

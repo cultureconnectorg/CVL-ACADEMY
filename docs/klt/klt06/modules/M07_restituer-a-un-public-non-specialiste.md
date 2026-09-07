@@ -46,7 +46,12 @@ solide est une distorsion, pas une simplification.
 "Nous n'avons pas de données fiables sur la participation exacte des
 jeunes du quartier, mais le retour qualitatif recueilli a été positif" est
 une restitution honnête ; "l'impact a été un succès mesurable" sans
-préciser ce qui est réellement mesuré ne l'est pas.
+préciser ce qui est réellement mesuré ne l'est pas. À l'inverse,
+remplacer "taux de rétention à J+30" par "combien de personnes
+reviennent un mois après" garde le même sens en langage clair ; le
+remplacer par "les gens aiment beaucoup l'action" perd le sens précis de
+la mesure au profit d'une impression non fondée — une simplification
+qui devient une distorsion.
 
 ## Cas
 
@@ -59,6 +64,8 @@ que l'analyse de la Veillée du Tanbou permet réellement de dire.
   convaincante.
 - Utiliser un vocabulaire technique qui exclut le public non spécialiste
   de la compréhension.
+- Remplacer une mesure précise par une impression générale non fondée,
+  perdant le sens exact de la donnée sous couvert de simplification.
 
 ## Activité
 

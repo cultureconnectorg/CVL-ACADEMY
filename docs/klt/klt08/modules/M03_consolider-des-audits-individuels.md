@@ -49,7 +49,11 @@ une vue qui garde la trace de chaque disparité réelle.
 "2 opérateurs sur 2 ont des points de vigilance sur la conformité
 accessibilité ; Mémoire Vive a en plus un point ouvert sur le cumul de
 rôles" est une consolidation fidèle ; "le réseau est globalement
-conforme" sans mentionner les points spécifiques ne l'est pas.
+conforme" sans mentionner les points spécifiques ne l'est pas. À
+l'inverse, une vue qui isolerait chaque résultat d'opérateur côte à côte
+sans jamais nommer ce qui leur est commun (la vigilance accessibilité
+partagée par les deux) manquerait la consolidation elle-même — une
+juxtaposition de résultats individuels n'est pas encore une vue réseau.
 
 ## Cas
 
@@ -61,6 +65,8 @@ et d'un autre opérateur fictif du réseau.
 - Lisser les disparités réelles pour produire une vue plus flatteuse.
 - Consolider sans distinguer tendance réseau et point spécifique à un
   opérateur.
+- Juxtaposer les résultats individuels côte à côte sans identifier ce
+  qui leur est réellement commun.
 
 ## Activité
 

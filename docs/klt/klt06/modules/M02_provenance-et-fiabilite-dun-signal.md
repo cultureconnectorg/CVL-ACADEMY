@@ -46,7 +46,12 @@ ou que la donnée n'est pas explicitement traitée comme non vérifiée.
 
 "30% des jeunes auraient participé, selon une estimation non sourcée
 circulant en interne" est une formulation honnête ; présenter "30% des
-jeunes ont participé" comme un fait établi ne l'est pas.
+jeunes ont participé" comme un fait établi ne l'est pas. À l'inverse, le
+nombre exact de billets vendus, relevé directement par l'équipe
+logistique le soir même, est une donnée mesurée — elle peut être citée
+comme un fait, avec sa source ; un chiffre de fréquentation "estimé à
+vue" par un bénévole, même de bonne foi, reste une estimation non
+vérifiée et ne doit jamais être cité avec la même certitude.
 
 ## Cas
 
@@ -58,6 +63,8 @@ Veillée du Tanbou.
 - Réutiliser un chiffre sans en vérifier ni en qualifier la source.
 - Rejeter une donnée non sourcée au lieu de la traiter avec la nuance
   appropriée (non vérifiée, pas fausse).
+- Traiter une donnée mesurée directement et une estimation à vue avec le
+  même niveau de certitude, sans distinguer les deux.
 
 ## Activité
 

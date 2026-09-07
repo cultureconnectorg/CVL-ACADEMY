@@ -49,7 +49,11 @@ n'a pas validée.
 
 "Comment documenter une solution d'accessibilité PMR : exemple concret,
 trace à conserver, où l'archiver" est un support actionnable ;
-"respectez les obligations d'accessibilité" sans méthode ne l'est pas.
+"respectez les obligations d'accessibilité" sans méthode ne l'est pas. À
+l'inverse, un support qui imposerait un format d'archivage précis que le
+réseau n'a jamais validé irait au-delà de ce qui a été décidé — former
+au "comment" documenter reste légitime, décider unilatéralement d'une
+nouvelle exigence d'archivage ne l'est pas.
 
 ## Cas
 
@@ -62,6 +66,8 @@ PMR, à partir du besoin révélé par l'audit réseau.
   l'appliquer.
 - Ajouter, dans le support, une exigence que le réseau n'a pas
   réellement décidée.
+- Imposer un format ou un standard précis (ex. d'archivage) au nom de la
+  pédagogie, sans validation préalable du réseau.
 
 ## Activité
 

@@ -48,7 +48,12 @@ place de l'association de son propre modèle de gouvernance interne.
 
 Poser des questions sur la maturité organisationnelle de Mémoire Vive
 pour évaluer sa candidature est légitime ; rédiger à sa place son modèle
-de gouvernance réseau est un dépassement de rôle.
+de gouvernance réseau est un dépassement de rôle. À l'inverse, signaler
+à Mémoire Vive que son modèle esquissé en `KLT-04`/M11 laisse une
+question ouverte (le cumul de rôles de la trésorière) reste de
+l'accompagnement — pointer un manque sans le trancher ; proposer
+soi-même la solution de gouvernance à adopter reviendrait à décider à
+la place de l'association.
 
 ## Cas
 
@@ -59,6 +64,8 @@ Vive, relève du réseau et ce qui reste la décision de l'association.
 
 - Refaire le travail de gouvernance déjà mené par l'association.
 - Confondre évaluer une candidature et décider à la place du candidat.
+- Proposer soi-même la solution de gouvernance à adopter au lieu de
+  signaler la question ouverte à l'association.
 
 ## Activité
 

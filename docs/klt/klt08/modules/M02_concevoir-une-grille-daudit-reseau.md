@@ -48,7 +48,12 @@ n'avait pas besoin de traiter.
 "Vérifier que chaque opérateur documente ses obligations d'accessibilité,
 et comparer les pratiques entre opérateurs" est un critère hérité et
 étendu correctement ; une grille qui ignore la méthode de `KLT-04`/M13
-et repart de zéro n'est pas un héritage.
+et repart de zéro n'est pas un héritage. À l'inverse, copier tel quel un
+critère de `KLT-04`/M13 sans lui ajouter la dimension de comparaison
+entre opérateurs ("chaque opérateur documente ses obligations
+d'accessibilité", sans jamais comparer) resterait à l'échelle
+association — un héritage qui n'étend rien n'est pas encore une grille
+réseau.
 
 ## Cas
 
@@ -61,6 +66,8 @@ opérateurs.
   validée en `KLT-04`/M13.
 - Produire des critères génériques ("bonne gouvernance") au lieu de
   critères actionnables.
+- Reprendre un critère `KLT-04`/M13 sans y ajouter la dimension de
+  comparaison entre opérateurs qu'exige l'échelle réseau.
 
 ## Activité
 

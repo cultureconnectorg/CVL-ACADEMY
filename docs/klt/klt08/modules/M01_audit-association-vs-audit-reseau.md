@@ -51,6 +51,11 @@ d'analyse et la nécessité de consolider plusieurs résultats.
 avec ceux d'autres opérateurs, sans reproduire l'audit d'association" est
 un cadrage correct ; refaire un audit identique à celui de `KLT-04`/M13
 pour chaque opérateur sans consolidation serait une confusion d'échelle.
+À l'inverse, déclarer que "puisque l'échelle change, la méthode de fond
+de `KLT-04`/M13 (vérifier, ne pas complaire, recommander sans décider)
+ne s'applique plus" jetterait une discipline encore valable ; seule
+l'unité d'analyse et la nécessité de consolidation changent, pas la
+méthode de fond elle-même.
 
 ## Cas
 
@@ -62,6 +67,8 @@ Note de cadrage échelle pour l'audit réseau incluant Mémoire Vive.
   résultats.
 - Confondre l'échelle réseau avec une simple répétition de l'échelle
   association.
+- Croire que le changement d'échelle dispense de la méthode de fond déjà
+  validée (vérifier, ne pas complaire, recommander sans décider).
 
 ## Activité
 

@@ -53,7 +53,11 @@ ce module enseigne le concept, pas son usage sur des données réelles.
 "Un observatoire capterait, en principe, la fréquentation par territoire
 sur plusieurs éditions de la Veillée" est un énoncé correct sur ce
 qu'un observatoire ferait en théorie ; prétendre disposer de cette donnée
-aujourd'hui serait une erreur.
+aujourd'hui serait une erreur. À l'inverse, décrire un observatoire
+comme "un système qui dirait si la Veillée a été un succès" ne nomme
+aucune granularité (événement, session, territoire, acteur) ni aucune
+continuité — c'est un vœu de résultat, pas une méthode ; seul le premier
+énoncé est réellement exploitable pour cadrer un futur besoin.
 
 ## Cas
 
@@ -66,6 +70,9 @@ Tanbou, comparé à ce qui est réellement disponible.
   (continuité, granularité, gouvernance de la donnée).
 - Décrire des capacités Observatory comme si elles étaient déjà
   disponibles.
+- Décrire un vœu de résultat ("savoir si l'action a été un succès") sans
+  nommer aucune granularité ni continuité réelle, confondant objectif et
+  méthode.
 
 ## Activité
 
