@@ -23,12 +23,6 @@ function publicPathFromCatalogue(formations) {
   };
 }
 
-// CONVERGENCE_RUNTIME (reconciliation 2026-09-07, ACA-0006) — the three
-// canonical domains live under three different frontend route prefixes;
-// this is the one place that knowledge lives, so a card never has to
-// know which domain answered.
-const CANONICAL_ROUTE_PREFIX = { FMS: "/canonical", KLT: "/kiltikonet-canonical", KOR: "/kora-canonical" };
-
 export default function Formations() {
   const { t } = useI18n();
   const { user, loading: authLoading } = useAuth();
@@ -200,13 +194,29 @@ const CANONICAL_ROUTE_LABEL = { FMS: "FMS canonique", KLT: "Kiltikonet canonique
 function FormationCard({ f, t, canonical, focusedId, onCardFocus, onCardBlur }) {
   const locked = !f.is_unlocked;
   const validated = f.validated_count > 0 && f.validated_count === f.modules_count;
+
+  // ACA-0019 (Founder decision, 2026-09-07) — CANONICAL_CURRICULUM_RUNTIME =
+  // AUTHORITATIVE: when this formation_code has real canonical content, the
+  // card's single click target IS that canonical route — never a second,
+  // separate link alongside the legacy one ("ne crée pas deux parcours
+  // concurrents dans l'UI"). `f.canonical_authority` (routing) and
+  // `canonical` (this user's progress counts) describe the exact same
+  // authoritative set; the progress bar switches to the real active-journey
+  // numbers when authoritative, instead of showing legacy stats a learner
+  // would then click straight past.
+  const authority = f.canonical_authority;
+  const destination = authority ? authority.route : `/formations/${f.code}`;
+  const canonicalPct = authority && canonical && canonical.modules_total
+    ? Math.round((canonical.modules_viewed / canonical.modules_total) * 100)
+    : 0;
+
   return (
     // TARGET -> APPROACH, other cards -> RECEDE, nothing focused -> CALM.
     // Driven by real DOM focus (keyboard tab or the click that's about to
     // navigate) on the Link below, never by :hover — NO_GENERIC_SCALE_HOVER.
     <FocusFieldItem id={f.code} focusedId={focusedId} className="h-full flex flex-col gap-2">
       <Link
-        to={`/formations/${f.code}`}
+        to={destination}
         data-testid={`formation-${f.code}`}
         onFocus={() => onCardFocus?.(f.code)}
         onBlur={() => onCardBlur?.()}
@@ -235,16 +245,28 @@ function FormationCard({ f, t, canonical, focusedId, onCardFocus, onCardBlur }) 
           {f.name}
         </h3>
 
-        {/* Progress bar */}
-        {f.modules_count > 0 && !locked && (
-          <div className="mt-4">
+        {/* Progress bar — canonical (the real, active journey) when this
+            formation is canonical-authoritative; legacy otherwise. */}
+        {authority && canonical ? (
+          <div className="mt-4" data-testid={`canonical-progress-${f.code}`}>
             <div className="h-1.5 bg-black/5 rounded-full overflow-hidden">
-              <div className="h-full bg-[--cvln-orange]" style={{ width: `${f.progress_pct}%` }} />
+              <div className="h-full bg-[--cvln-orange]" style={{ width: `${canonicalPct}%` }} />
             </div>
             <div className="mt-1.5 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
-              {f.validated_count}/{f.modules_count} modules · {f.progress_pct}%
+              {canonical.modules_viewed}/{canonical.modules_total} modules · {CANONICAL_ROUTE_LABEL[authority.domain]}
             </div>
           </div>
+        ) : (
+          f.modules_count > 0 && !locked && (
+            <div className="mt-4">
+              <div className="h-1.5 bg-black/5 rounded-full overflow-hidden">
+                <div className="h-full bg-[--cvln-orange]" style={{ width: `${f.progress_pct}%` }} />
+              </div>
+              <div className="mt-1.5 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
+                {f.validated_count}/{f.modules_count} modules · {f.progress_pct}%
+              </div>
+            </div>
+          )
         )}
 
         {/* Lock reason */}
@@ -256,22 +278,13 @@ function FormationCard({ f, t, canonical, focusedId, onCardFocus, onCardBlur }) 
 
         <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
           <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
-            {f.modules_count} {t("modules")}
+            {authority ? CANONICAL_ROUTE_LABEL[authority.domain] : `${f.modules_count} ${t("modules")}`}
           </div>
           <div className="text-[--cvln-orange] group-hover:translate-x-1 transition">
             <ArrowRight width={16} height={16} />
           </div>
         </div>
       </Link>
-      {canonical && (
-        <Link
-          to={`${CANONICAL_ROUTE_PREFIX[canonical.domain]}/${canonical.formation_code}`}
-          data-testid={`canonical-link-${f.code}`}
-          className="text-[11px] mono uppercase tracking-wider text-[--cvln-orange] hover:underline px-1"
-        >
-          → {CANONICAL_ROUTE_LABEL[canonical.domain]} ({canonical.modules_viewed}/{canonical.modules_total})
-        </Link>
-      )}
     </FocusFieldItem>
   );
 }

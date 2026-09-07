@@ -52,8 +52,18 @@ export default function ModuleJourney() {
 
   const load = useCallback(async () => {
     const { data } = await api.get(`/modules/${fc}/${mc}`);
+    // ACA-0019 (Founder decision, 2026-09-07) — CANONICAL_CURRICULUM_RUNTIME
+    // = AUTHORITATIVE: `get_module_journey` returns `{ canonical_redirect }`
+    // instead of legacy phase data for a formation_code with real canonical
+    // content — canonical is now the single active pedagogical source.
+    // Redirect rather than rendering the legacy 7-phase UI — no two
+    // competing journeys for the same formation.
+    if (data.canonical_redirect) {
+      nav(data.canonical_redirect, { replace: true });
+      return;
+    }
     setData(data);
-  }, [fc, mc]);
+  }, [fc, mc, nav]);
 
   useEffect(() => {
     load();

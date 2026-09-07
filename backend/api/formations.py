@@ -16,6 +16,7 @@ from lx import (
     phase_completion_flags,
 )
 from models import ADMIN_ROLES, STAFF_ROLES, ContentStatusInput, User
+from services.canonical_convergence import get_canonical_authority_map
 
 router = APIRouter(tags=["formations"])
 
@@ -44,6 +45,16 @@ async def list_formations(
         .limit(limit)
         .to_list(limit)
     )
+
+    # ACA-0019 (Founder decision, 2026-09-07) —
+    # CANONICAL_CURRICULUM_RUNTIME = AUTHORITATIVE: for any formation_code
+    # with real canonical content, canonical is now the single active
+    # pedagogical source. `canonical_route` is additive metadata only —
+    # this legacy doc, and every legacy field on it, is untouched
+    # (READ_ONLY_HISTORY, never deleted/merged/auto-credited). The
+    # frontend catalogue routes there instead of the legacy detail page.
+    authority_map = await get_canonical_authority_map()
+
     # Return summary shape (no modules for the list)
     return [
         {
@@ -73,6 +84,7 @@ async def list_formations(
             "reconciliation_flags": d.get("reconciliation_flags", []),
             "modules_count": len(d.get("modules", [])),
             "content_status": d.get("content_status", "published"),
+            "canonical_authority": authority_map.get(d["code"]),
         }
         for d in docs
     ]
@@ -89,6 +101,14 @@ async def get_formation(
         current and current.role in STAFF_ROLES
     ):
         raise HTTPException(status_code=404, detail="Formation introuvable")
+
+    # ACA-0019 (Founder decision, 2026-09-07) — same authority signal as
+    # list_formations above; FormationDetail.js redirects to it instead
+    # of rendering this legacy doc's modules when present. The doc
+    # itself is still returned in full (staff/admin/API consumers, and
+    # so the redirect target can be computed client-side too) — never
+    # withheld, never mutated.
+    doc["canonical_authority"] = (await get_canonical_authority_map()).get(code)
 
     # If no user (unauth preview), return base structure with modules locked=False
     if not current:

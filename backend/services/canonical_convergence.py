@@ -39,11 +39,23 @@ This module is strictly ADDITIVE, never a merge or a replacement:
 
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import fms_canonical
 import klt_canonical
 import kor_canonical
+
+# CANONICAL_CURRICULUM_RUNTIME = AUTHORITATIVE (Founder decision,
+# ACA-0019, 2026-09-07) — the one place the "which of three frontend
+# route prefixes" knowledge lives. Every caller (formations catalogue,
+# formation detail, module journey, next_action, Dashboard) asks this
+# module instead of re-deriving it, so the three prefixes can never
+# drift apart across call sites.
+CANONICAL_ROUTE_PREFIX: Dict[str, str] = {
+    "FMS": "/canonical",
+    "KLT": "/kiltikonet-canonical",
+    "KOR": "/kora-canonical",
+}
 
 
 async def _fms_summary(user_id: str) -> List[Dict[str, Any]]:
@@ -62,6 +74,7 @@ async def _fms_summary(user_id: str) -> List[Dict[str, Any]]:
             "formation_name": f.metier_name,
             "modules_total": f.module_count,
             "modules_viewed": viewed_by_formation.get(f.canonical_formation_code, 0),
+            "route": f"{CANONICAL_ROUTE_PREFIX['FMS']}/{f.canonical_formation_code}",
         }
         for f in formations
     ]
@@ -83,6 +96,7 @@ async def _klt_summary(user_id: str) -> List[Dict[str, Any]]:
             "formation_name": f.title,
             "modules_total": f.module_count,
             "modules_viewed": viewed_by_formation.get(f.klt_formation_code, 0),
+            "route": f"{CANONICAL_ROUTE_PREFIX['KLT']}/{f.klt_formation_code}",
         }
         for f in formations
     ]
@@ -104,9 +118,58 @@ async def _kor_summary(user_id: str) -> List[Dict[str, Any]]:
             "formation_name": f.title,
             "modules_total": f.module_count,
             "modules_viewed": viewed_by_formation.get(f.kor_formation_code, 0),
+            "route": f"{CANONICAL_ROUTE_PREFIX['KOR']}/{f.kor_formation_code}",
         }
         for f in formations
     ]
+
+
+async def get_canonical_authority_map() -> Dict[str, Dict[str, str]]:
+    """CANONICAL_CURRICULUM_RUNTIME = AUTHORITATIVE (Founder decision,
+    ACA-0019, 2026-09-07) — every real canonical formation_code across
+    all three domains, mapped to `{domain, route}`. For any
+    formation_code present here, the canonical route is now THE single
+    active pedagogical source a learner is routed to; legacy content at
+    the same code (`db.formations`/`db.progress`) is never deleted,
+    never auto-merged, never auto-credited — it stays real,
+    queryable READ_ONLY_HISTORY, simply no longer where navigation
+    points. A formation_code absent from this map has no canonical
+    counterpart yet and keeps using the existing legacy runtime
+    unchanged, exactly as before this decision.
+
+    Deliberately progress-free (unlike `get_canonical_progress_summary`
+    above) — routing authority never depends on any one user's
+    progress, so this is cheap to call from request paths that don't
+    otherwise need a user's canonical progress (the formations
+    catalogue, formation detail).
+    """
+    fms = await fms_canonical.list_canonical_formations()
+    klt = await klt_canonical.list_canonical_klt_formations()
+    kor = await kor_canonical.list_canonical_kor_formations()
+    result: Dict[str, Dict[str, str]] = {}
+    for f in fms:
+        result[f.canonical_formation_code] = {
+            "domain": "FMS",
+            "route": f"{CANONICAL_ROUTE_PREFIX['FMS']}/{f.canonical_formation_code}",
+        }
+    for klt_f in klt:
+        result[klt_f.klt_formation_code] = {
+            "domain": "KLT",
+            "route": f"{CANONICAL_ROUTE_PREFIX['KLT']}/{klt_f.klt_formation_code}",
+        }
+    for kor_f in kor:
+        result[kor_f.kor_formation_code] = {
+            "domain": "KOR",
+            "route": f"{CANONICAL_ROUTE_PREFIX['KOR']}/{kor_f.kor_formation_code}",
+        }
+    return result
+
+
+async def get_canonical_authority(formation_code: str) -> Optional[Dict[str, str]]:
+    """Single-formation convenience wrapper over
+    `get_canonical_authority_map` — for call sites (e.g. one formation's
+    detail page) that only need one code, not the full map."""
+    return (await get_canonical_authority_map()).get(formation_code)
 
 
 async def _first_unviewed_fms(user_id: str) -> Any:
@@ -125,7 +188,7 @@ async def _first_unviewed_fms(user_id: str) -> Any:
                     "formation_name": f.metier_name,
                     "module_code": module_code,
                     "module_name": module.title if module else module_code,
-                    "route": f"/canonical/{f.canonical_formation_code}/{module_code}",
+                    "route": f"{CANONICAL_ROUTE_PREFIX['FMS']}/{f.canonical_formation_code}/{module_code}",
                 }
     return None
 
@@ -146,7 +209,7 @@ async def _first_unviewed_klt(user_id: str) -> Any:
                     "formation_name": f.title,
                     "module_code": module_code,
                     "module_name": module.title if module else module_code,
-                    "route": f"/kiltikonet-canonical/{f.klt_formation_code}/{module_code}",
+                    "route": f"{CANONICAL_ROUTE_PREFIX['KLT']}/{f.klt_formation_code}/{module_code}",
                 }
     return None
 
@@ -167,7 +230,7 @@ async def _first_unviewed_kor(user_id: str) -> Any:
                     "formation_name": f.title,
                     "module_code": module_code,
                     "module_name": module.title if module else module_code,
-                    "route": f"/kora-canonical/{f.kor_formation_code}/{module_code}",
+                    "route": f"{CANONICAL_ROUTE_PREFIX['KOR']}/{f.kor_formation_code}/{module_code}",
                 }
     return None
 

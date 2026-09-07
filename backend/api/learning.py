@@ -20,6 +20,8 @@ from lx import (
 )
 from models import User
 from services.canonical_convergence import (
+    get_canonical_authority,
+    get_canonical_authority_map,
     get_canonical_progress_summary,
     get_first_unviewed_canonical_module,
 )
@@ -35,6 +37,22 @@ async def get_module_journey(
     current: User = Depends(get_current_user),
 ):
     """Full learning-journey payload for one module — phases + user progress."""
+    # ACA-0019 (Founder decision, 2026-09-07) —
+    # CANONICAL_CURRICULUM_RUNTIME = AUTHORITATIVE. A stale bookmark/
+    # link into a now-canonical-authoritative formation's legacy module
+    # journey redirects to the canonical formation instead of rendering
+    # legacy content — never to a guessed canonical module_code (legacy
+    # and canonical module codes are unrelated code spaces; AUTO_
+    # EQUIVALENCE is forbidden, so no attempt is made to map one to the
+    # other). `own_pole`/`other_poles`/`next_action` in
+    # `user_learning_path` above already never point a learner at this
+    # route for an authoritative formation in the first place — this is
+    # the defensive fallback for a link built before that, or typed
+    # directly.
+    authority = await get_canonical_authority(formation_code)
+    if authority:
+        return {"canonical_redirect": authority["route"]}
+
     form = await db.formations.find_one({"code": formation_code}, {"_id": 0})
     if not form:
         raise HTTPException(status_code=404, detail="Formation introuvable")
@@ -268,6 +286,16 @@ async def user_learning_path(current: User = Depends(get_current_user)):
     ).to_list(1000)
     prog_by_mod = {p["module_code"]: p for p in progress_docs}
 
+    # ACA-0019 (Founder decision, 2026-09-07) —
+    # CANONICAL_CURRICULUM_RUNTIME = AUTHORITATIVE. Computed once, up
+    # front: every formation_code with real canonical content is
+    # annotated below, and the legacy next_action search (further down)
+    # skips those formations entirely — canonical is the single active
+    # pedagogical source for them, legacy stays real, queryable
+    # READ_ONLY_HISTORY (db.formations/db.progress untouched, never
+    # deleted or auto-merged), simply no longer where navigation points.
+    authority_map = await get_canonical_authority_map()
+
     def summarize_formation(f: Dict) -> Dict:
         mods = f.get("modules", [])
         total = len(mods)
@@ -291,6 +319,7 @@ async def user_learning_path(current: User = Depends(get_current_user)):
             "is_unlocked": unlocked,
             "lock_reason": reason,
             "is_recommended": f["pole"] == current.metier_vise,
+            "canonical_authority": authority_map.get(f["code"]),
         }
 
     summarized = [summarize_formation(f) for f in all_forms]
@@ -300,9 +329,13 @@ async def user_learning_path(current: User = Depends(get_current_user)):
     others = [s for s in summarized if not s["is_recommended"]]
     others.sort(key=lambda x: (x["pole"], x["code"]))
 
-    # Compute next actionable module
+    # Compute next actionable module — skips any formation canonical
+    # content has taken over (see authority_map above); those fall
+    # through to the canonical next_action search below instead.
     next_action = None
     for s in own + others:
+        if s["canonical_authority"]:
+            continue
         if not s["is_unlocked"]:
             continue
         f_doc = next((f for f in all_forms if f["code"] == s["code"]), None)

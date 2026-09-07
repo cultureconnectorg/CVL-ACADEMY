@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { Book, Trophy, MediaVideo, Coins, Lock, CheckCircle, PlaySolid, ArrowRight } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
@@ -28,6 +28,18 @@ export default function FormationDetail() {
   }, [code]);
 
   if (!f) return <div className="p-10 text-[--cvln-ink-2]">…</div>;
+
+  // ACA-0019 (Founder decision, 2026-09-07) — CANONICAL_CURRICULUM_RUNTIME =
+  // AUTHORITATIVE: when this formation_code has real canonical content,
+  // canonical is now the single active pedagogical source a learner is
+  // routed to. Redirect immediately instead of rendering this legacy doc's
+  // modules — "ne crée pas deux parcours concurrents dans l'UI". The legacy
+  // doc itself (and this route) still exist and are never deleted; a direct
+  // link/bookmark to it just forwards on, exactly like `get_module_journey`
+  // already does server-side for the module-level route.
+  if (f.canonical_authority) {
+    return <Navigate to={f.canonical_authority.route} replace />;
+  }
 
   const validatedCount = (f.modules || []).filter(m => m.status === "validated").length;
   const pct = f.modules && f.modules.length
