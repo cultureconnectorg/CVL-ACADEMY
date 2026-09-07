@@ -129,6 +129,29 @@ Role = Literal[
 STAFF_ROLES: tuple = ("trainer", "corrector", "jury", "admin", "super_admin", "founder")
 ADMIN_ROLES: tuple = ("admin", "super_admin", "founder")
 
+# SEC-01 (audit chirurgical 2026-09-07) — explicit inviter_role ->
+# allowed_invited_roles matrix. `POST /invitations` (api/orgs.py) is
+# reachable by "trainer" as well as ADMIN_ROLES; before this, any
+# invited `role` was accepted verbatim regardless of who created the
+# invitation, so a trainer could mint an invitation carrying
+# role="founder" and `_apply_invitation` (api/auth.py) would grant it
+# on signup with zero server-side check. This matrix is the fix's
+# source of truth — never widen an entry without a real, deliberate
+# decision: a role can only ever grant roles strictly below (never
+# equal to or above) its own privilege tier, except an admin-tier role
+# managing its own tier laterally (already true of the pre-existing
+# Admin CMS invite UI, which only ever offered up to "admin"). Nobody
+# — not even founder — can mint a "founder" invitation: that role is
+# never self-service, always a manual/seed action.
+INVITER_ALLOWED_INVITED_ROLES: Dict[str, tuple] = {
+    "trainer": ("student",),
+    "corrector": ("student",),
+    "jury": ("student",),
+    "admin": ("student", "trainer", "corrector", "jury", "admin"),
+    "super_admin": ("student", "trainer", "corrector", "jury", "admin", "super_admin"),
+    "founder": ("student", "trainer", "corrector", "jury", "admin", "super_admin"),
+}
+
 
 class OAuthAccount(BaseModel):
     """One linked external identity (Google / Apple / GitHub / Microsoft)."""
