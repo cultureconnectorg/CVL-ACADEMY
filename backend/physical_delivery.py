@@ -32,6 +32,8 @@ from datetime import datetime, timezone
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
+from pymongo import ReturnDocument
+from pymongo.errors import DuplicateKeyError
 
 from db import db, utc_now_iso
 
@@ -177,25 +179,54 @@ async def enroll(session_id: str, user_id: str) -> Enrollment:
         raise ValueError("Session introuvable.")
     if session.status == "cancelled":
         raise ValueError("Cette session est annulée.")
-    existing = await db.physical_enrollments.find_one(
-        {"session_id": session_id, "user_id": user_id, "status": {"$ne": "cancelled"}},
-        {"_id": 0},
+
+    # PHY-01 (Audit Chirurgical 2026-09-07) — real, atomic capacity
+    # claim. The previous version read `session.enrolled_count`, decided
+    # "enrolled" vs "waitlisted" in application code, then wrote the
+    # increment in a SEPARATE round trip — two concurrent enrollments
+    # could both read the same `enrolled_count < capacity` as true and
+    # both write "enrolled", oversubscribing the session. Same
+    # compare-and-swap pattern as this session's economic fixes
+    # (missions/quiz/wallet): the filter IS the concurrency guard,
+    # evaluated atomically by MongoDB inside `find_one_and_update`, not
+    # by application code reading then writing. `session.capacity` is
+    # fixed at creation (no endpoint ever mutates it), so comparing
+    # against the value already in hand is safe — no read-after-check
+    # gap for capacity itself, only for `enrolled_count`, which this
+    # atomic filter is exactly what closes.
+    claimed = await db.physical_sessions.find_one_and_update(
+        {
+            "id": session_id,
+            "status": {"$ne": "cancelled"},
+            "enrolled_count": {"$lt": session.capacity},
+        },
+        {"$inc": {"enrolled_count": 1}},
+        return_document=ReturnDocument.AFTER,
     )
-    if existing:
-        raise ValueError("Déjà inscrit à cette session.")
-    status: EnrollmentStatus = "enrolled" if has_capacity(session) else "waitlisted"
+    status: EnrollmentStatus = "enrolled" if claimed else "waitlisted"
+
     enr = Enrollment(session_id=session_id, user_id=user_id, status=status)
-    await db.physical_enrollments.insert_one(enr.model_dump())
-    if status == "enrolled":
-        new_count = session.enrolled_count + 1
+    try:
+        await db.physical_enrollments.insert_one(enr.model_dump())
+    except DuplicateKeyError:
+        # Real race: another concurrent request for this exact
+        # (session_id, user_id) pair won first — the unique partial
+        # index on active statuses (infra_indexes.py) is the actual
+        # guard, insert-then-catch rather than the check-then-insert
+        # race the previous version ran. Roll back the capacity claim
+        # above so a rejected duplicate never permanently steals a real
+        # seat from someone else.
+        if claimed:
+            await db.physical_sessions.update_one(
+                {"id": session_id}, {"$inc": {"enrolled_count": -1}}
+            )
+        raise ValueError("Déjà inscrit à cette session.")
+
+    if claimed:
+        new_count = claimed["enrolled_count"]
         await db.physical_sessions.update_one(
             {"id": session_id},
-            {
-                "$set": {
-                    "enrolled_count": new_count,
-                    "status": next_session_status(session, new_count),
-                }
-            },
+            {"$set": {"status": next_session_status(session, new_count)}},
         )
     return enr
 

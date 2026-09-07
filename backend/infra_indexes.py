@@ -132,8 +132,19 @@ async def ensure_indexes() -> None:
         [("formation_code", 1), ("starts_at", 1)]
     )
     await db.physical_sessions.create_index("status")
+    # PHY-01 (Audit Chirurgical 2026-09-07) — real, DB-enforced guard
+    # against double-booking: unique per (session_id, user_id), but only
+    # across "active" statuses (partialFilterExpression). Scoping it to
+    # enrolled/waitlisted — never a plain unique index — is deliberate:
+    # a user who cancels and later re-enrolls must be allowed to (a new
+    # document, since cancel_enrollment never deletes the cancelled
+    # record — see its own docstring), and a bare unique index would
+    # reject that legitimate second enrollment as a duplicate of the
+    # first, now-cancelled one.
     await db.physical_enrollments.create_index(
-        [("session_id", 1), ("user_id", 1)]
+        [("session_id", 1), ("user_id", 1)],
+        unique=True,
+        partialFilterExpression={"status": {"$in": ["enrolled", "waitlisted"]}},
     )
     await db.physical_enrollments.create_index([("user_id", 1), ("status", 1)])
     await db.physical_attendance.create_index([("session_id", 1), ("user_id", 1)])

@@ -43,6 +43,15 @@ async def phys_db(monkeypatch):
     mock_db = client["cvln_physical_sessions_test"]
     for module in (physical_delivery_module, delivery_architecture_module):
         monkeypatch.setattr(module, "db", mock_db)
+    # PHY-01 — infra_indexes.ensure_indexes() isn't auto-invoked in unit
+    # tests (same pattern as test_wallet_and_badges_atomicity.py); the
+    # unique partial index IS the real duplicate-enrollment guard, so it
+    # has to exist here for that guard to be exercised at all.
+    await mock_db.physical_enrollments.create_index(
+        [("session_id", 1), ("user_id", 1)],
+        unique=True,
+        partialFilterExpression={"status": {"$in": ["enrolled", "waitlisted"]}},
+    )
     return mock_db
 
 
@@ -107,6 +116,85 @@ async def test_enroll_twice_rejected(phys_db):
     await enroll(session.id, "user-1")
     with pytest.raises(ValueError):
         await enroll(session.id, "user-1")
+
+
+@pytest.mark.asyncio
+async def test_enrolled_count_never_exceeds_capacity_under_repeated_claims(phys_db):
+    """PHY-01 — the actual capacity-race regression test: the previous
+    read-then-write version decided "enrolled" vs "waitlisted" from a
+    snapshot read, so N enrollments racing the same undersized capacity
+    could all observe room and all get written "enrolled". This proves
+    the atomic `find_one_and_update` CAS filter (`enrolled_count`
+    against the fixed `capacity`) never lets `enrolled_count` exceed
+    `capacity`, no matter how many enroll() calls are made."""
+    loc = await _seed_location(phys_db, capacity=3)
+    session = await create_session(
+        TrainingSession(
+            formation_code="KOR-01",
+            location_id=loc.id,
+            starts_at=_future_iso(),
+            ends_at=_future_iso(hours=52),
+            capacity=3,
+            created_by="staff-1",
+        )
+    )
+
+    results = [await enroll(session.id, f"user-{i}") for i in range(10)]
+    enrolled = [r for r in results if r.status == "enrolled"]
+    waitlisted = [r for r in results if r.status == "waitlisted"]
+    assert len(enrolled) == 3
+    assert len(waitlisted) == 7
+
+    stored = await phys_db.physical_sessions.find_one({"id": session.id}, {"_id": 0})
+    assert stored["enrolled_count"] == 3
+    assert stored["status"] == "full"
+
+
+@pytest.mark.asyncio
+async def test_duplicate_enrollment_rolls_back_its_capacity_claim(phys_db):
+    """A genuine race where two requests for the SAME (session, user)
+    pair both reach the capacity claim before either inserts its
+    Enrollment document: the second's `insert_one` hits the unique
+    partial index (DuplicateKeyError) and must roll back the seat it
+    just claimed — otherwise a rejected duplicate would permanently
+    steal a real seat from someone else."""
+    loc = await _seed_location(phys_db, capacity=2)
+    session = await create_session(
+        TrainingSession(
+            formation_code="KOR-01",
+            location_id=loc.id,
+            starts_at=_future_iso(),
+            ends_at=_future_iso(hours=52),
+            capacity=2,
+            created_by="staff-1",
+        )
+    )
+
+    # Simulate the losing side of the race: an active enrollment for
+    # user-1 already exists (as the winning concurrent request would
+    # have just inserted), but the session's own enrolled_count is
+    # still pre-increment — exactly the window enroll() itself passes
+    # through internally between its atomic claim and its insert.
+    from physical_delivery import Enrollment
+
+    await phys_db.physical_enrollments.insert_one(
+        Enrollment(session_id=session.id, user_id="user-1", status="enrolled").model_dump()
+    )
+
+    with pytest.raises(ValueError):
+        await enroll(session.id, "user-1")
+
+    # The claim enroll() made for this rejected attempt must have been
+    # rolled back — enrolled_count reflects only the one real,
+    # already-existing enrollment, never a phantom extra seat.
+    stored = await phys_db.physical_sessions.find_one({"id": session.id}, {"_id": 0})
+    assert stored["enrolled_count"] == 0  # the pre-seeded doc never went through enroll()
+
+    # A genuinely different user can still claim both real seats.
+    first = await enroll(session.id, "user-2")
+    second = await enroll(session.id, "user-3")
+    assert first.status == "enrolled"
+    assert second.status == "enrolled"
 
 
 @pytest.mark.asyncio
