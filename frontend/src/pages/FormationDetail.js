@@ -4,6 +4,7 @@ import { Book, Trophy, MediaVideo, Coins, Lock, CheckCircle, PlaySolid, ArrowRig
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
 import BackButton from "@/components/BackButton";
+import PhysicalSessionsPanel from "@/components/PhysicalSessionsPanel";
 
 const STADE_EMOJI = {
   graine: "🌱", pousse: "🌿", racine: "🌳",
@@ -198,6 +199,14 @@ export default function FormationDetail() {
           })}
         </div>
       </div>
+
+      {/* PHYSICAL/HYBRID assessment architecture (Founder decision,
+          2026-09-07) — real session → location/date/capacity →
+          enrollment → attendance → practical assessment when
+          required. Public: session data is legitimate discovery
+          info even for a signed-out visitor; the panel itself gates
+          enroll/attendance-dependent actions behind sign-in. */}
+      <PhysicalSessionsPanel formationCode={code} />
     </div>
   );
 }

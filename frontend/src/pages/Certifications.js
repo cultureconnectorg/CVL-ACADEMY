@@ -61,6 +61,14 @@ export default function Certifications() {
   if (loading) return <div className="p-10 text-[--cvln-ink-2]">…</div>;
 
   const startedCodes = new Set(attempts.map((a) => a.certification_code));
+  // PHYSICAL/HYBRID assessment architecture (2026-09-07) — a
+  // "practical"-kind rubric is never started from this generic list:
+  // it requires a real session_id (POST /certifications/{code}/
+  // practical-attempts), only available from the formation's own
+  // physical-sessions panel (PhysicalSessionsPanel.js) once real
+  // attendance is recorded. Started/graded practical attempts still
+  // show up in the "mine" list above like any other attempt.
+  const startableRubrics = rubrics.filter((r) => r.assessment_kind !== "practical");
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-5xl" data-testid="certifications-page">
@@ -79,6 +87,11 @@ export default function Certifications() {
               <div className="min-w-0">
                 <div className="font-semibold truncate">
                   {a.certification_code} · {a.level} — {t("certifications_p.attempt")} #{a.attempt_number}
+                  {a.assessment_kind === "practical" && (
+                    <span className="ml-2 text-[10px] mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-[--cvln-bg-warm] text-[--cvln-ink-2] align-middle">
+                      {t("certifications_p.practical_badge")}
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs text-[--cvln-ink-2]">
                   {STATUS_LABELS[a.status]}
@@ -99,11 +112,11 @@ export default function Certifications() {
         ))}
       </div>
 
-      {rubrics.length > 0 && (
+      {startableRubrics.length > 0 && (
         <>
           <h3 className="font-display font-bold text-xl tracking-tight mt-10 mb-4">{t("certifications_p.available_title")}</h3>
           <div className="space-y-3">
-            {rubrics
+            {startableRubrics
               .filter((r) => !startedCodes.has(r.certification_code))
               .map((r) => (
                 <div
