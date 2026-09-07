@@ -140,6 +140,32 @@ export default function Dashboard() {
               </div>
             ))}
           </div>
+          {/* CAN-01/CAN-02 convergence (P0-G backend, surfaced here) —
+              a distinct, honestly-labeled number: canonical FMS/
+              Kiltikonet/KORA content *viewed*, never blended into the
+              legacy global_pct above, which means quiz-passed +
+              mini-mission-committed — a bar canonical content has no
+              mechanism to clear yet. */}
+          {summary?.canonical?.canonical_modules_total > 0 && (
+            <div className="mt-6 pt-6 border-t border-black/5" data-testid="card-canonical-progress">
+              <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">
+                <span>{t("canonical_progress")}</span>
+                <span className="text-[--cvln-orange]">
+                  {summary.canonical.canonical_progress_pct}%
+                </span>
+              </div>
+              <div className="stage-line mt-3">
+                <div style={{ width: `${summary.canonical.canonical_progress_pct}%` }} />
+              </div>
+              <div className="mt-2 text-xs text-[--cvln-ink-2]">
+                {summary.canonical.canonical_modules_viewed}/{summary.canonical.canonical_modules_total}{" "}
+                {t("canonical_modules_viewed")}
+              </div>
+              <div className="mt-1 text-[10px] text-[--cvln-ink-2]">
+                {t("canonical_progress_hint")}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* CC + stage progress */}
