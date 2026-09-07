@@ -8,6 +8,17 @@ given, there is no ambiguity about what happens to each real surface —
 "Claude does not decide at random," per the Founder's own instruction.
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1_PRODUCTION_INTEGRATION`
+> est désormais **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**. Les verdicts
+> `Dashboard.js = WRAP` et `Roadmap.js = EXTEND` de ce plan ont été
+> réellement exécutés (voir le tableau ci-dessous pour le détail par
+> surface) et vérifiés (`docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`).
+> Tous les autres verdicts de ce document (Missions/Badges/FrekProfile/
+> ModuleJourney, les deux items REPLACE-BLOCKED, mobile swipe, FLIP)
+> restent `NOT_AUTHORIZED` — ce plan n'est donc pas caduc, seulement
+> partiellement exécuté ; garder la table ci-dessous comme référence pour
+> la suite plutôt que la refaire.
+
 For every real, already-shipped surface in `frontend/src`, one of four
 verdicts:
 

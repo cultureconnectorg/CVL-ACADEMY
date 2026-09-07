@@ -14,6 +14,15 @@ motion-tokens.js/motion-primitives.jsx/spatial-state.js before it), or
 STOP_AFTER_DELIVERY = TRUE.
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1` est désormais
+> **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**. Les primitives extraites ici
+> (`frontend/src/lib/spatial/*`) ont été réellement montées en
+> production sur Dashboard et Roadmap par Rail 3, branchées sur le vrai
+> graphe pédagogique — voir
+> `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`. Le reste de
+> ce rapport (posture FOUNDATION_FIRST, inventaire des primitives)
+> demeure exact et n'est pas réécrit.
+
 ## PRODUCT_VISUAL_REDESIGN = NO
 ## FUNNEL_BEHAVIOR_CHANGE = NO when flags OFF
 ## MONETIZATION_IMPLEMENTED = NO

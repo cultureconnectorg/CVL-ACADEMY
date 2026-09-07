@@ -10,6 +10,15 @@ Nothing in frontend/src, backend/, or the database was touched.
 git status --porcelain on the repo is empty after this work (only docs).
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1` est désormais
+> **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**, mais pas pour ce qui est décrit
+> ici : le moteur caméra-follow / autofocus / état IDLE→...→SETTLING de
+> ce rapport reste au niveau prototype (`spatial-console-h08.html`) —
+> non porté sur les vraies routes (`ACA-0015`, toujours non fait). Rail 3
+> a monté `attention.js`/`physics.js`/`cadence.js`/`audio.js`/
+> `haptics.js` sur Dashboard/Roadmap, un sous-ensemble distinct. Voir
+> `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`.
+
 ## Deliverables
 
 - **Prototype (interactive)**: [Spatial Console — H0.8](https://claude.ai/code/artifact/5ecce21c-efb8-4bb6-9b7c-cca0a45639a5) — `spatial-console-h08.html`, scratchpad only, never committed.

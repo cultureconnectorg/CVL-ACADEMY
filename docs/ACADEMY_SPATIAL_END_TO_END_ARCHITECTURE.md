@@ -7,6 +7,16 @@ H0.10 (spatial-console-h10.html) remains the untouched source reference
 into frontend/src, never for editing it in place.
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — les primitives décrites
+> ici comme "plan d'extraction" sont extraites (W-FUNNEL-1) **et**
+> réellement montées en production sur Dashboard et Roadmap (Rail 3),
+> branchées sur le vrai graphe pédagogique, avec le moteur complet
+> (attention/physics/cadence/audio/haptics). Voir
+> `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`. Le tableau
+> "Current reality" du §1 est mis à jour en conséquence pour Dashboard et
+> Roadmap ; le reste du document (continuité environnementale complète,
+> caméra, autres surfaces) reste à l'état de plan.
+
 ## 1. One world, contextual intensity
 
 `ONE_CONTINUOUS_WORLD = TRUE` does not mean constant intensity — the
@@ -21,9 +31,9 @@ tiers, cross-referenced against what the current codebase already does
 | Signup/Login | LOW/MEDIUM | LOW (same page, same tranche) |
 | Onboarding | MEDIUM | none (standard form) |
 | Activation | HIGH | none (no dedicated moment yet) |
-| Dashboard/Hub | HIGH | none (standard dashboard tiles) |
+| Dashboard/Hub | HIGH | PARTIAL (Rail 3, flag-gated `SPATIAL_HUB_ENABLED`) — `SpatialHub` rail, real distance/physics/cadence/audio/haptics |
 | Formation Discovery | HIGH | PARTIAL (W2-D) |
-| Roadmap | HIGH | REALIZED (W3-D) |
+| Roadmap | HIGH | REALIZED (W3-D binary) + continuous physics-driven depth (Rail 3, flag-gated) |
 | Module reading | LOW | REALIZED (W3-A, deliberately calm) |
 | Quiz | LOW/MEDIUM | none (standard modal, presumed) |
 | Mission | MEDIUM | none |

@@ -12,6 +12,16 @@ git status --porcelain on the repo is empty after this work (only this
 doc is new).
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1` est désormais
+> **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**, mais pas pour ce qui est décrit
+> ici précisément : l'upgrade caméra/composition (perspective-origin
+> follow, dispersion Z/rotateY, edge-fade) documenté dans ce rapport
+> reste au niveau prototype (`spatial-console-h07.html`) — Rail 3 a
+> monté `attention.js`/`physics.js`/`cadence.js`/`audio.js`/`haptics.js`
+> en production (Dashboard/Roadmap), pas ce système caméra spécifique.
+> Voir `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md` pour ce
+> qui est réellement en production.
+
 ## Deliverables
 
 - **Prototype (interactive)**: [Spatial Console — Camera Iteration](https://claude.ai/code/artifact/98782933-48c0-4c4e-b429-6bafe4201aec) — `spatial-console-h07.html`, scratchpad only, never committed.
