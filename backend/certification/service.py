@@ -18,6 +18,7 @@ from fastapi import HTTPException
 from db import db, utc_now_iso
 from lx import compute_status
 from qualification import maybe_issue_qualification
+from services.canonical_convergence import get_canonical_authority
 from services.events import events
 from services.frek_core import frek_core
 from skills.progression import record_evidence
@@ -129,13 +130,36 @@ async def check_certification_eligibility(
     then each canonical domain in turn; a `formation_code` that matches
     NONE of them is rejected outright rather than silently allowed —
     an unrecognized formation_code on a rubric is an admin/data error,
-    never a reason to skip the gate."""
-    legacy = await _check_legacy_eligibility(user_id, formation_code)
-    if legacy is not None:
-        return legacy
-    canonical = await _check_canonical_eligibility(user_id, formation_code)
-    if canonical is not None:
-        return canonical
+    never a reason to skip the gate.
+
+    ACA-0019 (Founder decision, 2026-09-07) —
+    CANONICAL_CURRICULUM_RUNTIME = AUTHORITATIVE: fixes a real gate the
+    routing-authority change itself broke. For a `formation_code` with
+    real canonical content (e.g. FMS-01, which also still has a legacy
+    `db.formations` doc as READ_ONLY_HISTORY), `get_module_journey` now
+    redirects every navigation away from the legacy 7-phase modules —
+    so a learner routed exclusively through canonical content can never
+    again reach the legacy quiz/mini-mission this gate used to require,
+    and `_check_legacy_eligibility` returning non-None (a legacy doc
+    exists) meant canonical was never even tried. Without this check,
+    certification became permanently unreachable for every learner on
+    an authoritative formation. Canonical authority is checked first
+    and, when present, is the ONLY path consulted — never composed with
+    the legacy verdict, per the same rule that governs navigation:
+    canonical is the single active pedagogical source, stale legacy
+    progress on that formation_code is never credited toward it."""
+    authority = await get_canonical_authority(formation_code)
+    if authority:
+        canonical = await _check_canonical_eligibility(user_id, formation_code)
+        if canonical is not None:
+            return canonical
+    else:
+        legacy = await _check_legacy_eligibility(user_id, formation_code)
+        if legacy is not None:
+            return legacy
+        canonical = await _check_canonical_eligibility(user_id, formation_code)
+        if canonical is not None:
+            return canonical
     return False, f"Formation « {formation_code} » introuvable (ni legacy, ni canonique)."
 
 

@@ -47,6 +47,8 @@ from mongomock_motor import AsyncMongoMockClient
 
 import api.missions as missions_api_module
 import certification.service as certification_service_module
+import fms_canonical
+import klt_canonical
 import kor_canonical.import_pipeline as kor_import_pipeline_module
 import kor_canonical.progress as kor_progress_module
 import kor_canonical.provenance as kor_provenance_module
@@ -115,6 +117,19 @@ async def rail2_db(monkeypatch):
         missions_api_module,
     ):
         monkeypatch.setattr(module, "db", mock_db)
+
+    # ACA-0019 — `check_certification_eligibility` now calls
+    # `get_canonical_authority` first, which walks FMS/KLT/KOR's
+    # `list_canonical_*` functions. This suite is KOR-only (real KOR-01/
+    # KOR-02 corpus, no FMS/KLT content); FMS's and KLT's own `db`
+    # references are untouched real modules, so unstubbed this hits a
+    # real, absent MongoDB. `kor_canonical`'s own list function already
+    # resolves through `kor_read_model_module.db`, patched above.
+    async def no_formations(*_a, **_kw):
+        return []
+
+    monkeypatch.setattr(fms_canonical, "list_canonical_formations", no_formations)
+    monkeypatch.setattr(klt_canonical, "list_canonical_klt_formations", no_formations)
     return mock_db
 
 
