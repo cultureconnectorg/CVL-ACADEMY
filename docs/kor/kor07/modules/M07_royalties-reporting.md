@@ -41,11 +41,15 @@ sans clarification.
 3. Documenter toute zone d'ombre (comme un possible partage avec
    l'ayant droit incertain du chant).
 
-## Exemple
+## Exemples
 
 Un calcul qui omettrait toute réserve pour l'ayant droit potentiel du
 chant traditionnel devrait être signalé comme incomplet tant que
-l'incertitude de M01 n'est pas levée.
+l'incertitude de M01 n'est pas levée. À l'inverse, un calcul dont la
+formule ne correspond pas à ce qui a été décrit oralement (par exemple
+un taux différent de celui annoncé) devrait être signalé même si le
+résultat final semble plausible — la cohérence arithmétique ne suffit
+pas si elle ne correspond pas à l'accord réellement discuté.
 
 ## Cas
 
@@ -57,6 +61,9 @@ CASE.md`).
 - Accepter un calcul sans en vérifier la cohérence.
 - Deviner la signification d'un terme non documenté (comme "CVE")
   plutôt que de signaler l'absence de clarification.
+- Valider un calcul parce que le résultat final semble plausible, sans
+  vérifier que la formule utilisée correspond réellement à l'accord
+  discuté.
 
 ## Activité
 

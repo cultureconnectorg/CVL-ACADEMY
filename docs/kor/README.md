@@ -32,7 +32,8 @@ selon la méthode `AUDIT → CANONICALIZE → FREEZE → BUILD → TEST → VERI
 | `KOR-04` | Programmation éditoriale | 9 | 9/9 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`) |
 | `KOR-05` | Opérations créateur/catalogue | 10 | 10/10 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`/`04`) |
 | `KOR-06` | Exploitation plateforme (DSP/CDN) | 9 | 9/9 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`/`04`/`05` ; `KORA_PRODUCT_GAP` distinct et non affecté : DSP/CDN/monitoring réels restent `CAPABILITY_NOT_IMPLEMENTED`) |
-| `KOR-07`→`10` | 4 autres angles métier KORA | variable | 100% par formation | `BUILT`, `PARTIAL_PACKAGE` (structure complète par `QUALITY_GATES.md` de chaque formation, contenu de module plus léger que `KOR-01`/`02`/`03`/`04`/`05`/`06` — approfondissement non encore engagé) |
+| `KOR-07` | Droits et licences média | 9 | 9/9 | `BUILT`, `PARTIAL_PACKAGE` (structurellement 100% par `QUALITY_GATES.md`, contenu de module approfondi — même traitement que `KOR-03`→`06` ; `NEEDS_EXPERT_REVIEW = TRUE` en permanence sur tout ce corpus, discipline préservée dans l'approfondissement) |
+| `KOR-08`→`10` | 3 autres angles métier KORA | variable | 100% par formation | `BUILT`, `PARTIAL_PACKAGE` (structure complète par `QUALITY_GATES.md` de chaque formation, contenu de module plus léger que `KOR-01`/`02`/`03`/`04`/`05`/`06`/`07` — approfondissement non encore engagé) |
 | `KOR-11`→`15` | 5 derniers angles métier KORA | variable | 100% par formation | `BUILT`, `DRAFTED` (chaque `REFERENTIAL.md` self-déclare `STATUS = PROPOSED` pour au moins un scénario de cas ; corpus le plus léger de KORA) |
 
 **Rappel** : `BUILT` signifie que le package canonique existe et que

@@ -41,11 +41,15 @@ poser (pas de supposer un cadre unique), et de marquer
 3. Distinguer cette analyse de cadre légal (`KOR-07`) d'une stratégie
    de déploiement marché (`KOR-15`, non construit).
 
-## Exemple
+## Exemples
 
 Une clause valable en Martinique (droit français) pourrait nécessiter
 une adaptation dans une île à régime juridique différent — la question
-doit être posée, pas résolue par défaut.
+doit être posée, pas résolue par défaut. À l'inverse, supposer qu'une
+convention internationale commune (comme Berne) rend le cadre
+juridique identique partout minimiserait les variations réelles
+d'application d'une juridiction à l'autre — la convention pose des
+principes communs, pas une uniformité totale.
 
 ## Cas
 
@@ -56,6 +60,9 @@ L'analyse porte sur les 5 îles réelles du cas (`case/CASE.md`).
 - Supposer un cadre juridique uniforme sur les 5 îles.
 - Confondre l'analyse de cadre légal avec une stratégie de marché
   (`KOR-15`).
+- Supposer qu'une convention internationale commune rend le cadre
+  juridique identique partout, minimisant les variations réelles
+  d'application entre juridictions.
 
 ## Activité
 

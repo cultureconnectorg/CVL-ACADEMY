@@ -41,11 +41,14 @@ nécessiterait une clearance avant toute diffusion élargie.
    clearance avant d'accepter la diffusion.
 3. Documenter la décision et ses conditions.
 
-## Exemple
+## Exemples
 
 Accorder une exclusivité empêcherait le Lanbi Collective de proposer
 *Rasin* à une autre radio caribéenne pendant la durée de l'accord — un
-coût réel si une meilleure opportunité se présentait.
+coût réel si une meilleure opportunité se présentait. À l'inverse,
+considérer qu'une clearance obtenue pour un usage initial resterait
+valable pour tout usage futur ignorerait qu'une clearance, comme une
+licence (M02), reste circonscrite à un périmètre précis.
 
 ## Cas
 
@@ -56,6 +59,8 @@ CASE.md`).
 
 - Accorder une exclusivité sans évaluer son coût réel.
 - Diffuser sans clearance un élément dont les droits sont incertains.
+- Considérer qu'une clearance obtenue pour un usage initial couvre
+  automatiquement tout usage futur, sans vérifier son périmètre réel.
 
 ## Activité
 

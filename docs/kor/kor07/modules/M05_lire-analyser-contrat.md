@@ -39,11 +39,14 @@ relecture juridique professionnelle avant signature réelle
 3. Documenter les questions à poser avant signature, sans signer sur
    la base de ce seul exercice.
 
-## Exemple
+## Exemples
 
 Une clause de résiliation absente du contrat laisserait le Lanbi
 Collective sans recours clair en cas de désaccord futur — à signaler
-avant signature.
+avant signature. À l'inverse, une clause de résiliation présente mais
+rédigée en termes si vagues (« résiliable dans des conditions à
+convenir ») serait tout aussi problématique qu'une clause absente — la
+grille de lecture doit repérer l'ambiguïté, pas seulement l'absence.
 
 ## Cas
 
@@ -53,6 +56,9 @@ L'analyse porte sur le projet de contrat réel du cas (`case/CASE.md`).
 
 - Signer un contrat sur la seule base de cet exercice pédagogique.
 - Ignorer une clause manquante en supposant qu'elle "va de soi".
+- Considérer qu'une clause présente mais rédigée en termes vagues est
+  suffisante, alors qu'elle appelle la même vigilance qu'une clause
+  absente.
 
 ## Activité
 

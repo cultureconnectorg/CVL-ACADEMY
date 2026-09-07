@@ -37,11 +37,15 @@ jamais un transfert total de propriété.
 2. Identifier ce qui reste incertain (droits sur le chant, cf. M01).
 3. Clarifier ce qu'une licence de diffusion autoriserait précisément.
 
-## Exemple
+## Exemples
 
 Une licence de diffusion radio n'autoriserait pas automatiquement une
 republication en podcast par Rézo Radyo Kreyòl — les usages doivent
-être précisés, pas supposés inclus.
+être précisés, pas supposés inclus. À l'inverse, supposer qu'une
+licence accordée sur le master couvrirait automatiquement le
+publishing (s'il existe une composition originale distincte)
+reviendrait à concéder un droit que le Lanbi Collective ne détient
+peut-être pas seul.
 
 ## Cas
 
@@ -53,6 +57,9 @@ CASE.md`).
 - Supposer qu'une licence pour un usage couvre automatiquement tous
   les usages.
 - Confondre master et publishing.
+- Supposer qu'une licence accordée sur le master couvre
+  automatiquement le publishing, sans vérifier si les deux relèvent
+  du même ayant droit.
 
 ## Activité
 

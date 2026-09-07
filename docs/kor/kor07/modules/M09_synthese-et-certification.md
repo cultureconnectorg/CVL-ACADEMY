@@ -42,6 +42,8 @@ Le dossier porte sur l'analyse réelle du cas (`case/CASE.md`).
 - Présenter une recommandation finale qui tranche l'incertitude du
   chant traditionnel par défaut.
 - Ignorer `NEEDS_EXPERT_REVIEW` dans la conclusion du dossier.
+- Formuler un bilan réflexif qui ne reconnaisse aucune difficulté
+  réelle rencontrée face à l'incertitude du chant traditionnel.
 
 ## Activité
 

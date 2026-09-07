@@ -41,11 +41,15 @@ différentes composantes.
    statut du chant traditionnel).
 3. Ne jamais combler une incertitude par une supposition favorable.
 
-## Exemple
+## Exemples
 
 Affirmer "le chant est probablement dans le domaine public" sans
 vérification serait une erreur — la bonne pratique est de marquer ce
-point `NEEDS_EXPERT_REVIEW` et de le documenter comme tel.
+point `NEEDS_EXPERT_REVIEW` et de le documenter comme tel. À l'inverse,
+marquer même les droits du Lanbi Collective sur son propre épisode
+comme incertains "par prudence excessive" diluerait le signal —
+`NEEDS_EXPERT_REVIEW` doit distinguer ce qui est réellement incertain
+de ce qui est déjà établi, pas tout marquer par défaut.
 
 ## Cas
 
@@ -56,6 +60,9 @@ Le diagnostic porte sur la situation réelle du cas (`case/CASE.md`).
 - Traiter tout le contenu comme ayant un statut de droits uniforme.
 - Deviner un statut de droits par commodité plutôt que de le marquer
   incertain.
+- Marquer par excès de prudence des éléments dont le statut est en
+  réalité établi, diluant le signal `NEEDS_EXPERT_REVIEW` là où il
+  compte vraiment.
 
 ## Activité
 

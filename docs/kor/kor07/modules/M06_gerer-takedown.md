@@ -41,13 +41,16 @@ examen particulièrement attentif plutôt qu'un rejet automatique.
    précaution, maintien avec réserve documentée, ou demande de
    clarification), en marquant `NEEDS_EXPERT_REVIEW`.
 
-## Exemple
+## Exemples
 
 Si l'organisation tierce ne fournit aucune preuve vérifiable, un
 retrait immédiat serait disproportionné ; ignorer complètement la
 demande serait imprudent vu l'incertitude déjà connue — une réponse
 intermédiaire (retrait temporaire de précaution + demande de preuve)
-est plus défendable.
+est plus défendable. À l'inverse, accepter un document à en-tête
+officiel comme preuve suffisante sans vérifier qu'il établit
+réellement une détention de droits reviendrait à céder sur la forme
+plutôt que sur le fond de la preuve.
 
 ## Cas
 
@@ -57,6 +60,9 @@ Le takedown porte sur la demande réelle du cas (`case/CASE.md`).
 
 - Céder immédiatement sans vérifier la légitimité de la demande.
 - Ignorer la demande malgré l'incertitude déjà connue sur le chant.
+- Accepter un document d'apparence officielle comme preuve
+  suffisante sans vérifier qu'il établit réellement la détention de
+  droits invoquée.
 
 ## Activité
 
