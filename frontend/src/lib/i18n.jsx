@@ -198,6 +198,8 @@ const DICT = {
     dashboard_p: {
       greeting: "Bonjour", next_step: "Ta prochaine étape", resume_step: "Reprends où tu t'es arrêté",
       no_badges: "Aucun badge pour l'instant. Complète un module ou une mission pour en gagner.",
+      welcome_back: "Content de te revoir,",
+      welcome_back_progress_pre: "Tu es à", welcome_back_progress_post: "de ta progression globale.",
     },
     offers_p: {
       eyebrow: "Catalogue commercial", title: "Nos offres",
@@ -463,6 +465,8 @@ const DICT = {
     dashboard_p: {
       greeting: "Hello", next_step: "Your next step", resume_step: "Pick up where you left off",
       no_badges: "No badge yet. Complete a module or a mission to earn one.",
+      welcome_back: "Welcome back,",
+      welcome_back_progress_pre: "You're at", welcome_back_progress_post: "of your overall progress.",
     },
     offers_p: {
       eyebrow: "Commercial catalogue", title: "Our offers",
@@ -728,6 +732,8 @@ const DICT = {
     dashboard_p: {
       greeting: "Bonjou", next_step: "Pwochen étap ou", resume_step: "Kontinye kote ou te rete a",
       no_badges: "Poko gen badj. Fini yon modil ou yon misyon pou genyen'y.",
+      welcome_back: "Kontan wè ou ankò,",
+      welcome_back_progress_pre: "Ou rive a", welcome_back_progress_post: "nan pwogrè global ou.",
     },
     offers_p: {
       eyebrow: "Katalòg komèsyal", title: "Ofri nou yo",
@@ -993,6 +999,8 @@ const DICT = {
     dashboard_p: {
       greeting: "Hola", next_step: "Tu próximo paso", resume_step: "Retoma donde lo dejaste",
       no_badges: "Todavía no hay insignias. Completa un módulo o una misión para ganar una.",
+      welcome_back: "Qué bueno verte de nuevo,",
+      welcome_back_progress_pre: "Estás al", welcome_back_progress_post: "de tu progreso general.",
     },
     offers_p: {
       eyebrow: "Catálogo comercial", title: "Nuestras ofertas",

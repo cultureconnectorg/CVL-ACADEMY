@@ -15,6 +15,19 @@ const STADE_EMOJI = {
   branches: "🌲", arbre: "🦅", foret: "🌳🌳",
 };
 
+// ACA-0027-lite / W-FUNNEL-2 "Retention" (Founder instruction 2026-09-07,
+// "Regular Use -> Conversion -> Retention -> Expansion") — `prof.returning`
+// has been real, server-derived (backend/lifecycle.py's own
+// `db.refresh_tokens`-based `is_returning_session`, W-FUNNEL-1) since
+// before this leg, but had ZERO visible effect outside the
+// SPATIAL_HUB_ENABLED-flagged (default OFF) SpatialHub — a returning
+// learner got no acknowledgment at all in the real, default experience.
+// One-time-per-browser-session (sessionStorage, same conservative
+// pattern as the app's existing token/lang storage) so it never nags on
+// every remount within the same visit, and never needs a new persisted
+// backend flag.
+const WELCOME_BACK_SESSION_KEY = "cvln_welcome_back_shown";
+
 export default function Dashboard() {
   const { user, refreshMe } = useAuth();
   const { t } = useI18n();
@@ -42,6 +55,13 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // W-FUNNEL-2 "Retention" — see WELCOME_BACK_SESSION_KEY's docstring
+  // above. Guarded by `!location.state?.justOnboarded` (not just `!reveal`,
+  // which is fixed at mount) so it can never appear on the exact same
+  // render as the onboarding-completion reveal even in an edge case —
+  // ACADEMY doctrine: never two competing "first moment" surfaces at once.
+  const [showWelcomeBack, setShowWelcomeBack] = useState(false);
+
   useEffect(() => {
     (async () => {
       await refreshMe();
@@ -53,6 +73,18 @@ export default function Dashboard() {
         api.get("/user/learning-path").then(r => r.data),
       ]);
       setProf(p); setMissions(m); setBadges(b); setSummary(s); setPath(lp);
+
+      if (p?.returning && !location.state?.justOnboarded) {
+        let alreadyShownThisSession = false;
+        try {
+          alreadyShownThisSession = !!sessionStorage.getItem(WELCOME_BACK_SESSION_KEY);
+          if (!alreadyShownThisSession) sessionStorage.setItem(WELCOME_BACK_SESSION_KEY, "1");
+        } catch {
+          // Storage unavailable (private mode, blocked) — fine to show
+          // once this render; simply not deduped across remounts.
+        }
+        if (!alreadyShownThisSession) setShowWelcomeBack(true);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -71,6 +103,14 @@ export default function Dashboard() {
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="dashboard-page">
       {reveal && <FirstValueReveal result={reveal} user={user} t={t} />}
+      {!reveal && showWelcomeBack && (
+        <WelcomeBackBanner
+          userFirstName={user?.display_name?.split(" ")[0]}
+          globalPct={summary?.global_pct}
+          onDismiss={() => setShowWelcomeBack(false)}
+          t={t}
+        />
+      )}
 
       {/* Hero */}
       <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
@@ -313,6 +353,47 @@ function nextStade(s) {
  * from their own already-real sources. Uses the app's existing motion
  * primitive (`framer-motion`, the same dependency Roadmap.js's spatial
  * rail already uses) — respects prefers-reduced-motion. */
+// W-FUNNEL-2 "Retention" (Founder instruction 2026-09-07) — a smaller,
+// less ceremonial sibling of FirstValueReveal: it acknowledges a real,
+// server-derived RETURNING moment (see WELCOME_BACK_SESSION_KEY above)
+// with a single honest fact (real global progress, when it exists),
+// never a duplicate of the "next step" resume card already rendered
+// below it — no CTA here, just acknowledgment.
+function WelcomeBackBanner({ userFirstName, globalPct, onDismiss, t }) {
+  const [open, setOpen] = useState(true);
+  const reduced = useReducedMotion();
+
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          data-testid="welcome-back-banner"
+          initial={reduced ? { opacity: 0 } : { opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduced ? { opacity: 0 } : { opacity: 0, y: -8 }}
+          transition={{ duration: reduced ? 0.15 : 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="mb-8 rounded-2xl px-5 py-4 bg-[--cvln-bg-warm] border border-black/5 flex items-center justify-between gap-4"
+        >
+          <div className="text-sm text-[--cvln-ink]">
+            <span className="font-semibold">{t("dashboard_p.welcome_back")} {userFirstName}.</span>
+            {typeof globalPct === "number" && (
+              <span className="text-[--cvln-ink-2]"> {t("dashboard_p.welcome_back_progress_pre")} {globalPct}% {t("dashboard_p.welcome_back_progress_post")}</span>
+            )}
+          </div>
+          <button
+            data-testid="welcome-back-banner-close"
+            onClick={() => { setOpen(false); onDismiss?.(); }}
+            aria-label={t("close")}
+            className="w-7 h-7 shrink-0 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-[--cvln-ink-2]"
+          >
+            <Xmark width={14} height={14} />
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 function FirstValueReveal({ result, user, t }) {
   const [open, setOpen] = useState(true);
   const reduced = useReducedMotion();
