@@ -200,6 +200,7 @@ const DICT = {
       no_badges: "Aucun badge pour l'instant. Complète un module ou une mission pour en gagner.",
       welcome_back: "Content de te revoir,",
       welcome_back_progress_pre: "Tu es à", welcome_back_progress_post: "de ta progression globale.",
+      horizon_eyebrow: "Nouvel horizon", horizon_title: "Ton pôle est terminé — une nouvelle voie s'ouvre",
     },
     offers_p: {
       eyebrow: "Catalogue commercial", title: "Nos offres",
@@ -467,6 +468,7 @@ const DICT = {
       no_badges: "No badge yet. Complete a module or a mission to earn one.",
       welcome_back: "Welcome back,",
       welcome_back_progress_pre: "You're at", welcome_back_progress_post: "of your overall progress.",
+      horizon_eyebrow: "New horizon", horizon_title: "Your pole is complete — a new path is open",
     },
     offers_p: {
       eyebrow: "Commercial catalogue", title: "Our offers",
@@ -734,6 +736,7 @@ const DICT = {
       no_badges: "Poko gen badj. Fini yon modil ou yon misyon pou genyen'y.",
       welcome_back: "Kontan wè ou ankò,",
       welcome_back_progress_pre: "Ou rive a", welcome_back_progress_post: "nan pwogrè global ou.",
+      horizon_eyebrow: "Nouvo orizon", horizon_title: "Pòl ou fini — yon nouvo wout louvri",
     },
     offers_p: {
       eyebrow: "Katalòg komèsyal", title: "Ofri nou yo",
@@ -1001,6 +1004,7 @@ const DICT = {
       no_badges: "Todavía no hay insignias. Completa un módulo o una misión para ganar una.",
       welcome_back: "Qué bueno verte de nuevo,",
       welcome_back_progress_pre: "Estás al", welcome_back_progress_post: "de tu progreso general.",
+      horizon_eyebrow: "Nuevo horizonte", horizon_title: "Tu polo está completo — un nuevo camino se abre",
     },
     offers_p: {
       eyebrow: "Catálogo comercial", title: "Nuestras ofertas",

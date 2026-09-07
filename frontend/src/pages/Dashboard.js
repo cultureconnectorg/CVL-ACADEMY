@@ -262,6 +262,50 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* W-FUNNEL-2 "Expansion" (Founder instruction 2026-09-07) — the
+          same real ELIGIBLE/HORIZON condition `lifecycleState.js`'s
+          EXPANDING already derives (own pole fully validated + a real
+          unlocked formation exists elsewhere), computed here directly
+          from `path.own_pole`/`path.other_poles` — no new backend call,
+          no invented "recommendation". Before this it only ever fed
+          the flag-gated (default OFF) SpatialHub's attention weighting,
+          so a learner who'd genuinely exhausted their pole got no
+          horizon moment at all in the real, default experience. */}
+      {path && path.own_pole.length > 0 &&
+        path.own_pole.every((f) => f.progress_pct >= 100) &&
+        path.other_poles.some((f) => f.is_unlocked && f.progress_pct < 100) && (
+        <div className="mt-6 cvln-card p-6" data-testid="horizon-card">
+          <div className="text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">
+            {t("dashboard_p.horizon_eyebrow")}
+          </div>
+          <h3 className="font-display font-bold text-2xl tracking-tight mt-2">
+            {t("dashboard_p.horizon_title")}
+          </h3>
+          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {path.other_poles
+              .filter((f) => f.is_unlocked && f.progress_pct < 100)
+              .slice(0, 3)
+              .map((f) => (
+                <Link
+                  key={f.code}
+                  to={`/formations/${f.code}`}
+                  data-testid={`horizon-formation-${f.code}`}
+                  className="p-4 rounded-2xl border border-black/10 hover:border-[--cvln-orange]/40 transition flex items-center gap-3"
+                >
+                  <span className="w-2.5 h-10 rounded-full shrink-0" style={{ background: f.pole_color }} />
+                  <span className="min-w-0">
+                    <span className="block text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
+                      {f.pole_name}
+                    </span>
+                    <span className="block font-semibold truncate">{f.name}</span>
+                  </span>
+                  <ArrowRight width={16} height={16} className="ml-auto shrink-0 text-[--cvln-ink-2]" />
+                </Link>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Featured missions + Signals */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         <div className="cvln-card p-6 lg:col-span-2" data-testid="card-missions">
