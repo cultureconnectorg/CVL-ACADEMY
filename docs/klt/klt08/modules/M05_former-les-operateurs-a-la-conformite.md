@@ -3,7 +3,7 @@
 ```
 MODULE_ID: KLT08-M05
 COMPETENCY_ID: C5 — Former des opérateurs aux exigences de conformité
-PREREQUISITES: M03
+PREREQUISITES: M03, M04
 ASSESSMENT_LEVEL: N2
 KILTIKONET_DEPENDENCY: aucune dépendance directe — compétence pédagogique, absente de KLT-04 (association unique), propre à KLT-08 (échelle réseau).
 ROLE_BOUNDARIES: Former les opérateurs à la conformité n'autorise pas à leur imposer une méthode au-delà de ce que le réseau a réellement décidé

@@ -1,7 +1,7 @@
 # KLT-07 — Évaluations N2 (décision / application)
 
 ```
-Situations dégradées, arbitrage requis. Couvre C2, C3, C5, C6, C7.
+Situations dégradées, arbitrage requis. Couvre C2, C3, C4, C5, C6, C7.
 ```
 
 ## E-N2-01 — Tentation de concevoir la gouvernance à la place de l'association
@@ -69,8 +69,21 @@ leçon future du processus d'onboarding.
 documentation complète produite (30%), leçon identifiée pour le
 processus futur (20%).
 
+## E-N2-06 — Tentation de combler une couverture vide par une estimation plausible
+
+**Situation** : la fiche de suivi de couverture territoriale pour le
+dossier Mémoire Vive a une case "territoires actifs" sans donnée réelle
+disponible (collection `NOT_CONFIGURED`) ; une estimation "raisonnable"
+serait facile à indiquer pour ne pas laisser la fiche incomplète.
+
+**Décision attendue** : afficher explicitement l'état "non configuré"
+plutôt que d'inventer une couverture, même plausible.
+**Compétences testées** : C4.
+**Barème** : refus de fabriquer une couverture (50%, éliminatoire si
+absent), affichage explicite de l'état non configuré (30%), fiche qui
+reste utile malgré la case vide (20%).
+
 ---
 
-**Couverture** : 5 évaluations, couvrant C2, C3, C5, C6, C7. C1 reste
-testée au niveau N1 uniquement (compétence conceptuelle). C4 hors
-périmètre (`BLOCKED`).
+**Couverture** : 6 évaluations, couvrant C2, C3, C4, C5, C6, C7. C1
+reste testée au niveau N1 uniquement (compétence conceptuelle).

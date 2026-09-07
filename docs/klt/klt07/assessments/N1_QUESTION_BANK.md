@@ -1,8 +1,9 @@
 # KLT-07 — Banque N1
 
 ```
-Répartition : notions, méthode, limites, éthique. Couvre uniquement les
-6 compétences construites (C1-C3, C5-C7) — C4 BLOCKED, hors banque.
+Répartition : notions, méthode, limites, éthique. Couvre les 7
+compétences (C1-C7) — C4 ajoutée 2026-09-07 après construction sur le
+schéma réel vérifié du Network Kiltikonet.
 ```
 
 **Q-N1-01** (notions, C1) — Une licence, dans l'écosystème territorial
@@ -73,9 +74,11 @@ territoriale doit :
 `CORRECT_ANSWER` : croiser les fragilités réellement connues avec les
 exigences réelles de l'extension.
 `RATIONALE` : M06.
-`DISTRACTOR_RATIONALE` : "s'appuyer sur des données de couverture
-Network réelles" ignore que `C4` reste `BLOCKED` — cette évaluation
-s'appuie sur ce qui est réellement disponible.
+`DISTRACTOR_RATIONALE` : "s'appuyer sur une requête live vers le suivi
+de couverture Network (M04)" ignore qu'Academy n'a aucune connexion
+live vers ce système (`NOT_CONNECTED_TO_ACADEMY_RUNTIME`) — cette
+évaluation s'appuie sur ce qui est réellement disponible sans système
+de couverture.
 `DIFFICULTY` : difficile.
 
 **Q-N1-09** (limites, C6) — Une recommandation de faisabilité doit
@@ -96,8 +99,26 @@ incident technique.
 l'exigence de documentation et de remontée posée en M07.
 `DIFFICULTY` : moyen.
 
+**Q-N1-11** (notions, C4) — Une fiche de suivi de couverture conçue sur
+le schéma réel vérifié du Network équivaut-elle à une requête live sur
+des données réelles ?
+`CORRECT_ANSWER` : non — Academy n'a aucun client/credentials appelant
+cette API (`NOT_CONNECTED_TO_ACADEMY_RUNTIME`).
+`RATIONALE` : M04, en-tête `KILTIKONET_DEPENDENCY`.
+`DISTRACTOR_RATIONALE` : "oui, puisque le système est réel" confond
+l'existence vérifiée du système et sa connexion réelle à Academy.
+`DIFFICULTY` : moyen.
+
+**Q-N1-12** (limites, C4) — Face à une collection réelle vide, la fiche
+de suivi doit :
+`CORRECT_ANSWER` : afficher explicitement l'état `NOT_CONFIGURED`,
+jamais inventer une couverture plausible.
+`RATIONALE` : M04.
+`DISTRACTOR_RATIONALE` : "estimer une couverture réaliste en attendant"
+est une fabrication de donnée, interdite par `NO_FAKE_LIVE_CONNECTION`.
+`DIFFICULTY` : difficile.
+
 ---
 
-**Couverture** : 10 questions, réparties sur les 6 compétences
-construites (`C1`-`C3`, `C5`-`C7`). `C4` explicitement hors banque
-(`BLOCKED`).
+**Couverture** : 12 questions, réparties sur les 7 compétences
+construites (`C1`-`C7`).

@@ -1,8 +1,9 @@
 # KLT-06 — Banque N1
 
 ```
-Répartition : notions, méthode, éthique, limites. Couvre uniquement les
-5 compétences construites (C1-C4, C7) — C5/C6 BLOCKED, hors banque.
+Répartition : notions, méthode, éthique, limites. Couvre les 7
+compétences (C1-C7) — C5/C6 ajoutées 2026-09-07 après construction sur
+le schéma réel vérifié de l'Observatory Kiltikonet.
 ```
 
 **Q-N1-01** (notions, C1) — Un observatoire de données culturelles se
@@ -91,8 +92,35 @@ qu'aucune donnée fiable n'existe sur un point est :
 l'exigence d'honnêteté sur les limites posée en M07.
 `DIFFICULTY` : difficile.
 
+**Q-N1-11** (notions, C5) — Une maquette de tableau de bord conçue sur
+le schéma réel vérifié de l'Observatory équivaut-elle à une requête live
+sur des données réelles ?
+`CORRECT_ANSWER` : non — Academy n'a aucun client/credentials appelant
+cette API (`NOT_CONNECTED_TO_ACADEMY_RUNTIME`).
+`RATIONALE` : M05, en-tête `KILTIKONET_DEPENDENCY`.
+`DISTRACTOR_RATIONALE` : "oui, puisque le système est réel" confond
+l'existence vérifiée du système et sa connexion réelle à Academy.
+`DIFFICULTY` : moyen.
+
+**Q-N1-12** (limites, C5) — Face à une métrique dont la collection
+réelle est vide, la maquette doit :
+`CORRECT_ANSWER` : afficher explicitement l'état `NOT_CONFIGURED`,
+jamais inventer un chiffre plausible.
+`RATIONALE` : M05.
+`DISTRACTOR_RATIONALE` : "estimer un chiffre réaliste en attendant" est
+une fabrication de donnée, interdite par `NO_FAKE_LIVE_CONNECTION`.
+`DIFFICULTY` : difficile.
+
+**Q-N1-13** (méthode, C6) — Interpréter un signal territorial réel pour
+appuyer une décision signifie :
+`CORRECT_ANSWER` : formuler une recommandation d'attention, jamais
+décider à la place du rôle réseau.
+`RATIONALE` : M06.
+`DISTRACTOR_RATIONALE` : "trancher directement la décision réseau à sa
+place" dépasse le rôle d'analyste posé en M06.
+`DIFFICULTY` : moyen.
+
 ---
 
-**Couverture** : 10 questions, réparties sur les 5 compétences
-construites (`C1`-`C4`, `C7`). `C5`/`C6` explicitement hors banque
-(`BLOCKED`).
+**Couverture** : 13 questions, réparties sur les 7 compétences
+construites (`C1`-`C7`).

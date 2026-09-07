@@ -104,22 +104,30 @@ async def test_klt01_05_are_fully_complete(klt_db):
 
 async def test_klt06_07_08_are_not_fully_complete(klt_db):
     """The exact regression this ticket must never allow: KLT-06/07/08
-    silently reporting fully_complete=True."""
+    silently reporting fully_complete=True. Updated 2026-09-07: their
+    formerly-BLOCKED competencies are now BUILT_UNCONNECTED (real module
+    + content, grounded on a verified real external schema, but no live
+    Academy<->Kiltikonet-Aout2026 connection) — structural_status is now
+    COMPLETE (every skill has a real module) but fully_complete stays
+    False (no BUILT_UNCONNECTED skill may count toward it)."""
     await import_klt_docs(DOCS_DIR, created_by="test")
 
     formation_06 = await get_canonical_klt_formation("KLT-06")
     assert formation_06.fully_complete is False
-    assert formation_06.structural_status == "PARTIAL"
-    assert set(formation_06.blocked_skill_ids) == {"KLT06.SKILL.C05", "KLT06.SKILL.C06"}
-    assert formation_06.certification_scope == "PARTIAL"
+    assert formation_06.structural_status == "COMPLETE"
+    assert formation_06.blocked_skill_ids == []
+    assert set(formation_06.unconnected_skill_ids) == {"KLT06.SKILL.C05", "KLT06.SKILL.C06"}
+    assert formation_06.certification_scope == "FULL"
 
     formation_07 = await get_canonical_klt_formation("KLT-07")
     assert formation_07.fully_complete is False
-    assert formation_07.blocked_skill_ids == ["KLT07.SKILL.C04"]
+    assert formation_07.blocked_skill_ids == []
+    assert formation_07.unconnected_skill_ids == ["KLT07.SKILL.C04"]
 
     formation_08 = await get_canonical_klt_formation("KLT-08")
     assert formation_08.fully_complete is False
-    assert formation_08.blocked_skill_ids == ["KLT08.SKILL.C04"]
+    assert formation_08.blocked_skill_ids == []
+    assert formation_08.unconnected_skill_ids == ["KLT08.SKILL.C04"]
 
 
 async def test_skill_counts_match_registry_ground_truth(klt_db):
@@ -130,9 +138,9 @@ async def test_skill_counts_match_registry_ground_truth(klt_db):
         "KLT-03": (12, 0),
         "KLT-04": (14, 0),
         "KLT-05": (11, 0),
-        "KLT-06": (5, 2),
-        "KLT-07": (6, 1),
-        "KLT-08": (6, 1),
+        "KLT-06": (7, 0),
+        "KLT-07": (7, 0),
+        "KLT-08": (7, 0),
     }
     for code, (built, blocked) in expected.items():
         formation = await get_canonical_klt_formation(code)
@@ -142,15 +150,26 @@ async def test_skill_counts_match_registry_ground_truth(klt_db):
 
 
 async def test_blocked_skills_carry_no_module_and_no_content(klt_db):
-    """A BLOCKED skill must never resolve to a fabricated module."""
+    """A BLOCKED skill must never resolve to a fabricated module. Updated
+    2026-09-07: KLT-06 no longer has any BLOCKED skill (C5/C6 are now
+    BUILT_UNCONNECTED, with real modules) — this test now asserts the
+    empty case explicitly rather than assuming a formation always has
+    BLOCKED rows."""
     await import_klt_docs(DOCS_DIR, created_by="test")
     skills = await list_canonical_klt_skills("KLT-06")
     blocked = [s for s in skills if s.status == "BLOCKED"]
-    assert {s.skill_id for s in blocked} == {"KLT06.SKILL.C05", "KLT06.SKILL.C06"}
-    for s in blocked:
-        assert s.blocked_reason  # a real reason string, never empty
-        module = await get_canonical_klt_module("KLT-06", s.module_code or "")
-        assert module is None  # M05/M06 were never written — see MODULES_STATUS.md
+    assert blocked == []
+
+    unconnected = [s for s in skills if s.status == "BUILT_UNCONNECTED"]
+    assert {s.skill_id for s in unconnected} == {"KLT06.SKILL.C05", "KLT06.SKILL.C06"}
+    for s in unconnected:
+        # skill.module_code is the registry's short form ("M05"); module
+        # docs key on the full MODULE_ID form ("KLT06-M05") — reconstruct
+        # it rather than assume the two are directly comparable.
+        full_module_code = f"KLT{s.klt_formation_code.split('-')[1]}-{s.module_code}"
+        module = await get_canonical_klt_module("KLT-06", full_module_code)
+        assert module is not None  # M05/M06 are real, written modules now
+        assert module.content_markdown
 
 
 # ---------------------------------------------------------------------
@@ -177,13 +196,17 @@ async def test_module_ordering_is_numeric_not_lexicographic(klt_db):
     assert "KLT04-M14" in codes  # would sort before "KLT04-M02" lexicographically
 
 
-async def test_klt06_module_list_has_gaps_for_blocked_competencies(klt_db):
+async def test_klt06_module_list_is_now_complete(klt_db):
+    """Updated 2026-09-07: KLT-06 M05/M06 are real, written modules now
+    (BUILT_UNCONNECTED on the verified real Observatory schema) — the
+    formation's module list is no longer missing M05/M06."""
     await import_klt_docs(DOCS_DIR, created_by="test")
     modules = await list_canonical_klt_modules("KLT-06")
     codes = {m.module_code for m in modules}
-    assert codes == {"KLT06-M01", "KLT06-M02", "KLT06-M03", "KLT06-M04", "KLT06-M07"}
-    assert "KLT06-M05" not in codes
-    assert "KLT06-M06" not in codes
+    assert codes == {
+        "KLT06-M01", "KLT06-M02", "KLT06-M03", "KLT06-M04",
+        "KLT06-M05", "KLT06-M06", "KLT06-M07",
+    }
 
 
 # ---------------------------------------------------------------------
@@ -195,7 +218,9 @@ async def test_list_all_eight_formations(klt_db):
     await import_klt_docs(DOCS_DIR, created_by="test")
     formations = await list_canonical_klt_formations()
     assert [f.klt_formation_code for f in formations] == KLT_FORMATION_CODES
-    assert sum(f.module_count for f in formations) == 59 + 17  # 76 real modules
+    # 59 (KLT-01..05) + 21 (KLT-06/07/08, now 7/7/7 modules each after
+    # 2026-09-07's M05/M06/M04/M04 builds) = 80 real modules
+    assert sum(f.module_count for f in formations) == 59 + 21
 
 
 async def test_contexts_match_klt0008_decision(klt_db):
@@ -253,10 +278,18 @@ def test_no_module_here_imports_db_formations_collection():
 def test_skill_registry_parser_matches_known_ground_truth():
     """Independent of any DB — the exact figures reported to the
     Founder in docs/KILTIKONET_MASTER_PACKAGE... reports, recomputed
-    here from the real files at test time."""
-    expected = {"klt06": (5, 2), "klt07": (6, 1), "klt08": (6, 1)}
-    for slug, (built, blocked) in expected.items():
+    here from the real files at test time. Updated 2026-09-07: each
+    formation's formerly-BLOCKED skill is now BUILT_UNCONNECTED (real
+    module + content on a verified real external schema, no live
+    Academy connection) — zero BLOCKED remain."""
+    expected = {
+        "klt06": (5, 2, 0),
+        "klt07": (6, 1, 0),
+        "klt08": (6, 1, 0),
+    }
+    for slug, (built, unconnected, blocked) in expected.items():
         text = (DOCS_DIR / slug / "skills" / "SKILL_ID_REGISTRY.md").read_text()
         rows = parse_skill_registry(text)
         assert sum(1 for r in rows if r["status"] == "BUILT") == built, slug
+        assert sum(1 for r in rows if r["status"] == "BUILT_UNCONNECTED") == unconnected, slug
         assert sum(1 for r in rows if r["status"] == "BLOCKED") == blocked, slug

@@ -5,7 +5,7 @@ MODULE_ID: KLT08-M03
 COMPETENCY_ID: C3 — Consolider des résultats d'audits individuels en une vue réseau
 PREREQUISITES: M02
 ASSESSMENT_LEVEL: N2
-KILTIKONET_DEPENDENCY: Compliance/audits — NOT_IMPLEMENTED. La consolidation s'appuie sur des résultats d'audits réellement produits (KLT-04/M13) plutôt que sur une donnée agrégée réelle (C4, BLOCKED).
+KILTIKONET_DEPENDENCY: Compliance/audits — NOT_CONNECTED_TO_ACADEMY_RUNTIME. La consolidation s'appuie sur des résultats d'audits réellement produits (KLT-04/M13) plutôt que sur une requête live vers le suivi de conformité agrégé (M04, schéma réel vérifié mais non connecté à Academy).
 ROLE_BOUNDARIES: Consolider des résultats n'autorise pas à en lisser les disparités réelles pour produire une vue artificiellement homogène
 FREK_PROOF_MAPPING: FREK-SCORE (mapping proposé — net-new)
 ORIGIN: PROPOSED (Claude-derived, KLT-0007 §2)
@@ -99,6 +99,5 @@ les ai-je lissées ?*
 
 ## Passage au module suivant
 
-M05 aborde la formation des opérateurs aux exigences de conformité —
-révélée comme un besoin réel par cette consolidation (`M04`, suivi de
-conformité réseau agrégée réelle, reste `BLOCKED`).
+M04 aborde le suivi de l'état réel de conformité réseau agrégé — une
+fois la consolidation posée.

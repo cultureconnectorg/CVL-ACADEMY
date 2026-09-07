@@ -3,7 +3,7 @@
 ```
 MODULE_ID: KLT06-M07
 COMPETENCY_ID: C7 — Restituer une analyse de données à un public non spécialiste
-PREREQUISITES: M01, M02, M03, M04
+PREREQUISITES: M01, M02, M03, M04, M05, M06
 ASSESSMENT_LEVEL: N2
 KILTIKONET_DEPENDENCY: aucune dépendance Observatory directe — méthode de restitution, illustrable sans données Observatory réelles.
 ROLE_BOUNDARIES: Restituer une analyse n'autorise pas à en simplifier le sens au point de la rendre trompeuse
@@ -35,11 +35,12 @@ solide est une distorsion, pas une simplification.
 
 ## Méthode
 
-1. Identifier les messages essentiels de l'analyse (M01-M04) à
+1. Identifier les messages essentiels de l'analyse (M01-M06) à
    transmettre.
 2. Reformuler sans jargon, en gardant le sens et les limites réelles.
-3. Présenter explicitement ce qui reste incertain ou hors périmètre
-   (ex. `C5`/`C6` non couverts par ce parcours).
+3. Présenter explicitement ce qui reste incertain ou hors périmètre (ex.
+   toute donnée que le tableau de bord/signal de M05/M06 marquerait
+   `NOT_CONFIGURED`).
 
 ## Exemples
 
@@ -99,5 +100,6 @@ l'a-t-elle simplifiée jusqu'à la déformer ?*
 
 ## Passage au module suivant
 
-Ce module clôt le périmètre buildable de `KLT-06` (5/7 compétences).
-`M05`/`M06` restent `BLOCKED` — voir `MODULES_STATUS.md`.
+Ce module clôt `KLT-06`, désormais complet (7/7 compétences) —
+`M05`/`M06` ont été construits sur le schéma réel vérifié de
+l'Observatory Kiltikonet, voir `MODULES_STATUS.md`.

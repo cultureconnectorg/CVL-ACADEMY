@@ -51,11 +51,18 @@ documentation systématique de l'accessibilité PMR, révélée par l'audit,
 doit être escaladée au bon niveau de gouvernance réseau, pas
 simplement notée sans suite.
 
+**Suivi de conformité agrégé** (matière de M04, ajoutée 2026-09-07) :
+le candidat produit une fiche de suivi de conformité réseau agrégé sur
+le schéma réel vérifié du Network Kiltikonet — sans jamais prétendre
+interroger ce système en direct aujourd'hui.
+
 ## Limites explicites du cas (angle audit réseau)
 
 Le candidat **ne refait pas** l'audit d'association de Mémoire Vive déjà
 mené (`KLT-04`/M13 reste la référence) — il consolide et étend à
-l'échelle réseau. Le candidat **ne suit pas** de données de conformité
-réseau agrégées réelles (`C4`, `BLOCKED`), **ne déploie pas**
+l'échelle réseau. Le candidat conçoit un suivi de conformité réseau
+agrégé (`C4`) sur le **schéma réel vérifié** du Network Kiltikonet, mais
+**ne construit jamais** de connexion live vers ce système
+(`NOT_CONNECTED_TO_ACADEMY_RUNTIME`). Le candidat **ne déploie pas**
 d'opérateurs (`KLT-07`), **n'a pas** d'autorité pour imposer les
 corrections — l'audit recommande, le réseau décide.

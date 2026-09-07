@@ -1,38 +1,44 @@
-# KLT-08 — Modèle pédagogique de certification (partiel)
+# KLT-08 — Modèle pédagogique de certification
 
 ```
 Même distinction que les formations précédentes : ACADEMY_CERTIFICATION
-!= RNCP_OR_STATE_CERTIFICATION. Discipline propre à KLT-08 : COUVERTURE
-= PARTIELLE (6/7 compétences). Aucun badge n'existe — KLT-08 est une
-formation NEW, sans legacy.
+!= RNCP_OR_STATE_CERTIFICATION. Mise à jour 2026-09-07 : COUVERTURE =
+COMPLÈTE (7/7 compétences, C4 reclassifiée BUILT_UNCONNECTED). Aucun
+badge n'existe — KLT-08 est une formation NEW, sans legacy.
 ```
 
-| | `ACADEMY_CERTIFICATION` (partielle) | `RNCP_OR_STATE_CERTIFICATION` |
+| | `ACADEMY_CERTIFICATION` | `RNCP_OR_STATE_CERTIFICATION` |
 |---|---|---|
-| Statut aujourd'hui | Réelle mais **partielle**, dès `KLT08-A01` mené | Inexistante — aucune calibration RNCP disponible pour ce métier `NEW` dans ce repo |
-| Ce qu'elle prouve | `C1`-`C3`, `C5`-`C7` uniquement | N/A |
-| Ce qu'elle ne prouve pas | `C4` (`BLOCKED`, Compliance non implémentée) | N/A |
+| Statut aujourd'hui | Réelle et **complète** (7/7), dès `KLT08-A01` mené | Inexistante — aucune calibration RNCP disponible pour ce métier `NEW` dans ce repo |
+| Ce qu'elle prouve | `C1`-`C7` | N/A |
+| Ce qu'elle ne prouve pas | Une connexion **live** Academy↔Network réel (`FULLY_COMPLETE` reste `FALSE`, voir `QUALITY_GATES.md`) | N/A |
 
 ## Badge
 
 **Aucun badge n'existe pour `KLT-08`.** Contrairement à `KLT-01`→`05`,
 `KLT-08` n'a aucun équivalent legacy (`KLT-0001` §1, confirmé zéro trace
 dans `seed_data.py`). Un badge éventuel resterait à créer dans un futur
-ticket, une fois la formation complète (`C4` débloquée) — non anticipé
-ici.
+ticket — non anticipé ici.
 
-## Ce que la certification partielle ne fait pas
+## Ce que la certification prouve — et ce qu'elle ne prouve pas
 
-Elle ne prétend pas certifier le métier complet de Responsable qualité,
-conformité & audit réseau — seulement les 6 compétences réellement
-construites. Un candidat certifié `KLT08-A01` ne peut pas se prévaloir
-de savoir suivre l'état réel de conformité réseau agrégé, ni auditer une
-association isolée sans référence à la méthode `KLT-04`/M13.
+Elle certifie le métier complet de Responsable qualité, conformité &
+audit réseau tel que buildable dans Academy (7/7 compétences, y compris
+`C4` sur la base du schéma réel vérifié du Network Kiltikonet). Elle
+**ne prouve pas** que le candidat a interrogé une donnée de conformité
+réelle en direct — aucun client Academy↔Kiltikonet-Aout2026 n'existe
+aujourd'hui ; tout exercice `C4` reste `PEDAGOGICAL_ILLUSTRATIVE`. Elle
+ne prouve pas non plus de savoir auditer une association isolée sans
+référence à la méthode `KLT-04`/M13.
 
-## Préparation future — ce qui n'existe pas encore
+## Historique — ce qui a changé le 2026-09-07
 
-`SKILL_PROOF` (le registre `skills/SKILL_ID_REGISTRY.md` pose la
-structure des 7 compétences, `STATUS = PROPOSED`, mais seules 6 ont une
-évaluation réelle), `CERTIFICATION` complète (ce document, actuellement
-partiel), un badge (aucun n'existe). Rien de tout cela n'est construit
-au-delà de sa documentation dans ce ticket.
+Avant cette date, `C4` était `BLOCKED` (`Compliance NOT_IMPLEMENTED`) —
+la classification d'origine estimait qu'aucun système externe de
+conformité n'était identifié. Une re-vérification, explicitement
+autorisée par le Founder, a trouvé que le Network Kiltikonet réel porte
+en fait des collections de conformité réelles
+(`network_compliance_records`, `network_audits`) — voir
+`KLT_09_20_RECONCILIATION.md` §Re-vérification (2026-09-07). `C4` a
+alors été construite sur ce schéma réel vérifié, sans jamais fabriquer
+une connexion live qui n'existe pas.

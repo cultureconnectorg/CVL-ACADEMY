@@ -13,16 +13,34 @@ not just assert in prose** (Founder, 2026-09-04: "on ne doit pas
 déclarer KLT-06/07/08 FULLY_COMPLETE" tant que leurs compétences
 bloquées ne sont pas réellement connectées) — `CanonicalKltFormation.
 fully_complete` is **derived at import time from each formation's own
-`skills/SKILL_ID_REGISTRY.md`**, never hardcoded: a formation is
-`fully_complete=True` only if every skill row in that real file carries
-no `BLOCKED` status. KLT-01→05's registries have no status column at
-all (5 columns, every skill built) — `fully_complete=True` for those.
-KLT-06/07/08's registries have an explicit 6th status column with real
-`BLOCKED` rows — `fully_complete=False` for those, and stays False
-until a future re-import finds the registry rewritten with no more
-`BLOCKED` rows (which itself only happens when a human writes that
-content after a real Observatory/Network/Compliance connection exists —
-this package never manufactures that).
+`skills/SKILL_ID_REGISTRY.md`**, never hardcoded.
+
+Three real status values exist in that 6th column (Founder-authorized
+scoped re-verification, 2026-09-07 — see `docs/klt/README.md` and
+`docs/cvln_academy_master/30_INTERNAL/KLT_09_20_RECONCILIATION.md`
+§Re-vérification):
+
+- `BLOCKED` — no module exists, nothing built. Counts toward neither
+  `built_skill_count` nor completeness.
+- `BUILT_UNCONNECTED` — a real module and content exist, built on a
+  verified real external schema (e.g. Kiltikonet-Aout2026's Observatory/
+  Network), but Academy holds no live client/credentials calling that
+  system. Counts toward `built_skill_count` (real content exists) but
+  **not** toward `fully_complete` (no live connection exists).
+- `BUILT` (or no status column at all, KLT-01→05) — a real module,
+  content, and no external live-connection dependency. Counts toward
+  both.
+
+`structural_status`/`certification_scope` are `COMPLETE`/`FULL` once
+every skill has *some* real module (`BUILT` or `BUILT_UNCONNECTED`, no
+`BLOCKED` rows) — a formation can certify all its competencies once
+they're genuinely taught, even ones grounded on a verified-but-
+unconnected external system. `fully_complete` is strictly narrower: it
+requires **zero** `BUILT_UNCONNECTED` rows too, and stays `False` until
+a future re-import finds the registry rewritten with a real Academy↔
+external-system client in place (which itself only happens when a human
+writes that content after a real *live* connection exists — this
+package never manufactures that).
 """
 
 from __future__ import annotations
@@ -120,7 +138,7 @@ LEARNER_FACING_TYPES: frozenset = learner_facing_types(RESOURCE_AUDIENCE)
 # machinery.
 # ---------------------------------------------------------------------
 
-SkillStatus = Literal["BUILT", "BLOCKED"]
+SkillStatus = Literal["BUILT", "BUILT_UNCONNECTED", "BLOCKED"]
 
 
 class CanonicalKltSkill(BaseModel):
@@ -173,9 +191,13 @@ class CanonicalKltFormation(BaseModel):
     structural_status: StructuralStatus
     # Derived, never hardcoded — see module docstring. False until the
     # underlying SKILL_ID_REGISTRY.md, on a future re-import, carries no
-    # more BLOCKED rows.
+    # more BLOCKED rows AND no more BUILT_UNCONNECTED rows (a real live
+    # Academy<->external-system connection, not just verified content).
     fully_complete: bool
     blocked_skill_ids: List[str] = Field(default_factory=list)
+    # Real module/content exists, grounded on a verified real external
+    # schema, but no live Academy<->system connection exists yet.
+    unconnected_skill_ids: List[str] = Field(default_factory=list)
 
     contexts: List[str] = Field(default_factory=list)
 

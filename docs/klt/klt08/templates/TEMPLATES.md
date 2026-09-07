@@ -15,17 +15,22 @@
 | Opérateur | Points forts | Points de vigilance | Point spécifique préservé |
 |---|---|---|---|
 
-## 4. Support de formation opérateurs
+## 4. Fiche de suivi de conformité réseau agrégé (schéma réel vérifié)
+
+| Donnée suivie | Endpoint réel | Collection source réelle | État de provenance (`OBSERVED`/`NOT_CONFIGURED`) |
+|---|---|---|---|
+
+## 5. Support de formation opérateurs
 
 | Exigence | Comment l'appliquer (méthode) | Exemple concret |
 |---|---|---|
 
-## 5. Note de recommandations
+## 6. Note de recommandations
 
 | Constat de l'audit | Recommandation (jamais une instruction) | Adressée à |
 |---|---|---|
 
-## 6. Rapport de non-conformité réseau
+## 7. Rapport de non-conformité réseau
 
 | Champ | Contenu |
 |---|---|
@@ -34,6 +39,6 @@
 | Impact réseau | |
 | Niveau d'escalade | |
 
-## 7. Registre de preuves (repris de KLT-01)
+## 8. Registre de preuves (repris de KLT-01)
 
 Voir `klt01/templates/TEMPLATES.md` §8.

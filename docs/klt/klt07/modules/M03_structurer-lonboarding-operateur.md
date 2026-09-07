@@ -98,6 +98,5 @@ décision déjà prise ?*
 
 ## Passage au module suivant
 
-M05 aborde la gestion de la relation opérateur au quotidien — une fois
-l'onboarding structuré (M04, suivi de couverture réelle, reste
-`BLOCKED`).
+M04 aborde le suivi de l'état réel de couverture territoriale — une
+fois l'onboarding structuré.

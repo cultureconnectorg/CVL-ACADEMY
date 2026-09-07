@@ -1,8 +1,9 @@
 # KLT-08 — Banque N1
 
 ```
-Répartition : notions, méthode, limites. Couvre uniquement les 6
-compétences construites (C1-C3, C5-C7) — C4 BLOCKED, hors banque.
+Répartition : notions, méthode, limites. Couvre les 7 compétences
+(C1-C7) — C4 ajoutée 2026-09-07 après construction sur le schéma réel
+vérifié du Network Kiltikonet.
 ```
 
 **Q-N1-01** (notions, C1) — Un audit réseau, par rapport à un audit
@@ -90,8 +91,26 @@ est :
 ignore l'exigence de documentation posée en M07.
 `DIFFICULTY` : moyen.
 
+**Q-N1-11** (notions, C4) — Une fiche de suivi de conformité conçue sur
+le schéma réel vérifié du Network équivaut-elle à une requête live sur
+des données réelles ?
+`CORRECT_ANSWER` : non — Academy n'a aucun client/credentials appelant
+cette API (`NOT_CONNECTED_TO_ACADEMY_RUNTIME`).
+`RATIONALE` : M04, en-tête `KILTIKONET_DEPENDENCY`.
+`DISTRACTOR_RATIONALE` : "oui, puisque le système est réel" confond
+l'existence vérifiée du système et sa connexion réelle à Academy.
+`DIFFICULTY` : moyen.
+
+**Q-N1-12** (limites, C4) — Face à un score de conformité agrégé non
+disponible (`compliance_available = false`), la fiche de suivi doit :
+`CORRECT_ANSWER` : afficher explicitement l'état `NOT_CONFIGURED`,
+jamais inventer un score plausible.
+`RATIONALE` : M04.
+`DISTRACTOR_RATIONALE` : "estimer un score réaliste en attendant" est
+une fabrication de donnée, interdite par `NO_FAKE_LIVE_CONNECTION`.
+`DIFFICULTY` : difficile.
+
 ---
 
-**Couverture** : 10 questions, réparties sur les 6 compétences
-construites (`C1`-`C3`, `C5`-`C7`). `C4` explicitement hors banque
-(`BLOCKED`).
+**Couverture** : 12 questions, réparties sur les 7 compétences
+construites (`C1`-`C7`).

@@ -5,7 +5,7 @@ MODULE_ID: KLT07-M06
 COMPETENCY_ID: C6 — Évaluer la faisabilité méthodologique d'une extension territoriale (ressources, prérequis, risques)
 PREREQUISITES: M03, M05
 ASSESSMENT_LEVEL: N2
-KILTIKONET_DEPENDENCY: Network — NOT_CONNECTED en Academy. L'évaluation est méthodologique, ancrée sur les fragilités déjà réellement identifiées (KLT-04) plutôt que sur des données de couverture réelles (C4, BLOCKED).
+KILTIKONET_DEPENDENCY: Network — NOT_CONNECTED_TO_ACADEMY_RUNTIME. L'évaluation est méthodologique, ancrée sur les fragilités déjà réellement identifiées (KLT-04) plutôt que sur une requête live vers le suivi de couverture (M04, schéma réel vérifié mais non connecté à Academy).
 ROLE_BOUNDARIES: Évaluer une faisabilité n'autorise pas à décider seul d'accorder l'extension — l'évaluation nourrit une décision réseau, elle ne la remplace pas
 FREK_PROOF_MAPPING: FREK-SCORE (mapping proposé — net-new)
 ORIGIN: PROPOSED (Claude-derived, KLT-0006 §2)

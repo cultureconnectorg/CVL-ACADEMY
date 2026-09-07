@@ -103,5 +103,6 @@ situation qui dépasse mon mandat ?*
 
 ## Passage au module suivant
 
-Ce module clôt le périmètre buildable de `KLT-08` (6/7 compétences).
-`M04` reste `BLOCKED` — voir `MODULES_STATUS.md`.
+Ce module clôt `KLT-08`, désormais complet (7/7 compétences) — `M04`
+a été construit sur le schéma réel vérifié du Network Kiltikonet, voir
+`MODULES_STATUS.md`.

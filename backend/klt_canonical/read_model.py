@@ -66,11 +66,24 @@ async def get_canonical_klt_formation(
         return None  # this formation hasn't been imported yet
 
     skill_rows = registry_doc.get("skill_rows", [])
-    built_skill_count = sum(1 for r in skill_rows if r.get("status") == "BUILT")
+    built_skill_count = sum(
+        1 for r in skill_rows if r.get("status") in ("BUILT", "BUILT_UNCONNECTED")
+    )
     blocked_skill_ids = [
         r["skill_id"] for r in skill_rows if r.get("status") == "BLOCKED"
     ]
-    fully_complete = len(blocked_skill_ids) == 0
+    unconnected_skill_ids = [
+        r["skill_id"] for r in skill_rows if r.get("status") == "BUILT_UNCONNECTED"
+    ]
+    # structurally_complete: every skill has some real module (BUILT or
+    # BUILT_UNCONNECTED) — a formation can certify all its competencies
+    # once genuinely taught, even ones grounded on a verified-but-
+    # unconnected external system.
+    structurally_complete = len(blocked_skill_ids) == 0
+    # fully_complete: strictly narrower — additionally requires zero
+    # BUILT_UNCONNECTED rows, i.e. a real live Academy<->external-system
+    # connection, not just verified content. See models.py docstring.
+    fully_complete = structurally_complete and len(unconnected_skill_ids) == 0
 
     referentiel_doc = await _get_referentiel_doc(formation_code)
     title = (
@@ -105,9 +118,10 @@ async def get_canonical_klt_formation(
         klt_formation_code=formation_code,
         title=title,
         canonical_version=canonical_version,
-        structural_status="COMPLETE" if fully_complete else "PARTIAL",
+        structural_status="COMPLETE" if structurally_complete else "PARTIAL",
         fully_complete=fully_complete,
         blocked_skill_ids=blocked_skill_ids,
+        unconnected_skill_ids=unconnected_skill_ids,
         contexts=KLT_CONTEXTS.get(formation_code, []),
         module_codes_in_order=ordered_codes,
         module_count=len(ordered_codes),
@@ -115,7 +129,7 @@ async def get_canonical_klt_formation(
         built_skill_count=built_skill_count,
         pedagogical_case_title=case_title,
         has_legacy_badge=has_legacy_badge,
-        certification_scope="FULL" if fully_complete else "PARTIAL",
+        certification_scope="FULL" if structurally_complete else "PARTIAL",
     )
 
 

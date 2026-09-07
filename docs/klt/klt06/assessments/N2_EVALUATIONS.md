@@ -1,7 +1,7 @@
 # KLT-06 — Évaluations N2 (décision / application)
 
 ```
-Situations dégradées, arbitrage requis. Couvre C2, C3, C4, C7.
+Situations dégradées, arbitrage requis. Couvre C2, C3, C4, C5, C6, C7.
 ```
 
 ## E-N2-01 — Chiffre non sourcé prêt à être réutilisé
@@ -56,8 +56,38 @@ cette limite, même si cela rend le message moins impressionnant.
 révision incluant la limite (40%), maintien d'un message compréhensible
 malgré la nuance ajoutée (20%).
 
+## E-N2-05 — Tentation de combler une case vide par un chiffre plausible
+
+**Situation** : la maquette de tableau de bord territorial pour Mémoire
+Vive a une case "territoires actifs" sans donnée réelle disponible
+(collection `NOT_CONFIGURED`) ; un chiffre "raisonnable" serait facile
+à inventer pour ne pas laisser la maquette incomplète.
+
+**Décision attendue** : afficher explicitement l'état "non configuré"
+plutôt que d'inventer un chiffre, même plausible.
+**Compétences testées** : C5.
+**Barème** : refus de fabriquer un chiffre (50%, éliminatoire si
+absent), affichage explicite de l'état non configuré (30%), maquette
+qui reste utile malgré la case vide (20%).
+
+## E-N2-06 — Signal illustratif interprété comme une décision prise
+
+**Situation** : un signal territorial illustratif ("hausse inhabituelle
+des candidatures d'opérateurs") est fourni pour exercice ; la tentation
+est de conclure directement que Mémoire Vive doit être acceptée comme
+opérateur relais.
+
+**Décision attendue** : formuler une recommandation d'attention (ex.
+vérifier la capacité d'onboarding), sans décider à la place du rôle
+réseau, et sans présenter le signal d'entraînement comme une preuve
+réelle sur le dossier de Mémoire Vive.
+**Compétences testées** : C6.
+**Barème** : recommandation formulée sans décision prise à la place du
+rôle réseau (50%, éliminatoire si absent), fidélité à ce que le signal
+indique réellement (30%), rappel du caractère illustratif du signal
+(20%).
+
 ---
 
-**Couverture** : 4 évaluations, couvrant C2, C3, C4, C7. C1 reste testée
-au niveau N1 uniquement (compétence conceptuelle). C5/C6 hors périmètre
-(`BLOCKED`).
+**Couverture** : 6 évaluations, couvrant C2, C3, C4, C5, C6, C7. C1
+reste testée au niveau N1 uniquement (compétence conceptuelle).

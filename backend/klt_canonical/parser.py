@@ -148,23 +148,30 @@ def parse_module_file(relative_path: str, text: str) -> Dict[str, Optional[str]]
     }
 
 
-# Skill registry table rows — two real shapes exist in this repo:
+# Skill registry table rows — three real shapes exist in this repo:
 #   5 columns (KLT-01..05, every skill BUILT, no status column):
 #     | `KLT01.SKILL.C01` | Compétence | Module | Assessment | Evidence |
-#   6 columns (KLT-06..08, partial, explicit status column):
+#   6 columns (KLT-06..08, explicit status column, three real values):
 #     | `KLT06.SKILL.C01` | Compétence | Module | Assessment | Evidence | `BUILT` |
+#     | `KLT06.SKILL.C05` | Compétence | Module | Assessment | Evidence | `BUILT_UNCONNECTED` |
 #     | `KLT06.SKILL.C05` | Compétence | Module | — | — | `BLOCKED` — non construit |
+# `BUILT_UNCONNECTED` (added 2026-09-07, Founder-authorized scoped
+# re-verification): a real module/content exists, grounded on a
+# verified real external schema, but Academy has no live client/
+# credentials calling that external system — see klt_canonical/
+# models.py module docstring for the full three-state rationale.
 _SKILL_ROW_START_RE = re.compile(r"^\|\s*`(KLT\d{2}\.SKILL\.[A-Za-z0-9]+)`\s*\|")
 _MODULE_CELL_RE = re.compile(r"^M\d{2}$")
 
 
 def parse_skill_registry(text: str) -> List[Dict[str, Optional[str]]]:
     """Returns one dict per real skill row: skill_id, label, module_code,
-    status ("BUILT" unless some cell literally carries the `BLOCKED`
-    marker), blocked_reason. Splits each row on `|` directly (robust to
-    trailing-pipe/no-trailing-pipe variation) rather than trying to
-    regex-match a fixed column count, since the real registries use two
-    different column counts (5 for KLT-01..05, 6 for KLT-06..08)."""
+    status ("BUILT" unless some cell literally carries the `BLOCKED` or
+    `BUILT_UNCONNECTED` marker), blocked_reason. Splits each row on `|`
+    directly (robust to trailing-pipe/no-trailing-pipe variation) rather
+    than trying to regex-match a fixed column count, since the real
+    registries use two different column counts (5 for KLT-01..05, 6 for
+    KLT-06..08)."""
     rows: List[Dict[str, Optional[str]]] = []
     for line in text.splitlines():
         stripped = line.strip()
@@ -183,6 +190,11 @@ def parse_skill_registry(text: str) -> List[Dict[str, Optional[str]]]:
             if "`BLOCKED`" in cell:
                 status = "BLOCKED"
                 _, _, tail = cell.partition("`BLOCKED`")
+                reason = tail.lstrip(" —-").strip() or None
+                break
+            if "`BUILT_UNCONNECTED`" in cell:
+                status = "BUILT_UNCONNECTED"
+                _, _, tail = cell.partition("`BUILT_UNCONNECTED`")
                 reason = tail.lstrip(" —-").strip() or None
                 break
             if "`BUILT`" in cell:

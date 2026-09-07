@@ -3,7 +3,7 @@
 ```
 MODULE_ID: KLT07-M05
 COMPETENCY_ID: C5 — Gérer une relation opérateur (support, remontée de besoin, tension)
-PREREQUISITES: M03
+PREREQUISITES: M03, M04
 ASSESSMENT_LEVEL: N2
 KILTIKONET_DEPENDENCY: aucune dépendance Network directe — compétence relationnelle, transposée du contexte médiation (KLT-01) au contexte opérateur.
 ROLE_BOUNDARIES: Gérer la relation opérateur n'autorise pas à ignorer une fragilité connue pour préserver le confort de la relation

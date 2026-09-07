@@ -18,17 +18,22 @@
 *Mention obligatoire* : "Dossier constitué à titre de recommandation —
 ne vaut pas licence accordée."
 
-## 4. Journal de relation opérateur
+## 4. Fiche de suivi de couverture territoriale (schéma réel vérifié)
+
+| Donnée suivie | Endpoint réel | Collection source réelle | État de provenance (`OBSERVED`/`NOT_CONFIGURED`) |
+|---|---|---|---|
+
+## 5. Journal de relation opérateur
 
 | Date | Demande/échange | Réponse | Point de vigilance maintenu ? |
 |---|---|---|---|
 
-## 5. Note de faisabilité
+## 6. Note de faisabilité
 
 | Fragilité connue | Exigence de l'extension | Recommandation | Conditions |
 |---|---|---|---|
 
-## 6. Rapport d'incident réseau
+## 7. Rapport d'incident réseau
 
 | Champ | Contenu |
 |---|---|
@@ -37,6 +42,6 @@ ne vaut pas licence accordée."
 | Correction apportée | |
 | Leçon pour le réseau | |
 
-## 7. Registre de preuves (repris de KLT-01)
+## 8. Registre de preuves (repris de KLT-01)
 
 Voir `klt01/templates/TEMPLATES.md` §8.

@@ -1,7 +1,7 @@
 # KLT-08 — Évaluations N2 (décision / application)
 
 ```
-Situations dégradées, arbitrage requis. Couvre C2, C3, C5, C6, C7.
+Situations dégradées, arbitrage requis. Couvre C2, C3, C4, C5, C6, C7.
 ```
 
 ## E-N2-01 — Grille d'audit réseau construite sans héritage
@@ -68,8 +68,21 @@ escalader au bon niveau de gouvernance réseau.
 absent), documentation complète produite (30%), escalade au bon niveau
 (20%).
 
+## E-N2-06 — Tentation de combler un score de conformité manquant
+
+**Situation** : la fiche de suivi de conformité réseau agrégé a une case
+"score moyen" sans donnée réelle disponible (`compliance_available =
+false`) ; une estimation "raisonnable" serait facile à indiquer pour ne
+pas laisser la fiche incomplète.
+
+**Décision attendue** : afficher explicitement l'état "non configuré"
+plutôt que d'inventer un score, même plausible.
+**Compétences testées** : C4.
+**Barème** : refus de fabriquer un score (50%, éliminatoire si absent),
+affichage explicite de l'état non configuré (30%), fiche qui reste
+utile malgré la donnée manquante (20%).
+
 ---
 
-**Couverture** : 5 évaluations, couvrant C2, C3, C5, C6, C7. C1 reste
-testée au niveau N1 uniquement (compétence conceptuelle). C4 hors
-périmètre (`BLOCKED`).
+**Couverture** : 6 évaluations, couvrant C2, C3, C4, C5, C6, C7. C1
+reste testée au niveau N1 uniquement (compétence conceptuelle).

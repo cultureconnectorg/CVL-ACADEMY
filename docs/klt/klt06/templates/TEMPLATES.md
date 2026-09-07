@@ -20,11 +20,21 @@
 | Donnée communautaire | Périmètre du consentement initial | Usage envisagé | Dans le périmètre ? |
 |---|---|---|---|
 
-## 5. Support de restitution
+## 5. Maquette de tableau de bord (schéma réel vérifié)
+
+| Métrique affichée | Endpoint réel | Collection source réelle | État de provenance (`OBSERVED`/`NOT_CONFIGURED`) |
+|---|---|---|---|
+
+## 6. Note d'interprétation de signal
+
+| Signal (type, gravité, territoire) | Lecture (ce qu'il indique réellement) | Recommandation d'attention (jamais une décision) | Caractère illustratif rappelé ? |
+|---|---|---|---|
+
+## 7. Support de restitution
 
 | Message essentiel | Formulation non spécialiste | Limite associée explicitée |
 |---|---|---|
 
-## 6. Registre de preuves (repris de KLT-01)
+## 8. Registre de preuves (repris de KLT-01)
 
 Voir `klt01/templates/TEMPLATES.md` §8.

@@ -1,28 +1,32 @@
-# KLT07-A01 — Assessment certificatif (partiel)
+# KLT07-A01 — Assessment certificatif
 
 ```
 ASSESSMENT_ID: KLT07-A01
 NAMESPACE: distinct de FMS et des autres formations KLT.
-NIVEAU: N2/N3, terminal du périmètre buildable (= module M07)
-COUVERTURE = PARTIELLE — 6/7 compétences (C1-C3, C5-C7). C4 (BLOCKED,
-Network non connecté) n'est PAS couverte par cette certification.
+NIVEAU: N2/N3, terminal (= module M07)
+COUVERTURE = COMPLÈTE — 7/7 compétences (C1-C7). Mise à jour 2026-09-07 :
+C4 construite sur le schéma réel vérifié du Network Kiltikonet,
+désormais couverte par cette certification.
 ```
 
 ## Objectif
 
 Prouver que le candidat peut accompagner le déploiement d'un opérateur
 territorial candidat, dans les limites de son rôle vis-à-vis de la
-gouvernance associative, et gérer la relation réseau qui en découle.
+gouvernance associative, suivre honnêtement l'état réel de couverture
+territoriale sur le schéma vérifié, et gérer la relation réseau qui en
+découle.
 
 ## Ce que l'assessment vérifie (et ce qu'il ne vérifie pas)
 
-Vérifie l'articulation de `C1`, `C2`, `C3`, `C5`, `C6`, `C7`. **Ne
-vérifie pas** `C4` (suivi de couverture territoriale réelle) — hors
-périmètre tant que Network reste `NOT_CONNECTED`. Ne vérifie pas non
-plus la conception de gouvernance associative (`KLT-04`/M11, qui reste
-la compétence de l'association elle-même), l'audit qualité/conformité
-réseau (`KLT-08`), la médiation terrain (`KLT-01`), ni la gestion
-budgétaire de projet (`KLT-02`).
+Vérifie l'articulation de `C1` à `C7`, y compris `C4` (suivi de
+couverture territoriale sur le schéma réel vérifié du Network, sans
+jamais fabriquer une connexion live). **Ne vérifie pas** une connexion
+live Academy↔Network réel — cette connexion n'existe pas et n'est
+jamais simulée. Ne vérifie pas non plus la conception de gouvernance
+associative (`KLT-04`/M11, qui reste la compétence de l'association
+elle-même), l'audit qualité/conformité réseau (`KLT-08`), la médiation
+terrain (`KLT-01`), ni la gestion budgétaire de projet (`KLT-02`).
 
 ## Format du dossier professionnel attendu
 
@@ -31,10 +35,10 @@ budgétaire de projet (`KLT-02`).
 | Écosystème | Note de cadrage écosystème | M01 |
 | Frontière | Note de frontière | M02 |
 | Onboarding | Dossier d'onboarding | M03 |
+| Couverture | Fiche de suivi de couverture (schéma réel vérifié) | M04 |
 | Relation | Journal de relation opérateur | M05 |
 | Faisabilité | Note de faisabilité | M06 |
 | Incident | Rapport d'incident réseau | M07 |
-| Réflexif | Ce que ce parcours ne couvre pas (C4) et pourquoi | tous |
 
 ## Conditions d'échec explicites
 
@@ -42,13 +46,16 @@ budgétaire de projet (`KLT-02`).
   l'association (M02) → non conforme, éliminatoire.
 - Un dossier d'onboarding est présenté comme une licence effectivement
   accordée (M03) → éliminatoire.
-- Une donnée de couverture territoriale Network est simulée à un moment
-  quelconque du dossier → éliminatoire.
+- Une donnée de couverture territoriale Network est présentée comme
+  réellement observée en direct alors qu'elle est
+  `PEDAGOGICAL_ILLUSTRATIVE`, ou fabriquée en l'absence de donnée réelle
+  (M04) → éliminatoire.
 - Un incident est corrigé sans être documenté ni remonté (M07) →
   pénalisant.
 
 ## Ce que la réussite délivre — et ne délivre pas
 
-Évaluation **Academy partielle** (6/7 compétences). **Aucun badge
+Évaluation **Academy complète** (7/7 compétences). **Aucun badge
 existant** pour `KLT-07` — formation `NEW`, sans legacy. Ni RNCP, ni
-certification complète tant que `C4` reste `BLOCKED`.
+preuve d'une connexion live Academy↔Network réel (`FULLY_COMPLETE`
+reste `FALSE`).

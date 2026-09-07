@@ -51,12 +51,20 @@ rôle d'opérateur relais (Mémoire Vive croit, à tort, que ce statut lui
 donnerait une autorité sur les autres associations partenaires) doit
 être identifiée, corrigée et remontée au niveau réseau.
 
+**Suivi de couverture** (matière de M04, ajoutée 2026-09-07) : le
+candidat produit une fiche de suivi de couverture territoriale sur le
+schéma réel vérifié du Network Kiltikonet — sans jamais prétendre
+interroger ce système en direct aujourd'hui.
+
 ## Limites explicites du cas (angle déploiement territorial)
 
 Le candidat **ne conçoit jamais** le modèle de gouvernance interne de
 Mémoire Vive à sa place (`KLT-04`/M11 reste la compétence de
 l'association) — il évalue et accompagne, il ne décide pas pour elle.
-Le candidat **ne suit pas** de données de couverture territoriale
-réelles (`C4`, `BLOCKED`), **ne mène pas** d'audit qualité/conformité
-réseau formel (`KLT-08`), **n'anime pas** la médiation terrain
-(`KLT-01`), **ne gère pas** le budget de projet (`KLT-02`).
+Le candidat conçoit un suivi de couverture territoriale (`C4`) sur le
+**schéma réel vérifié** du Network Kiltikonet, mais **ne construit
+jamais** de connexion live vers ce système
+(`NOT_CONNECTED_TO_ACADEMY_RUNTIME`). Le candidat **ne mène pas**
+d'audit qualité/conformité réseau formel (`KLT-08`), **n'anime pas** la
+médiation terrain (`KLT-01`), **ne gère pas** le budget de projet
+(`KLT-02`).

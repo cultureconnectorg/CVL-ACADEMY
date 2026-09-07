@@ -1,20 +1,27 @@
 # KLT-06 — Quality Gates (avant FREEZE)
 
+```
+Mis à jour 2026-09-07 : C5/C6 reclassifiées BUILT après re-vérification
+du système Observatory réel (Kiltikonet-Aout2026, commit bb64ce7) et
+autorisation Founder scopée. Voir KLT_09_20_RECONCILIATION.md
+§Re-vérification.
+```
+
 | Gate | Cible | Résultat | Preuve |
 |---|---|---|---|
-| `COMPETENCY_COVERAGE` (buildable) | 100% de 5/7 | **100% de 5/7** | C1-C4, C7 dans `skills/SKILL_ID_REGISTRY.md` ; C5/C6 explicitement `BLOCKED`, pas comptés comme couverts |
-| `MODULE_COVERAGE` (buildable) | 100% de 5/7 | **100%** | 5/5 modules buildable écrits (M01-M04, M07) |
-| `ASSESSMENT_COVERAGE` (buildable) | 100% | **100%** | Chaque compétence buildable a ≥1 item — voir tableau ci-dessous |
-| `EVIDENCE_COVERAGE` (buildable) | 100% | **100%** | 5/5 lignes réelles dans `skills/EVIDENCE_MODEL.md` |
-| `ORPHAN_SKILL` | 0 | **0** | Chaque `KLT06.SKILL.Cxx` buildable pointe module + assessment + evidence |
+| `COMPETENCY_COVERAGE` | 100% de 7/7 | **100%** | C1-C7 dans `skills/SKILL_ID_REGISTRY.md` |
+| `MODULE_COVERAGE` | 100% de 7/7 | **100%** | 7/7 modules écrits (M01-M07) |
+| `ASSESSMENT_COVERAGE` | 100% | **100%** | Chaque compétence a ≥1 item — voir tableau ci-dessous |
+| `EVIDENCE_COVERAGE` | 100% | **100%** | 7/7 lignes réelles dans `skills/EVIDENCE_MODEL.md` |
+| `ORPHAN_SKILL` | 0 | **0** | Chaque `KLT06.SKILL.Cxx` pointe module + assessment + evidence |
 | `ORPHAN_MODULE` | 0 | **0** | Chaque module a une compétence unique |
 | `ASSESSMENT_WITHOUT_RUBRIC` | 0 | **0** | `KLT06-A01` a `RUBRIC.md` |
-| `FAKE_OBSERVATORY` | 0 | **0** | Aucune donnée Observatory simulée pour combler M05/M06 ; `M05`/`M06` explicitement `BLOCKED`, pas construits |
-| `BLOCKED_COMPETENCY_MISREPRESENTED` (gate propre à KLT-06) | 0 | **0** | `C5`/`C6` marquées `BLOCKED` partout (référentiel, registre, evidence, certification, guides) — jamais présentées comme couvertes |
-| `PARTIAL_CERTIFICATION_DISCLOSED` (gate propre à KLT-06) | 100% | **100%** | `A01_CERTIFICATION_ASSESSMENT.md`, `CERTIFICATION_MODEL.md`, guide candidat déclarent tous explicitement la couverture partielle |
-| `FULLY_COMPLETE` | `FALSE` | **`FALSE`** | 2/7 compétences (`C5`,`C6`) `BLOCKED` — ce gate reste `FALSE` tant qu'elles ne sont pas réellement connectées à Observatory, pas seulement rédigées ; toute déclaration `TRUE` sans reconnexion réelle serait une violation de ce gate |
+| `NO_FAKE_LIVE_CONNECTION` (renommé depuis `FAKE_OBSERVATORY`, gate propre à KLT-06) | 0 | **0** | Aucun livrable M05/M06 ne prétend interroger une donnée Observatory réelle en direct — le système réel vérifié (routes/RBAC/collections) est enseigné comme architecture, jamais comme connexion live fabriquée ; tout signal/métrique manipulé reste `PEDAGOGICAL_ILLUSTRATIVE`, explicitement marqué |
+| `REAL_PRODUCT_CITED_ACCURATELY` (gate propre à KLT-06, ajouté 2026-09-07) | 100% | **100%** | M05/M06 citent des endpoints, collections et rôles RBAC réels et vérifiés (`backend/routes/observatory.py`, `services/observatory_adapters/*`), jamais inventés |
+| `PARTIAL_CERTIFICATION_DISCLOSED` | N/A (formation désormais complète) | **N/A** | `CERTIFICATION_MODEL.md` déclare la couverture 7/7 ; aucune certification partielle à divulguer |
+| `FULLY_COMPLETE` | `FALSE` | **`FALSE`** | Reste `FALSE` — signifie une connexion **live** Academy↔Kiltikonet-Aout2026 en production, qui n'existe toujours pas ; ne jamais confondre avec `STRUCTURAL_STATUS = COMPLETE` (7/7 modules construits, atteint) |
 
-## Détail `ASSESSMENT_COVERAGE` (buildable)
+## Détail `ASSESSMENT_COVERAGE`
 
 | Compétence | N1 | N2 | Terminal |
 |---|---|---|---|
@@ -22,11 +29,14 @@
 | C2 | `Q-N1-03`, `Q-N1-04` | `E-N2-01` | — |
 | C3 | `Q-N1-05`, `Q-N1-06` | `E-N2-02` | — |
 | C4 | `Q-N1-07`, `Q-N1-08` | `E-N2-03` | — |
+| C5 | `Q-N1-11`, `Q-N1-12` | `E-N2-05` | — |
+| C6 | `Q-N1-13` | `E-N2-06` | — |
 | C7 | `Q-N1-09`, `Q-N1-10` | `E-N2-04` | `KLT06-A01` |
 
 ## Verdict
 
-Tous les gates au vert pour le périmètre buildable (5/7). Le gate le
-plus important de cette formation (`BLOCKED_COMPETENCY_MISREPRESENTED =
-0`) est vérifié à chaque niveau du package, pas seulement affirmé une
-fois en introduction.
+Tous les gates au vert, formation `KLT-06` désormais structurellement
+complète (7/7). Le gate le plus important de cette formation reste
+`NO_FAKE_LIVE_CONNECTION = 0` : le système réel vérifié est enseigné
+comme architecture citable, jamais présenté comme une connexion live
+qu'Academy n'a pas.
