@@ -80,6 +80,18 @@ export const FEATURE_FLAGS = Object.freeze({
   get SPATIAL_HERO_ENTRY() {
     return readFlag("SPATIAL_HERO_ENTRY");
   },
+  /** ACA-0011 ("Identity/FREK-ID entry as contextual transition") —
+   * gates whether a successful registration's new FREK-ID is
+   * acknowledged as a real, in-context identity event (a `Confirm`
+   * reveal inside the auth card — "a real action visibly changing what
+   * the world says back," `ACADEMY_HERO_ENTRY_RESEARCH.md`'s NFS/
+   * Autolog lesson) before advancing to onboarding, instead of a
+   * fire-and-forget toast + instant redirect, as today. Off by
+   * default — registration behaves exactly as before until this is
+   * deliberately turned on. */
+  get SPATIAL_IDENTITY_ENTRY() {
+    return readFlag("SPATIAL_IDENTITY_ENTRY");
+  },
 });
 
 /** Test/story-only override — never used by production code, which

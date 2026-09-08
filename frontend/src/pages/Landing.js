@@ -4,7 +4,7 @@ import { Leaf, ArrowRight } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
-import { Focus, Enter, Reveal } from "@/lib/motion-primitives";
+import { Focus, Enter, Reveal, Confirm } from "@/lib/motion-primitives";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
@@ -19,6 +19,12 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 // timing of an illustrative storyboard.
 const HERO_BEATS = { world: 80, focus: 420, identity: 760 };
 const HERO_SESSION_KEY = "cvln_academy_hero_played";
+
+// ACA-0011 — the beat a fresh FREK-ID is held on screen (Confirm reveal)
+// before advancing to onboarding. Short and restrained (MOT-008 "calm by
+// default"), not a celebratory pause — long enough to actually register
+// as an event, never long enough to feel like a blocking loading screen.
+const IDENTITY_CONFIRM_BEAT = 900;
 
 /** Stage reached once, on a real first visit within this browser
  * session — a returning visitor (same tab, back button, or a second
@@ -94,11 +100,19 @@ export default function Landing() {
   const [form, setForm] = useState({ email: "", password: "", display_name: "" });
   const [busy, setBusy] = useState(false);
   const { stage: heroStage, sequencing } = useHeroStage();
+  const reducedMotion = useReducedMotion();
+  // ACA-0011 — holds the freshly-issued FREK-ID while its Confirm reveal
+  // plays; null the rest of the time (including the entire "off" path,
+  // where this state is set and read but never rendered — see the
+  // identityConfirming JSX guard below).
+  const [newIdentity, setNewIdentity] = useState(null);
 
   if (loading) return null;
   if (user) {
     return <Navigate to={user.onboarding_completed ? "/dashboard" : "/onboarding"} replace />;
   }
+
+  const identityConfirming = FEATURE_FLAGS.SPATIAL_IDENTITY_ENTRY && !reducedMotion && !!newIdentity;
 
   const submit = async (e) => {
     e.preventDefault();
@@ -107,7 +121,16 @@ export default function Landing() {
       if (mode === "register") {
         const u = await register({ ...form, lang });
         toast.success(`${t("landing_p.frek_id_generated")} ${u.frek_id}`);
-        nav("/onboarding");
+        if (FEATURE_FLAGS.SPATIAL_IDENTITY_ENTRY && !reducedMotion) {
+          // Hold on the new identity — a real, visible acknowledgment
+          // (research's NFS/Autolog lesson: an action should visibly
+          // change what the world says back) — before advancing, rather
+          // than an instant redirect racing the toast off-screen.
+          setNewIdentity({ frek_id: u.frek_id });
+          setTimeout(() => nav("/onboarding"), IDENTITY_CONFIRM_BEAT);
+        } else {
+          nav("/onboarding");
+        }
       } else {
         const u = await login(form.email, form.password);
         nav(u.onboarding_completed ? "/dashboard" : "/onboarding");
@@ -190,84 +213,111 @@ export default function Landing() {
           <div className="w-full cvln-card p-8 md:p-10 relative overflow-hidden">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[--cvln-orange]/10" />
             <div className="relative z-10">
-              {/* ENTER, keyed by mode: the auth mode the visitor just picked
-                  (register vs. login) becomes their destination for this
-                  interaction — a calm crossfade instead of the instant text
-                  swap this block had before (CONTINUITY_OVER_PAGE_CUT
-                  applied within the component, not just at route level). */}
-              <Enter key={mode} show>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
-                    {mode === "register" ? t("landing_p.new_identity") : t("landing_p.sign_in")}
-                  </div>
+              {identityConfirming ? (
+                // ACA-0011 — the FREK-ID as a real, acknowledged identity
+                // event (Confirm primitive: "short restrained physical
+                // feedback," never confetti/celebration) instead of a
+                // fire-and-forget toast racing an instant redirect.
+                // Auto-advances to onboarding after IDENTITY_CONFIRM_BEAT
+                // (see submit()) — no action required here.
+                <div data-testid="identity-confirm">
+                  <Confirm triggerKey={newIdentity.frek_id}>
+                    <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
+                      {t("landing_p.new_identity")}
+                    </div>
+                    <h2 className="font-display font-bold text-3xl tracking-tight mt-1">
+                      {t("landing_p.frek_id_generated")}
+                    </h2>
+                    <div
+                      data-testid="identity-frek-id"
+                      className="mt-4 mono text-2xl font-bold text-[--cvln-orange] tracking-wide"
+                    >
+                      {newIdentity.frek_id}
+                    </div>
+                  </Confirm>
                 </div>
-                <h2 className="font-display font-bold text-3xl tracking-tight">
-                  {mode === "register" ? t("register") : t("welcome_back")}
-                </h2>
-                {mode === "register" && (
-                  <p className="mt-2 text-sm text-[--cvln-ink-2]">{t("signup_hint")}</p>
-                )}
-              </Enter>
-
-              <form onSubmit={submit} className="mt-6 space-y-4" data-testid="auth-form">
-                {mode === "register" && (
-                  // ENTER on mount only — this field appearing is a real
-                  // state change (register mode was just chosen), so it
-                  // enters smoothly rather than popping in. Kept as a plain
-                  // conditional render (not REVEAL-while-hidden) so the
-                  // field is fully removed from the DOM in login mode:
-                  // no stray `required` validation on a hidden input, no
-                  // keyboard-focus trap on an invisible field.
-                  <Enter show>
-                    <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("display_name")}</label>
-                    <input
-                      required minLength={1} maxLength={80}
-                      data-testid="auth-display-name"
-                      value={form.display_name}
-                      onChange={(e) => setForm({ ...form, display_name: e.target.value })}
-                      className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
-                    />
+              ) : (
+                <>
+                  {/* ENTER, keyed by mode: the auth mode the visitor just picked
+                      (register vs. login) becomes their destination for this
+                      interaction — a calm crossfade instead of the instant text
+                      swap this block had before (CONTINUITY_OVER_PAGE_CUT
+                      applied within the component, not just at route level). */}
+                  <Enter key={mode} show>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2] font-bold">
+                        {mode === "register" ? t("landing_p.new_identity") : t("landing_p.sign_in")}
+                      </div>
+                    </div>
+                    <h2 className="font-display font-bold text-3xl tracking-tight">
+                      {mode === "register" ? t("register") : t("welcome_back")}
+                    </h2>
+                    {mode === "register" && (
+                      <p className="mt-2 text-sm text-[--cvln-ink-2]">{t("signup_hint")}</p>
+                    )}
                   </Enter>
-                )}
-                <div>
-                  <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("email")}</label>
-                  <input
-                    required type="email"
-                    data-testid="auth-email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("password")}</label>
-                  <input
-                    required type="password" minLength={6}
-                    data-testid="auth-password"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
-                  />
-                </div>
-                <button
-                  type="submit" disabled={busy}
-                  data-testid="auth-submit"
-                  className="btn-primary w-full disabled:opacity-60"
-                >
-                  {mode === "register" ? t("register") : t("login")}
-                  <ArrowRight width={18} height={18} className="ml-2" />
-                </button>
-              </form>
 
-              <button
-                data-testid="auth-toggle"
-                onClick={() => setMode(mode === "register" ? "login" : "register")}
-                className="mt-6 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition"
-              >
-                {mode === "register"
-                  ? t("landing_p.toggle_to_login")
-                  : t("landing_p.toggle_to_register")}
-              </button>
+                  <form onSubmit={submit} className="mt-6 space-y-4" data-testid="auth-form">
+                    {mode === "register" && (
+                      // ENTER on mount only — this field appearing is a real
+                      // state change (register mode was just chosen), so it
+                      // enters smoothly rather than popping in. Kept as a plain
+                      // conditional render (not REVEAL-while-hidden) so the
+                      // field is fully removed from the DOM in login mode:
+                      // no stray `required` validation on a hidden input, no
+                      // keyboard-focus trap on an invisible field.
+                      <Enter show>
+                        <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("display_name")}</label>
+                        <input
+                          required minLength={1} maxLength={80}
+                          data-testid="auth-display-name"
+                          value={form.display_name}
+                          onChange={(e) => setForm({ ...form, display_name: e.target.value })}
+                          className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
+                        />
+                      </Enter>
+                    )}
+                    <div>
+                      <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("email")}</label>
+                      <input
+                        required type="email"
+                        data-testid="auth-email"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-[--cvln-ink-2]">{t("password")}</label>
+                      <input
+                        required type="password" minLength={6}
+                        data-testid="auth-password"
+                        value={form.password}
+                        onChange={(e) => setForm({ ...form, password: e.target.value })}
+                        className="mt-1 w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[--cvln-orange]"
+                      />
+                    </div>
+                    <button
+                      type="submit" disabled={busy}
+                      data-testid="auth-submit"
+                      className="btn-primary w-full disabled:opacity-60"
+                    >
+                      {mode === "register" ? t("register") : t("login")}
+                      <ArrowRight width={18} height={18} className="ml-2" />
+                    </button>
+                  </form>
+
+                  <button
+                    data-testid="auth-toggle"
+                    onClick={() => setMode(mode === "register" ? "login" : "register")}
+                    className="mt-6 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition"
+                  >
+                    {mode === "register"
+                      ? t("landing_p.toggle_to_login")
+                      : t("landing_p.toggle_to_register")}
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </HeroStage>
