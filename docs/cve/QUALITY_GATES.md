@@ -33,7 +33,8 @@ this corpus.
 | CVE-08 | `PACKAGE_COMPLETE_FOR_CVE08` (deepened 2026-09-08, `FORMALIZATION_PENDING` still applies to a defining VCF equation). |
 | CVE-09 | `PACKAGE_COMPLETE_FOR_CVE09` (deepened 2026-09-08). |
 | CVE-10 | `PACKAGE_COMPLETE_FOR_CVE10` (deepened 2026-09-08). |
-| CVE-11→15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening continues formation by formation this session. |
+| CVE-11 | `PACKAGE_COMPLETE_FOR_CVE11` (deepened 2026-09-08). |
+| CVE-12→15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening continues formation by formation this session. |
 
 **No formation in this corpus is `BLOCKED_PRODUCT_DEPENDENCY`** — unlike
 Good Mood/Wallet, the grounding object here is a mathematical
