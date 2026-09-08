@@ -17,7 +17,7 @@
 
 | Row set | Depth |
 |---|---|
-| GCF-01→18 (18 rows) | `MODULE_CONTENT_DRAFTED`. |
+| GCF-01→18 (18 rows) | `MODULE_CONTENT_DRAFTED` — **deliberately not deepened to a flagship in task #185 (2026-09-08)**: this cluster's own grounding is `NEW_EXTERNAL` with zero CVLN repo touchpoint (`AGR-01` is adjacent, not overlapping, and offers no worked example for restaurant/culinary service delivery) — same reasoning as CYB-01→30. Left honestly at this depth rather than writing generic culinary-certification content with no real fact to anchor an eliminatory rule. |
 | GCF-X-01/02/03/07/08 (5 rows) | Bridge index, no separate formation. |
 | GCF-19→30, GCF-X-04/05/06 (15 rows) | `BLOCKED_PRODUCT_DEPENDENCY`. |
 

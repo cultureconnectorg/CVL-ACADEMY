@@ -18,7 +18,7 @@
 | Row set | Depth |
 |---|---|
 | CYB-32 | `PACKAGE_COMPLETE` — flagship. |
-| CYB-01→30 | `MODULE_CONTENT_DRAFTED`. |
+| CYB-01→30 | `MODULE_CONTENT_DRAFTED` — **deliberately not deepened to a flagship in task #185 (2026-09-08)**: unlike GMD/BCI/HOS/LOS, this cluster's own grounding is `NEW_EXTERNAL` with zero CVLN repo touchpoint for any of the 30 rows (`backend/auth.py` grounds `CYB-32` alone, never this cluster) — building a flagship here without a real, falsifiable fact to anchor an eliminatory rule would mean writing generic security-certification content, a lower-rigor deviation from this corpus's own anti-fabrication discipline. Left honestly at this depth. |
 | CYB-31, CYB-33→42 | `BLOCKED_PRODUCT_DEPENDENCY`, declared in `BLOCKED_CANDIDATES.md`. |
 
 **Canonical state:** 1 `PACKAGE_COMPLETE` / 30 `MODULE_CONTENT_DRAFTED`
