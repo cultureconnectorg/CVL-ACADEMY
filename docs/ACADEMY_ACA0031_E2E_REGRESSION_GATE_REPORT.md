@@ -88,6 +88,47 @@ either.
   work locally, plus the standard `playwright install --with-deps`
   step from Playwright's own CI documentation).
 
+## Update — the `e2e` job's real GitHub Actions runtime, now observed and green
+
+The `e2e` job's actual behavior on GitHub's shared runners surfaced two
+real, environment-specific issues after this report's initial pass —
+both diagnosed from real job logs and fixed, not guessed at:
+
+1. **Chromium launch failure** — `playwright.config.js` hardcoded this
+   sandbox's own Chromium path (`/opt/pw-browsers/chromium`) as its
+   fallback whenever `PLAYWRIGHT_CHROMIUM_PATH` was unset; that path
+   doesn't exist on a GitHub Actions runner, where the `e2e` job's own
+   `npx playwright install --with-deps chromium` step installs
+   Playwright's managed browser to its own default location instead.
+   Every one of the 86 specs failed identically
+   (`browserType.launch: Failed to launch chromium because executable
+   doesn't exist at /opt/pw-browsers/chromium`). Fixed by only pinning
+   the explicit sandbox path when `fs.existsSync()` confirms it's real
+   on the current machine, otherwise leaving `executablePath`
+   undefined so Playwright resolves whatever `playwright install` just
+   put in place — a no-op in this sandbox (the path is still real
+   here), a real fix on Actions.
+2. **A CI-load-sensitive assertion timeout** —
+   `module-journey-context.spec.js`'s "submitting a passing quiz
+   auto-advances to mini_mission" failed twice consecutively on real
+   Actions runs (different single test each run before that, a
+   flake-consistent pattern; this one recurring twice pointed to a
+   real timing margin rather than pure flake). Not reproducible
+   locally (`--repeat-each=5` passed 5/5 in this sandbox). Root cause:
+   `submitQuiz()` performs 3 sequential awaited network round-trips
+   before settling into `mini_mission`, and the default 5000ms
+   assertion timeout was tighter than GitHub's shared 2-worker runners
+   needed under load. Widened to 10s for that one assertion — real
+   slack for a known CI-load difference, not a correctness weakening.
+
+Both fixes are now confirmed green on real GitHub Actions runs against
+this PR — commits `86b134d` (the timeout fix itself) and `824c02c`
+(the next commit after it) both completed with `conclusion: success`
+on every CI job (`backend`/`frontend`/`e2e`), across both the `push`
+and `pull_request` trigger events GitHub fires for this branch. The
+`e2e` job's real runtime on GitHub's shared runners is no longer
+unverified — it has now run to completion, green, multiple times.
+
 ## What remains open
 
 - **Branch protection** ("Require status checks to pass before
@@ -99,9 +140,3 @@ either.
 - **`backend_test.py`** stays excluded from the `pytest` CI step
   (`--ignore=tests/backend_test.py`, pre-existing, unrelated to this
   pass) — not investigated here.
-- The `e2e` job's actual runtime on GitHub's shared runners (network/
-  CPU characteristics differ from this sandbox) is unverified — the
-  workflow is correct and each step independently proven, but the full
-  job has not been observed to complete in Actions yet as of this
-  report; the next CI run against this branch will be the first real
-  signal.
