@@ -17,14 +17,15 @@
 
 | Row set | Depth |
 |---|---|
-| FDC heritage (37 rows) | `MODULE_CONTENT_DRAFTED`. |
+| FDC-01 | `PACKAGE_COMPLETE_FOR_FDC01` (deepened 2026-09-08, task #186) — flagship of the FDC heritage cluster, citing legacy `CIP-01-M02`'s real comparative-standards deliverable and the real France Travail K1602 classification. |
+| FDC heritage (remaining 36 rows) | `MODULE_CONTENT_DRAFTED`. |
 | FDC-X bridges (9 rows) | Citation-only index. |
 | FDC-21→35 (15 rows) | `NEEDS_EXPERT_REVIEW`. |
 | FDC-36→48 (13 rows) | `BLOCKED_PRODUCT_DEPENDENCY`. |
 
-**Canonical state:** 0 `PACKAGE_COMPLETE` / 37 `MODULE_CONTENT_DRAFTED`
-/ 9 citation-only / 15 `NEEDS_EXPERT_REVIEW` / 13
-`BLOCKED_PRODUCT_DEPENDENCY`, out of 74.
+**Canonical state:** 1 `PACKAGE_COMPLETE` (FDC-01) / 36
+`MODULE_CONTENT_DRAFTED` / 9 citation-only / 15 `NEEDS_EXPERT_REVIEW`
+/ 13 `BLOCKED_PRODUCT_DEPENDENCY`, out of 74.
 
 ## Never claim FULLY_COMPLETE
 

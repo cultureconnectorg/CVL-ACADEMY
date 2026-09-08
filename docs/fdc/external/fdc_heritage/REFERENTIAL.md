@@ -69,4 +69,12 @@ merging `CIP-01`'s identity with Fondation Cœurvolan's, or duplicating
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = MODULE_CONTENT_DRAFTED` for 36/37 rows (this combined
+referential). **1 row deepened to a full canonical package as
+flagship of this cluster (task #186, 2026-09-08):** `fdc01/`
+(Cultural Heritage Management Fundamentals, citing legacy
+`CIP-01-M02`'s real comparative-standards deliverable and the real
+France Travail K1602 classification). The remaining 36 rows stay at
+this combined `MODULE_CONTENT_DRAFTED` depth. Legacy `CIP-01` stays
+exactly as delivered, untouched, never merged with Fondation
+Cœurvolan (`FD-CIP-001`).
