@@ -1,11 +1,50 @@
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
+import { computeDepthStyle } from "@/lib/spatial/attention";
+import { useDepthPhysics } from "@/lib/useDepthPhysics";
+import { useReducedMotion } from "@/lib/useReducedMotion";
+
+/** ACA-0014/ACA-0017 (H1 sequencing step 4, `SPATIAL_H1_INTEGRATION_
+ * PLAN.md` — "FREK Profile: convert to the identity-first, non-KPI-
+ * card treatment; real FREK-ID and stage already exist as data") —
+ * the identity card above this grid is already identity-first; this
+ * wrapper is what converts the signals grid itself away from 8
+ * uniformly-weighted KPI tiles, same useDepthPhysics/computeDepthStyle
+ * engine Roadmap/Badges/Missions already established. */
+function SignalDepthCard({ s, i, primaryIdx, value, reduced }) {
+  const targetDistance = primaryIdx === -1 ? 0 : i - primaryIdx;
+  const distance = useDepthPhysics(targetDistance, { reduced });
+  const depth = computeDepthStyle(distance);
+  const style = reduced
+    ? { opacity: depth.opacity, transform: `scale(${Math.max(depth.scale, 0.96)})` }
+    : {
+        opacity: depth.opacity,
+        filter: `saturate(${depth.saturate}) contrast(${depth.contrast})`,
+        transform: `scale(${depth.scale})`,
+        zIndex: depth.zIndex,
+      };
+  return (
+    <motion.div
+      data-testid={`signal-${s.k}`}
+      data-tier={depth.tier}
+      style={style}
+      className="cvln-card p-5"
+    >
+      <div className="mono text-xs text-[--cvln-orange] font-bold">{s.k}</div>
+      <div className="font-display font-black text-3xl tracking-tighter mt-1">{value}</div>
+      <div className="text-xs text-[--cvln-ink-2] mt-2">{s.desc}</div>
+    </motion.div>
+  );
+}
 
 export default function FrekProfile() {
   const { user } = useAuth();
   const { t } = useI18n();
+  const reduced = useReducedMotion();
   const [prof, setProf] = useState(null);
 
   useEffect(() => {
@@ -89,17 +128,36 @@ export default function FrekProfile() {
         </div>
       )}
 
-      {/* Signals grid */}
+      {/* Signals grid — ACA-0014/0017: the real "what matters now" anchor
+          is the signal with the highest real count (the learner's own
+          most-active real trait), never a fabricated ranking. All-zero
+          (fresh account) falls back to no forced primary. */}
       <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {SIGNALS.map((s) => (
-          <div key={s.k} className="cvln-card p-5" data-testid={`signal-${s.k}`}>
-            <div className="mono text-xs text-[--cvln-orange] font-bold">{s.k}</div>
-            <div className="font-display font-black text-3xl tracking-tighter mt-1">
-              {user?.signals?.[s.k] ?? 0}
-            </div>
-            <div className="text-xs text-[--cvln-ink-2] mt-2">{s.desc}</div>
-          </div>
-        ))}
+        {(() => {
+          const values = SIGNALS.map((s) => user?.signals?.[s.k] ?? 0);
+          const maxVal = Math.max(0, ...values);
+          const primaryIdx = maxVal > 0 ? values.indexOf(maxVal) : -1;
+          return SIGNALS.map((s, i) =>
+            FEATURE_FLAGS.SPATIAL_HUB_ENABLED ? (
+              <SignalDepthCard
+                key={s.k}
+                s={s}
+                i={i}
+                primaryIdx={primaryIdx}
+                value={values[i]}
+                reduced={reduced}
+              />
+            ) : (
+              <div key={s.k} className="cvln-card p-5" data-testid={`signal-${s.k}`}>
+                <div className="mono text-xs text-[--cvln-orange] font-bold">{s.k}</div>
+                <div className="font-display font-black text-3xl tracking-tighter mt-1">
+                  {values[i]}
+                </div>
+                <div className="text-xs text-[--cvln-ink-2] mt-2">{s.desc}</div>
+              </div>
+            )
+          );
+        })()}
       </div>
 
       {/* Signal log */}

@@ -8,18 +8,23 @@ given, there is no ambiguity about what happens to each real surface —
 "Claude does not decide at random," per the Founder's own instruction.
 ```
 
-> **STATUT MIS À JOUR (2026-09-08, ACA-0014 étape 4)** —
+> **STATUT MIS À JOUR (2026-09-08, ACA-0014 étape 4 — TERMINÉE)** —
 > `H1_PRODUCTION_INTEGRATION` reste **PARTIELLEMENT AUTORISÉ ET
-> EXÉCUTÉ**. Exécutés et vérifiés : `Dashboard.js = WRAP`,
-> `Roadmap.js = EXTEND` (Rail 3, `ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_
-> WIRING_REPORT.md`), `ModuleJourney.js = EXTEND` (Rail 5,
-> `ACADEMY_RAIL5_MODULE_JOURNEY_ENGINE_REPORT.md`), et désormais
-> **`Badges.js = EXTEND`** (`ACADEMY_ACA0014_BADGES_H1_STEP4_REPORT.md`
-> — réutilise `SPATIAL_HUB_ENABLED`, pas un nouveau flag). Restent
-> `NOT_AUTHORIZED` : Missions/FrekProfile EXTEND, les deux items
-> REPLACE-BLOCKED, mobile swipe, FLIP — ce plan n'est donc pas caduc,
-> garder la table ci-dessous comme référence pour la suite plutôt que
-> la refaire.
+> EXÉCUTÉ**. L'étape 4 de la séquence recommandée est désormais
+> complète : `Dashboard.js = WRAP`, `Roadmap.js = EXTEND` (Rail 3,
+> `ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`),
+> `ModuleJourney.js = EXTEND` (Rail 5, `ACADEMY_RAIL5_MODULE_JOURNEY_
+> ENGINE_REPORT.md`), `Badges.js = EXTEND`
+> (`ACADEMY_ACA0014_BADGES_H1_STEP4_REPORT.md`), et désormais
+> **`Missions.js = EXTEND` / `FrekProfile.js = EXTEND`**
+> (`ACADEMY_ACA0014_MISSIONS_FREK_H1_STEP4_REPORT.md`) — tous
+> réutilisent `SPATIAL_HUB_ENABLED`, aucun nouveau flag. Reste
+> `NOT_AUTHORIZED` : l'étape 5 (les deux items REPLACE-BLOCKED —
+> extension FLIP Formation→Module, upgrade des assets
+> environnementaux) et la promotion mobile-swipe `useSwipeRail()` —
+> chacun nécessite son propre feu vert explicite. Ce plan n'est donc
+> pas caduc, garder la table ci-dessous comme référence plutôt que la
+> refaire.
 
 For every real, already-shipped surface in `frontend/src`, one of four
 verdicts:
