@@ -263,6 +263,10 @@ jury, pour aucune des 10 formations. Les 4 compétences
 `C4` Network de `KLT-07`, `C4` Network/Compliance de `KLT-08`) sont
 désormais construites sur le schéma réel vérifié, mais sans aucune
 connexion live Academy↔Kiltikonet-Aout2026 — voir chaque
-`modules/MODULES_STATUS.md`. Les 8 autres candidats de la reconciliation
-`KLT-09→20` (hors `KLT-13`/`18`) restent `BLOCKED_PRODUCT_DEPENDENCY`,
-non autorisés.
+`modules/MODULES_STATUS.md`. Les 10 autres candidats de la reconciliation
+`KLT-09→20` (hors `KLT-13`/`18`) ont été **fermés le 2026-09-08** à
+`KLT_09_20_BLOCKED_CANDIDATES.md` (4 convergés sans fichier séparé —
+KLT-09/10/14/17 — et 6 déclarés `BLOCKED_PRODUCT_DEPENDENCY` avec leur
+frontière de réutilisation nommée — KLT-11/12/15/16/19/20), sans lever
+`NOT_AUTHORIZED`/`STOP=TRUE` au-delà du périmètre déjà scopé par le
+Founder.

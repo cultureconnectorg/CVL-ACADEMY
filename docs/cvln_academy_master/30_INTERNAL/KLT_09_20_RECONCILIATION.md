@@ -307,3 +307,33 @@ The other 8 KLT-09→20 candidates remain untouched:
 `BLOCKED_PRODUCT_DEPENDENCY`, `NOT_AUTHORIZED` — this construction does
 not reopen them, and does not touch KLT-01→08's `STOP=TRUE` gate beyond
 the two items already named in the Founder authorization.
+
+## Closure (2026-09-08) — 12/12 rows accounted for
+
+On explicit, standing Founder authorization ("continue toutes les
+formations sans arrêt ; quand ça bloque, prends une décision qui reste
+dans la vision, même si ça nécessite de faire à côté pour finir à
+100%"), the remaining 10 rows were closed to the same exit-gate bar as
+every other Master 2D domain (`95_GAPS/GAP_REGISTER.md` G25: "812
+objets = chacun classé + corpus construit ou blocage explicite") — see
+`docs/klt/KLT_09_20_BLOCKED_CANDIDATES.md` for the full detail. No new
+capability simulated; each row's own verdict from this document is
+reused verbatim, never re-derived:
+
+- **4 converged/merged/extended, no separate file needed** — their
+  content already lives inside an existing formation: KLT-09
+  (→`KLT-07`/M04, real Network schema), KLT-10 (→`KLT-06`, same
+  profession merge), KLT-14 (→`WAL-X-04`, developed together rather
+  than as a parallel narrative), KLT-17 (→`CYB-31→42`, `G8` boundary).
+- **6 genuinely `BLOCKED_PRODUCT_DEPENDENCY`, reuse boundary named
+  rather than left as a bare stub** — KLT-11, KLT-12, KLT-15, KLT-16,
+  KLT-19, KLT-20. No separate Kiltikonet product repo beyond
+  `Kiltikonet-Aout2026` (already audited, nothing in it touches these
+  6) was found this session. KLT-20 (capstone) stays blocked by
+  construction: two of its three foundations (KLT-12, KLT-16) are
+  themselves still blocked.
+
+`KLT-09→20 = 2 built + 4 converged + 6 blocked-with-boundary = 12/12`.
+This closure does not lift `STOP=TRUE` any further than the Founder's
+2026-09-07 scoped authorization already did — no runtime integration,
+no new product-dependency invented, no `db.formations` mutation.
