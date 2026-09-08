@@ -245,6 +245,45 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   await page.route("**/api/badges/mine", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
+  // Badges.js's OWN catalogue fetch (`GET /api/badges`, plural, no
+  // `/mine`) was missing here entirely -- it fell through to the
+  // generic `{}` catch-all above, and `all.findIndex(...)` (all.map()
+  // too) crashed on that object the same way every other undiscovered
+  // instance of this crash class has (PhysicalSessionsPanel, horizon,
+  // professional profile, ecosystem builder -- see each of those
+  // fixture entries' own comments). Found by manually driving the real
+  // dev server with the spatial flags on and hitting an uncaught
+  // runtime error screen on /badges -- no existing spec caught it
+  // because mobile-nav.spec.js's only /badges-reaching test asserts on
+  // the URL, never on the page actually rendering (see badges.spec.js,
+  // added alongside this fix, for real content coverage). Real backend
+  // (api/badges.py::list_badges) always returns an array of full badge
+  // documents (code/name/tier/cc_threshold/color/description), never
+  // an object -- this mirrors that shape.
+  await page.route("**/api/badges", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          code: "B10",
+          name: "Première étincelle",
+          tier: "bronze",
+          cc_threshold: 10,
+          color: "#D97706",
+          description: "10 Crédits CC atteints.",
+        },
+        {
+          code: "B50",
+          name: "Élan confirmé",
+          tier: "argent",
+          cc_threshold: 50,
+          color: "#64748B",
+          description: "50 Crédits CC atteints.",
+        },
+      ]),
+    })
+  );
   // FormationDetail.js -> PhysicalSessionsPanel.js calls .map()/.length
   // on these four — real backend routes (api/physical_sessions.py,
   // api/certification.py) are all typed `List[...]`, never an object,
