@@ -33,14 +33,14 @@ this corpus. 43/43 WAL-side rows accounted for (WAL-01→28 + WAL-X-01→09).
 | WAL-23 | `PACKAGE_COMPLETE_FOR_WAL23` (deepened 2026-09-08) — full canonical package, grounded in the already-verified `djsayd/CVLN-Wallet` repo-truth (`POST /v1/entity/transfer`, `atomic_entity_spend`, `ledger_post`, `log_entity_tx`), reused rather than re-audited. |
 | WAL-25 | `PACKAGE_COMPLETE_FOR_WAL25` (deepened 2026-09-08) — full canonical package, grounded in the already-verified `djsayd/CVLN-Wallet` repo-truth (`MARKETPLACE_ITEMS`, 8 seeded items, `idem_begin`/`idem_finish`/`atomic_spend`), reused rather than re-audited. |
 | WAL-26 | `PACKAGE_COMPLETE_FOR_WAL26` (deepened 2026-09-08) — full canonical package, grounded in the already-verified `djsayd/CVLN-Wallet` repo-truth (settlement state machine, `settlement_transition`, 3 real reconciliation-case resolutions), reused rather than re-audited. |
-| WAL-27 | `MODULE_CONTENT_DRAFTED` (corrected 2026-09-06, was `BLOCKED_PRODUCT_DEPENDENCY`) — référentiel + modules only, grounded in the real external `djsayd/CVLN-Wallet` product (kill-switch, directly verified). Deepening continues in subsequent waves. |
+| WAL-27 | `PACKAGE_COMPLETE_FOR_WAL27` (deepened 2026-09-08) — full canonical package, grounded in the already-verified `djsayd/CVLN-Wallet` repo-truth (`PUT /admin/kill-switch`, exactly 3 validated switches, `KillSwitch.Toggled` audit trail, per-user `/card/freeze`/`unfreeze` as a distinct scale), reused rather than re-audited. |
 
 **No formation in the WAL-19→28 internal layer is `BLOCKED_PRODUCT_
-DEPENDENCY`.** All 10 have real grounding; 5/10 are at referential
-depth, 5/10 (WAL-19, WAL-20, WAL-21, WAL-24, WAL-28) at full package
-depth — **this closes every Academy-ledger-grounded formation in the
-layer** (task #181); the remaining 5 (WAL-22/23/25/26/27) are grounded
-in the real external `djsayd/CVLN-Wallet` product instead.
+DEPENDENCY`.** All 10 have real grounding, and **all 10/10 are now at
+full package depth** — this closes the entire WAL-19→28 layer (task
+#182): 5 grounded in this Academy's own ledger (WAL-19/20/21/24/28),
+5 grounded in the real external `djsayd/CVLN-Wallet` product
+(WAL-22/23/25/26/27).
 
 ## External + cross-ecosystem layer (Wave 19, 2026-09-06)
 
@@ -67,11 +67,11 @@ this corpus may ever be described as `PACKAGE_COMPLETE` unless its own
 WAL-21/WAL-24/WAL-28 do; every other row stays at its own honestly-
 declared depth.
 
-**Canonical state, full WAL domain (52 rows incl. WAL-X):** 9
+**Canonical state, full WAL domain (52 rows incl. WAL-X):** 10
 `PACKAGE_COMPLETE` (WAL-19, WAL-20, WAL-21, WAL-22, WAL-23, WAL-24,
-WAL-25, WAL-26, WAL-28) / 17 `MODULE_CONTENT_DRAFTED` / 1
-`EXTEND_EXISTING` / 1 `NEEDS_EXPERT_REVIEW` / 4 new WAL-X bridge
-content / 3 WAL-X converged / 2 `BLOCKED_PRODUCT_DEPENDENCY`.
-9+17+1+1+4+3+2=37 — plus CVE-01→15 (15 rows, sibling corpus, see
-`docs/cve/QUALITY_GATES.md`) = 52 total, matching
-`WALLET_CVE_RECONCILIATION.md`'s own count.
+WAL-25, WAL-26, WAL-27, WAL-28 — **the entire WAL-19→28 layer**) / 16
+`MODULE_CONTENT_DRAFTED` / 1 `EXTEND_EXISTING` / 1 `NEEDS_EXPERT_
+REVIEW` / 4 new WAL-X bridge content / 3 WAL-X converged / 2
+`BLOCKED_PRODUCT_DEPENDENCY`. 10+16+1+1+4+3+2=37 — plus CVE-01→15 (15
+rows, sibling corpus, see `docs/cve/QUALITY_GATES.md`) = 52 total,
+matching `WALLET_CVE_RECONCILIATION.md`'s own count.

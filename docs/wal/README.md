@@ -13,22 +13,21 @@ is a sibling corpus, see docs/cve/.
 
 ## Internal layer (WAL-19→28) — Wave 2
 
-STATUT (deepened 2026-09-08) = 5/10 formations à PACKAGE_COMPLETE
-(WAL-19, WAL-20, WAL-21, WAL-24, WAL-28, niveau KOR/KLT/GMD) — **toutes
-les formations ancrées sur le ledger de cette Academy sont désormais au
-niveau package complet** — 5/10 (WAL-22/23/25/26/27, ancrées sur le
-vrai produit externe `djsayd/CVLN-Wallet`) au niveau MODULE_CONTENT_
-DRAFTED (référentiel + modules seulement — un état intermédiaire
-honnête, jamais présenté comme final). AUCUNE formation de ce corpus
-n'est plus
-BLOCKED_PRODUCT_DEPENDENCY : WAL-22/23/25/26/27 étaient déclarées ainsi
-sur la seule base de backend/wallet/ (ledger simple de cette Academy)
-— un checkpoint Founder explicite a demandé de confronter ces 5
-besoins au vrai produit externe djsayd/CVLN-Wallet (déjà audité cette
-session), qui possède réellement les 5 capacités (coffres, transfert,
-marketplace, settlement/réconciliation, kill-switch). Statuts non
-remontés artificiellement : ce sont 5 véritables référentiels neufs
-écrits cette session, pas une simple recatégorisation.
+STATUT (deepené 2026-09-08) = 10/10 formations à PACKAGE_COMPLETE
+(WAL-19→28, niveau KOR/KLT/GMD) — **la couche WAL-19→28 est désormais
+entièrement au niveau package complet**, 5/10 ancrées sur le ledger de
+cette Academy (WAL-19/20/21/24/28), 5/10 ancrées sur le vrai produit
+externe `djsayd/CVLN-Wallet` (WAL-22/23/25/26/27, dont WAL-27 clôturé
+en dernier — kill-switch + gel de carte per-user). AUCUNE formation de
+ce corpus n'est plus BLOCKED_PRODUCT_DEPENDENCY : WAL-22/23/25/26/27
+étaient déclarées ainsi sur la seule base de backend/wallet/ (ledger
+simple de cette Academy) — un checkpoint Founder explicite a demandé de
+confronter ces 5 besoins au vrai produit externe djsayd/CVLN-Wallet
+(déjà audité cette session), qui possède réellement les 5 capacités
+(coffres, transfert, marketplace, settlement/réconciliation,
+kill-switch). Statuts non remontés artificiellement : ce sont 5
+véritables référentiels neufs écrits cette session, puis approfondis un
+par un jusqu'au package complet, pas une simple recatégorisation.
 ```
 
 ## Pourquoi ce corpus existe
@@ -61,14 +60,14 @@ accès opérationnel réel.
 | WAL-24 — CVLN Card Operations | `wal24/` | `passes.py` (cette Academy, `build_apple_pass_payload`/`build_google_pass_payload`) | `PACKAGE_COMPLETE_FOR_WAL24` |
 | WAL-25 — CVLN Marketplace Operations | `wal25/` | `GET /marketplace`, `POST /marketplace/buy` (**`djsayd/CVLN-Wallet`**, 8-item catalog réel, vérifié directement) | `PACKAGE_COMPLETE_FOR_WAL25` |
 | WAL-26 — Settlement & Reconciliation Operator | `wal26/` | `POST/GET /admin/settlements[...]`, `POST/GET /admin/reconciliation/*` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `PACKAGE_COMPLETE_FOR_WAL26` |
-| WAL-27 — Financial Incident & Kill-Switch Operations | `wal27/` | `PUT /admin/kill-switch` (3 switches), `POST /card/freeze`/`unfreeze` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
+| WAL-27 — Financial Incident & Kill-Switch Operations | `wal27/` | `PUT /admin/kill-switch` (3 switches), `POST /card/freeze`/`unfreeze` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `PACKAGE_COMPLETE_FOR_WAL27` |
 | WAL-28 — Wallet Audit & Evidence Operations | `wal28/` | Append-only `db.wallet_transactions`, `list_transactions()`, `reconcile_wallet_balance()` (cette Academy) | `PACKAGE_COMPLETE_FOR_WAL28` |
 
 **10/10 constructibles**, **0/10 bloquées** — 5 sur le ledger de cette
-Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **9/10**
-(toutes sauf WAL-27) sont désormais au niveau package complet, toujours
-pas `FULLY_COMPLETE` ; **1/10** (WAL-27, ancrée sur
-`djsayd/CVLN-Wallet`) reste à approfondir (vague future).
+Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **10/10
+sont désormais au niveau package complet** — la couche WAL-19→28 est
+close ; toujours pas `FULLY_COMPLETE` (requiert un passage réel vérifié
+par un humain, pour aucune des 10).
 
 ## Repo-truth findings (vérifiées cette session)
 
@@ -135,14 +134,15 @@ produit externe `djsayd/CVLN-Wallet` — les deux sont cités selon la
 formation, jamais fusionnés, et **aucune formation de ce corpus
 n'accorde d'accès opérationnel réel** à l'un ou l'autre système —
 seule une certification interne (`WALxx.SKILL.*`) est en jeu.
-`FULLY_COMPLETE = FALSE` pour l'ensemble du corpus ; `PACKAGE_COMPLETE`
-n'est vrai que pour WAL-19. Aucun statut n'est remonté artificiellement
-au-delà du travail réellement produit cette session.
+`FULLY_COMPLETE = FALSE` pour l'ensemble du corpus (requiert un passage
+réel vérifié par un humain) ; `PACKAGE_COMPLETE` est désormais vrai
+pour les 10 formations WAL-19→28. Aucun statut n'est remonté
+artificiellement au-delà du travail réellement produit cette session.
 
-**Canonical state, full WAL domain (52 rows):** 1 `PACKAGE_COMPLETE`
-(WAL-19) / 25 `MODULE_CONTENT_DRAFTED` (9 internal WAL-20→28 + 16
-external WAL-01→13,16-18) / 1 `EXTEND_EXISTING` (WAL-14) / 1
+**Canonical state, full WAL domain (52 rows):** 10 `PACKAGE_COMPLETE`
+(WAL-19→28, la couche interne complète) / 16 `MODULE_CONTENT_DRAFTED`
+(external WAL-01→13,16-18) / 1 `EXTEND_EXISTING` (WAL-14) / 1
 `NEEDS_EXPERT_REVIEW` (WAL-15) / 7 WAL-X resolved (4 new bridge + 3
 converged) / 2 `BLOCKED_PRODUCT_DEPENDENCY` (WAL-X-08/09). Never
-summarized as `FULLY_COMPLETE` or `PACKAGE_COMPLETE` beyond WAL-19
-alone.
+summarized as `FULLY_COMPLETE` — `PACKAGE_COMPLETE` now spans the full
+internal WAL-19→28 layer, not a single formation.

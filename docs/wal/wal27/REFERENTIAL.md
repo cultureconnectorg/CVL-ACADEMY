@@ -61,4 +61,12 @@ for any Academy candidate.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_WAL27` — full canonical package built:
+`BANQUE_N1.md`, `BANQUE_N2.md`, `ASSESSMENT_AND_RUBRIC.md`,
+`EVIDENCE_MODEL.md`, `GUIDE_CANDIDAT.md`, `GUIDE_CORRECTEUR.md`,
+`GUIDE_JURY.md`, `INTEGRATION_NOTE.md`. Grounded in the repo-truth
+already directly verified against `djsayd/CVLN-Wallet` — reused, not
+re-audited, per this corpus's own established discipline. **This
+closes the WAL-19→28 layer: all 10 formations are now at full package
+depth.** Not yet delivered to a real candidate — `FULLY_COMPLETE` still
+requires that verification, per `../QUALITY_GATES.md`.
