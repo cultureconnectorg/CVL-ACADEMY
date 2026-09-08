@@ -62,13 +62,14 @@ Master Package — never conflated, even though both use the words
 | Formation | Status |
 |---|---|
 | FMS-07 | `PACKAGE_COMPLETE` — flagship, deepened this wave (référentiel + N1/N2 + assessment/rubric + evidence model + 3 guides + integration note) |
-| FMS-08, FMS-09, FMS-10, FMS-11, FMS-12, FMS-13, FMS-15, FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built |
+| FMS-08, FMS-09, FMS-10, FMS-11, FMS-12, FMS-13, FMS-15, FMS-18 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — same full canonical package depth as FMS-07, each citing its own real grounding (repo route, by-reference canon module, or industry-standard practice with explicit boundaries). |
 
-**1/9 `PACKAGE_COMPLETE`, 8/9 `MODULE_CONTENT_DRAFTED`, 0/9
-`BLOCKED`.** No formation in this wave is blocked — the two candidates
-originally flagged as repo-dependent (FMS-07, FMS-15/18) all confirm
-real capability in `fms-os/fms`, directly re-read this session, never
-cited from memory.
+**9/9 `PACKAGE_COMPLETE`, 0/9 `MODULE_CONTENT_DRAFTED`, 0/9
+`BLOCKED`.** No formation in this wave is blocked — the candidates
+flagged as repo-dependent (FMS-07, FMS-15, FMS-18) all confirm real
+capability in `fms-os/fms`, directly re-read this session, never
+cited from memory. `FULLY_COMPLETE` is not claimed for any of the 9 —
+that requires a real candidate assessed and verified.
 
 ## What this corpus does NOT do
 

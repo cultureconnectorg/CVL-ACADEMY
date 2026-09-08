@@ -32,17 +32,19 @@ this corpus.
 | FMS-12 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, industry-standard practice with explicit FMS-11 boundary. |
 | FMS-13 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, industry-standard A&R practice with explicit FMS-01 boundary. |
 | FMS-15 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, grounded in the real fms-os/fms client/lead data model. |
-| FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built. Deepening continues this session (task #187), last row of the wave. |
+| FMS-18 (absorbs FMS-17) | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, grounded in the real fms-os/fms command-center/integrations/audit-log layer. |
 
-**No formation in this corpus is `BLOCKED`.** All 9 have real grounding
-of one of the three legitimate kinds above (repo route, by-reference
-canon module, or industry-standard practice with explicit boundaries)
-— none required an invented capability to proceed.
+**This closes task #187: all 9/9 FMS-07→18 formations are now at full
+canonical package depth.** No formation in this corpus is `BLOCKED`.
+All 9 have real grounding of one of the three legitimate kinds above
+(repo route, by-reference canon module, or industry-standard practice
+with explicit boundaries) — none required an invented capability to
+proceed.
 
 ## Never claim FULLY_COMPLETE
 
-Even FMS-07/FMS-08, now at full package depth, are not
-`FULLY_COMPLETE` — that status requires a real candidate assessed and
-verified, which this drafting pass does not perform. No formation in
-this corpus may ever be described as `PACKAGE_COMPLETE` unless its
-own `REFERENTIAL.md` status line says so explicitly.
+Even at 9/9 full package depth, none of FMS-07→18 is `FULLY_COMPLETE`
+— that status requires a real candidate assessed and verified, which
+this drafting pass does not perform. No formation in this corpus may
+ever be described as `PACKAGE_COMPLETE` unless its own
+`REFERENTIAL.md` status line says so explicitly.
