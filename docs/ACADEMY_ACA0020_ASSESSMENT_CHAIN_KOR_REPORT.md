@@ -101,14 +101,15 @@ C7 at 4 instead passes at `score_global=100.0` against the imported
 
 ## What remains open (this is a PARTIAL closure, not a claim of FULLY_COMPLETE)
 
-1. **KLT-canonical rubric import is now done too** — see
-   `docs/ACADEMY_ACA0020_ASSESSMENT_CHAIN_KLT_REPORT.md`
+1. **KLT-canonical and FMS-07..18 rubric import are now done too** —
+   see `docs/ACADEMY_ACA0020_ASSESSMENT_CHAIN_KLT_REPORT.md`
    (`klt_canonical/rubric_import.py`, 10/10 real KLT formations with a
-   `RUBRIC.md`). **FMS-canonical and FRK-canonical remain open** —
-   `fms_canonical/` classifies the same resource kinds (confirmed by
-   direct grep of `fms_canonical/module_map_extract.py`), so the same
-   pattern should port with minor changes; `frk_canonical` has not yet
-   been checked for the same convention.
+   `RUBRIC.md`) and `docs/ACADEMY_ACA0020_ASSESSMENT_CHAIN_FMS_SPEC_
+   REPORT.md` (`fms_canonical/spec_rubric_import.py`, 9/9 real
+   FMS-07..18 formations with an `ASSESSMENT_AND_RUBRIC.md` — a
+   different table shape and a filesystem-direct read path, not a
+   straight port; see that report for why). **`frk_canonical` remains
+   open** — not yet checked for the same convention.
 2. **N1/N2 question-bank binding** — `N1_QUESTION_BANK.md`/
    `N2_EVALUATIONS.md` are real, already-classified resources
    (`db.kor_resources`, `type` field distinguishes them from `rubric`)

@@ -36,6 +36,11 @@ from .read_model import (
     list_canonical_modules,
     list_canonical_skill_definitions,
 )
+from .spec_rubric_import import (
+    FMS_SPEC_FORMATION_CODES,
+    certification_code_for as spec_certification_code_for,
+    import_rubric_for_formation as import_spec_rubric_for_formation,
+)
 
 __all__ = [
     "DeliveryArchitecture",
@@ -68,4 +73,7 @@ __all__ = [
     "build_zip_inventory",
     "count_zip_files",
     "list_zip_provenance",
+    "FMS_SPEC_FORMATION_CODES",
+    "spec_certification_code_for",
+    "import_spec_rubric_for_formation",
 ]

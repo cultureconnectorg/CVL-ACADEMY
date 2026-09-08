@@ -14,6 +14,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 
 from auth import get_current_user, require_role
+from certification.models import RubricInput
 from fms_canonical import (
     CanonicalFormation,
     CanonicalImportResult,
@@ -28,6 +29,7 @@ from fms_canonical import (
     get_delivery_architecture,
     get_user_canonical_progress,
     import_canonical_fms_zip,
+    import_spec_rubric_for_formation,
     list_canonical_formations,
     list_canonical_modules,
     list_canonical_skill_definitions,
@@ -163,3 +165,30 @@ async def provenance(current: User = Depends(require_role(*STAFF_ROLES))):
     not, with its sha256/byte_size/audience. Staff-only: this is an
     audit surface, not learner content."""
     return await list_zip_provenance()
+
+
+@router.post("/formations/{formation_code}/rubric/import", response_model=RubricInput)
+async def import_spec_rubric(
+    formation_code: str, current: User = Depends(require_role(*ADMIN_ROLES))
+):
+    """ACA-0020 — real N1/N2/A01 assessment-chain binding for the 9 real
+    FMS-07..18 specialization formations. Unlike `POST /canonical/import`
+    (the ZIP-scoped FMS-01..06 archive), this reads
+    `docs/fms/fmsXX/ASSESSMENT_AND_RUBRIC.md` directly off the server
+    filesystem — see `fms_canonical/spec_rubric_import.py`'s own
+    docstring for why FMS-07..18 needs a different import path than
+    FMS-01..06. Idempotent. 404 for any formation code outside the 9
+    real FMS-07..18 formations that have a built ASSESSMENT_AND_RUBRIC.md
+    (FMS-01..06 use the ZIP-import path; FMS-14/16/17 are reserved in
+    the CERTIFICATION_MODEL.md range but not yet built)."""
+    result = await import_spec_rubric_for_formation(formation_code)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Aucune grille certificative disponible pour {formation_code} "
+                f"(seules FMS-07..18, hors FMS-14/16/17 non construites, ont un "
+                f"ASSESSMENT_AND_RUBRIC.md réel; FMS-01..06 utilisent l'import ZIP)."
+            ),
+        )
+    return result
