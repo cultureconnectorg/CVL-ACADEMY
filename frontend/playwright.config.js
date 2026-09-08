@@ -14,7 +14,27 @@
 // `webServer` boots the existing CRA/craco dev server (no new tooling
 // dependency beyond @playwright/test itself) on a dedicated port so it
 // never collides with a developer's own `yarn start` on 3000.
+const fs = require("fs");
 const path = require("path");
+
+// ACA-0031 — the pinned sandbox path below is real for the dev sandbox
+// this config was originally written in (Chrome for Testing pre-
+// installed under PLAYWRIGHT_BROWSERS_PATH, `playwright install`
+// forbidden from re-fetching a different revision there) but does NOT
+// exist on a GitHub Actions runner, where the new `e2e` CI job (see
+// .github/workflows/ci.yml) instead runs `npx playwright install
+// --with-deps chromium` to fetch Playwright's own managed browser.
+// Hardcoding the sandbox path unconditionally broke that job outright
+// ("Failed to launch chromium because executable doesn't exist at
+// /opt/pw-browsers/chromium" — every one of the 86 specs failed the
+// same way, confirmed via the job's own logs). Only pin the explicit
+// path when it's real on this machine; otherwise leave
+// `executablePath` undefined so Playwright resolves its own installed
+// browser, exactly what `playwright install` puts there.
+const SANDBOX_CHROMIUM_PATH = "/opt/pw-browsers/chromium";
+const explicitChromiumPath =
+  process.env.PLAYWRIGHT_CHROMIUM_PATH ||
+  (fs.existsSync(SANDBOX_CHROMIUM_PATH) ? SANDBOX_CHROMIUM_PATH : undefined);
 
 module.exports = {
   testDir: "./e2e",
@@ -31,14 +51,9 @@ module.exports = {
     {
       name: "chromium",
       use: {
-        // Pinned local Chromium (see repo/sandbox docs) rather than a
-        // Playwright-managed download — this sandbox pre-installs Chrome
-        // for Testing under PLAYWRIGHT_BROWSERS_PATH and forbids
-        // `playwright install` re-fetching a different revision.
-        launchOptions: {
-          executablePath:
-            process.env.PLAYWRIGHT_CHROMIUM_PATH || "/opt/pw-browsers/chromium",
-        },
+        launchOptions: explicitChromiumPath
+          ? { executablePath: explicitChromiumPath }
+          : {},
       },
     },
   ],
