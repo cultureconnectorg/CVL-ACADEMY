@@ -20,6 +20,7 @@ const Missions = lazy(() => import("@/pages/Missions"));
 const Badges = lazy(() => import("@/pages/Badges"));
 const FrekProfile = lazy(() => import("@/pages/FrekProfile"));
 const ProfessionalPublicProfile = lazy(() => import("@/pages/ProfessionalPublicProfile"));
+const EcosystemBuilder = lazy(() => import("@/pages/EcosystemBuilder"));
 const Roadmap = lazy(() => import("@/pages/Roadmap"));
 const Wallet = lazy(() => import("@/pages/Wallet"));
 const Skills = lazy(() => import("@/pages/Skills"));
@@ -143,6 +144,7 @@ function App() {
                     <Route path="/missions" element={<Missions />} />
                     <Route path="/badges" element={<Badges />} />
                     <Route path="/frek-profile" element={<FrekProfile />} />
+                    <Route path="/ecosystem-builder" element={<EcosystemBuilder />} />
                     <Route path="/wallet" element={<Wallet />} />
                     <Route path="/skills" element={<Skills />} />
                     <Route path="/certifications" element={<Certifications />} />

@@ -18,6 +18,7 @@ from . import (
     canonical,
     certification,
     commerce,
+    ecosystem_builder,
     fms,
     fms_lineage,
     formations,
@@ -73,5 +74,6 @@ for module in (
     commerce,
     payments,
     professional_profile,
+    ecosystem_builder,
 ):
     router.include_router(module.router)

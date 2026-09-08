@@ -304,6 +304,29 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       }),
     })
   );
+  // ACA-0030 — same crash class again: EcosystemBuilder.js reads
+  // `surface.portfolio.length`/`.map()` on several array fields and
+  // `surface.stage` as a string the moment it renders — an unmocked
+  // "{}" would leave every one of those undefined. A real, minimal,
+  // correctly-shaped EcosystemBuilderSurface (see backend/services/
+  // ecosystem_builder.py) is what the real backend always returns.
+  await page.route("**/api/ecosystem-builder/me", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        stage: "consumer",
+        frek_id: user.frek_id,
+        display_name: user.display_name,
+        is_public: false,
+        portfolio: [],
+        credentials: [],
+        verified_proofs: [],
+        missions_completed: [],
+        ecosystem_history: [],
+      }),
+    })
+  );
   // GET /api/modules/:fc/:mc only — the exact 2-segment shape ModuleJourney
   // fetches on load. Deliberately does NOT match the 3+-segment mutating
   // endpoints (…/phase, …/deliverable, …/mini-mission/commit), which stay

@@ -4,7 +4,7 @@ import {
   HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
   Fingerprint, LogOut, Leaf, Language, Wallet as WalletIcon,
   Sparks, ShieldCheck, ShieldSearch, PeopleTag, Settings,
-  Menu, Xmark, CreditCard,
+  Menu, Xmark, CreditCard, Hammer,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
@@ -26,6 +26,11 @@ const STUDENT_NAV = [
   { to: "/offers",          key: "offers",          Icon: CreditCard },
   { to: "/wallet",          key: "wallet",          Icon: WalletIcon },
   { to: "/frek-profile",    key: "frek_profile",    Icon: Fingerprint },
+  // ACA-0030 — Ecosystem Builder surface: the unified consumer/learner/
+  // professional/builder view (services/ecosystem_builder.py). Not a
+  // MOBILE_PRIMARY_KEYS entry — same tier as Skills/Certifications/
+  // Wallet, reached via sidebar or the mobile "more" sheet.
+  { to: "/ecosystem-builder", key: "ecosystem_builder", Icon: Hammer },
 ];
 
 const STAFF_NAV = [
