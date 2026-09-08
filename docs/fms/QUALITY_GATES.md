@@ -26,7 +26,8 @@ this corpus.
 |---|---|
 | FMS-07 (absorbs FMS-14, FMS-16) | `PACKAGE_COMPLETE` — full canonical package (référentiel + N1/N2 + assessment/rubric + evidence model + 3 guides + integration note), deepened this pass as the wave's flagship, matching the KOR/KLT/GMD/WAL depth standard. |
 | FMS-08 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, citing FMS-03/M06,M11 by reference. |
-| FMS-09, FMS-10, FMS-11, FMS-12, FMS-13, FMS-15, FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built. Deepening continues formation by formation this session (task #187). |
+| FMS-09 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, citing FMS-03/M07,M12,M14 by reference. |
+| FMS-10, FMS-11, FMS-12, FMS-13, FMS-15, FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built. Deepening continues formation by formation this session (task #187). |
 
 **No formation in this corpus is `BLOCKED`.** All 9 have real grounding
 of one of the three legitimate kinds above (repo route, by-reference
