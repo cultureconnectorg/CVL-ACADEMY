@@ -59,8 +59,13 @@ import { useI18n } from "@/lib/i18n.jsx";
  * RAIL 4 ("continue les H", 2026-09-07) addendum: activation can also
  * play a real camera-intent flight (`useCameraIntent.js`, ported from
  * H0.8's camera-follow state machine) before navigating — flag-gated
- * (`SPATIAL_CAMERA_INTENT`, default off), same-page scope only. See
- * that hook's own docstring for exactly what's authorized vs. not.
+ * (`SPATIAL_CAMERA_INTENT`, default off). **ACA-0015 update
+ * (2026-09-08)**: the flight is no longer same-page-only — each item's
+ * real `destinationSelector` (FormationDetail's own root testid; the
+ * exact same mission's own card on `/missions`) lets `useCameraIntent`
+ * continue CROSSING → REVEALING once that real destination anchor
+ * actually mounts (`lib/spatial/mountGuard.js`), instead of stopping at
+ * FOLLOWING. See that hook's own docstring for the full state contract.
  */
 export default function SpatialHub({ formationNodes, missionNodes }) {
   const navigate = useNavigate();
@@ -81,6 +86,12 @@ export default function SpatialHub({ formationNodes, missionNodes }) {
       progressPct: n.progressPct,
       isUnlocked: n.isUnlocked,
       onActivate: () => navigate(`/formations/${n.code}`),
+      // ACA-0015 — the real anchor FormationDetail.js always renders
+      // once mounted (its own root, not per-formation — the page has
+      // no per-code testid to hand a REVEALING flight a tighter
+      // target). Real and load-bearing: e2e already depends on this
+      // exact testid (module-journey-navigation.spec.js).
+      destinationSelector: '[data-testid="formation-detail"]',
     }));
     const missions = (missionNodes ?? []).map((n) => ({
       kind: "mission",
@@ -91,6 +102,11 @@ export default function SpatialHub({ formationNodes, missionNodes }) {
       meta: `+${n.ccReward} CC`,
       eligible: n.eligible,
       onActivate: () => navigate("/missions"),
+      // ACA-0015 — the SAME real mission's own card on the destination
+      // list (Missions.js renders `data-testid="mission-${code}"` in
+      // both its plain-grid and depth-card treatments) — a genuinely
+      // specific shared-element target, not the whole page.
+      destinationSelector: `[data-testid="mission-${n.code}"]`,
     }));
     return [...formations, ...missions].sort((a, b) => a.distance - b.distance);
   }, [formationNodes, missionNodes, navigate]);
@@ -160,7 +176,9 @@ export default function SpatialHub({ formationNodes, missionNodes }) {
       audioRef.current.play("CONFIRM");
       hapticsRef.current.fire("CONFIRM");
       if (FEATURE_FLAGS.SPATIAL_CAMERA_INTENT) {
-        cameraIntent.fly(nodeRefs.current[item.key], item.onActivate);
+        cameraIntent.fly(nodeRefs.current[item.key], item.onActivate, {
+          destinationSelector: item.destinationSelector,
+        });
       } else {
         item.onActivate();
       }

@@ -21,18 +21,23 @@
  * Router: a route change unmounts/remounts pages, and destination pages
  * (Dashboard/Roadmap/...) fetch their own data on mount before
  * rendering the real anchor element — so a same-frame REVEALING handoff
- * to a cross-route anchor is not safely reproducible without either (a)
- * promoting Layout to an Outlet-based layout route (deferred, same
- * REPLACE-BLOCKED posture as `AcademyBackdrop`'s own documented gap) or
- * (b) a real mount-detection race guard neither built nor verified here.
- * This file's CROSSING/REVEALING math therefore stays UNUSED by any
- * production caller for now — only INTENT/LOCKING/FOLLOWING (a same-page
- * "the camera is diving into what you picked" cue, entirely before
- * `navigate()` fires) are wired into production, by `useCameraIntent.js`.
- * `SETTLING`, `RETURNING`, the full `makeAnchorContract` destination
- * fields, and `cameraReturnTransition`'s reverse-anchor resolution
- * remain NOT_AUTHORIZED for production use — extracted here, faithfully,
- * for the moment that Outlet restructure is authorized, not wired now.
+ * to a cross-route anchor was not safely reproducible without either (a)
+ * promoting Layout to an Outlet-based layout route or (b) a real
+ * mount-detection race guard.
+ *
+ * **ACA-0015 update (2026-09-08)**: both are now real. (a) is the
+ * Layout→Outlet restructure (ACA-0015/ACA-0016's routing work); (b) is
+ * `lib/spatial/mountGuard.js`'s `waitForElement`. `useCameraIntent.js`'s
+ * `fly()` now completes the full INTENT → LOCKING → FOLLOWING →
+ * CROSSING → REVEALING → SETTLING sequence for the two real production
+ * call sites `components/SpatialHub.jsx` wires (formation and mission
+ * activation) — verified against a real Chromium instance (mocked auth,
+ * real navigation, real destination anchors), not just unit-tested math;
+ * see `docs/ACADEMY_ACA0015_CAMERA_REVEALING_REPORT.md`. `RETURNING`,
+ * the full `makeAnchorContract` destination fields, and
+ * `cameraReturnTransition`'s reverse-anchor resolution remain
+ * NOT_AUTHORIZED for production use — extracted here, faithfully, not
+ * wired now.
  */
 
 export const CAMERA_STATES = Object.freeze({
