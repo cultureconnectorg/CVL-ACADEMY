@@ -57,6 +57,14 @@ implementation to operate.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED` (`FORMALIZATION_PENDING` for the
-KORA-specific Shapley content; the general/market-context module is
-buildable now).
+`STATUS = PACKAGE_COMPLETE_FOR_CVE06` (`FORMALIZATION_PENDING` still
+applies to the KORA-specific Shapley content — this package teaches
+the general concept, the verified absence, and the honest gap, never
+an invented KORA formula) — full canonical package built:
+`BANQUE_N1.md`, `BANQUE_N2.md`, `ASSESSMENT_AND_RUBRIC.md`,
+`EVIDENCE_MODEL.md`, `GUIDE_CANDIDAT.md`, `GUIDE_CORRECTEUR.md`,
+`GUIDE_JURY.md`, `INTEGRATION_NOTE.md`. Grounded in a direct re-read
+this session of the full spec (full-text search confirms "Shapley"
+appears nowhere in it). Not yet delivered to a real candidate —
+`FULLY_COMPLETE` still requires that verification, per
+`../QUALITY_GATES.md`.

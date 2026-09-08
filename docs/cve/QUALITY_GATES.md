@@ -28,7 +28,8 @@ this corpus.
 | CVE-03 | `PACKAGE_COMPLETE_FOR_CVE03` (deepened 2026-09-08). |
 | CVE-04 | `PACKAGE_COMPLETE_FOR_CVE04` (deepened 2026-09-08). |
 | CVE-05 | `PACKAGE_COMPLETE_FOR_CVE05` (deepened 2026-09-08). |
-| CVE-06→15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening continues formation by formation this session. |
+| CVE-06 | `PACKAGE_COMPLETE_FOR_CVE06` (deepened 2026-09-08, `FORMALIZATION_PENDING` still applies to KORA-specific Shapley content — never an invented formula). |
+| CVE-07→15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening continues formation by formation this session. |
 
 **No formation in this corpus is `BLOCKED_PRODUCT_DEPENDENCY`** — unlike
 Good Mood/Wallet, the grounding object here is a mathematical
