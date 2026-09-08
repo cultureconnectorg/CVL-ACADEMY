@@ -3,10 +3,13 @@ Kiltikonet" (Founder authorization, 2026-09-04, following the exact
 non-destructive pattern already used and proven for FMS in
 `fms_canonical/` — ACA-0006).
 
-**Source of truth**: `docs/klt/klt01/` through `docs/klt/klt08/` —
-already-unpacked Markdown, not a ZIP upload (unlike FMS). The import
-pipeline scans that directory tree directly on the server filesystem;
-see `import_pipeline.py`.
+**Source of truth**: `docs/klt/klt01/` through `docs/klt/klt08/`, plus
+`docs/klt/klt13/` and `docs/klt/klt18/` (added 2026-09-07, Founder
+authorization scoped to exactly these two — see `docs/klt/README.md`
+§FOUNDER_AUTHORIZATION_UPDATE and `KLT_09_20_RECONCILIATION.md`
+§KLT-13/§KLT-18) — already-unpacked Markdown, not a ZIP upload (unlike
+FMS). The import pipeline scans that directory tree directly on the
+server filesystem; see `import_pipeline.py`.
 
 **The one invariant this whole package exists to enforce structurally,
 not just assert in prose** (Founder, 2026-09-04: "on ne doit pas
@@ -57,9 +60,12 @@ from canonical_common.audience import resource_audience as _resource_audience
 KLT_CANONICAL_VERSION_CURRENT = "KLT_20260904_V1"
 
 # The 8 formations named in KLT_MASTER_MAP_v1 (docs/KILTIKONET_KLT0001_
-# CANONICAL_EDUCATION_MAP.md §2) — never derived from a directory listing
-# count, always this explicit, real list, exactly like FMS's
-# CANONICAL_FORMATION_CODES.
+# CANONICAL_EDUCATION_MAP.md §2), plus KLT-13 and KLT-18 (added
+# 2026-09-07 from the KLT-09→20 reconciliation's two unblocked
+# candidates — KLT_09_20_RECONCILIATION.md §KLT-13/§KLT-18, Founder
+# authorization scoped to exactly these two) — never derived from a
+# directory listing count, always this explicit, real list, exactly
+# like FMS's CANONICAL_FORMATION_CODES.
 KLT_FORMATION_CODES: List[str] = [
     "KLT-01",
     "KLT-02",
@@ -69,6 +75,8 @@ KLT_FORMATION_CODES: List[str] = [
     "KLT-06",
     "KLT-07",
     "KLT-08",
+    "KLT-13",
+    "KLT-18",
 ]
 
 # Real per-formation contexts, decided by KLT-0008 (docs/KILTIKONET_
@@ -86,6 +94,8 @@ KLT_CONTEXTS: dict = {
     "KLT-06": ["EXTERNAL"],
     "KLT-07": ["INTERNAL"],
     "KLT-08": ["INTERNAL"],
+    "KLT-13": ["EXTERNAL"],
+    "KLT-18": ["EXTERNAL"],
 }
 
 StructuralStatus = Literal["COMPLETE", "PARTIAL"]

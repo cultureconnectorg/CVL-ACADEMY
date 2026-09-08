@@ -1,12 +1,14 @@
-# Corpus Canonique Kiltikonet (KLT-01 → KLT-08)
+# Corpus Canonique Kiltikonet (KLT-01 → KLT-08, KLT-13, KLT-18)
 
 ```
 WORKSTREAM = KLT (Kiltikonet), séparé de FMS (FMS_CLOSED = TRUE)
 STATUT = 5/5 formations legacy construites au niveau industriel FMS
-         (KLT-01→05, COMPLETE) + 3/3 formations NEW construites, toutes
-         désormais STRUCTURAL_STATUS = COMPLETE (KLT-06→08, 7/7
-         compétences chacune, mise à jour 2026-09-07 — voir
-         §Formations NEW).
+         (KLT-01→05, COMPLETE) + 3/3 formations NEW du premier lot
+         (KLT-06→08, STRUCTURAL_STATUS = COMPLETE, 7/7 compétences
+         chacune) + 2/2 formations NEW du second lot (KLT-13, KLT-18,
+         construites le 2026-09-07, 5/5 compétences chacune,
+         STRUCTURAL_STATUS = COMPLETE **et** FULLY_COMPLETE = TRUE —
+         voir §Formations NEW du second lot).
 KLT-06/07/08 FULLY_COMPLETE = FALSE malgré tout (4 compétences sur 21 —
          KLT-06/C5-C6, KLT-07/C4, KLT-08/C4 — désormais
          `BUILT_UNCONNECTED` : module et contenu réels, construits sur
@@ -14,7 +16,13 @@ KLT-06/07/08 FULLY_COMPLETE = FALSE malgré tout (4 compétences sur 21 —
          `Kiltikonet-Aout2026`, mais aucune connexion live
          Academy↔Kiltikonet-Aout2026). Ce champ reste FALSE tant qu'un
          client réel n'existe pas — à ne jamais déclarer TRUE sans un
-         ticket dédié qui le justifie.
+         ticket dédié qui le justifie. KLT-13/18, à l'inverse, n'ont
+         aucune compétence `BUILT_UNCONNECTED` (aucune dépendance à un
+         système externe non connecté) : leur `FULLY_COMPLETE = TRUE`
+         se calcule honnêtement, même dérivation que KLT-01→05 — ce
+         n'est jamais confondu avec un import réel en base
+         (`db.formations`), qui reste `NO_RUNTIME_BINDING_YET` pour les
+         10 formations sans exception.
 STOP = TRUE après cette livraison — intégration runtime Academy et
 tout nouveau chantier ACA restent NOT_AUTHORIZED.
 
@@ -28,12 +36,13 @@ autorisé, dans le périmètre suivant seulement, de lever ce STOP :
      RBAC, collections nommées), mais **Academy n'a aucun client/
      credentials appelant cette API en direct** — le contenu enseigne
      l'architecture réelle vérifiée, jamais une intégration live
-     fabriquée.
+     fabriquée. **FAIT** (2026-09-07).
   2. Construire KLT-13 (Terrain Operations, Accreditation & NFC) et
      KLT-18 (Cultural Communications & Engagement Operations) comme
      nouvelles formations complètes, per les verdicts déjà posés dans
      `KLT_09_20_RECONCILIATION.md` (`SPECIALIZE_EXISTING`/
-     `EXTEND_EXISTING`, ancrées sur `KLT-05`).
+     `EXTEND_EXISTING`, ancrées sur `KLT-05`). **FAIT** (2026-09-07) —
+     voir §Formations NEW du second lot.
 Le reste du chantier KLT-09→20 (les 8 autres candidats, tous
 `BLOCKED_PRODUCT_DEPENDENCY`) et toute intégration runtime live
 Academy↔Kiltikonet-Aout2026 restent `NOT_AUTHORIZED` — ce champ ne
@@ -95,25 +104,55 @@ conformément à `NO_FAKE_LIVE_CONNECTION` (renommé depuis
 schéma réel vérifié est enseigné comme architecture citable, jamais
 comme une requête live qu'Academy peut faire aujourd'hui.
 
-**Total : 211 documents pédagogiques** (139 + 72) sous `docs/klt/`, plus
-8 documents de gouvernance/décision à la racine `docs/`.
+**KLT-13 → KLT-18 (formations NEW du second lot, STRUCTURAL_STATUS =
+COMPLETE et FULLY_COMPLETE = TRUE)** — 2 formations construites le
+2026-09-07 sur autorisation Founder scopée, verdicts de
+`KLT_09_20_RECONCILIATION.md` : `KLT-13` (`SPECIALIZE_EXISTING` sur
+`KLT-05`/C4) et `KLT-18` (`EXTEND_EXISTING`/hybride sur `KLT-05`/C5,C7,C9)
+— aucune des deux ne rouvre ni ne duplique `KLT-05` :
 
-## Un seul univers, huit angles métier
+| Formation | Dossier | Compétences | Documents |
+|---|---|---|---|
+| KLT-13 — Responsable Accréditation Terrain / Terrain Accreditation Operator | `klt13/` | 5/5 | 21 |
+| KLT-18 — Responsable Communications & Engagement Culturel | `klt18/` | 5/5 | 21 |
 
-Les huit formations partagent le même cas fil rouge — **La Veillée du
+**42 documents** supplémentaires. Contrairement à `KLT-06`→`08`, aucune
+compétence de ces deux formations ne dépend d'un système externe non
+connecté (`BUILT_UNCONNECTED` n'apparaît dans aucun des deux registres) —
+`FULLY_COMPLETE = TRUE` s'y calcule donc honnêtement, exactement comme
+`KLT-01`→`05`. `KLT-13` étudie un précédent réel cross-écosystème (Good
+Mood, système QR — `GMD-25`) sans jamais le confondre avec un système
+Kiltikonet, et spécifie une extension NFC en nommant explicitement son
+statut `NOT_IMPLEMENTED` (aucun système NFC réel n'existe nulle part
+dans l'écosystème CVLN vérifié). `KLT-18` étend `KLT-05`/C5,C7,C9 par
+référence uniquement — l'animation quotidienne, le support individuel et
+la lecture de signaux d'engagement au quotidien restent enseignés dans
+`KLT-05` seul. **Aucune de ces deux formations n'a de badge** — formations
+`NEW`, sans équivalent legacy.
+
+**Total : 253 documents pédagogiques** (139 + 72 + 21 + 21) sous
+`docs/klt/`, plus les documents de gouvernance/décision à la racine
+`docs/`.
+
+## Un seul univers, dix angles métier
+
+Les dix formations partagent le même cas fil rouge — **La Veillée du
 Tanbou**, à *Baie-Mahault-sur-Mer* (territoire et personnes fictifs,
 `CASE_STATUS = PEDAGOGICAL_SIMULATION` partout) — chacune l'abordant
 sous l'angle de son métier propre : médiation directe (`KLT-01`),
 pilotage de projet (`KLT-02`), partenariats institutionnels (`KLT-03`),
 gouvernance associative et réseau (`KLT-04`), opération de plateforme
 numérique (`KLT-05`), analyse de données (`KLT-06`), déploiement
-territorial réseau (`KLT-07`), audit réseau (`KLT-08`). C'est la
+territorial réseau (`KLT-07`), audit réseau (`KLT-08`), accréditation
+terrain (`KLT-13`), communications & engagement (`KLT-18`). C'est la
 doctrine posée dès `KLT-0001` : "même univers, angle métier différent."
-Les trois derniers angles s'articulent explicitement à la suite des cinq
+Les angles `KLT-06`→`08` s'articulent explicitement à la suite des cinq
 premiers (Mémoire Vive candidate opérateur relais en `KLT-07`, puis
-auditée en `KLT-08`) plutôt que de repartir d'une situation isolée.
+auditée en `KLT-08`) plutôt que de repartir d'une situation isolée ;
+`KLT-13`/`18` restent ancrées sur `KLT-05` par référence, sans jamais
+dupliquer ses compétences.
 
-## Disciplines transversales, appliquées aux huit formations
+## Disciplines transversales, appliquées aux dix formations
 
 - **`LEGACY = EXISTING_EVIDENCE`** — aucun contenu legacy réel n'a été
   supprimé ; chaque formation garde sa base réelle (`KLT-0002`).
@@ -147,8 +186,21 @@ auditée en `KLT-08`) plutôt que de repartir d'une situation isolée.
   registre de skills, evidence model, certification, guides), jamais
   présentées comme une connexion live qu'Academy n'a pas.
 - **`METHOD_INHERITANCE = héritage explicite, jamais duplication`**
-  (`KLT-08`) — la méthode d'audit `KLT-04`/M13 est réutilisée par
-  référence pour `KLT-08`, jamais copiée ni réinventée.
+  (`KLT-08`, `KLT-18`) — la méthode d'audit `KLT-04`/M13 est réutilisée
+  par référence pour `KLT-08` ; l'animation communauté/support/lecture
+  de signaux de `KLT-05`/M05,M07,M09 l'est pour `KLT-18` — jamais copiée
+  ni réinventée dans les deux cas.
+- **`NFC_NOT_IMPLEMENTED`** (`KLT-13`) — aucun système NFC réel n'existe
+  nulle part dans l'écosystème CVLN vérifié ; toute spécification NFC
+  porte la mention explicite de son statut non implémenté.
+- **`REAL_PRECEDENT_CITED_ACCURATELY`** (`KLT-13`) — le précédent réel
+  cross-écosystème étudié (Good Mood, système QR `GMD-25`) est toujours
+  attribué à sa source réelle, jamais présenté comme un système
+  Kiltikonet.
+- **`EXTENSION_NOT_DUPLICATION`** (`KLT-18`) — aucun module ne réenseigne
+  l'animation quotidienne, le support individuel, ni la lecture de
+  signaux d'engagement de `KLT-05`/M05,M07,M09, cités par référence
+  uniquement.
 
 ## Comment lire une formation
 
@@ -188,22 +240,29 @@ pas un contenu de terrain validé. En particulier :
 - Aucune formation ne délivre de reconnaissance RNCP, ni d'autorisation
   opérationnelle réelle sur un système Kiltikonet — voir chaque
   `CERTIFICATION_MODEL.md`.
-- `KLT-06`→`08` restent, en plus de ce qui précède, des formations dont
-  la source est plus mince que `KLT-01`→`05` (aucun legacy, aucun détail
-  module-par-module dans le master plan tel que résumé par `KLT-0001`)
+- `KLT-06`→`08`, `KLT-13`, `KLT-18` restent, en plus de ce qui précède,
+  des formations dont la source est plus mince que `KLT-01`→`05` (aucun
+  legacy, aucun détail module-par-module dans un master plan pré-existant)
   — la carte de compétences de chacune est intégralement `PROPOSED`
   (dérivée par Claude), voir chaque `00_REFERENTIEL_ET_BLUEPRINTS.md`
-  §Avertissement de source. Elles sont désormais `STRUCTURAL_STATUS =
-  COMPLETE` (7/7 modules chacune, mise à jour 2026-09-07) mais
-  `FULLY_COMPLETE = FALSE` reste inchangé — voir §Formations NEW.
+  §Avertissement de source. `KLT-06`→`08` sont `STRUCTURAL_STATUS =
+  COMPLETE` (7/7 modules chacune) mais `FULLY_COMPLETE = FALSE` (4
+  compétences `BUILT_UNCONNECTED`) — voir §Formations NEW. `KLT-13`/`18`
+  sont `STRUCTURAL_STATUS = COMPLETE` **et** `FULLY_COMPLETE = TRUE` (5/5
+  modules chacune, aucune dépendance externe non connectée) — voir
+  §Formations NEW du second lot.
 
 ## Ce qui n'a pas été fait (hors scope, non autorisé)
 
 Aucun import réel dans le runtime Academy (`NO_RUNTIME_BINDING_YET`,
-voir chaque `INTEGRATION_ACADEMY_PACKAGE_NOTE.md`). Aucun test avec de
-vrais candidats/correcteurs/jury, pour aucune des 8 formations. Les 4
-compétences `BUILT_UNCONNECTED` de `KLT-06`→`08` (`C5`/`C6` Observatory
-de `KLT-06`, `C4` Network de `KLT-07`, `C4` Network/Compliance de
-`KLT-08`) sont désormais construites sur le schéma réel vérifié, mais
-sans aucune connexion live Academy↔Kiltikonet-Aout2026 — voir chaque
-`modules/MODULES_STATUS.md`.
+voir chaque `INTEGRATION_ACADEMY_PACKAGE_NOTE.md`) — pour les 10
+formations sans exception, `KLT-13`/`18` compris malgré leur
+`FULLY_COMPLETE = TRUE`. Aucun test avec de vrais candidats/correcteurs/
+jury, pour aucune des 10 formations. Les 4 compétences
+`BUILT_UNCONNECTED` de `KLT-06`→`08` (`C5`/`C6` Observatory de `KLT-06`,
+`C4` Network de `KLT-07`, `C4` Network/Compliance de `KLT-08`) sont
+désormais construites sur le schéma réel vérifié, mais sans aucune
+connexion live Academy↔Kiltikonet-Aout2026 — voir chaque
+`modules/MODULES_STATUS.md`. Les 8 autres candidats de la reconciliation
+`KLT-09→20` (hors `KLT-13`/`18`) restent `BLOCKED_PRODUCT_DEPENDENCY`,
+non autorisés.

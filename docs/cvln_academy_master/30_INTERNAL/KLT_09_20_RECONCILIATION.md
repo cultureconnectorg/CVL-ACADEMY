@@ -259,12 +259,51 @@ engineering — resolved without a Founder decision (`G8`).
 
 ## Status
 
-`STATUS = RECONCILED_NOT_BUILT`. No module content written, no
-mutation of KLT-01→08 or its `STOP=TRUE` gate. Given that 8 of 12
+`STATUS = 2/12 BUILT, 10/12 RECONCILED_NOT_BUILT`. Given that 8 of 12
 candidates carry `BLOCKED_PRODUCT_DEPENDENCY` (no separate Kiltikonet
 product repo was named/found this session — same limitation as G6),
-the only candidates with a clear, unblocked path today are **KLT-13**
+the only candidates with a clear, unblocked path today were **KLT-13**
 (specialization on real KLT-05/C4 + real Good Mood accreditation
 precedent) and **KLT-18** (extension on real KLT-05/C5,C7,C9). Everyone
 else waits on either a named Kiltikonet repo or the CyberSecure
 Founder decision.
+
+## Construction (2026-09-07) — KLT-13 and KLT-18 built
+
+Founder-authorized (`docs/klt/README.md` §FOUNDER_AUTHORIZATION_UPDATE,
+scoped to exactly these two): both formations have now been built as
+full canonical packages (5/5 competencies each, `STRUCTURAL_STATUS =
+COMPLETE`, `FULLY_COMPLETE = TRUE` — neither depends on an unconnected
+external system, so this field derives honestly to `TRUE`, same as
+KLT-01→05). See `docs/klt/klt13/` and `docs/klt/klt18/`.
+
+- **KLT-13** — 5 competencies: design a terrain accreditation scheme
+  (anchored on KLT-05/C4 by reference), study the real Good Mood
+  QR/door-scan precedent (`GMD-25`, `gmfest972/goodmooddjsayd`) as a
+  cross-ecosystem case study without ever attributing it to Kiltikonet,
+  specify an NFC extension while explicitly naming its
+  `NOT_IMPLEMENTED` status (no real NFC system exists anywhere in the
+  verified CVLN ecosystem — only Good Mood's real QR system does),
+  handle and escalate a terrain accreditation incident, and report an
+  accreditation review without fabricating unmeasured data.
+- **KLT-18** — 5 competencies: design a communications/campaign
+  strategy beyond day-to-day animation, decline it across channels
+  without duplicating or contradicting KLT-05/M05's existing daily
+  editorial, manage a crisis communication (escalation beyond
+  individual support, KLT-05/M07) without pre-empting KLT-01's
+  spectacle/ritual arbitration, measure real campaign impact from the
+  same data already available in KLT-05/M09 (never fabricated), and
+  restitute a full campaign review to a committee (including the gap
+  to target and the crisis handled, never omitted).
+
+Both formations were registered in the `klt_canonical` backend package
+(`models.py`'s `KLT_FORMATION_CODES`/`KLT_CONTEXTS`) — the parser and
+provenance scanner are generic over any `kltNN/` directory, so no other
+backend code needed changes. Full regression (59 tests,
+`backend/tests/test_klt_canonical.py` plus the other canonical suites)
+passes; `flake8` clean.
+
+The other 8 KLT-09→20 candidates remain untouched:
+`BLOCKED_PRODUCT_DEPENDENCY`, `NOT_AUTHORIZED` — this construction does
+not reopen them, and does not touch KLT-01→08's `STOP=TRUE` gate beyond
+the two items already named in the Founder authorization.

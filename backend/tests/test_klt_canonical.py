@@ -214,13 +214,14 @@ async def test_klt06_module_list_is_now_complete(klt_db):
 # ---------------------------------------------------------------------
 
 
-async def test_list_all_eight_formations(klt_db):
+async def test_list_all_ten_formations(klt_db):
     await import_klt_docs(DOCS_DIR, created_by="test")
     formations = await list_canonical_klt_formations()
     assert [f.klt_formation_code for f in formations] == KLT_FORMATION_CODES
-    # 59 (KLT-01..05) + 21 (KLT-06/07/08, now 7/7/7 modules each after
-    # 2026-09-07's M05/M06/M04/M04 builds) = 80 real modules
-    assert sum(f.module_count for f in formations) == 59 + 21
+    # 59 (KLT-01..05) + 21 (KLT-06/07/08, 7/7/7 modules each after
+    # 2026-09-07's M05/M06/M04/M04 builds) + 5 (KLT-13) + 5 (KLT-18,
+    # both built 2026-09-07 as new formations) = 90 real modules
+    assert sum(f.module_count for f in formations) == 59 + 21 + 5 + 5
 
 
 async def test_contexts_match_klt0008_decision(klt_db):
@@ -228,12 +229,36 @@ async def test_contexts_match_klt0008_decision(klt_db):
     assert (await get_canonical_klt_formation("KLT-06")).contexts == ["EXTERNAL"]
     assert (await get_canonical_klt_formation("KLT-07")).contexts == ["INTERNAL"]
     assert (await get_canonical_klt_formation("KLT-08")).contexts == ["INTERNAL"]
+    assert (await get_canonical_klt_formation("KLT-13")).contexts == ["EXTERNAL"]
+    assert (await get_canonical_klt_formation("KLT-18")).contexts == ["EXTERNAL"]
 
 
 async def test_legacy_badge_flag_matches_corpus(klt_db):
     await import_klt_docs(DOCS_DIR, created_by="test")
     assert (await get_canonical_klt_formation("KLT-01")).has_legacy_badge is True
     assert (await get_canonical_klt_formation("KLT-06")).has_legacy_badge is False
+    assert (await get_canonical_klt_formation("KLT-13")).has_legacy_badge is False
+    assert (await get_canonical_klt_formation("KLT-18")).has_legacy_badge is False
+
+
+async def test_klt13_and_klt18_are_new_formations_fully_built(klt_db):
+    """KLT-13 and KLT-18 are net-new formations (no legacy, no BLOCKED
+    competencies, no BUILT_UNCONNECTED external-system dependency) — built
+    complete from construction, unlike KLT-06/07/08 which started PARTIAL
+    and carry a real-but-unconnected Observatory/Network dependency.
+    fully_complete is legitimately True here (same as KLT-01..05): the
+    registry has zero BLOCKED and zero BUILT_UNCONNECTED rows, so the
+    derivation in read_model.py computes True — there is no external
+    live-connection gap for these two formations to begin with."""
+    await import_klt_docs(DOCS_DIR, created_by="test")
+    for code in ("KLT-13", "KLT-18"):
+        formation = await get_canonical_klt_formation(code)
+        assert formation.module_count == 5
+        assert formation.structural_status == "COMPLETE"
+        assert formation.certification_scope == "FULL"
+        assert formation.blocked_skill_ids == []
+        assert formation.unconnected_skill_ids == []
+        assert formation.fully_complete is True
 
 
 # ---------------------------------------------------------------------
