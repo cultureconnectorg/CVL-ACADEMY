@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
@@ -8,6 +8,8 @@ import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { computeDepthStyle } from "@/lib/spatial/attention";
 import { useDepthPhysics } from "@/lib/useDepthPhysics";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { createSpatialAudio } from "@/lib/spatial/audio";
+import { createHaptics } from "@/lib/spatial/haptics";
 
 /** ACA-0014/ACA-0017 (H1 sequencing step 4, `SPATIAL_H1_INTEGRATION_
  * PLAN.md` — "Missions: convert from its current presentation to the
@@ -105,6 +107,22 @@ export default function Missions() {
   const [missions, setMissions] = useState([]);
   const [mine, setMine] = useState([]);
 
+  // ACA-0018 — real CONFIRM audio+haptics on a genuinely completed
+  // action (mission submitted, real CC reward credited server-side),
+  // same doctrine ModuleJourney.js's quiz-pass/mini-mission-commit
+  // already established: fires on an actual completion, never on a
+  // lighter commitment like `accept`. Gated with the same
+  // SPATIAL_HUB_ENABLED flag this page's own depth engine uses.
+  const audioRef = useRef(null);
+  if (!audioRef.current) audioRef.current = createSpatialAudio();
+  audioRef.current.setEnabled(FEATURE_FLAGS.SPATIAL_HUB_ENABLED && FEATURE_FLAGS.SPATIAL_AUDIO);
+  const hapticsRef = useRef(null);
+  if (!hapticsRef.current) {
+    hapticsRef.current = createHaptics({
+      isEnabled: () => FEATURE_FLAGS.SPATIAL_HUB_ENABLED && FEATURE_FLAGS.SPATIAL_HAPTICS,
+    });
+  }
+
   const load = async () => {
     const [m, u] = await Promise.all([
       api.get("/missions").then(r => r.data),
@@ -125,6 +143,8 @@ export default function Missions() {
   const submit = async (code) => {
     const { data } = await api.post(`/missions/${code}/submit`);
     toast.success(`+${data.cc_earned} CC — ${t("current_stage").toLowerCase()} : ${data.new_stade}`);
+    audioRef.current.play("CONFIRM");
+    hapticsRef.current.fire("CONFIRM");
     await refreshMe();
     load();
   };
