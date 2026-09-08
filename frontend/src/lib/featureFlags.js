@@ -44,7 +44,14 @@ export const FEATURE_FLAGS = Object.freeze({
    * real pedagogical graph (`lib/pedagogicalGraph.js`) instead of
    * today's static bento grid / index-based stage rail. Off by default,
    * same discipline as every other flag here: a fresh deploy is exactly
-   * today's production behavior until deliberately turned on. */
+   * today's production behavior until deliberately turned on.
+   *
+   * ACA-0014/ACA-0017 (H1 sequencing step 4, `SPATIAL_H1_INTEGRATION_
+   * PLAN.md`) reuses this same flag for Badges' continuous-depth
+   * treatment (`pages/Badges.js`) — same attention/physics engine,
+   * same "no forced primary when there's no real target" edge case,
+   * intentionally not a second flag for what is the same production
+   * gate as Dashboard/Roadmap. */
   get SPATIAL_HUB_ENABLED() {
     return readFlag("SPATIAL_HUB_ENABLED");
   },
