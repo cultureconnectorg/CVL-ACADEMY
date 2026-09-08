@@ -17,11 +17,13 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
 from auth import get_current_user, require_role
+from certification.models import RubricInput
 from frk_canonical import (CanonicalFrkFormation, CanonicalFrkModule,
                            CanonicalFrkModuleProgress, FrkCanonicalImportResult,
                            FrkFileProvenance, get_canonical_frk_formation,
                            get_canonical_frk_module, get_user_frk_progress,
-                           import_frk_docs, list_canonical_frk_formations,
+                           import_frk_docs, import_rubric_for_formation,
+                           list_canonical_frk_formations,
                            list_canonical_frk_modules, list_frk_provenance,
                            record_content_viewed)
 from models import ADMIN_ROLES, STAFF_ROLES, User
@@ -101,3 +103,32 @@ async def provenance(current: User = Depends(require_role(*STAFF_ROLES))):
     """The full source-file ledger — every real file under docs/frk/,
     parsed or not. Staff-only audit surface."""
     return await list_frk_provenance()
+
+
+@router.post("/formations/{formation_code}/rubric/import", response_model=RubricInput)
+async def import_rubric(
+    formation_code: str, current: User = Depends(require_role(*ADMIN_ROLES))
+):
+    """ACA-0020 — same real conversion the KOR/KLT/FMS-07..18 endpoints
+    perform: parses the formation's real, already-imported
+    `assessment_and_rubric` resource (via `db.frk_resources`) into a
+    real, gradable `Rubric` document. Idempotent. 404 for any of three
+    real, distinct reasons `frk_canonical/rubric_import.py`'s own
+    docstring names: docs not imported yet (run `POST /frk-canonical/
+    import` first), this formation's ASSESSMENT_AND_RUBRIC.md
+    explicitly states it is formative-only / not yet certifiable
+    pending expert review (true for FRK-10/14/73 today), or the
+    formation code isn't a real FRK-01..75 code at all."""
+    result = await import_rubric_for_formation(formation_code)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Aucune grille certificative disponible pour {formation_code} "
+                f"— soit les docs n'ont pas été importés (POST /frk-canonical/"
+                f"import), soit cette formation est explicitement formative "
+                f"seule (NEEDS_EXPERT_REVIEW non levé) et n'est pas encore "
+                f"certifiante."
+            ),
+        )
+    return result

@@ -17,6 +17,11 @@ from .provenance import list_frk_provenance
 from .read_model import (get_canonical_frk_formation, get_canonical_frk_module,
                          list_canonical_frk_formations,
                          list_canonical_frk_modules)
+from .rubric_import import (
+    FRK_RUBRIC_PASS_THRESHOLD_PCT,
+    certification_code_for,
+    import_rubric_for_formation,
+)
 
 __all__ = [
     "FRK_CANONICAL_VERSION_CURRENT",
@@ -38,4 +43,7 @@ __all__ = [
     "record_content_viewed",
     "import_frk_docs",
     "list_frk_provenance",
+    "FRK_RUBRIC_PASS_THRESHOLD_PCT",
+    "certification_code_for",
+    "import_rubric_for_formation",
 ]
