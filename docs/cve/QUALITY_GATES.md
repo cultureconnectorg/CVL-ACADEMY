@@ -26,7 +26,8 @@ this corpus.
 | CVE-02 | `PACKAGE_COMPLETE_FOR_CVE02` — full canonical package, matching the KOR/KLT/GMD/WAL depth standard. |
 | CVE-01 | `PACKAGE_COMPLETE_FOR_CVE01` (deepened 2026-09-08) — full canonical package, grounded in a direct re-read of the full spec this session (§0, H0, §1→§6 structure). |
 | CVE-03 | `PACKAGE_COMPLETE_FOR_CVE03` (deepened 2026-09-08). |
-| CVE-04→15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening continues formation by formation this session. |
+| CVE-04 | `PACKAGE_COMPLETE_FOR_CVE04` (deepened 2026-09-08). |
+| CVE-05→15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening continues formation by formation this session. |
 
 **No formation in this corpus is `BLOCKED_PRODUCT_DEPENDENCY`** — unlike
 Good Mood/Wallet, the grounding object here is a mathematical
