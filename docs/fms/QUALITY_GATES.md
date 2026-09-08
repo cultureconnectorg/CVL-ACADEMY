@@ -29,7 +29,8 @@ this corpus.
 | FMS-09 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, citing FMS-03/M07,M12,M14 by reference. |
 | FMS-10 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, industry-standard practice with explicit FMS-03/09 boundary. |
 | FMS-11 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, citing FMS-04/M04,M09 by reference. |
-| FMS-12, FMS-13, FMS-15, FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built. Deepening continues formation by formation this session (task #187). |
+| FMS-12 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, industry-standard practice with explicit FMS-11 boundary. |
+| FMS-13, FMS-15, FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built. Deepening continues formation by formation this session (task #187). |
 
 **No formation in this corpus is `BLOCKED`.** All 9 have real grounding
 of one of the three legitimate kinds above (repo route, by-reference
