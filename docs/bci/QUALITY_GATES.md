@@ -17,13 +17,14 @@
 
 | Row set | Depth |
 |---|---|
-| BCI-01→30, TOK-01→15 (45 rows) | `MODULE_CONTENT_DRAFTED`. |
+| BCI-03 | `PACKAGE_COMPLETE_FOR_BCI03` (deepened 2026-09-08, task #185) — flagship of BCI-01→30, citing `BCH-01-M03`'s real testnet-deployed royalty smart contract. |
+| BCI-01→30 (remaining 29), TOK-01→15 (44 rows) | `MODULE_CONTENT_DRAFTED`. |
 | BCI-X-02/04/06/07/09 (5 rows) | Citation-only index (`BCI_X_BRIDGE_NOTE.md`). |
 | BCI-31→40, BCI-X-01/03/05/08/10/11 (16 rows) | `BLOCKED_PRODUCT_DEPENDENCY`, declared in `BLOCKED_CANDIDATES.md`. |
 
-**Canonical state:** 0 `PACKAGE_COMPLETE` / 45 `MODULE_CONTENT_DRAFTED`
-/ 21 not independently built (16 `BLOCKED_PRODUCT_DEPENDENCY` + 5
-citation-only), out of 66.
+**Canonical state:** 1 `PACKAGE_COMPLETE` (BCI-03) / 44
+`MODULE_CONTENT_DRAFTED` / 21 not independently built (16
+`BLOCKED_PRODUCT_DEPENDENCY` + 5 citation-only), out of 66.
 
 ## Never claim FULLY_COMPLETE
 

@@ -61,4 +61,11 @@ testnet deployment already delivered in `BCH-01`.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = MODULE_CONTENT_DRAFTED` for 29/30 rows (this combined
+referential). **1 row deepened to a full canonical package as
+flagship of this cluster (task #185, 2026-09-08):** `bci03/`
+(Smart-Contract Security Auditing, citing `BCH-01-M03`'s real
+testnet-deployed royalty smart contract — the single strongest real
+touchpoint in this cluster). The remaining 29 rows stay at this
+combined `MODULE_CONTENT_DRAFTED` depth — honest for market-general
+content without a unique per-row repo touchpoint.
