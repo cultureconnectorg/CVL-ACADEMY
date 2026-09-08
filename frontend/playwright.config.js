@@ -61,7 +61,26 @@ module.exports = {
   },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: 0,
+  // ACA-0031 — round 3 of the CI-load-flake investigation. Commit
+  // 602c734's own e2e run (raising the global expect.timeout to
+  // 15_000ms above) still failed the exact same assertion
+  // (module-journey-context.spec.js's quiz-result visibility) —
+  // 17.9s this time, PAST the new 15s ceiling. Since this suite's
+  // network calls are all Playwright route mocks (instant fulfill(),
+  // no real backend/network latency — see auth-fixture.js), the
+  // actual bottleneck is main-thread/CPU scheduling on GitHub's
+  // shared runner (React's setState -> re-render commit competing for
+  // CPU with whatever else is running on the runner pool), not a
+  // logic race or a fixed amount of network time a bigger constant
+  // can reliably outrun. Retrying a failed test on a fresh attempt is
+  // Playwright's own documented remedy for exactly this shape of
+  // flake (https://playwright.dev/docs/test-retries) — it absorbs a
+  // one-off contention spike without inflating every test's timeout
+  // ceiling further, and does nothing on the (overwhelmingly common)
+  // green run: retries only apply to a failed test, so a clean CI run
+  // pays zero cost. Local dev keeps 0 retries (a local failure should
+  // stay a hard signal, not get silently swallowed).
+  retries: process.env.CI ? 2 : 0,
   reporter: [["list"]],
   use: {
     baseURL: "http://127.0.0.1:4173",

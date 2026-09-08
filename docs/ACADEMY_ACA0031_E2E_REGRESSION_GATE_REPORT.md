@@ -129,6 +129,38 @@ and `pull_request` trigger events GitHub fires for this branch. The
 `e2e` job's real runtime on GitHub's shared runners is no longer
 unverified — it has now run to completion, green, multiple times.
 
+## Update 2 — round 2 and round 3: the timeout kept losing ground, so retries replaced it as the primary defense
+
+The per-assertion 10s override above did not hold: commit `6d39afb`'s
+CI run failed the same `module-journey-context.spec.js` quiz-result
+assertion at 13.1s (past the 10s override) AND, in the same run,
+`scroll-restoration.spec.js`'s scrollY poll — two independent
+assertions failing in one run, confirming recurring GitHub Actions
+load variance rather than a one-off. Fixed by raising Playwright's
+**global** default `expect.timeout` from 5000ms to 15000ms
+(`playwright.config.js`), reasoning documented inline there.
+
+That still wasn't the end of it: commit `602c734` (the global-timeout
+fix itself) failed its *own* e2e run — the identical quiz-result
+assertion, this time at **17.9s**, past the new 15s ceiling. Real
+evidence this is not a network-latency problem a bigger constant can
+reliably outrun: every network call in this suite is a Playwright
+route mock (`auth-fixture.js`'s `route.fulfill()`, resolved
+synchronously, no real backend or network hop). The actual bottleneck
+is CPU/scheduling contention on GitHub's shared runner pool — React's
+`setState` → re-render commit competing for main-thread time — which
+has no fixed ceiling to size a timeout against.
+
+The fix that actually targets this failure shape: `retries: process.
+env.CI ? 2 : 0` in `playwright.config.js` — Playwright's own
+documented remedy for exactly this class of flake. A failed test gets
+a fresh attempt (which a one-off contention spike doesn't repeat
+across); a green run — the overwhelming majority — pays zero cost,
+since retries only fire on failure. Local dev keeps 0 retries so a
+real local failure stays a hard signal. This is the terminal fix for
+this failure class: unlike a timeout constant, it does not have a
+"loses ground under heavier load" failure mode.
+
 ## What remains open
 
 - **Branch protection** ("Require status checks to pass before
