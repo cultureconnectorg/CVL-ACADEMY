@@ -38,6 +38,7 @@ export default function Dashboard() {
   const [badges, setBadges] = useState([]);
   const [summary, setSummary] = useState(null);
   const [path, setPath] = useState(null);
+  const [horizonItems, setHorizonItems] = useState([]);
 
   // FIRST_VALUE = CONTINUOUS_DASHBOARD_REVEAL (Founder decision,
   // W-FUNNEL-2, 2026-09-07) — no separate /activation route: the real
@@ -65,14 +66,22 @@ export default function Dashboard() {
   useEffect(() => {
     (async () => {
       await refreshMe();
-      const [p, m, b, s, lp] = await Promise.all([
+      const [p, m, b, s, lp, horizon] = await Promise.all([
         api.get("/frek/profile").then(r => r.data),
         api.get("/missions").then(r => r.data),
         api.get("/badges/mine").then(r => r.data),
         api.get("/progression/summary").then(r => r.data),
         api.get("/user/learning-path").then(r => r.data),
+        // ACA-0027 — real, composed "next relevant opportunity" signal
+        // (see services/progressive_horizon.py). Fetched alongside the
+        // rest, never blocking: an empty/failed response just means no
+        // CERTIFICATION_ELIGIBLE card renders below, the existing
+        // next_action/horizon-card sections (still driven by `path`
+        // directly) are completely unaffected either way.
+        api.get("/progression/horizon").then(r => r.data).catch(() => []),
       ]);
       setProf(p); setMissions(m); setBadges(b); setSummary(s); setPath(lp);
+      setHorizonItems(Array.isArray(horizon) ? horizon : []);
 
       if (p?.returning && !location.state?.justOnboarded) {
         let alreadyShownThisSession = false;
@@ -305,6 +314,43 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* ACA-0027 — Progressive Horizon: real, server-composed
+          certification-eligibility signal (services/progressive_
+          horizon.py). Distinct from the FORMATION_EXPANSION card
+          above (which stays driven directly by `path`, unchanged) —
+          this one only ever renders an item `check_full_eligibility`
+          (the exact same gate `start_attempt` itself uses) already
+          confirmed True for, so it can never claim eligibility the
+          real certification engine would then refuse. */}
+      {horizonItems
+        .filter((i) => i.type === "CERTIFICATION_ELIGIBLE")
+        .map((item) => (
+          <div
+            key={item.certification_code}
+            className="mt-6 cvln-card p-6"
+            data-testid={`cert-opportunity-${item.certification_code}`}
+          >
+            <div className="text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">
+              {t("dashboard_p.cert_opportunity_eyebrow")}
+            </div>
+            <h3 className="font-display font-bold text-2xl tracking-tight mt-2">
+              {t("dashboard_p.cert_opportunity_title")}
+            </h3>
+            <Link
+              to={item.route}
+              data-testid={`cert-opportunity-open-${item.certification_code}`}
+              className="mt-4 inline-flex items-center gap-2 px-4 py-3 rounded-2xl border border-black/10 hover:border-[--cvln-orange]/40 transition font-semibold"
+            >
+              <span
+                className="w-2.5 h-10 rounded-full shrink-0"
+                style={{ background: item.pole_color || "var(--cvln-orange)" }}
+              />
+              {item.formation_name}
+              <ArrowRight width={16} height={16} className="ml-auto shrink-0 text-[--cvln-ink-2]" />
+            </Link>
+          </div>
+        ))}
 
       {/* Featured missions + Signals */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">

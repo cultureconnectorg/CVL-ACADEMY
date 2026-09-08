@@ -201,6 +201,8 @@ const DICT = {
       welcome_back: "Content de te revoir,",
       welcome_back_progress_pre: "Tu es à", welcome_back_progress_post: "de ta progression globale.",
       horizon_eyebrow: "Nouvel horizon", horizon_title: "Ton pôle est terminé — une nouvelle voie s'ouvre",
+      cert_opportunity_eyebrow: "Opportunité", cert_opportunity_title: "Tu es éligible à une certification",
+      cert_opportunity_cta: "Voir la certification",
     },
     offers_p: {
       eyebrow: "Catalogue commercial", title: "Nos offres",
@@ -469,6 +471,8 @@ const DICT = {
       welcome_back: "Welcome back,",
       welcome_back_progress_pre: "You're at", welcome_back_progress_post: "of your overall progress.",
       horizon_eyebrow: "New horizon", horizon_title: "Your pole is complete — a new path is open",
+      cert_opportunity_eyebrow: "Opportunity", cert_opportunity_title: "You are eligible for a certification",
+      cert_opportunity_cta: "View certification",
     },
     offers_p: {
       eyebrow: "Commercial catalogue", title: "Our offers",
@@ -737,6 +741,8 @@ const DICT = {
       welcome_back: "Kontan wè ou ankò,",
       welcome_back_progress_pre: "Ou rive a", welcome_back_progress_post: "nan pwogrè global ou.",
       horizon_eyebrow: "Nouvo orizon", horizon_title: "Pòl ou fini — yon nouvo wout louvri",
+      cert_opportunity_eyebrow: "Opòtinite", cert_opportunity_title: "Ou kalifye pou yon sètifikasyon",
+      cert_opportunity_cta: "Gade sètifikasyon an",
     },
     offers_p: {
       eyebrow: "Katalòg komèsyal", title: "Ofri nou yo",
@@ -1005,6 +1011,8 @@ const DICT = {
       welcome_back: "Qué bueno verte de nuevo,",
       welcome_back_progress_pre: "Estás al", welcome_back_progress_post: "de tu progreso general.",
       horizon_eyebrow: "Nuevo horizonte", horizon_title: "Tu polo está completo — un nuevo camino se abre",
+      cert_opportunity_eyebrow: "Oportunidad", cert_opportunity_title: "Eres elegible para una certificación",
+      cert_opportunity_cta: "Ver certificación",
     },
     offers_p: {
       eyebrow: "Catálogo comercial", title: "Nuestras ofertas",

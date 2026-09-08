@@ -271,6 +271,17 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   await page.route("**/api/certifications/attempts/mine", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
+  // ACA-0027 — Dashboard.js's own .catch(() => []) only protects the
+  // fetch itself, not what happens after: the generic `**/api/**`
+  // catch-all above fulfills with `"{}"` (an object), and
+  // horizonItems.filter() on an object crashes the whole tree the
+  // same way PhysicalSessionsPanel's `.map()` on an unmocked `{}` did
+  // (see the module-journey-navigation BACK_FORWARD root-cause fix) —
+  // a real array, even empty, is what every caller of this endpoint
+  // actually gets from the real backend (response_model=List[...]).
+  await page.route("**/api/progression/horizon", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
   // GET /api/modules/:fc/:mc only — the exact 2-segment shape ModuleJourney
   // fetches on load. Deliberately does NOT match the 3+-segment mutating
   // endpoints (…/phase, …/deliverable, …/mini-mission/commit), which stay
