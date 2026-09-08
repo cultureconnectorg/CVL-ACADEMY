@@ -161,6 +161,14 @@ real local failure stays a hard signal. This is the terminal fix for
 this failure class: unlike a timeout constant, it does not have a
 "loses ground under heavier load" failure mode.
 
+Confirmed on real GitHub Actions runs against this PR: commit
+`a835a60` (the retries fix itself) — all 6 check runs (`backend`/
+`frontend`/`e2e` × both the `push` and `pull_request` trigger events)
+completed with `conclusion: success`, including `e2e`, the exact job
+that had failed on every one of the three preceding commits
+(`04f2ba2`, `602c734`, `b929c9d`) via this same assertion. The
+CI-load-flake investigation is closed.
+
 ## What remains open
 
 - **Branch protection** ("Require status checks to pass before
