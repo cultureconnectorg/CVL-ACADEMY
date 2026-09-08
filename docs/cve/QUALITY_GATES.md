@@ -36,7 +36,8 @@ this corpus.
 | CVE-11 | `PACKAGE_COMPLETE_FOR_CVE11` (deepened 2026-09-08). |
 | CVE-12 | `PACKAGE_COMPLETE_FOR_CVE12` (deepened 2026-09-08). |
 | CVE-13 | `PACKAGE_COMPLETE_FOR_CVE13` (deepened 2026-09-08). |
-| CVE-14→15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Deepening continues formation by formation this session. |
+| CVE-14 | `PACKAGE_COMPLETE_FOR_CVE14` (deepened 2026-09-08). |
+| CVE-15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Last row of task #183, deepening next. |
 
 **No formation in this corpus is `BLOCKED_PRODUCT_DEPENDENCY`** — unlike
 Good Mood/Wallet, the grounding object here is a mathematical
