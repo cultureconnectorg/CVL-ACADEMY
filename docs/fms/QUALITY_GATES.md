@@ -25,7 +25,8 @@ this corpus.
 | Formation | Depth reached |
 |---|---|
 | FMS-07 (absorbs FMS-14, FMS-16) | `PACKAGE_COMPLETE` — full canonical package (référentiel + N1/N2 + assessment/rubric + evidence model + 3 guides + integration note), deepened this pass as the wave's flagship, matching the KOR/KLT/GMD/WAL depth standard. |
-| FMS-08, FMS-09, FMS-10, FMS-11, FMS-12, FMS-13, FMS-15, FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built. Deepening to full package is a future wave, not performed here. |
+| FMS-08 | `PACKAGE_COMPLETE` (deepened 2026-09-08, task #187) — full canonical package, citing FMS-03/M06,M11 by reference. |
+| FMS-09, FMS-10, FMS-11, FMS-12, FMS-13, FMS-15, FMS-18 | `MODULE_CONTENT_DRAFTED` — full référentiel (professional role, activities, competencies, modules, assessment sketch, grounding) written; N1/N2 banks and full guide set not yet built. Deepening continues formation by formation this session (task #187). |
 
 **No formation in this corpus is `BLOCKED`.** All 9 have real grounding
 of one of the three legitimate kinds above (repo route, by-reference
@@ -34,10 +35,8 @@ canon module, or industry-standard practice with explicit boundaries)
 
 ## Never claim FULLY_COMPLETE
 
-Even FMS-07, now at full package depth, is not `FULLY_COMPLETE` — that
-status requires a real candidate assessed and verified, which this
-drafting pass does not perform. No formation in this corpus may ever
-be described as `PACKAGE_COMPLETE` unless its own `REFERENTIAL.md`
-status line says so explicitly — 8 of the 9 do not, and stay
-`MODULE_CONTENT_DRAFTED` until a future deepening pass is actually
-performed.
+Even FMS-07/FMS-08, now at full package depth, are not
+`FULLY_COMPLETE` — that status requires a real candidate assessed and
+verified, which this drafting pass does not perform. No formation in
+this corpus may ever be described as `PACKAGE_COMPLETE` unless its
+own `REFERENTIAL.md` status line says so explicitly.

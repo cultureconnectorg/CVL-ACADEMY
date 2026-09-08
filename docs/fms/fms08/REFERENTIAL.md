@@ -65,7 +65,10 @@ certification (which remains a prerequisite, not a substitute).
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED` — référentiel and module outline
-written this pass; N1/N2 banks, full assessment/rubric, evidence
-model, and the 3 guides are a future deepening pass, not performed
-here.
+`STATUS = PACKAGE_COMPLETE` — full canonical package built:
+`BANQUE_N1.md`, `BANQUE_N2.md`, `ASSESSMENT_AND_RUBRIC.md`,
+`EVIDENCE_MODEL.md`, `GUIDE_CANDIDAT.md`, `GUIDE_CORRECTEUR.md`,
+`GUIDE_JURY.md`, `INTEGRATION_NOTE.md`, deepened this pass, citing
+FMS-03/M06,M11 by reference, never re-authored. Not yet delivered to
+a real candidate — `FULLY_COMPLETE` still requires that verification,
+per `../QUALITY_GATES.md`.
