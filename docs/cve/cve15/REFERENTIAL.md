@@ -56,4 +56,13 @@ certification (per `../CERTIFICATION_MODEL.md` §Authorization gate).
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = PACKAGE_COMPLETE_FOR_CVE15` — full canonical package built:
+`BANQUE_N1.md`, `BANQUE_N2.md`, `ASSESSMENT_AND_RUBRIC.md`,
+`EVIDENCE_MODEL.md`, `GUIDE_CANDIDAT.md`, `GUIDE_CORRECTEUR.md`,
+`GUIDE_JURY.md`, `INTEGRATION_NOTE.md`. Grounded in a direct re-read
+this session of §6 (locally available, `kora2024/kora-app/memory/`).
+**This closes task #183: all 14 formations (CVE-01, CVE-03→15) are
+now at full canonical package depth, alongside the already-flagship
+CVE-02 — 15/15 of the CVE corpus.** Not yet delivered to a real
+candidate — `FULLY_COMPLETE` still requires that verification, per
+`../QUALITY_GATES.md`.

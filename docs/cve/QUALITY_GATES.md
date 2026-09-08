@@ -37,16 +37,21 @@ this corpus.
 | CVE-12 | `PACKAGE_COMPLETE_FOR_CVE12` (deepened 2026-09-08). |
 | CVE-13 | `PACKAGE_COMPLETE_FOR_CVE13` (deepened 2026-09-08). |
 | CVE-14 | `PACKAGE_COMPLETE_FOR_CVE14` (deepened 2026-09-08). |
-| CVE-15 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far. Last row of task #183, deepening next. |
+| CVE-15 | `PACKAGE_COMPLETE_FOR_CVE15` (deepened 2026-09-08). |
 
-**No formation in this corpus is `BLOCKED_PRODUCT_DEPENDENCY`** — unlike
-Good Mood/Wallet, the grounding object here is a mathematical
-specification, not a runtime; every CVE-0X has *some* real section to
-cite, even where that section flags its own gap (CVE-06, CVE-08).
+**This closes task #183: all 15/15 formations in the CVE corpus
+(CVE-01→15) are now at full canonical package depth.** No formation in
+this corpus is `BLOCKED_PRODUCT_DEPENDENCY` — unlike Good Mood/Wallet,
+the grounding object here is a mathematical specification, not a
+runtime; every CVE-0X has *some* real section to cite, even where that
+section flags its own gap (CVE-06, CVE-08 — both deepened while
+`FORMALIZATION_PENDING` for their KORA-specific formula remains
+explicitly preserved, never filled with an invented equation).
 
 ## Never claim FULLY_COMPLETE
 
-Even CVE-02, now at full package depth, is not `FULLY_COMPLETE` —
-that status requires a real candidate assessed and verified. Separately,
-no formation in this corpus may ever imply the KORA methodology's own
-chantier 2/3 (simulation/prototyping) has occurred.
+Even at full package depth across all 15 formations, none is
+`FULLY_COMPLETE` — that status requires a real candidate assessed and
+verified, none of which has occurred. Separately, no formation in this
+corpus may ever imply the KORA methodology's own chantier 2/3
+(simulation/prototyping) has occurred.
