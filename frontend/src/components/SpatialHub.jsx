@@ -1,5 +1,5 @@
-import { useMemo, useState, useCallback, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
+import { useNavigate, useLocation, useNavigationType } from "react-router-dom";
 import { motion } from "framer-motion";
 import { computeDepthStyle } from "@/lib/spatial/attention";
 import { createCadenceTracker } from "@/lib/spatial/cadence";
@@ -10,6 +10,7 @@ import { useCameraIntent } from "@/lib/useCameraIntent";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useI18n } from "@/lib/i18n.jsx";
+import { getRailPosition, saveRailPosition } from "@/lib/railPositionRestoration";
 
 /**
  * RAIL 3 ("Finir Spatial Learning", 2026-09-07; corrected same day after
@@ -69,8 +70,11 @@ import { useI18n } from "@/lib/i18n.jsx";
  */
 export default function SpatialHub({ formationNodes, missionNodes }) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const navType = useNavigationType();
   const { t } = useI18n();
   const reduced = useReducedMotion();
+  const railRef = useRef(null);
 
   // One combined, distance-sorted rail — real nodes only, closest first.
   // Distance is the sole ordering key (never a hand-picked position).
@@ -111,8 +115,49 @@ export default function SpatialHub({ formationNodes, missionNodes }) {
     return [...formations, ...missions].sort((a, b) => a.distance - b.distance);
   }, [formationNodes, missionNodes, navigate]);
 
-  const [focusedKey, setFocusedKey] = useState(() => items.find((i) => i.distance === 0)?.key ?? items[0]?.key);
+  // ACA-0023 (camera/rail/focus slice) — a real browser back/forward
+  // (POP) into this exact history entry restores whichever real item
+  // last had focus here, same axis useScrollRestoration.js's own scope
+  // note deferred pending the spatial engine's real production mount
+  // (ACA-0014, now done). A saved key that no longer matches a real
+  // current item (data changed) is ignored, falling back to the
+  // existing distance-0 default — never a stale/fabricated focus.
+  const [focusedKey, setFocusedKey] = useState(() => {
+    if (navType === "POP") {
+      const saved = getRailPosition(location.key);
+      if (saved && items.some((i) => i.key === saved.focusedKey)) {
+        return saved.focusedKey;
+      }
+    }
+    return items.find((i) => i.distance === 0)?.key ?? items[0]?.key;
+  });
   const nodeRefs = useRef({});
+
+  // Companion to the focus restore above: the rail's own horizontal
+  // scroll (separate from the page's vertical scroll — already handled
+  // by useScrollRestoration.js) — imperative because scrollLeft isn't
+  // React state. Runs once, on the same POP arrival the focus restore
+  // above already gates on.
+  useEffect(() => {
+    if (navType !== "POP" || !railRef.current) return;
+    const saved = getRailPosition(location.key);
+    if (typeof saved?.scrollLeft === "number") {
+      railRef.current.scrollLeft = saved.scrollLeft;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Persist the position at the moment attention genuinely moves to a
+  // new item (keyboard arrow, click, or restore itself) — the same
+  // granularity a real "where was I" memory needs, without a
+  // continuous scroll listener this rail doesn't otherwise need.
+  useEffect(() => {
+    if (!focusedKey) return;
+    saveRailPosition(location.key, {
+      focusedKey,
+      scrollLeft: railRef.current?.scrollLeft ?? 0,
+    });
+  }, [focusedKey, location.key]);
 
   // Real sense channels — one instance for this rail's lifetime, gated
   // by the pre-existing feature flags. Reading the flags inside a ref
@@ -189,7 +234,7 @@ export default function SpatialHub({ formationNodes, missionNodes }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="mt-2 mb-10 -mx-2 px-2 overflow-x-auto" data-testid="spatial-hub">
+    <div ref={railRef} className="mt-2 mb-10 -mx-2 px-2 overflow-x-auto" data-testid="spatial-hub">
       <h2 className="sr-only">{t("dashboard_p.next_step")}</h2>
       <div className="flex gap-5 pb-4" style={{ perspective: reduced ? "none" : "1400px" }}>
         {items.map((item) => (
