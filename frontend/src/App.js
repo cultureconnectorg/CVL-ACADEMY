@@ -19,6 +19,7 @@ const ModuleJourney = lazy(() => import("@/pages/ModuleJourney"));
 const Missions = lazy(() => import("@/pages/Missions"));
 const Badges = lazy(() => import("@/pages/Badges"));
 const FrekProfile = lazy(() => import("@/pages/FrekProfile"));
+const ProfessionalPublicProfile = lazy(() => import("@/pages/ProfessionalPublicProfile"));
 const Roadmap = lazy(() => import("@/pages/Roadmap"));
 const Wallet = lazy(() => import("@/pages/Wallet"));
 const Skills = lazy(() => import("@/pages/Skills"));
@@ -128,6 +129,12 @@ function App() {
                       the CTA behavior (honest BLOCKED_EXTERNAL, never a fake
                       purchase) is gated inside the page itself. */}
                   <Route path="/offers" element={<Offers />} />
+                  {/* ACA-0028 — the public identity surface: a real,
+                      explicit-opt-in-only page (GET /api/professional/
+                      public/{frek_id} — off-by-default, see services/
+                      professional_profile.py). No auth guard, same
+                      PUBLIC_DISCOVERY logic as /formations//offers. */}
+                  <Route path="/id/:frekId" element={<ProfessionalPublicProfile />} />
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />

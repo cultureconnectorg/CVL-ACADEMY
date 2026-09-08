@@ -163,3 +163,7 @@ async def ensure_indexes() -> None:
         unique=True,
         partialFilterExpression={"last_provider_event_id": {"$type": "string"}},
     )
+
+    # ACA-0028 — Professional FREK profile visibility (services/
+    # professional_profile.py). Additive, never touches db.users.
+    await db.professional_profile_settings.create_index("user_id", unique=True)

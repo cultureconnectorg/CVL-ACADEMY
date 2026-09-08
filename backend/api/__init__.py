@@ -33,6 +33,7 @@ from . import (
     orgs,
     payments,
     physical_sessions,
+    professional_profile,
     progression,
     quizzes,
     qualification,
@@ -71,5 +72,6 @@ for module in (
     integrations,
     commerce,
     payments,
+    professional_profile,
 ):
     router.include_router(module.router)

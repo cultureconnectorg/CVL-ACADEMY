@@ -282,6 +282,28 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   await page.route("**/api/progression/horizon", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
+  // ACA-0028 — same crash class again, this time an object shape: an
+  // unmocked "{}" would leave `proProfile` truthy-but-shapeless
+  // (`{}.acquired_skills` is undefined), crashing FrekProfile.js's
+  // `.length` access the moment it tries to render the new
+  // professional-profile card. A real, minimal, correctly-shaped
+  // ProfessionalProfile is what the real backend always returns.
+  await page.route("**/api/professional/profile/mine", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        frek_id: user.frek_id,
+        display_name: user.display_name,
+        stade: user.stade,
+        acquired_skills: [],
+        certifications: [],
+        badges_count: 0,
+        total_evidence_count: 0,
+        is_public: false,
+      }),
+    })
+  );
   // GET /api/modules/:fc/:mc only — the exact 2-segment shape ModuleJourney
   // fetches on load. Deliberately does NOT match the 3+-segment mutating
   // endpoints (…/phase, …/deliverable, …/mini-mission/commit), which stay
