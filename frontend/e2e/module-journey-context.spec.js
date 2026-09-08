@@ -57,7 +57,17 @@ test.describe("quiz context (W3-B)", () => {
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
     await page.getByTestId("quiz-submit").click();
-    await expect(page.getByTestId("quiz-result")).toBeVisible();
+    // Real slack, not a correctness weakening: submitQuiz() does 3
+    // sequential awaited network round-trips (quiz/submit -> refreshMe
+    // -> load) before settling, and this assertion fires right after
+    // the first of those resolves. The default 5000ms timeout was
+    // observed to intermittently miss on GitHub Actions' shared
+    // runners under concurrent worker load (2 workers here) even
+    // though this same assertion passes reliably (5/5, --repeat-each)
+    // in this project's own dev sandbox — a CPU-contention timing
+    // margin, not a logic race (quizResult is set synchronously right
+    // after the first await, before the other two even start).
+    await expect(page.getByTestId("quiz-result")).toBeVisible({ timeout: 10_000 });
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
