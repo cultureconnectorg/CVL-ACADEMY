@@ -70,6 +70,16 @@ export const FEATURE_FLAGS = Object.freeze({
   get SPATIAL_MODULE_DEPTH() {
     return readFlag("SPATIAL_MODULE_DEPTH");
   },
+  /** ACA-0010 ("Hero/Entry — world entry, not SaaS landing",
+   * `docs/ACADEMY_HERO_ENTRY_RESEARCH.md`) — gates whether Landing's
+   * manifesto and auth card appear as a sequenced VOID→WORLD→FOCUS→
+   * IDENTITY entry (world established before identity competes for
+   * primary visual weight) instead of rendering simultaneously at full
+   * weight, as today. Off by default — an unauthenticated visitor sees
+   * exactly today's Landing until this is deliberately turned on. */
+  get SPATIAL_HERO_ENTRY() {
+    return readFlag("SPATIAL_HERO_ENTRY");
+  },
 });
 
 /** Test/story-only override — never used by production code, which

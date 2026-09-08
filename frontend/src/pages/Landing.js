@@ -1,10 +1,90 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { Leaf, ArrowRight } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
-import { Focus, Enter } from "@/lib/motion-primitives";
+import { Focus, Enter, Reveal } from "@/lib/motion-primitives";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
+import { useReducedMotion } from "@/lib/useReducedMotion";
+
+// ACA-0010 ("Hero/Entry — world entry, not SaaS landing",
+// docs/ACADEMY_HERO_ENTRY_RESEARCH.md §8-9) — the storyboard's four
+// beats compressed for a real, usable product rather than the
+// illustrative 0-60s cinematic timing: VOID is near-instant (a signal,
+// not a wait), WORLD/FOCUS resolve within ~1s so a visitor is never
+// blocked from acting. What's preserved from the research is the
+// *sequencing* itself (world before identity gets primary weight),
+// which is the actual acceptance criterion (§16.1), not the exact
+// timing of an illustrative storyboard.
+const HERO_BEATS = { world: 80, focus: 420, identity: 760 };
+const HERO_SESSION_KEY = "cvln_academy_hero_played";
+
+/** Stage reached once, on a real first visit within this browser
+ * session — a returning visitor (same tab, back button, or a second
+ * `/` hit after a redirect) lands on the settled end-state immediately
+ * rather than replaying VOID→WORLD→FOCUS→IDENTITY (research §16.4:
+ * "a returning visitor never replays VOID/SIGNAL"). This is a
+ * `sessionStorage` best-effort, not the full RETURN_TO_POSITION
+ * mechanism (that's an authenticated-route concern, ACA-0023) — Landing
+ * itself carries no "position" to return to. */
+function alreadyPlayedThisSession() {
+  try {
+    return sessionStorage.getItem(HERO_SESSION_KEY) === "1";
+  } catch {
+    return false; // storage blocked (private mode, etc.) — treat as first visit
+  }
+}
+
+function markPlayed() {
+  try {
+    sessionStorage.setItem(HERO_SESSION_KEY, "1");
+  } catch {
+    // best-effort only — a visitor replaying the (harmless, <1s) sequence
+    // once more is not a functional regression
+  }
+}
+
+/** VOID → WORLD → FOCUS → IDENTITY, gated by SPATIAL_HERO_ENTRY and
+ * collapsed instantly under reduced motion or a same-session replay —
+ * both paths reach the exact same end state (research §16.5), never a
+ * different one. Off (flag disabled, reduced motion, or already played)
+ * returns `sequencing: false` — the caller then renders plain `<div>`s
+ * instead of `Reveal`, so Landing is byte-identical to before this
+ * change (no entrance-fade overhead either) until a real sequence runs. */
+function useHeroStage() {
+  const reduced = useReducedMotion();
+  const skip = !FEATURE_FLAGS.SPATIAL_HERO_ENTRY || reduced || alreadyPlayedThisSession();
+  const [stage, setStage] = useState(skip ? "identity" : "void");
+
+  useEffect(() => {
+    if (skip) return undefined;
+    const timers = [
+      setTimeout(() => setStage("world"), HERO_BEATS.world),
+      setTimeout(() => setStage("focus"), HERO_BEATS.focus),
+      setTimeout(() => {
+        setStage("identity");
+        markPlayed();
+      }, HERO_BEATS.identity),
+    ];
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { stage, sequencing: !skip }; // stage: "void"|"world"|"focus"|"identity"
+}
+
+const HERO_STAGE_ORDER = ["void", "world", "focus", "identity"];
+const reached = (stage, min) => HERO_STAGE_ORDER.indexOf(stage) >= HERO_STAGE_ORDER.indexOf(min);
+
+/** Renders `Reveal` only while an actual VOID→IDENTITY sequence is
+ * running; otherwise a plain passthrough `<div>` with the same
+ * className, so the "off" path never pays for (or shows) an entrance
+ * fade that didn't exist before ACA-0010. */
+function HeroStage({ sequencing, show, className, children }) {
+  if (!sequencing) return <div className={className}>{children}</div>;
+  return <Reveal show={show} className={className}>{children}</Reveal>;
+}
 
 export default function Landing() {
   const { user, login, register, loading } = useAuth();
@@ -13,6 +93,7 @@ export default function Landing() {
   const [mode, setMode] = useState("register"); // register | login
   const [form, setForm] = useState({ email: "", password: "", display_name: "" });
   const [busy, setBusy] = useState(false);
+  const { stage: heroStage, sequencing } = useHeroStage();
 
   if (loading) return null;
   if (user) {
@@ -70,8 +151,13 @@ export default function Landing() {
       </header>
 
       <section className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-16 md:py-24 grid md:grid-cols-2 gap-16">
-        {/* Left: manifesto */}
-        <div className="flex flex-col justify-center">
+        {/* Left: manifesto — WORLD before FOCUS before IDENTITY (ACA-0010):
+            the world establishes before any specific content, and specific
+            content (stat line) settles before the auth card ever competes
+            for primary visual weight. Reveal never unmounts on the "off"
+            path (`show` starts true when heroStage mounts at "identity"),
+            so this is a no-op when SPATIAL_HERO_ENTRY is disabled. */}
+        <HeroStage sequencing={sequencing} show={reached(heroStage, "world")} className="flex flex-col justify-center">
           <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange] mb-6">
             {t("landing_p.brand_line")}
           </div>
@@ -82,21 +168,25 @@ export default function Landing() {
           <p className="mt-8 text-lg md:text-xl text-[--cvln-ink-2] max-w-xl leading-relaxed">
             {t("tagline_p")}
           </p>
-          <div className="mt-10 flex flex-wrap gap-3 items-center">
+          <HeroStage sequencing={sequencing} show={reached(heroStage, "focus")} className="mt-10 flex flex-wrap gap-3 items-center">
             <span className="stade-chip">🌱 {t("stades.graine")}</span>
             <span className="stade-chip">🌿 {t("stades.pousse")}</span>
             <span className="stade-chip">🌳 {t("stades.racine")}</span>
             <span className="stade-chip">🌲 {t("stades.branches")}</span>
             <span className="stade-chip">🦅 {t("stades.arbre")}</span>
             <span className="stade-chip">🌳🌳 {t("stades.foret")}</span>
-          </div>
+          </HeroStage>
           <div className="mt-10 text-xs mono text-[--cvln-ink-2]">
             30 {t("landing_p.stat_formations")} · 215 {t("landing_p.stat_modules")} · 8 {t("landing_p.stat_poles")} · {t("trilingual")}
           </div>
-        </div>
+        </HeroStage>
 
-        {/* Right: auth card */}
-        <div className="flex items-center">
+        {/* Right: auth card — IDENTITY is `SECONDARY_CONTEXT` until the
+            world/focus beats resolve (research §8.4): present in the DOM
+            throughout (never conditionally unmounted — auth remains
+            keyboard-reachable and testable at every stage), but only
+            reaches full visual weight once heroStage is "identity". */}
+        <HeroStage sequencing={sequencing} show={reached(heroStage, "identity")} className="flex items-center">
           <div className="w-full cvln-card p-8 md:p-10 relative overflow-hidden">
             <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[--cvln-orange]/10" />
             <div className="relative z-10">
@@ -180,7 +270,7 @@ export default function Landing() {
               </button>
             </div>
           </div>
-        </div>
+        </HeroStage>
       </section>
 
       <footer className="relative z-10 max-w-7xl mx-auto px-6 md:px-16 py-10 border-t border-black/5 text-sm text-[--cvln-ink-2]">
