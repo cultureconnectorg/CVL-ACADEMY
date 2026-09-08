@@ -59,17 +59,17 @@ accès opérationnel réel.
 | WAL-22 — Coffres & Allocation Operations | `wal22/` | `GET/POST /coffres`, `POST /coffres/{id}/move`, `DELETE /coffres/{id}` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `PACKAGE_COMPLETE_FOR_WAL22` |
 | WAL-23 — CVLN Payment & Transfer Operations | `wal23/` | `POST /v1/entity/transfer` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `PACKAGE_COMPLETE_FOR_WAL23` |
 | WAL-24 — CVLN Card Operations | `wal24/` | `passes.py` (cette Academy, `build_apple_pass_payload`/`build_google_pass_payload`) | `PACKAGE_COMPLETE_FOR_WAL24` |
-| WAL-25 — CVLN Marketplace Operations | `wal25/` | `GET /marketplace`, `POST /marketplace/buy` (**`djsayd/CVLN-Wallet`**, 8-item catalog réel, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
+| WAL-25 — CVLN Marketplace Operations | `wal25/` | `GET /marketplace`, `POST /marketplace/buy` (**`djsayd/CVLN-Wallet`**, 8-item catalog réel, vérifié directement) | `PACKAGE_COMPLETE_FOR_WAL25` |
 | WAL-26 — Settlement & Reconciliation Operator | `wal26/` | `POST/GET /admin/settlements[...]`, `POST/GET /admin/reconciliation/*` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
 | WAL-27 — Financial Incident & Kill-Switch Operations | `wal27/` | `PUT /admin/kill-switch` (3 switches), `POST /card/freeze`/`unfreeze` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
 | WAL-28 — Wallet Audit & Evidence Operations | `wal28/` | Append-only `db.wallet_transactions`, `list_transactions()`, `reconcile_wallet_balance()` (cette Academy) | `PACKAGE_COMPLETE_FOR_WAL28` |
 
 **10/10 constructibles**, **0/10 bloquées** — 5 sur le ledger de cette
-Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **7/10**
-(WAL-19, WAL-20, WAL-21, WAL-22, WAL-23, WAL-24, WAL-28) sont désormais
-au niveau package complet, toujours pas `FULLY_COMPLETE` ; **3/10**
-(WAL-25/26/27, ancrées sur `djsayd/CVLN-Wallet`) restent à approfondir
-(vague future).
+Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **8/10**
+(WAL-19, WAL-20, WAL-21, WAL-22, WAL-23, WAL-24, WAL-25, WAL-28) sont
+désormais au niveau package complet, toujours pas `FULLY_COMPLETE` ;
+**2/10** (WAL-26/27, ancrées sur `djsayd/CVLN-Wallet`) restent à
+approfondir (vague future).
 
 ## Repo-truth findings (vérifiées cette session)
 
