@@ -8,6 +8,7 @@ import {
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import MentorPanel from "@/components/MentorPanel";
 import AcademyBackdrop from "@/components/AcademyBackdrop";
 import { isPedagogicalContext } from "@/lib/mentorPresence";
@@ -21,7 +22,7 @@ const STUDENT_NAV = [
   { to: "/skills",          key: "skills",          Icon: Sparks },
   { to: "/certifications",  key: "certifications",  Icon: ShieldCheck },
   // ACA-0025/W-FUNNEL-2 "Conversion" — the real DECIDED_V1 commercial
-  // catalogue, same NAV list every other page uses (desktop sidebar +
+  // catalogue, same NAV list every other page uses (desktop nav +
   // mobile "more" sheet, see MOBILE_PRIMARY_KEYS below).
   { to: "/offers",          key: "offers",          Icon: CreditCard },
   { to: "/wallet",          key: "wallet",          Icon: WalletIcon },
@@ -29,7 +30,7 @@ const STUDENT_NAV = [
   // ACA-0030 — Ecosystem Builder surface: the unified consumer/learner/
   // professional/builder view (services/ecosystem_builder.py). Not a
   // MOBILE_PRIMARY_KEYS entry — same tier as Skills/Certifications/
-  // Wallet, reached via sidebar or the mobile "more" sheet.
+  // Wallet, reached via desktop nav or the mobile "more" sheet.
   { to: "/ecosystem-builder", key: "ecosystem_builder", Icon: Hammer },
 ];
 
@@ -39,15 +40,27 @@ const STAFF_NAV = [
   { to: "/admin",   key: "admin_cms",     Icon: Settings,    roles: ["admin", "super_admin", "founder"] },
 ];
 
-// ACA-0022 — mobile global navigation. The sidebar is `hidden md:flex`
+// ACA-0022 — mobile global navigation. Desktop nav is `hidden md:flex`
 // (always was); below md there was no navigation at all besides a
 // static header, so a signed-in learner on a phone could only move
 // between screens via browser back/forward. This is the real fix, not
 // a cosmetic one: a fixed bottom tab bar for the 4 highest-frequency
 // destinations, plus a "More" sheet for the rest of STUDENT_NAV and
 // every role-gated STAFF_NAV entry the user actually has — same NAV
-// list the sidebar already computes, just presented two ways.
+// list the desktop nav already computes, just presented two ways.
 const MOBILE_PRIMARY_KEYS = ["dashboard", "roadmap", "formations", "missions"];
+
+// current-route -> backdrop section key (index.css's `.spatial-backdrop`
+// reads --env-glow-1/--formation-signature; the section itself is just
+// which real route we're on, not a fabricated classification).
+function sectionFor(pathname) {
+  if (pathname.startsWith("/roadmap")) return "roadmap";
+  if (pathname.startsWith("/formations")) return "formations";
+  if (pathname.startsWith("/missions")) return "missions";
+  if (pathname.startsWith("/badges")) return "badges";
+  if (pathname.startsWith("/frek-profile") || pathname.startsWith("/skills")) return "frek";
+  return "hub";
+}
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
@@ -63,6 +76,11 @@ export default function Layout({ children }) {
   // on every screen. See mentorPresence.js for the exact, deliberately
   // conservative scope.
   const mentorAvailable = isPedagogicalContext(location.pathname);
+  // RAIL 3's own flag ("same production gate as Dashboard/Roadmap") —
+  // reused here rather than a new flag, since this is the same visual
+  // system, now extended to the shell itself. Off = the exact prior
+  // sidebar shell, unchanged.
+  const spatialShell = FEATURE_FLAGS.SPATIAL_HUB_ENABLED;
 
   // A route change (tapping a bottom-tab link, or a sheet link) always
   // closes the sheet — it must never survive a navigation.
@@ -75,72 +93,136 @@ export default function Layout({ children }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [mobileMoreOpen]);
 
+  const langToggle = (testIdPrefix) => (
+    <div className="flex items-center gap-1 px-1" data-testid={testIdPrefix === "lang-mobile" ? "lang-toggle-mobile" : "lang-toggle"}>
+      <Language width={14} height={14} className="text-[--cvln-ink-2]" />
+      {LANGS.map((l) => (
+        <button
+          key={l.code}
+          data-testid={`${testIdPrefix}-${l.code}`}
+          onClick={() => setLang(l.code)}
+          className={`text-xs px-2 py-1 rounded-full font-semibold transition
+            ${lang === l.code ? "bg-[--cvln-orange] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
+        >
+          {l.label}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen flex" data-testid="app-layout">
+    <div
+      className={`min-h-screen ${spatialShell ? "flex flex-col" : "flex"}`}
+      data-testid="app-layout"
+      data-section={sectionFor(location.pathname)}
+    >
       <AcademyBackdrop />
-      {/* Sidebar */}
-      <aside
-        className="hidden md:flex flex-col w-64 shrink-0 px-6 py-8 border-r border-black/5 bg-white sticky top-0 h-screen relative z-10"
-        data-testid="sidebar"
-      >
-        <div className="flex items-center gap-2 mb-10">
-          <div className="w-9 h-9 rounded-full bg-[--cvln-orange] flex items-center justify-center">
-            <Leaf className="text-white" width={18} height={18} />
-          </div>
-          <div className="font-display font-black text-[19px] tracking-tight leading-none">
-            CVLN <span className="text-[--cvln-orange]">Academy</span>
-          </div>
-        </div>
 
-        <nav className="flex flex-col gap-1" data-testid="sidebar-nav">
-          {NAV.map(({ to, key, Icon }) => (
-            <NavLink
-              key={to} to={to}
-              data-testid={`nav-${key}`}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition
-                 ${isActive
-                   ? "bg-[--cvln-forest] text-white"
-                   : "text-[--cvln-ink-2] hover:bg-[--cvln-bg-warm] hover:text-[--cvln-ink]"}`
-              }
-            >
-              <Icon width={18} height={18} />
-              {t(key)}
-            </NavLink>
-          ))}
-        </nav>
-
-        <div className="mt-auto pt-6 border-t border-black/5 flex flex-col gap-3">
-          {/* FREK-ID card */}
-          <div className="rounded-2xl bg-[--cvln-bg-warm] p-4">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-[--cvln-ink-2] font-semibold">FREK-ID</div>
-            <div className="mono text-lg mt-1 font-semibold" data-testid="frek-id-badge">{user?.frek_id}</div>
-            <div className="text-sm text-[--cvln-ink-2] truncate">{user?.display_name}</div>
+      {spatialShell ? (
+        // Horizontal glass primary rail — the H0.10 prototype's shell,
+        // ported onto the real NAV data/routing/auth/i18n above (same
+        // list the classic sidebar renders, same NavLink/testid
+        // contract mobile-nav.spec.js and environmental-continuity.
+        // spec.js already depend on). Real content only: no destination,
+        // label, or icon here that isn't also in the flag-off sidebar.
+        <header
+          className="hidden md:flex items-center gap-6 px-8 py-4 relative z-10"
+          data-testid="sidebar"
+        >
+          <div className="flex items-center gap-2 shrink-0">
+            <div className="w-9 h-9 rounded-full bg-[--cvln-orange] flex items-center justify-center">
+              <Leaf className="text-white" width={18} height={18} />
+            </div>
+            <div className="font-display font-black text-[17px] tracking-tight leading-none whitespace-nowrap">
+              CVLN <span className="text-[--cvln-orange]">Academy</span>
+            </div>
           </div>
-          {/* Lang toggle */}
-          <div className="flex items-center gap-1 px-1" data-testid="lang-toggle">
-            <Language width={14} height={14} className="text-[--cvln-ink-2]" />
-            {LANGS.map((l) => (
-              <button
-                key={l.code}
-                data-testid={`lang-${l.code}`}
-                onClick={() => setLang(l.code)}
-                className={`text-xs px-2 py-1 rounded-full font-semibold transition
-                  ${lang === l.code ? "bg-[--cvln-orange] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
+
+          <nav className="primary-rail-nav flex-1 min-w-0" data-testid="sidebar-nav">
+            {NAV.map(({ to, key, Icon }) => (
+              <NavLink
+                key={to} to={to}
+                data-testid={`nav-${key}`}
+                className="rail-nav-item"
+                end={to === "/dashboard"}
               >
-                {l.label}
-              </button>
+                {({ isActive }) => (
+                  <span className="rail-nav-item-inner" data-active={isActive ? "true" : "false"}>
+                    <Icon width={16} height={16} />
+                    {t(key)}
+                  </span>
+                )}
+              </NavLink>
             ))}
+          </nav>
+
+          <div className="flex items-center gap-3 shrink-0">
+            {langToggle("lang")}
+            <div className="frek-chip mono text-xs text-[--cvln-ink-2] bg-[--cvln-bg-warm] border border-black/5 rounded-full px-3 py-1.5" data-testid="frek-id-badge">
+              {user?.frek_id}
+            </div>
+            <button
+              data-testid="logout-btn"
+              onClick={() => { logout(); nav("/"); }}
+              className="flex items-center gap-2 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition px-2 py-2"
+              aria-label={t("logout")}
+              title={t("logout")}
+            >
+              <LogOut width={16} height={16} />
+            </button>
           </div>
-          <button
-            data-testid="logout-btn"
-            onClick={() => { logout(); nav("/"); }}
-            className="flex items-center gap-2 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition px-3 py-2"
-          >
-            <LogOut width={16} height={16} /> {t("logout")}
-          </button>
-        </div>
-      </aside>
+        </header>
+      ) : (
+        /* Sidebar (default shell) */
+        <aside
+          className="hidden md:flex flex-col w-64 shrink-0 px-6 py-8 border-r border-black/5 bg-white sticky top-0 h-screen relative z-10"
+          data-testid="sidebar"
+        >
+          <div className="flex items-center gap-2 mb-10">
+            <div className="w-9 h-9 rounded-full bg-[--cvln-orange] flex items-center justify-center">
+              <Leaf className="text-white" width={18} height={18} />
+            </div>
+            <div className="font-display font-black text-[19px] tracking-tight leading-none">
+              CVLN <span className="text-[--cvln-orange]">Academy</span>
+            </div>
+          </div>
+
+          <nav className="flex flex-col gap-1" data-testid="sidebar-nav">
+            {NAV.map(({ to, key, Icon }) => (
+              <NavLink
+                key={to} to={to}
+                data-testid={`nav-${key}`}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition
+                   ${isActive
+                     ? "bg-[--cvln-forest] text-white"
+                     : "text-[--cvln-ink-2] hover:bg-[--cvln-bg-warm] hover:text-[--cvln-ink]"}`
+                }
+              >
+                <Icon width={18} height={18} />
+                {t(key)}
+              </NavLink>
+            ))}
+          </nav>
+
+          <div className="mt-auto pt-6 border-t border-black/5 flex flex-col gap-3">
+            {/* FREK-ID card */}
+            <div className="rounded-2xl bg-[--cvln-bg-warm] p-4">
+              <div className="text-[11px] uppercase tracking-[0.2em] text-[--cvln-ink-2] font-semibold">FREK-ID</div>
+              <div className="mono text-lg mt-1 font-semibold" data-testid="frek-id-badge">{user?.frek_id}</div>
+              <div className="text-sm text-[--cvln-ink-2] truncate">{user?.display_name}</div>
+            </div>
+            {langToggle("lang")}
+            <button
+              data-testid="logout-btn"
+              onClick={() => { logout(); nav("/"); }}
+              className="flex items-center gap-2 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition px-3 py-2"
+            >
+              <LogOut width={16} height={16} /> {t("logout")}
+            </button>
+          </div>
+        </aside>
+      )}
 
       {/* Main */}
       <main className="flex-1 min-w-0 relative z-10">
@@ -158,10 +240,12 @@ export default function Layout({ children }) {
         <div className="fade-in pb-20 md:pb-0">{children}</div>
       </main>
 
-      {/* Mobile bottom tab bar (ACA-0022) — the sidebar's `hidden md:flex`
-          counterpart. Same NAV data, curated to the 4 highest-frequency
-          destinations + a "More" sheet for the rest, so a phone user can
-          always reach every screen the desktop sidebar reaches. */}
+      {/* Mobile bottom tab bar (ACA-0022) — the desktop nav's
+          `hidden md:flex` counterpart. Same NAV data, curated to the 4
+          highest-frequency destinations + a "More" sheet for the rest,
+          so a phone user can always reach every screen desktop reaches.
+          Unaffected by spatialShell — the mobile pattern stays the same
+          real navigation either way. */}
       <nav
         className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-black/5 flex items-stretch"
         data-testid="mobile-nav-bar"
@@ -195,9 +279,8 @@ export default function Layout({ children }) {
       </nav>
 
       {/* "More" sheet — the rest of STUDENT_NAV plus every role-gated
-          STAFF_NAV entry this user has, plus lang toggle + logout (the
-          sidebar's footer block, mirrored here since it's md:hidden on
-          mobile). Backdrop click, the X, or Escape all close it. */}
+          STAFF_NAV entry this user has, plus lang toggle + logout.
+          Backdrop click, the X, or Escape all close it. */}
       {mobileMoreOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex items-end">
           <button
@@ -245,20 +328,7 @@ export default function Layout({ children }) {
             </div>
 
             <div className="mt-5 pt-4 border-t border-black/5 flex items-center justify-between">
-              <div className="flex items-center gap-1" data-testid="lang-toggle-mobile">
-                <Language width={14} height={14} className="text-[--cvln-ink-2]" />
-                {LANGS.map((l) => (
-                  <button
-                    key={l.code}
-                    data-testid={`lang-mobile-${l.code}`}
-                    onClick={() => setLang(l.code)}
-                    className={`text-xs px-2 py-1 rounded-full font-semibold transition
-                      ${lang === l.code ? "bg-[--cvln-orange] text-white" : "text-[--cvln-ink-2]"}`}
-                  >
-                    {l.label}
-                  </button>
-                ))}
-              </div>
+              {langToggle("lang-mobile")}
               <button
                 type="button"
                 data-testid="logout-btn-mobile"

@@ -156,6 +156,94 @@ body {
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ===================================================================
+   Spatial shell — visual language ported from the validated H0.10
+   prototype (docs/SPATIAL_H10_PERCEPTUAL_REFINEMENT_REPORT.md), applied
+   directly to the real app's own DOM/components rather than a separate
+   mockup. Every color here reuses the existing --cvln- and --st- tokens
+   above verbatim — the prototype was itself built from those tokens
+   ("Real CVLN tokens from frontend/src/index.css", its own header
+   comment), so this is the SAME palette, not a new one.
+
+   What is genuinely new (didn't exist before this pass): the layered
+   environmental backdrop (env-base/env-light/env-botanical, replacing
+   AcademyBackdrop's single flat radial gradient), the horizontal glass
+   primary-rail navigation (replacing the vertical sidebar), and the
+   "target tile" treatment (a real dark, motif-textured card driven by
+   the SAME real data-tier attribute the physics/attention engine
+   already stamps on every spatial node — lib/spatial/attention.js's
+   real ATTENTION_TIERS, never a new classification scheme). All of it
+   is additive CSS: nothing here changes what data a page fetches or
+   how progress/eligibility/certification are computed — only how the
+   same real data is drawn. Gated the same way every spatial surface
+   already is (FEATURE_FLAGS, default off) — see each consuming
+   component for its own flag.
+   =================================================================== */
+
+@property --env-glow-1 { syntax: "<color>"; inherits: true; initial-value: #E05A33; }
+@property --env-glow-2 { syntax: "<color>"; inherits: true; initial-value: #143628; }
+@property --formation-signature { syntax: "<color>"; inherits: true; initial-value: #E05A33; }
+
+.spatial-backdrop { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+.spatial-backdrop .env-base {
+    position: absolute; inset: -5%;
+    background:
+        radial-gradient(62% 55% at 88% -10%, color-mix(in srgb, var(--env-glow-1) 20%, transparent) 0%, transparent 62%),
+        radial-gradient(55% 55% at -8% 22%, color-mix(in srgb, var(--env-glow-2) 14%, transparent) 0%, transparent 60%),
+        var(--cvln-bg);
+    transition: --env-glow-1 700ms cubic-bezier(.25,.1,.25,1), --env-glow-2 700ms cubic-bezier(.25,.1,.25,1);
+}
+.spatial-backdrop .env-light {
+    position: absolute; width: 54vw; height: 54vw; border-radius: 50%; top: -8%; left: 18%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--env-glow-1) 18%, transparent) 0%, transparent 68%);
+    transition: opacity 700ms cubic-bezier(.25,.1,.25,1);
+}
+.spatial-backdrop .veg-blob {
+    position: absolute; border-radius: 43% 57% 61% 39% / 51% 45% 55% 49%; filter: blur(1px);
+    transition: opacity 700ms cubic-bezier(.25,.1,.25,1);
+}
+.spatial-backdrop .veg-blob.veg-signature {
+    background: radial-gradient(circle, color-mix(in srgb, var(--formation-signature) 26%, transparent) 0%, transparent 70%) !important;
+    transition: opacity 700ms cubic-bezier(.25,.1,.25,1), --formation-signature 700ms cubic-bezier(.25,.1,.25,1);
+}
+
+/* ---- horizontal glass primary rail (desktop nav) ---- */
+.primary-rail-nav {
+    display: flex; align-items: center; gap: 5px; padding: 5px;
+    background: rgba(255,255,255,0.72); border: 1px solid rgba(0,0,0,0.09); border-radius: 999px;
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    box-shadow: 0 20px 60px -30px rgba(20,15,8,0.35);
+    overflow-x: auto; scrollbar-width: none;
+}
+.primary-rail-nav::-webkit-scrollbar { display: none; }
+.rail-nav-item { display: inline-block; cursor: pointer; text-decoration: none; }
+.rail-nav-item-inner {
+    display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px;
+    border-radius: 999px; font-weight: 700; font-size: 13px; color: var(--cvln-ink-2); white-space: nowrap;
+    transition: color 190ms cubic-bezier(.2,.8,.2,1), background 190ms cubic-bezier(.2,.8,.2,1), transform 190ms cubic-bezier(.2,.8,.2,1);
+}
+.rail-nav-item-inner[data-active="true"] { background: var(--cvln-forest); color: #fff; transform: scale(1.04); box-shadow: 0 10px 26px -12px rgba(20,54,40,.55); }
+.rail-nav-item-inner[data-active="false"]:hover { color: var(--cvln-ink); background: rgba(0,0,0,.04); }
+
+/* ---- rail viewport: soft edge bleed instead of a hard crop ---- */
+.spatial-rail-viewport {
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
+}
+
+/* ---- spatial tile: the same real data-tier the physics/attention
+   engine already stamps (lib/spatial/attention.js's ATTENTION_TIERS)
+   drives a real discrete look change on top of the continuous inline
+   transform the physics engine writes per frame — never a second,
+   competing animation system. ---- */
+.spatial-tile { position: relative; overflow: hidden; }
+.spatial-tile[data-tier="PRIMARY_ATTENTION"] {
+    background: linear-gradient(155deg, color-mix(in srgb, var(--formation-signature, var(--cvln-orange)) 90%, #0c0a06) 0%, color-mix(in srgb, var(--formation-signature, var(--cvln-orange)) 62%, #14100a) 100%);
+    border-color: transparent !important; color: #fff;
+}
+.spatial-tile[data-tier="PRIMARY_ATTENTION"] .spatial-tile-eyebrow { color: rgba(255,255,255,.7); }
+.spatial-tile[data-tier="PRIMARY_ATTENTION"] .spatial-tile-meta { color: rgba(255,255,255,.85); }
+
 /* Spatial Learning W1-A — accessibility safety baseline.
    Neutralizes every animation/transition duration (the existing hover
    transforms above, .fade-in) for anyone with the OS-level "reduce

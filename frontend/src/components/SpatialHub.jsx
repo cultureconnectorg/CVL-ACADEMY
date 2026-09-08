@@ -313,11 +313,11 @@ function SpatialNode({ item, reduced, isFocused, registerRef, onFocus, onActivat
         }
       }}
       style={style}
-      className={`shrink-0 w-56 text-left rounded-2xl p-5 border cursor-pointer
+      className={`spatial-tile shrink-0 w-56 text-left rounded-2xl p-5 border cursor-pointer
         focus-visible:outline focus-visible:outline-2 focus-visible:outline-[--cvln-orange]
         ${item.distance === 0 ? "border-[--cvln-orange] bg-white shadow-lg" : "border-black/5 bg-white/70"}`}
     >
-      <div className="text-[10px] mono uppercase tracking-[0.2em] text-[--cvln-ink-2]">
+      <div className="spatial-tile-eyebrow text-[10px] mono uppercase tracking-[0.2em] text-[--cvln-ink-2]">
         {item.kind === "mission" ? "MISSION" : item.subtitle}
       </div>
       <div className="font-display font-bold text-lg tracking-tight mt-1 leading-snug">{item.title}</div>
@@ -326,7 +326,7 @@ function SpatialNode({ item, reduced, isFocused, registerRef, onFocus, onActivat
           <div style={{ width: `${item.progressPct}%`, background: item.poleColor || undefined }} />
         </div>
       )}
-      <div className="mt-3 text-xs font-semibold text-[--cvln-orange]">{item.meta}</div>
+      <div className="spatial-tile-meta mt-3 text-xs font-semibold text-[--cvln-orange]">{item.meta}</div>
       {item.kind === "formation" && !item.isUnlocked && (
         <div className="mt-1 text-[10px] text-[--cvln-ink-2] uppercase tracking-wider">🔒</div>
       )}
