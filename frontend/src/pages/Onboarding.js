@@ -5,6 +5,8 @@ import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
+import { Enter } from "@/lib/motion-primitives";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 
 const STEPS = ["lang", "metier", "territoire", "objectif", "recap"];
 
@@ -74,6 +76,16 @@ export default function Onboarding() {
 
   const stepPct = Math.round(((step + 1) / STEPS.length) * 100);
 
+  // ACA-0012 — the learner's own real métier choice (real backend color,
+  // never invented) becomes a persistent signature once made, carried
+  // through the remaining steps. No territoire/objectif-derived visual
+  // is added — the mission explicitly warns against fabricating
+  // personalization beyond what a real field commit actually supports.
+  const sequencing = FEATURE_FLAGS.SPATIAL_ONBOARDING_ENTRY;
+  const poleColor = sequencing
+    ? options.metiers.find((m) => m.code === choices.metier_vise)?.color
+    : null;
+
   return (
     <div className="min-h-screen bg-white noise flex flex-col" data-testid="onboarding-page">
       {/* header */}
@@ -86,20 +98,35 @@ export default function Onboarding() {
         </div>
       </header>
 
-      {/* progress */}
+      {/* progress — tints to the real chosen métier color once one exists
+          (sequencing on), otherwise the original flat orange. */}
       <div className="h-1 bg-black/5">
         <div
-          className="h-full bg-[--cvln-orange] transition-all duration-500"
-          style={{ width: `${stepPct}%` }}
+          className="h-full transition-all duration-500"
+          style={{ width: `${stepPct}%`, background: poleColor || "var(--cvln-orange)" }}
           data-testid="onboarding-progress"
         />
       </div>
 
-      <main className="flex-1 flex items-start md:items-center justify-center px-6 md:px-16 py-10 md:py-16">
-        <div className="w-full max-w-3xl">
+      <main
+        className="flex-1 flex items-start md:items-center justify-center px-6 md:px-16 py-10 md:py-16 relative"
+        style={
+          poleColor
+            ? {
+                // A restrained signature behind the step content, same
+                // radial-tint mechanism as AcademyBackdrop — real pole
+                // color, never an invented one, and purely decorative
+                // (removing it changes zero functional behavior).
+                backgroundImage: `radial-gradient(900px 600px at 85% 10%, ${poleColor}12, transparent 60%)`,
+              }
+            : undefined
+        }
+      >
+        <div className="w-full max-w-3xl relative z-10">
           {/* STEP 0 — Language */}
           {step === 0 && (
             <StepShell
+              sequencing={sequencing}
               kicker={t("onboarding_p.step1_kicker")}
               title={t("onboarding_p.step1_title")}
               subtitle={t("onboarding_p.step1_subtitle")}
@@ -130,6 +157,7 @@ export default function Onboarding() {
           {/* STEP 1 — Métier visé */}
           {step === 1 && (
             <StepShell
+              sequencing={sequencing}
               kicker={t("onboarding_p.step2_kicker")}
               title={t("onboarding_p.step2_title")}
               subtitle={t("onboarding_p.step2_subtitle")}
@@ -165,6 +193,7 @@ export default function Onboarding() {
           {/* STEP 2 — Territoire */}
           {step === 2 && (
             <StepShell
+              sequencing={sequencing}
               kicker={t("onboarding_p.step3_kicker")}
               title={t("onboarding_p.step3_title")}
               subtitle={t("onboarding_p.step3_subtitle")}
@@ -191,6 +220,7 @@ export default function Onboarding() {
           {/* STEP 3 — Objectif */}
           {step === 3 && (
             <StepShell
+              sequencing={sequencing}
               kicker={t("onboarding_p.step4_kicker")}
               title={t("onboarding_p.step4_title")}
               subtitle={t("onboarding_p.step4_subtitle")}
@@ -214,6 +244,7 @@ export default function Onboarding() {
           {/* STEP 4 — Récap + submit */}
           {step === 4 && (
             <StepShell
+              sequencing={sequencing}
               kicker={t("onboarding_p.step5_kicker")}
               title={t("onboarding_p.step5_title")}
               subtitle={t("onboarding_p.step5_subtitle")}
@@ -271,7 +302,35 @@ export default function Onboarding() {
   );
 }
 
-function StepShell({ kicker, title, subtitle, children, testId }) {
+function StepShell({ sequencing, kicker, title, subtitle, children, testId }) {
+  const body = (
+    <>
+      <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
+        {kicker}
+      </div>
+      <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-3">
+        {title}
+      </h1>
+      {subtitle && (
+        <p className="text-[--cvln-ink-2] mt-3 max-w-xl">{subtitle}</p>
+      )}
+      {children}
+    </>
+  );
+  // ACA-0012 — continuous crossfade (CONTINUITY_OVER_PAGE_CUT) between
+  // steps via the real Enter primitive, instead of the plain CSS
+  // .fade-in class, once sequencing is on. `key={testId}` re-triggers
+  // the enter animation on every step change (each step is a distinct
+  // React element already, via the parent's `step === N &&` guards).
+  if (sequencing) {
+    return (
+      <div data-testid={testId}>
+        <Enter key={testId} show>
+          {body}
+        </Enter>
+      </div>
+    );
+  }
   return (
     <div className="fade-in" data-testid={testId}>
       <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">

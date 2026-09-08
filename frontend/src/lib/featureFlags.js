@@ -92,6 +92,20 @@ export const FEATURE_FLAGS = Object.freeze({
   get SPATIAL_IDENTITY_ENTRY() {
     return readFlag("SPATIAL_IDENTITY_ENTRY");
   },
+  /** ACA-0012 ("Onboarding spatialization") — gates whether
+   * Onboarding's step-to-step transitions use the real `Enter`
+   * primitive (continuous crossfade, `CONTINUITY_OVER_PAGE_CUT`)
+   * instead of the plain CSS `.fade-in` class, and whether the
+   * learner's own real métier choice (`options.metiers[].color`,
+   * already real backend data) tints the progress bar and step
+   * backdrop from that point on — "a real choice visibly changes what
+   * the world looks like," never a fabricated per-territoire/objectif
+   * visual (the mission explicitly warns against inventing
+   * personalization there — see docs/ACADEMY_ACA0012_ONBOARDING_
+   * SPATIALIZATION_REPORT.md). Off by default. */
+  get SPATIAL_ONBOARDING_ENTRY() {
+    return readFlag("SPATIAL_ONBOARDING_ENTRY");
+  },
 });
 
 /** Test/story-only override — never used by production code, which
