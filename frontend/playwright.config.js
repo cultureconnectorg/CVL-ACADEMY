@@ -39,6 +39,26 @@ const explicitChromiumPath =
 module.exports = {
   testDir: "./e2e",
   timeout: 30_000,
+  // ACA-0031 — real CI-load variance, observed directly: distinct
+  // single-assertion failures (module-journey-context.spec.js's
+  // quiz-result visibility, scroll-restoration.spec.js's scrollY
+  // poll) have now each independently exceeded Playwright's 5000ms
+  // default `expect` timeout on GitHub Actions' shared 2-worker
+  // runners, on different commits, never reproducible locally
+  // (--repeat-each passes reliably in this project's own dev
+  // sandbox). Neither ever asserted a WRONG final value — always
+  // "not yet visible/settled" under load, the signature of a timeout
+  // that's simply tighter than this CI environment's real headroom,
+  // not a logic defect. A per-assertion override (tried first, on
+  // just the quiz-result case) still weakened under a heavier-loaded
+  // run, so this raises the one global default instead of chasing
+  // each flaky assertion individually — real slack for demonstrated
+  // variance, costs nothing on the (overwhelmingly common) fast path
+  // where an assertion already resolves in well under 5s regardless
+  // of the ceiling.
+  expect: {
+    timeout: 15_000,
+  },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,

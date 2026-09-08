@@ -57,17 +57,15 @@ test.describe("quiz context (W3-B)", () => {
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
     await page.getByTestId("quiz-submit").click();
-    // Real slack, not a correctness weakening: submitQuiz() does 3
-    // sequential awaited network round-trips (quiz/submit -> refreshMe
-    // -> load) before settling, and this assertion fires right after
-    // the first of those resolves. The default 5000ms timeout was
-    // observed to intermittently miss on GitHub Actions' shared
-    // runners under concurrent worker load (2 workers here) even
-    // though this same assertion passes reliably (5/5, --repeat-each)
-    // in this project's own dev sandbox — a CPU-contention timing
-    // margin, not a logic race (quizResult is set synchronously right
-    // after the first await, before the other two even start).
-    await expect(page.getByTestId("quiz-result")).toBeVisible({ timeout: 10_000 });
+    // submitQuiz() does 3 sequential awaited network round-trips
+    // (quiz/submit -> refreshMe -> load) before settling; this
+    // assertion fires right after the first of those resolves
+    // (quizResult is set synchronously then, before the other two
+    // even start — not a logic race). Real CI-load headroom for this
+    // one comes from playwright.config.js's own global `expect.
+    // timeout` now (see its comment for the observed-flake evidence
+    // that justified raising it there instead of overriding it here).
+    await expect(page.getByTestId("quiz-result")).toBeVisible();
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
