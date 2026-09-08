@@ -7,10 +7,14 @@ decisions dated 2026-09-06) as real, typed, read-only config data —
 gate `NO_FAKE_PAID_STATE` (BIN-021/BIN-022) holds by construction:
 nothing here creates, stores, or reads a "paid"/"subscribed"/"premium"
 flag on any user. `ACA-0026` (real payment/funding runtime — actual
-checkout, webhooks, reconciliation) stays explicitly BLOCKED pending a
-real payment provider, same "never fabricate what needs external
-credentials" discipline as every other ecosystem integration in this
-codebase (`services/integrations/`).
+checkout, webhooks, reconciliation) is now built (`backend/payments/`,
+see `docs/ACADEMY_ACA0026_PAYMENT_FUNDING_RUNTIME_REPORT.md`) against
+this exact catalogue, real and correct against Stripe's own documented
+API/webhook contract, honoring the same "never fabricate what needs
+external credentials" discipline every other ecosystem integration in
+this codebase (`services/integrations/`) follows — it is unexercised
+against a live Stripe account only because no real credentials exist
+in this sandbox, not because any part of it is fake.
 """
 
 from __future__ import annotations

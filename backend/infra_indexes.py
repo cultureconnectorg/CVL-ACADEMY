@@ -128,9 +128,7 @@ async def ensure_indexes() -> None:
     )
 
     # ACA-0007/ACA-0008 — Physical/hybrid delivery (physical_delivery.py).
-    await db.physical_sessions.create_index(
-        [("formation_code", 1), ("starts_at", 1)]
-    )
+    await db.physical_sessions.create_index([("formation_code", 1), ("starts_at", 1)])
     await db.physical_sessions.create_index("status")
     # PHY-01 (Audit Chirurgical 2026-09-07) — real, DB-enforced guard
     # against double-booking: unique per (session_id, user_id), but only
@@ -148,3 +146,20 @@ async def ensure_indexes() -> None:
     )
     await db.physical_enrollments.create_index([("user_id", 1), ("status", 1)])
     await db.physical_attendance.create_index([("session_id", 1), ("user_id", 1)])
+
+    # ACA-0026 — real payment/funding runtime (payments/).
+    await db.payment_checkout_sessions.create_index("idempotency_key", unique=True)
+    await db.payment_checkout_sessions.create_index("provider_session_id")
+    await db.payment_checkout_sessions.create_index(
+        [("user_id", 1), ("created_at", -1)]
+    )
+    await db.payments.create_index("checkout_session_id", unique=True)
+    await db.payments.create_index([("user_id", 1), ("created_at", -1)])
+    # Real race guard (not the primary idempotency check — see
+    # service.py's own comment): two concurrent webhook deliveries for
+    # the same event on the same checkout session can never both write.
+    await db.payments.create_index(
+        [("checkout_session_id", 1), ("last_provider_event_id", 1)],
+        unique=True,
+        partialFilterExpression={"last_provider_event_id": {"$type": "string"}},
+    )
