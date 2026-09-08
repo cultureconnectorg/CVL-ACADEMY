@@ -17,14 +17,15 @@
 
 | Row set | Depth |
 |---|---|
-| LOS-01→14 (14 rows) | `MODULE_CONTENT_DRAFTED`. |
+| LOS-EXT-03 | `PACKAGE_COMPLETE_FOR_LOS_EXT03` (deepened 2026-09-08, task #185) — flagship of LOS-01→14, citing legacy `LOS-01-M06`'s real quarterly-royalty-report deliverable. |
+| LOS-01→14 (remaining 13 rows) | `MODULE_CONTENT_DRAFTED`. |
 | LOS-X-01/06 (2 rows) | New bridge content, no separate formation. |
 | LOS-X-02/03/04 (3 rows) | Converged/citation-only, no separate formation. |
 | LOS-OP-01→15, LOS-X-05/07/08 (18 rows) | `BLOCKED_PRODUCT_DEPENDENCY`. |
 
-**Canonical state:** 0 `PACKAGE_COMPLETE` / 14 `MODULE_CONTENT_DRAFTED`
-/ 5 bridge-index (new or converged) / 18 `BLOCKED_PRODUCT_DEPENDENCY`,
-out of 37.
+**Canonical state:** 1 `PACKAGE_COMPLETE` (LOS-EXT-03) / 13
+`MODULE_CONTENT_DRAFTED` / 5 bridge-index (new or converged) / 18
+`BLOCKED_PRODUCT_DEPENDENCY`, out of 37.
 
 ## Never claim FULLY_COMPLETE
 

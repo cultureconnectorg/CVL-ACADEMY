@@ -65,4 +65,10 @@ internal codes with the legacy runtime formation.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = MODULE_CONTENT_DRAFTED` for 13/14 rows (this combined
+referential). **1 row deepened to a full canonical package as
+flagship of this cluster (task #185, 2026-09-08):** `los_ext_03/`
+(Royalties & Splits Operations, citing legacy `LOS-01-M06`'s real
+quarterly-royalty-report deliverable). The remaining 13 rows stay at
+this combined `MODULE_CONTENT_DRAFTED` depth. Legacy runtime `LOS-01`
+stays exactly as delivered, untouched throughout.
