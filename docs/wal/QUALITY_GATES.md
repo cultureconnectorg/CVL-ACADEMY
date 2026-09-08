@@ -25,12 +25,13 @@ this corpus. 43/43 WAL-side rows accounted for (WAL-01→28 + WAL-X-01→09).
 | Formation | Depth reached |
 |---|---|
 | WAL-19 | `PACKAGE_COMPLETE_FOR_WAL19` — full canonical package, matching the KOR/KLT/GMD depth standard. |
-| WAL-20, WAL-21, WAL-24, WAL-28 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far, grounded in this Academy's own `backend/wallet/`. Deepening continues in subsequent waves. |
+| WAL-20 | `PACKAGE_COMPLETE_FOR_WAL20` (deepened 2026-09-08) — full canonical package, grounded in this Academy's own `backend/wallet/models.py`/`service.py` (currency taxonomy, `credit()`'s `if/elif` branch, the real `eur`-transaction-with-no-balance-update nuance). |
+| WAL-21, WAL-24, WAL-28 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far, grounded in this Academy's own `backend/wallet/`. Deepening continues in subsequent waves. |
 | WAL-22, WAL-23, WAL-25, WAL-26, WAL-27 | `MODULE_CONTENT_DRAFTED` (corrected 2026-09-06, was `BLOCKED_PRODUCT_DEPENDENCY`) — référentiel + modules only, grounded in the real external `djsayd/CVLN-Wallet` product (coffres/transfer/marketplace/settlement-reconciliation/kill-switch, all directly verified). Deepening to full package is a future wave, not performed here — the status correction reflects real referential work done this pass, never an artificial promotion. |
 
 **No formation in the WAL-19→28 internal layer is `BLOCKED_PRODUCT_
-DEPENDENCY`.** All 10 have real grounding; 9/10 are at referential
-depth, 1/10 (WAL-19) at full package depth.
+DEPENDENCY`.** All 10 have real grounding; 8/10 are at referential
+depth, 2/10 (WAL-19, WAL-20) at full package depth.
 
 ## External + cross-ecosystem layer (Wave 19, 2026-09-06)
 
@@ -49,16 +50,17 @@ expert-review.
 
 ## Never claim FULLY_COMPLETE
 
-Even WAL-19, at full package depth, is not `FULLY_COMPLETE` — that
-status requires a real candidate assessed and verified, which this
+Even WAL-19/WAL-20, at full package depth, are not `FULLY_COMPLETE` —
+that status requires a real candidate assessed and verified, which this
 drafting pass does not perform. No formation in this corpus may ever
 be described as `PACKAGE_COMPLETE` unless its own `REFERENTIAL.md`
-status line says so explicitly — only WAL-19 does; every other row
+status line says so explicitly — only WAL-19/WAL-20 do; every other row
 stays at its own honestly-declared depth.
 
-**Canonical state, full WAL domain (52 rows incl. WAL-X):** 1
-`PACKAGE_COMPLETE` / 25 `MODULE_CONTENT_DRAFTED` / 1 `EXTEND_EXISTING`
-/ 1 `NEEDS_EXPERT_REVIEW` / 4 new WAL-X bridge content / 3 WAL-X
-converged / 2 `BLOCKED_PRODUCT_DEPENDENCY`. 1+25+1+1+4+3+2=37 — plus
-CVE-01→15 (15 rows, sibling corpus, see `docs/cve/QUALITY_GATES.md`)
-= 52 total, matching `WALLET_CVE_RECONCILIATION.md`'s own count.
+**Canonical state, full WAL domain (52 rows incl. WAL-X):** 2
+`PACKAGE_COMPLETE` (WAL-19, WAL-20) / 24 `MODULE_CONTENT_DRAFTED` / 1
+`EXTEND_EXISTING` / 1 `NEEDS_EXPERT_REVIEW` / 4 new WAL-X bridge content
+/ 3 WAL-X converged / 2 `BLOCKED_PRODUCT_DEPENDENCY`. 2+24+1+1+4+3+2=37
+— plus CVE-01→15 (15 rows, sibling corpus, see
+`docs/cve/QUALITY_GATES.md`) = 52 total, matching
+`WALLET_CVE_RECONCILIATION.md`'s own count.
