@@ -11,15 +11,25 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
 from auth import get_current_user, require_role
-from kor_canonical import (CanonicalKorFormation, CanonicalKorModule,
-                           CanonicalKorModuleProgress, CanonicalKorSkill,
-                           KorCanonicalImportResult, KorFileProvenance,
-                           get_canonical_kor_formation,
-                           get_canonical_kor_module, get_user_kor_progress,
-                           import_kor_docs, list_canonical_kor_formations,
-                           list_canonical_kor_modules,
-                           list_canonical_kor_skills, list_kor_provenance,
-                           record_content_viewed)
+from certification.models import RubricInput
+from kor_canonical import (
+    CanonicalKorFormation,
+    CanonicalKorModule,
+    CanonicalKorModuleProgress,
+    CanonicalKorSkill,
+    KorCanonicalImportResult,
+    KorFileProvenance,
+    get_canonical_kor_formation,
+    get_canonical_kor_module,
+    get_user_kor_progress,
+    import_kor_docs,
+    import_rubric_for_formation,
+    list_canonical_kor_formations,
+    list_canonical_kor_modules,
+    list_canonical_kor_skills,
+    list_kor_provenance,
+    record_content_viewed,
+)
 from models import ADMIN_ROLES, STAFF_ROLES, User
 
 router = APIRouter(prefix="/kor-canonical", tags=["canonical-kora"])
@@ -58,7 +68,9 @@ async def get_module(
 ):
     module = await get_canonical_kor_module(formation_code, module_code)
     if not module:
-        raise HTTPException(status_code=404, detail="Module KORA canonique introuvable.")
+        raise HTTPException(
+            status_code=404, detail="Module KORA canonique introuvable."
+        )
     return module
 
 
@@ -78,7 +90,9 @@ async def mark_content_viewed(
 ):
     module = await get_canonical_kor_module(formation_code, module_code)
     if not module:
-        raise HTTPException(status_code=404, detail="Module KORA canonique introuvable.")
+        raise HTTPException(
+            status_code=404, detail="Module KORA canonique introuvable."
+        )
     return await record_content_viewed(current.id, formation_code, module_code)
 
 
@@ -103,3 +117,29 @@ async def provenance(current: User = Depends(require_role(*STAFF_ROLES))):
     """The full source-file ledger — every real file under docs/kor/,
     parsed or not. Staff-only audit surface."""
     return await list_kor_provenance()
+
+
+@router.post("/formations/{formation_code}/rubric/import", response_model=RubricInput)
+async def import_rubric(
+    formation_code: str, current: User = Depends(require_role(*ADMIN_ROLES))
+):
+    """ACA-0020 — parses the formation's real, already-imported
+    `assessments/RUBRIC.md` (via `db.kor_resources`, populated by
+    `POST /kor-canonical/import`) into a real, gradable `Rubric`
+    document in `db.certification_rubrics` — the same collection/shape
+    `POST /certifications/rubrics` (legacy FMS) already uses, so
+    `start_attempt`/`grade_attempt`/attestation treat it identically.
+    Idempotent (upsert by `certification_code`) — safe to re-run after
+    a `docs/kor/` update and re-import. 404 if this formation's docs
+    haven't been imported yet, or genuinely never had a RUBRIC.md."""
+    result = await import_rubric_for_formation(formation_code)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Aucune grille certificative importée pour {formation_code} "
+                f"(lancez d'abord POST /kor-canonical/import, ou ce formation "
+                f"n'a pas de assessments/RUBRIC.md réel)."
+            ),
+        )
+    return result
