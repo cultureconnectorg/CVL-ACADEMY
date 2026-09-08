@@ -14,8 +14,10 @@ banque N1 + banque N2 + assessment + rubric + evidence model + 3
 guides + integration note — niveau KOR/KLT, chacune re-vérifiée contre
 le code réel de `gmfest972/goodmooddjsayd` cette session) ; GMD-34
 `BLOCKED_PRODUCT_DEPENDENCY` (voir `gmd34/GAP.md`) ; GMD-01→20
-(`external/gmd01_20/`) `MODULE_CONTENT_DRAFTED` (marché-général
-live-events, citant les GMD-2x comme exemples travaillés) ; GMD-X-01→09
+(`external/gmd01_20/`) — 3 flagships (GMD-05, GMD-14, GMD-15,
+approfondis 2026-09-08, task #184) au niveau package complet, 17/20
+restants `MODULE_CONTENT_DRAFTED` (marché-général live-events, citant
+les GMD-2x comme exemples travaillés) ; GMD-X-01→09
 résolues dans `GMD_X_BRIDGE_NOTE.md` (5 buildable/réutilisées + 4
 bloquées, `BLOCKED_CANDIDATES.md`). Aucune formation n'est
 `FULLY_COMPLETE` — chacune attend un premier passage réel vérifié par

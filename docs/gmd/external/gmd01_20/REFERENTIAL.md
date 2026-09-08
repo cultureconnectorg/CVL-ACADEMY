@@ -71,4 +71,14 @@ platform capability beyond what the real internal-operator layer
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = MODULE_CONTENT_DRAFTED` for 17/20 rows (this combined
+referential). **3 rows deepened to individual full canonical packages
+as flagships of this cluster (task #184, 2026-09-08):** `gmd05/`
+(Ticketing Operations, citing GMD-24), `gmd14/` (Finance, citing
+GMD-28's real Stripe integration), `gmd15/` (Safety/Access, citing
+GMD-25). These 3 were chosen as the best-grounded rows with a
+distinct, real, non-duplicative worked-example touchpoint. The
+remaining 17 rows stay at this combined `MODULE_CONTENT_DRAFTED`
+depth — an honest intermediate state for market-general content
+without a unique per-row repo touchpoint, never deepened by
+fabricating a repo-truth that doesn't exist.

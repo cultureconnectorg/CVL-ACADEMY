@@ -52,14 +52,27 @@ the corresponding `REFERENTIAL.md`.
 **Wave 17 (2026-09-06, Rail 1 exit-gate completion): GMD-01→20
 (`external/gmd01_20/`) built to `MODULE_CONTENT_DRAFTED`; `GMD_X_BRIDGE_
 NOTE.md` resolves all 9 cross-ecosystem rows (5 buildable/reusable now,
-4 blocked, folded into `BLOCKED_CANDIDATES.md`).** No formation here
-claims `PACKAGE_COMPLETE` — this pass closes the domain's last
-`RECONCILED_NOT_BUILT` rows to a clean status, not to maximum depth.
+4 blocked, folded into `BLOCKED_CANDIDATES.md`).**
 
-**Canonical state, full GMD domain (43 rows):** 13 `PACKAGE_COMPLETE`
-(GMD-21→33) / 20 `MODULE_CONTENT_DRAFTED` (GMD-01→20) / 5 new
-bridge/reused content (GMD-X-01/02/03/06/09) / 5 `BLOCKED_PRODUCT_
-DEPENDENCY` (GMD-34 + GMD-X-04/05/07/08). 13+20+5+5=43.
+**Deepening pass (task #184, 2026-09-08): 3 flagships built to full
+canonical package depth within GMD-01→20** — `external/gmd01_20/
+gmd05/` (Ticketing Operations, citing GMD-24), `external/gmd01_20/
+gmd14/` (Finance, citing GMD-28's real Stripe integration),
+`external/gmd01_20/gmd15/` (Safety/Access, citing GMD-25) — chosen as
+the best-grounded rows with a distinct, real, non-duplicative worked-
+example touchpoint. The remaining 17 rows of GMD-01→20 stay at the
+combined `MODULE_CONTENT_DRAFTED` referential — an honest depth for
+market-general content without a unique per-row repo touchpoint,
+never deepened by fabricating a repo-truth that doesn't exist. GMD-X
+stays as resolved in Wave 17 (no further deepening applicable — 5
+rows already point to real code/doctrine, 4 rows are genuinely
+blocked).
+
+**Canonical state, full GMD domain (43 rows):** 16 `PACKAGE_COMPLETE`
+(GMD-21→33 + the 3 GMD-01→20 flagships GMD-05/14/15) / 17
+`MODULE_CONTENT_DRAFTED` (remaining GMD-01→20 rows) / 5 new bridge/
+reused content (GMD-X-01/02/03/06/09) / 5 `BLOCKED_PRODUCT_
+DEPENDENCY` (GMD-34 + GMD-X-04/05/07/08). 16+17+5+5=43.
 
 ## Never claim FULLY_COMPLETE
 
