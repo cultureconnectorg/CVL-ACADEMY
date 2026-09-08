@@ -17,12 +17,13 @@
 
 | Row set | Depth |
 |---|---|
-| HOS-01→30 (30 rows) | `MODULE_CONTENT_DRAFTED`. |
+| HOS-02 | `PACKAGE_COMPLETE_FOR_HOS02` (deepened 2026-09-08, task #185) — flagship of HOS-01→30, citing legacy `HOS-01-M03`'s real journey-map/scénographie deliverable. |
+| HOS-01→30 (remaining 29 rows) | `MODULE_CONTENT_DRAFTED`. |
 | HOS-GAP / HOS-31→50 (20 rows) | Preserved verbatim, no build, no invented status. |
 
-**Canonical state:** 0 `PACKAGE_COMPLETE` / 30 `MODULE_CONTENT_DRAFTED`
-on the buildable set; `HOS-GAP` stays exactly as the source spreadsheet
-declared it.
+**Canonical state:** 1 `PACKAGE_COMPLETE` (HOS-02) / 29
+`MODULE_CONTENT_DRAFTED` on the buildable set; `HOS-GAP` stays
+exactly as the source spreadsheet declared it.
 
 ## Never claim FULLY_COMPLETE
 

@@ -73,4 +73,10 @@ runtime `HOS-01` formation, or inventing content for the preserved
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = MODULE_CONTENT_DRAFTED` for 29/30 rows (this combined
+referential). **1 row deepened to a full canonical package as
+flagship of this cluster (task #185, 2026-09-08):** `hos02/` (Guest
+Experience, citing legacy `HOS-01-M03`'s real journey-map/scénographie
+deliverable). The remaining 29 rows stay at this combined
+`MODULE_CONTENT_DRAFTED` depth. Legacy runtime `HOS-01` stays exactly
+as delivered, untouched throughout.
