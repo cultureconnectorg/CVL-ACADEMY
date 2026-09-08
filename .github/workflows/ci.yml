@@ -8,10 +8,15 @@ name: CI
 #
 # This workflow makes CI *possible* to require; making it *required*
 # (branch protection: "Require status checks to pass before merging",
-# naming the `backend` and `frontend` jobs below) is a repository
+# naming the `backend`/`frontend`/`e2e` jobs below) is a repository
 # **Settings** change outside what a commit here can do — flagged in
 # the audit findings as the remaining manual step for the Founder/an
 # org admin.
+#
+# ACA-0031 added `e2e`: the frontend's real Playwright suite (86 specs)
+# now runs on every push/PR too, closing the gap every prior report in
+# this session's history disclosed ("e2e is not part of this repo's CI
+# gate").
 
 on:
   push:
@@ -70,3 +75,40 @@ jobs:
         env:
           CI: "true"
         run: yarn build
+
+  # ACA-0031 — the real regression gate this repo had none of for its
+  # frontend Playwright suite: every prior report this session disclosed
+  # "e2e is not part of this repo's CI gate" as a known limitation. That
+  # limitation is now closed. Its own long-standing single failure
+  # (module-journey-navigation.spec.js's BACK_FORWARD test, mentioned in
+  # every prior report as a "pre-existing flake") was root-caused here,
+  # not worked around: e2e/fixtures/auth-fixture.js's generic `**/api/**`
+  # catch-all returned `{}` for four physical-sessions/certification
+  # endpoints FormationDetail.js's PhysicalSessionsPanel genuinely needs
+  # array-shaped (matching api/physical_sessions.py's/api/certification.py's
+  # own `List[...]` response models) — a real fixture gap, not a flake,
+  # confirmed deterministic (12/12 on a --repeat-each=3 run) once fixed.
+  # See docs/ACADEMY_ACA0031_E2E_REGRESSION_GATE_REPORT.md.
+  e2e:
+    name: e2e
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run e2e suite
+        run: npx playwright test

@@ -245,6 +245,32 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   await page.route("**/api/badges/mine", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
+  // FormationDetail.js -> PhysicalSessionsPanel.js calls .map()/.length
+  // on these four — real backend routes (api/physical_sessions.py,
+  // api/certification.py) are all typed `List[...]`, never an object,
+  // so they must be arrays here too, not the generic `{}` fallback
+  // above. Root cause of a previously mischaracterized "flake"
+  // (module-journey-navigation.spec.js's BACK_FORWARD test): visiting
+  // FormationDetail without this mock threw `sessions.map is not a
+  // function` inside PhysicalSessionsPanel, which React's own error
+  // boundary caught by unmounting the whole FormationDetail tree —
+  // deterministic every time, not a flake at all. See
+  // docs/ACADEMY_ACA0031_E2E_FLAKE_ROOT_CAUSE_REPORT.md.
+  await page.route("**/api/formations/*/physical-sessions", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/physical-locations", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/physical-sessions/mine", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/certifications/rubrics", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/certifications/attempts/mine", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
   // GET /api/modules/:fc/:mc only — the exact 2-segment shape ModuleJourney
   // fetches on load. Deliberately does NOT match the 3+-segment mutating
   // endpoints (…/phase, …/deliverable, …/mini-mission/commit), which stay
