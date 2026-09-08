@@ -13,11 +13,11 @@ is a sibling corpus, see docs/cve/.
 
 ## Internal layer (WAL-19→28) — Wave 2
 
-STATUT (deepened 2026-09-08) = 2/10 formations à PACKAGE_COMPLETE
-(WAL-19, WAL-20, niveau KOR/KLT/GMD), 8/10 (WAL-21/22/23/24/25/26/27/28)
-au niveau MODULE_CONTENT_DRAFTED (référentiel + modules seulement — un
-état intermédiaire honnête, jamais présenté comme final). AUCUNE
-formation de ce corpus n'est plus
+STATUT (deepened 2026-09-08) = 3/10 formations à PACKAGE_COMPLETE
+(WAL-19, WAL-20, WAL-21, niveau KOR/KLT/GMD), 7/10 (WAL-22/23/24/25/
+26/27/28) au niveau MODULE_CONTENT_DRAFTED (référentiel + modules
+seulement — un état intermédiaire honnête, jamais présenté comme
+final). AUCUNE formation de ce corpus n'est plus
 BLOCKED_PRODUCT_DEPENDENCY : WAL-22/23/25/26/27 étaient déclarées ainsi
 sur la seule base de backend/wallet/ (ledger simple de cette Academy)
 — un checkpoint Founder explicite a demandé de confronter ces 5
@@ -52,7 +52,7 @@ accès opérationnel réel.
 |---|---|---|---|
 | WAL-19 — CVLN Wallet Operator (ombrelle) | `wal19/` | `backend/wallet/{models,service}.py`, `backend/api/wallet.py` (cette Academy, vue d'ensemble) | `PACKAGE_COMPLETE_FOR_WAL19` |
 | WAL-20 — CC/JCC Monetary Operations | `wal20/` | `WalletTransaction.currency` (`jcc`/`token`/`eur`), distinction CC≠JCC (cette Academy) | `PACKAGE_COMPLETE_FOR_WAL20` |
-| WAL-21 — CVLN Ledger Operator | `wal21/` | `credit()`, append-only `db.wallet_transactions` (cette Academy) | `MODULE_CONTENT_DRAFTED` |
+| WAL-21 — CVLN Ledger Operator | `wal21/` | `credit()` (pre-check + index unique + `DuplicateKeyError`), `reconcile_wallet_balance()`, append-only `db.wallet_transactions` (cette Academy) | `PACKAGE_COMPLETE_FOR_WAL21` |
 | WAL-22 — Coffres & Allocation Operations | `wal22/` | `GET/POST /coffres`, `POST /coffres/{id}/move`, `DELETE /coffres/{id}` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
 | WAL-23 — CVLN Payment & Transfer Operations | `wal23/` | `POST /v1/entity/transfer` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
 | WAL-24 — CVLN Card Operations | `wal24/` | `passes.py` (cette Academy, `build_apple_pass_payload`/`build_google_pass_payload`) | `MODULE_CONTENT_DRAFTED` |
@@ -62,10 +62,10 @@ accès opérationnel réel.
 | WAL-28 — Wallet Audit & Evidence Operations | `wal28/` | Append-only `db.wallet_transactions`, `list_transactions()` (cette Academy) | `MODULE_CONTENT_DRAFTED` |
 
 **10/10 constructibles**, **0/10 bloquées** — 5 sur le ledger de cette
-Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **8/10
+Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **7/10
 restent à approfondir** vers le niveau package complet (vague future) ;
-**2/10** (WAL-19, WAL-20) sont au niveau package complet, toujours pas
-`FULLY_COMPLETE`.
+**3/10** (WAL-19, WAL-20, WAL-21) sont au niveau package complet,
+toujours pas `FULLY_COMPLETE`.
 
 ## Repo-truth findings (vérifiées cette session)
 
