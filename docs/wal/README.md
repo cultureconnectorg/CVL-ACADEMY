@@ -13,11 +13,14 @@ is a sibling corpus, see docs/cve/.
 
 ## Internal layer (WAL-19→28) — Wave 2
 
-STATUT (deepened 2026-09-08) = 4/10 formations à PACKAGE_COMPLETE
-(WAL-19, WAL-20, WAL-21, WAL-24, niveau KOR/KLT/GMD), 6/10
-(WAL-22/23/25/26/27/28) au niveau MODULE_CONTENT_DRAFTED (référentiel +
-modules seulement — un état intermédiaire honnête, jamais présenté
-comme final). AUCUNE formation de ce corpus n'est plus
+STATUT (deepened 2026-09-08) = 5/10 formations à PACKAGE_COMPLETE
+(WAL-19, WAL-20, WAL-21, WAL-24, WAL-28, niveau KOR/KLT/GMD) — **toutes
+les formations ancrées sur le ledger de cette Academy sont désormais au
+niveau package complet** — 5/10 (WAL-22/23/25/26/27, ancrées sur le
+vrai produit externe `djsayd/CVLN-Wallet`) au niveau MODULE_CONTENT_
+DRAFTED (référentiel + modules seulement — un état intermédiaire
+honnête, jamais présenté comme final). AUCUNE formation de ce corpus
+n'est plus
 BLOCKED_PRODUCT_DEPENDENCY : WAL-22/23/25/26/27 étaient déclarées ainsi
 sur la seule base de backend/wallet/ (ledger simple de cette Academy)
 — un checkpoint Founder explicite a demandé de confronter ces 5
@@ -59,13 +62,14 @@ accès opérationnel réel.
 | WAL-25 — CVLN Marketplace Operations | `wal25/` | `GET /marketplace`, `POST /marketplace/buy` (**`djsayd/CVLN-Wallet`**, 8-item catalog réel, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
 | WAL-26 — Settlement & Reconciliation Operator | `wal26/` | `POST/GET /admin/settlements[...]`, `POST/GET /admin/reconciliation/*` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
 | WAL-27 — Financial Incident & Kill-Switch Operations | `wal27/` | `PUT /admin/kill-switch` (3 switches), `POST /card/freeze`/`unfreeze` (**`djsayd/CVLN-Wallet`**, vérifié directement) | `MODULE_CONTENT_DRAFTED` |
-| WAL-28 — Wallet Audit & Evidence Operations | `wal28/` | Append-only `db.wallet_transactions`, `list_transactions()` (cette Academy) | `MODULE_CONTENT_DRAFTED` |
+| WAL-28 — Wallet Audit & Evidence Operations | `wal28/` | Append-only `db.wallet_transactions`, `list_transactions()`, `reconcile_wallet_balance()` (cette Academy) | `PACKAGE_COMPLETE_FOR_WAL28` |
 
 **10/10 constructibles**, **0/10 bloquées** — 5 sur le ledger de cette
-Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **6/10
-restent à approfondir** vers le niveau package complet (vague future) ;
-**4/10** (WAL-19, WAL-20, WAL-21, WAL-24) sont au niveau package
-complet, toujours pas `FULLY_COMPLETE`.
+Academy, 5 sur le vrai produit externe `djsayd/CVLN-Wallet`. **5/10**
+(WAL-19, WAL-20, WAL-21, WAL-24, WAL-28 — l'intégralité du sous-groupe
+ancré sur le ledger de cette Academy) sont désormais au niveau package
+complet, toujours pas `FULLY_COMPLETE` ; **5/10** (WAL-22/23/25/26/27,
+ancrées sur `djsayd/CVLN-Wallet`) restent à approfondir (vague future).
 
 ## Repo-truth findings (vérifiées cette session)
 

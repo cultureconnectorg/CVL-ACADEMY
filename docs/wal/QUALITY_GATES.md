@@ -28,12 +28,15 @@ this corpus. 43/43 WAL-side rows accounted for (WAL-01→28 + WAL-X-01→09).
 | WAL-20 | `PACKAGE_COMPLETE_FOR_WAL20` (deepened 2026-09-08) — full canonical package, grounded in this Academy's own `backend/wallet/models.py`/`service.py` (currency taxonomy, `credit()`'s `if/elif` branch, the real `eur`-transaction-with-no-balance-update nuance). |
 | WAL-21 | `PACKAGE_COMPLETE_FOR_WAL21` (deepened 2026-09-08) — full canonical package, grounded in `credit()`'s real two-layer idempotency mechanism (`economic_event_id` pre-check + unique-index `DuplicateKeyError` catch) and `reconcile_wallet_balance()`'s real repair path, neither of which the original draft cited. |
 | WAL-24 | `PACKAGE_COMPLETE_FOR_WAL24` (deepened 2026-09-08) — full canonical package, grounded in `passes.py`/`api/wallet.py` (re-verified by direct `grep`: no route ever raises HTTP 501 despite the file's own comment; both pass routes return a real 200 + `"status":"unsigned"`). |
-| WAL-28 | `MODULE_CONTENT_DRAFTED` — référentiel + modules only so far, grounded in this Academy's own `backend/wallet/`. Deepening continues in subsequent waves. |
+| WAL-28 | `PACKAGE_COMPLETE_FOR_WAL28` (deepened 2026-09-08) — full canonical package, grounded in `list_transactions()` and `reconcile_wallet_balance()` (WAL-21); honest append-only-vs-cryptographic-proof boundary, same discipline as `FRK-68` (Auditor), reused by reference. |
 | WAL-22, WAL-23, WAL-25, WAL-26, WAL-27 | `MODULE_CONTENT_DRAFTED` (corrected 2026-09-06, was `BLOCKED_PRODUCT_DEPENDENCY`) — référentiel + modules only, grounded in the real external `djsayd/CVLN-Wallet` product (coffres/transfer/marketplace/settlement-reconciliation/kill-switch, all directly verified). Deepening to full package is a future wave, not performed here — the status correction reflects real referential work done this pass, never an artificial promotion. |
 
 **No formation in the WAL-19→28 internal layer is `BLOCKED_PRODUCT_
-DEPENDENCY`.** All 10 have real grounding; 6/10 are at referential
-depth, 4/10 (WAL-19, WAL-20, WAL-21, WAL-24) at full package depth.
+DEPENDENCY`.** All 10 have real grounding; 5/10 are at referential
+depth, 5/10 (WAL-19, WAL-20, WAL-21, WAL-24, WAL-28) at full package
+depth — **this closes every Academy-ledger-grounded formation in the
+layer** (task #181); the remaining 5 (WAL-22/23/25/26/27) are grounded
+in the real external `djsayd/CVLN-Wallet` product instead.
 
 ## External + cross-ecosystem layer (Wave 19, 2026-09-06)
 
@@ -52,18 +55,18 @@ expert-review.
 
 ## Never claim FULLY_COMPLETE
 
-Even WAL-19/WAL-20/WAL-21/WAL-24, at full package depth, are not
+Even WAL-19/WAL-20/WAL-21/WAL-24/WAL-28, at full package depth, are not
 `FULLY_COMPLETE` — that status requires a real candidate assessed and
 verified, which this drafting pass does not perform. No formation in
 this corpus may ever be described as `PACKAGE_COMPLETE` unless its own
 `REFERENTIAL.md` status line says so explicitly — only WAL-19/WAL-20/
-WAL-21/WAL-24 do; every other row stays at its own honestly-declared
-depth.
+WAL-21/WAL-24/WAL-28 do; every other row stays at its own honestly-
+declared depth.
 
-**Canonical state, full WAL domain (52 rows incl. WAL-X):** 4
-`PACKAGE_COMPLETE` (WAL-19, WAL-20, WAL-21, WAL-24) / 22
+**Canonical state, full WAL domain (52 rows incl. WAL-X):** 5
+`PACKAGE_COMPLETE` (WAL-19, WAL-20, WAL-21, WAL-24, WAL-28) / 21
 `MODULE_CONTENT_DRAFTED` / 1 `EXTEND_EXISTING` / 1 `NEEDS_EXPERT_REVIEW`
 / 4 new WAL-X bridge content / 3 WAL-X converged / 2 `BLOCKED_PRODUCT_
-DEPENDENCY`. 4+22+1+1+4+3+2=37 — plus CVE-01→15 (15 rows, sibling
+DEPENDENCY`. 5+21+1+1+4+3+2=37 — plus CVE-01→15 (15 rows, sibling
 corpus, see `docs/cve/QUALITY_GATES.md`) = 52 total, matching
 `WALLET_CVE_RECONCILIATION.md`'s own count.
