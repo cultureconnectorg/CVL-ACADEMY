@@ -17,13 +17,15 @@
 
 | Row set | Depth |
 |---|---|
-| GRP general (39 rows) | `MODULE_CONTENT_DRAFTED`. |
+| GRP-EXT-01 | `PACKAGE_COMPLETE_FOR_GRP_EXT01` (deepened 2026-09-08, task #186) — flagship of the GRP general cluster, citing legacy `GRP-01-M02`'s real opportunity-detection deliverable. |
+| GRP general (remaining 38 rows) | `MODULE_CONTENT_DRAFTED`. |
 | GRP-11, GRP-32→40 (10 rows) | `NEEDS_EXPERT_REVIEW`. |
 | GRP-59→72 (14 rows) | `BLOCKED_PRODUCT_DEPENDENCY`. |
 | 9 unenumerated rows | `UNENUMERATED_IN_SOURCE_RECONCILIATION`, flagged for future audit. |
 
-**Canonical state:** 0 `PACKAGE_COMPLETE` / 39 `MODULE_CONTENT_DRAFTED`
-/ 10 `NEEDS_EXPERT_REVIEW` / 14 `BLOCKED_PRODUCT_DEPENDENCY` / 9
+**Canonical state:** 1 `PACKAGE_COMPLETE` (GRP-EXT-01) / 38
+`MODULE_CONTENT_DRAFTED` / 10 `NEEDS_EXPERT_REVIEW` / 14
+`BLOCKED_PRODUCT_DEPENDENCY` / 9
 `UNENUMERATED_IN_SOURCE_RECONCILIATION`, out of 72.
 
 ## Never claim FULLY_COMPLETE

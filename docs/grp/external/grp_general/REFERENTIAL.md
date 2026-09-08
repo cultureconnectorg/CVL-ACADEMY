@@ -66,4 +66,11 @@ with the legacy `GRP-01`/`GRP-02` runtime formations.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = MODULE_CONTENT_DRAFTED` for 38/39 rows (this combined
+referential). **1 row deepened to a full canonical package as
+flagship of this cluster (task #186, 2026-09-08):** `grp_ext_01/`
+(Opportunity Discovery & Ecosystem Entrepreneurship, citing legacy
+`GRP-01-M02`'s real opportunity-detection deliverable). The remaining
+38 rows stay at this combined `MODULE_CONTENT_DRAFTED` depth. Legacy
+runtime `GRP-01`/`GRP-02` stay exactly as delivered, untouched
+throughout.
