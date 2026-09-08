@@ -19,6 +19,7 @@ from lx import (
     phase_completion_flags,
 )
 from models import User
+from services.activation import emit_first_value_if_new
 from services.canonical_convergence import (
     get_canonical_authority,
     get_canonical_authority_map,
@@ -147,6 +148,20 @@ async def tick_phase(
         set_fields["course_progress_pct"] = pct
     else:
         set_fields[f"{inp.key}_viewed_at"] = now
+
+    # ACA-0013 — must run BEFORE the upsert below: it checks whether the
+    # user has zero db.progress documents yet, which this write is about
+    # to change. See services/activation.py's own docstring for exactly
+    # which real call site this is wired at and why.
+    await emit_first_value_if_new(
+        current.id,
+        {
+            "user_id": current.id,
+            "formation_code": formation_code,
+            "module_code": module_code,
+            "phase": inp.key,
+        },
+    )
 
     await db.progress.update_one(
         {"user_id": current.id, "module_code": module_code},
