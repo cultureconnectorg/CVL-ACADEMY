@@ -2,10 +2,12 @@
 
 ```
 STATUS: PARTIAL, real and verified for its scope. Closes the rubric/
-grading half of the chain for KOR (proof-of-pattern, 15/15 formations).
-Eligibility was already real (RAIL 2). N1/N2 question-bank binding,
-KLT/FRK/FMS-canonical rubric import, and jury-facing UI surfacing of
-canonical attempts remain open — see "What remains" below.
+grading half of the chain for KOR (15/15 formations) AND KLT (10/10
+formations with a real RUBRIC.md — see
+docs/ACADEMY_ACA0020_ASSESSMENT_CHAIN_KLT_REPORT.md for the KLT pass).
+Eligibility was already real (RAIL 2) for both. N1/N2 question-bank
+binding, FRK/FMS-canonical rubric import, and jury-facing UI surfacing
+of canonical attempts remain open — see "What remains" below.
 ```
 
 ## The real gap this closes
@@ -99,14 +101,14 @@ C7 at 4 instead passes at `score_global=100.0` against the imported
 
 ## What remains open (this is a PARTIAL closure, not a claim of FULLY_COMPLETE)
 
-1. **KLT-canonical and FMS-canonical rubric import** — `klt_canonical/`
-   and `fms_canonical/` classify the exact same resource kinds
-   (`rubric`, `certification_assessment`, `N1_QUESTION_BANK`,
-   `N2_EVALUATIONS`) via their own parsers (confirmed by direct grep of
-   `klt_canonical/parser.py`/`fms_canonical/module_map_extract.py`), so
-   the same pattern this pass proves for KOR should port with minor
-   changes (collection name, formation-code convention) — not yet done.
-   `frk_canonical` has not yet been checked for the same convention.
+1. **KLT-canonical rubric import is now done too** — see
+   `docs/ACADEMY_ACA0020_ASSESSMENT_CHAIN_KLT_REPORT.md`
+   (`klt_canonical/rubric_import.py`, 10/10 real KLT formations with a
+   `RUBRIC.md`). **FMS-canonical and FRK-canonical remain open** —
+   `fms_canonical/` classifies the same resource kinds (confirmed by
+   direct grep of `fms_canonical/module_map_extract.py`), so the same
+   pattern should port with minor changes; `frk_canonical` has not yet
+   been checked for the same convention.
 2. **N1/N2 question-bank binding** — `N1_QUESTION_BANK.md`/
    `N2_EVALUATIONS.md` are real, already-classified resources
    (`db.kor_resources`, `type` field distinguishes them from `rubric`)

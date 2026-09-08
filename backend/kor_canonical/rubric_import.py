@@ -31,12 +31,17 @@ threshold column's exact header wording varies but its position and
 meaning never do) and an identical global pass rule
 ("Moyenne ≥ 2,5" / "moyenne ≥ 2,5", every one of the 15 files, no
 exceptions) — see `docs/ACADEMY_ACA0020_ASSESSMENT_CHAIN_KOR_REPORT.md`
-for the verification evidence. The eliminatory cell is always exactly
-one of three real strings: `"non"`, `"**oui**"`,
-`"**oui si non conforme**"` — anything else is left `is_eliminatory=
-False` rather than guessed, and the row is still kept (never silently
-dropped) so a format drift is visible in the resulting criteria count,
-not hidden.
+for the verification evidence. The eliminatory cell is always either
+`"non"` or a bold-"oui" marker, optionally with a "si <condition>"
+qualifier (KOR's own files use `"**oui**"`/`"**oui si non conforme**"`
+— see `_is_eliminatory_cell`'s own docstring for why this matches the
+`"**oui"` prefix rather than enumerating every qualifier phrase, a
+lesson learned porting this exact parser to KLT's own rubrics, which
+use a different qualifier — `"**oui si absent**"` — for the same real
+marker). Anything not starting with `"**oui"` is left
+`is_eliminatory=False` rather than guessed, and the row is still kept
+(never silently dropped) so a format drift is visible in the resulting
+criteria count, not hidden.
 
 **What is deliberately NOT attempted** (disclosed, not silently
 worked around):
@@ -78,7 +83,17 @@ from db import db, utc_now_iso
 # rows have only 3 pipes and never match this pattern.
 _CRITERION_ROW_RE = re.compile(r"^\|\s*(\d+)\s*\|(.+)\|([^|]*)\|([^|]*)\|\s*$")
 
-_ELIMINATORY_STRINGS = {"**oui**", "**oui si non conforme**"}
+
+def _is_eliminatory_cell(raw: str) -> bool:
+    """A bold "oui" — with or without a "si <condition>" qualifier — is
+    the real document convention for "eliminatory if raw score is 0".
+    Verified variants: "**oui**", "**oui si non conforme**" (KOR),
+    "**oui si absent**" (KLT's own rubrics use a different qualifier
+    for the same real marker) — matching the bold-oui *prefix* rather
+    than enumerating every qualifier phrase keeps this correct for a
+    wording variant not seen yet, instead of silently undercounting."""
+    return raw.startswith("**oui")
+
 
 # The one real global threshold every one of the 15 real RUBRIC.md
 # files states, verified (see module docstring) rather than assumed —
@@ -108,7 +123,7 @@ def parse_rubric_criteria(body_markdown: str) -> List[RubricCriterion]:
                 skill_id=None,
                 weight=1.0,
                 max_score=4.0,
-                is_eliminatory=eliminatory_raw in _ELIMINATORY_STRINGS,
+                is_eliminatory=_is_eliminatory_cell(eliminatory_raw),
             )
         )
     return criteria

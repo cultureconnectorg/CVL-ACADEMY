@@ -11,15 +11,25 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 
 from auth import get_current_user, require_role
-from klt_canonical import (CanonicalKltFormation, CanonicalKltModule,
-                           CanonicalKltModuleProgress, CanonicalKltSkill,
-                           KltCanonicalImportResult, KltFileProvenance,
-                           get_canonical_klt_formation,
-                           get_canonical_klt_module, get_user_klt_progress,
-                           import_klt_docs, list_canonical_klt_formations,
-                           list_canonical_klt_modules,
-                           list_canonical_klt_skills, list_klt_provenance,
-                           record_klt_content_viewed)
+from certification.models import RubricInput
+from klt_canonical import (
+    CanonicalKltFormation,
+    CanonicalKltModule,
+    CanonicalKltModuleProgress,
+    CanonicalKltSkill,
+    KltCanonicalImportResult,
+    KltFileProvenance,
+    get_canonical_klt_formation,
+    get_canonical_klt_module,
+    get_user_klt_progress,
+    import_klt_docs,
+    import_rubric_for_formation,
+    list_canonical_klt_formations,
+    list_canonical_klt_modules,
+    list_canonical_klt_skills,
+    list_klt_provenance,
+    record_klt_content_viewed,
+)
 from models import ADMIN_ROLES, STAFF_ROLES, User
 
 router = APIRouter(prefix="/klt-canonical", tags=["canonical-kiltikonet"])
@@ -110,3 +120,28 @@ async def provenance(current: User = Depends(require_role(*STAFF_ROLES))):
     """The full source-file ledger — every real file under docs/klt/,
     parsed or not. Staff-only audit surface."""
     return await list_klt_provenance()
+
+
+@router.post("/formations/{formation_code}/rubric/import", response_model=RubricInput)
+async def import_rubric(
+    formation_code: str, current: User = Depends(require_role(*ADMIN_ROLES))
+):
+    """ACA-0020 — same real conversion `POST /kor-canonical/formations/
+    {formation_code}/rubric/import` performs for KOR: parses the
+    formation's real, already-imported `assessments/RUBRIC.md` (via
+    `db.klt_resources`) into a real, gradable `Rubric` document in
+    `db.certification_rubrics`. Idempotent. 404 if this formation's
+    docs haven't been imported yet, or genuinely has no RUBRIC.md
+    (true for KLT-09→12/14→17/19/20 — confirmed by filesystem sweep,
+    not every KLT formation has full certification-assessment content)."""
+    result = await import_rubric_for_formation(formation_code)
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                f"Aucune grille certificative importée pour {formation_code} "
+                f"(lancez d'abord POST /klt-canonical/import, ou cette formation "
+                f"n'a pas de assessments/RUBRIC.md réel)."
+            ),
+        )
+    return result
