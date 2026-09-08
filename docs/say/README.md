@@ -24,7 +24,10 @@ capstone bridge joining DJ Sayd to Good Mood.
 - **`external/say_new/`** — SAY-11→20, SAY-38, SAY-41/42/45, SAY-46→50
   (19 rows), genuinely new disciplines (DJ performance, artist
   business intelligence, media training, crisis management,
-  international/diaspora market development), `NEW_EXTERNAL`.
+  international/diaspora market development), `NEW_EXTERNAL`. One row,
+  `say19/` (Touring DJ Operations), is deepened to full
+  `PACKAGE_COMPLETE` depth as this cluster's flagship, citing
+  `FMS-05-M04` by reference; the other 18 stay `MODULE_CONTENT_DRAFTED`.
 - **`SAY_SPECIALIZE_EXISTING_NOTES.md`** — SAY-01→10, SAY-21→28,
   SAY-34, SAY-39/40/43/44 (23 rows), framing notes specializing real
   FMS-01/03/04, zero new formations.
@@ -39,15 +42,16 @@ capstone bridge joining DJ Sayd to Good Mood.
 
 | Set | Rows | Depth |
 |---|---|---|
-| SAY new disciplines (`external/say_new/`) | 19 | `MODULE_CONTENT_DRAFTED` |
+| SAY-19, Touring DJ Operations (`external/say_new/say19/`) | 1 | `PACKAGE_COMPLETE_FOR_SAY19` (flagship of `say_new`, citing `FMS-05-M04`) |
+| SAY new disciplines, remaining (`external/say_new/`) | 18 | `MODULE_CONTENT_DRAFTED` |
 | SAY specialize-existing (`SAY_SPECIALIZE_EXISTING_NOTES.md`) | 23 | `SPECIALIZE_EXISTING`, framing notes, no new formation |
 | SAY merge (`SAY_MERGE_NOTE.md`) | 8 | `MERGE` into `FMS-02`, no new formation |
 | SAY-LAB (`say_lab/`) | 1 | `PACKAGE_COMPLETE` (flagship capstone) |
 
-**19 + 23 + 8 + 1 = 51.** All 51 rows accounted for. Combined with
+**1 + 18 + 23 + 8 + 1 = 51.** All 51 rows accounted for. Combined with
 `docs/gmd/`'s 43 rows, the full Good Mood/DJ Sayd 94-row domain is now
-closed: 1 `PACKAGE_COMPLETE` (SAY-LAB) + 13 `PACKAGE_COMPLETE`
-(GMD-21→33) = 14 `PACKAGE_COMPLETE`; the rest honestly
+closed: 2 `PACKAGE_COMPLETE` (SAY-LAB, SAY-19) + 13 `PACKAGE_COMPLETE`
+(GMD-21→33) = 15 `PACKAGE_COMPLETE`; the rest honestly
 `MODULE_CONTENT_DRAFTED`/`SPECIALIZE_EXISTING`/`MERGE`/`BLOCKED`
 per real evidence.
 

@@ -68,4 +68,16 @@ performance with FMS-03's studio engineer/producer role.
 
 ## Status
 
-`STATUS = MODULE_CONTENT_DRAFTED`.
+`STATUS = MODULE_CONTENT_DRAFTED` for 18/19 rows (this combined
+referential). **1 row deepened to a full canonical package as
+flagship of this cluster (task #188, 2026-09-08):** `say19/` (Touring
+DJ Operations), citing `FMS-05-M04` ("Tour management — logistique et
+budget," `backend/seed_modules.py`) by reference, never reproducing
+it, and adding the DJ-specific delta (technical rider/equipment
+logistics, multi-venue/back-to-back festival routing) FMS-05 doesn't
+cover. SAY-19 was chosen as the best-grounded row — the only one of
+the 19 with a direct, real, non-duplicative FMS touchpoint. The
+remaining 18 rows stay at this combined `MODULE_CONTENT_DRAFTED`
+depth — an honest intermediate state for market-general content
+without a repo touchpoint of their own, never deepened by fabricating
+a repo-truth that doesn't exist.

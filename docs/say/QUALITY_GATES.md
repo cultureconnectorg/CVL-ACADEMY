@@ -11,19 +11,21 @@
 | `UNAUTHORIZED_AUTHORITY` | 0 — no certification here grants access to any real Good Mood/DJ Sayd production system. |
 | `EXTERNAL_INTERNAL_CONFUSION` | 0 — this whole domain is external/market (DJ Sayd contributes zero operator competencies, per the reconciliation's own G1 resolution). |
 | `CERTIFICATION_AUTHORIZATION_CONFUSION` | 0 — no mission-eligibility claim beyond literacy scope. |
-| `STATUS_INFLATION` | 0 — only `SAY-LAB` claims `PACKAGE_COMPLETE`; the rest are honestly `MODULE_CONTENT_DRAFTED`/`SPECIALIZE_EXISTING`/`MERGE`. |
+| `STATUS_INFLATION` | 0 — only `SAY-LAB` and `SAY-19` claim `PACKAGE_COMPLETE`; the rest are honestly `MODULE_CONTENT_DRAFTED`/`SPECIALIZE_EXISTING`/`MERGE`. |
 
 ## Depth staging
 
 | Row set | Depth |
 |---|---|
 | SAY-LAB (1 row) | `PACKAGE_COMPLETE` — flagship. |
-| SAY new disciplines (19 rows) | `MODULE_CONTENT_DRAFTED`. |
+| SAY-19, Touring DJ Operations (1 row) | `PACKAGE_COMPLETE_FOR_SAY19` — flagship of `external/say_new/` (task #188, 2026-09-08), citing `FMS-05-M04` by reference. |
+| SAY new disciplines, remaining (18 rows) | `MODULE_CONTENT_DRAFTED`. |
 | SAY specialize-existing (23 rows) | `SPECIALIZE_EXISTING`, framing notes. |
 | SAY merge (8 rows) | `MERGE` into `FMS-02`. |
 
-**Canonical state:** 1 `PACKAGE_COMPLETE` / 19 `MODULE_CONTENT_DRAFTED`
-/ 23 `SPECIALIZE_EXISTING` / 8 `MERGE`, out of 51.
+**Canonical state:** 2 `PACKAGE_COMPLETE` (SAY-LAB, SAY-19) / 18
+`MODULE_CONTENT_DRAFTED` / 23 `SPECIALIZE_EXISTING` / 8 `MERGE`, out
+of 51.
 
 ## Never claim FULLY_COMPLETE
 
