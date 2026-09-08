@@ -9,20 +9,20 @@ import { FEATURE_FLAGS } from "@/lib/featureFlags";
  * color, read off `/user/learning-path` — never invented, never a
  * per-page hand-picked color).
  *
- * **Disclosed limitation, not silently worked around**: the
- * architecture doc's own target is a backdrop that survives route
- * changes without resetting (`ENVIRONMENT_RESET_PER_ROUTE = FORBIDDEN`).
- * Achieving that requires promoting `Layout` to a React Router layout
- * route (`<Outlet/>`) so it mounts once for the whole authenticated
- * shell instead of once per `<Route element={<Protected>...}>` — a real
- * `App.js` routing restructure. The H1 integration plan's own
- * authorization for this pass requires "existing `<Routes>`... stay
- * byte-identical," so that restructure is deliberately not done here —
- * same posture as the plan's own two REPLACE-BLOCKED items, needing its
- * own separate go-ahead. This component is mounted per-`Layout`
- * instance instead: the tint is still real and still correct for
- * whatever page is showing, it just re-establishes on each navigation
- * rather than persisting seamlessly across it.
+ * **ACA-0015/ACA-0016 update (2026-09-08)** — the disclosed limitation
+ * above is resolved: `Layout` is now a real Outlet-based layout route
+ * (`App.js`'s `LayoutRoute`, `SPATIAL_H1_INTEGRATION_PLAN.md`'s own
+ * REPLACE-BLOCKED item, unblocked by explicit Founder authorization).
+ * This component now mounts exactly once for the whole in-section
+ * navigation (dashboard <-> roadmap <-> formations <-> ... — every
+ * route `Layout`-wrapped), and only remounts crossing the Landing/
+ * Onboarding boundary, where the environment doesn't apply anyway.
+ * `ENVIRONMENT_RESET_PER_ROUTE = FORBIDDEN` now genuinely holds — real,
+ * DOM-identity-verified proof in
+ * `e2e/environmental-continuity.spec.js` (a JS-only marker property
+ * stamped on the live node survives an in-section navigation; the same
+ * marker does not survive a real boundary crossing, proving the
+ * technique is meaningful, not trivially true).
  *
  * Pointer-events-none, low z-index, purely decorative — removing it
  * changes zero functional behavior, and it renders nothing at all

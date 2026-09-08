@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import "@/App.css";
 import "@/index.css";
 
@@ -7,7 +7,7 @@ import { AuthProvider, useAuth } from "@/lib/auth.jsx";
 import { I18nProvider } from "@/lib/i18n.jsx";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
-import { RouteTransition } from "@/lib/RouteTransition";
+import { RouteTransition, sectionKeyFor } from "@/lib/RouteTransition";
 import { useScrollRestoration } from "@/lib/useScrollRestoration";
 
 const Landing = lazy(() => import("@/pages/Landing"));
@@ -57,13 +57,38 @@ function ScrollRestoration() {
   return null;
 }
 
-function Protected({ children, roles }) {
+// ACA-0015/ACA-0016 — Layout promoted to a real Outlet-based layout
+// route (SPATIAL_H1_INTEGRATION_PLAN.md's own REPLACE-BLOCKED item,
+// unblocked by explicit Founder authorization 2026-09-08): every route
+// nested under this one renders through the SAME mounted `Layout`
+// instance (sidebar/AcademyBackdrop/mentor dock never unmount on an
+// in-section navigation), instead of each route wrapping its own fresh
+// `<Layout>` (the pre-ACA-0015 `Protected` pattern this replaces). The
+// inner `RouteTransition` (raw-pathname-keyed, same component App.js's
+// outer instance uses) is what actually crossfades the page content;
+// `Layout` itself never re-keys.
+function LayoutRoute() {
+  return (
+    <Layout>
+      <RouteTransition>
+        <Outlet />
+      </RouteTransition>
+    </Layout>
+  );
+}
+
+// The same auth/onboarding/role guard `Protected` already ran, but
+// rendering `<Outlet/>` on success instead of `<Layout>{children}</Layout>`
+// — Layout is now supplied once by the parent `LayoutRoute`, not by
+// this guard. Every redirect (`/`, `/onboarding`, `/dashboard`) is
+// byte-identical to `Protected`'s own.
+function ProtectedRoute({ roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
   if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
-  return <Layout>{children}</Layout>;
+  return <Outlet />;
 }
 
 function App() {
@@ -73,67 +98,82 @@ function App() {
         <BrowserRouter>
           <ScrollRestoration />
           <Suspense fallback={<PageFallback />}>
-            <RouteTransition>
+            {/* ACA-0016 — keyed by section (Landing/Onboarding vs. everything
+                else), not the raw pathname: this outer instance now only
+                re-keys crossing that boundary, so `LayoutRoute` below stays
+                mounted across every in-section navigation. The inner
+                RouteTransition inside `LayoutRoute` (raw-pathname-keyed)
+                is what crossfades the actual page content in that case. */}
+            <RouteTransition keyFor={sectionKeyFor}>
               <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-                <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
-                {/* ACA-0009 — public formation discovery: catalogue + detail
-                    are real pages a signed-out visitor can browse (backend
-                    already supports this via get_current_user_optional —
-                    api/formations.py). Layout itself doesn't require a
-                    user, so these render outside <Protected>; only the
-                    module *content* route below still requires a session. */}
-                <Route path="/formations" element={<Layout><Formations /></Layout>} />
-                <Route path="/formations/:code" element={<Layout><FormationDetail /></Layout>} />
-                <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
-                <Route path="/missions" element={<Protected><Missions /></Protected>} />
-                <Route path="/badges" element={<Protected><Badges /></Protected>} />
-                <Route path="/frek-profile" element={<Protected><FrekProfile /></Protected>} />
-                <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
-                <Route path="/skills" element={<Protected><Skills /></Protected>} />
-                <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
-                {/* ACA-0025/W-FUNNEL-2 "Conversion" — the real DECIDED_V1
-                    commercial catalogue (`GET /commerce/offers`) is public
-                    same PUBLIC_DISCOVERY=TRUE logic as /formations; only the
-                    CTA behavior (honest BLOCKED_EXTERNAL, never a fake
-                    purchase) is gated inside the page itself. */}
-                <Route path="/offers" element={<Layout><Offers /></Layout>} />
-                {/* ACA-0006 — canonical FMS runtime binding, read-only pages,
-                    separate from the legacy /formations tree above. */}
-                <Route path="/canonical" element={<Protected><CanonicalFormations /></Protected>} />
-                <Route path="/canonical/:formationCode" element={<Protected><CanonicalFormationDetail /></Protected>} />
-                <Route path="/canonical/:formationCode/:moduleCode" element={<Protected><CanonicalModuleView /></Protected>} />
-                {/* "Branchage complet de Kiltikonet" (2026-09-04) — canonical
-                    Kiltikonet runtime binding, read-only pages, separate tree. */}
-                <Route path="/kiltikonet-canonical" element={<Protected><CanonicalKltFormations /></Protected>} />
-                <Route path="/kiltikonet-canonical/:formationCode" element={<Protected><CanonicalKltFormationDetail /></Protected>} />
-                <Route path="/kiltikonet-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKltModuleView /></Protected>} />
-                {/* RAIL 2 — "Master -> Runtime Academy" (2026-09-06) — canonical
-                    KORA runtime binding, read-only pages, separate tree. */}
-                <Route path="/kora-canonical" element={<Protected><CanonicalKorFormations /></Protected>} />
-                <Route path="/kora-canonical/:formationCode" element={<Protected><CanonicalKorFormationDetail /></Protected>} />
-                <Route path="/kora-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKorModuleView /></Protected>} />
-                {/* "raccorder ces corpus au même runtime/funnel Academy"
-                    (Founder, 2026-09-07) — canonical FREK runtime binding,
-                    read-only pages, separate tree. First of the 16 markdown-
-                    only Master 2D domains connected to the real runtime. */}
-                <Route path="/frek-canonical" element={<Protected><CanonicalFrkFormations /></Protected>} />
-                <Route path="/frek-canonical/:formationCode" element={<Protected><CanonicalFrkFormationDetail /></Protected>} />
-                <Route path="/frek-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalFrkModuleView /></Protected>} />
-                <Route
-                  path="/trainer"
-                  element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
-                />
-                <Route
-                  path="/jury"
-                  element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
-                />
-                <Route
-                  path="/admin"
-                  element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
-                />
+
+                {/* Every route below renders through the one, persistent
+                    `Layout` instance `LayoutRoute` mounts — sidebar,
+                    AcademyBackdrop, mentor dock never remount navigating
+                    between any of them (ACA-0015/ACA-0016). */}
+                <Route element={<LayoutRoute />}>
+                  {/* ACA-0009 — public formation discovery: catalogue +
+                      detail are real pages a signed-out visitor can browse
+                      (backend already supports this via
+                      get_current_user_optional — api/formations.py). No
+                      auth guard on these three; only the module *content*
+                      route below still requires a session. */}
+                  <Route path="/formations" element={<Formations />} />
+                  <Route path="/formations/:code" element={<FormationDetail />} />
+                  {/* ACA-0025/W-FUNNEL-2 "Conversion" — the real DECIDED_V1
+                      commercial catalogue (`GET /commerce/offers`) is public,
+                      same PUBLIC_DISCOVERY=TRUE logic as /formations; only
+                      the CTA behavior (honest BLOCKED_EXTERNAL, never a fake
+                      purchase) is gated inside the page itself. */}
+                  <Route path="/offers" element={<Offers />} />
+
+                  <Route element={<ProtectedRoute />}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/roadmap" element={<Roadmap />} />
+                    <Route path="/formations/:fc/modules/:mc" element={<ModuleJourney />} />
+                    <Route path="/missions" element={<Missions />} />
+                    <Route path="/badges" element={<Badges />} />
+                    <Route path="/frek-profile" element={<FrekProfile />} />
+                    <Route path="/wallet" element={<Wallet />} />
+                    <Route path="/skills" element={<Skills />} />
+                    <Route path="/certifications" element={<Certifications />} />
+                    {/* ACA-0006 — canonical FMS runtime binding, read-only
+                        pages, separate from the legacy /formations tree. */}
+                    <Route path="/canonical" element={<CanonicalFormations />} />
+                    <Route path="/canonical/:formationCode" element={<CanonicalFormationDetail />} />
+                    <Route path="/canonical/:formationCode/:moduleCode" element={<CanonicalModuleView />} />
+                    {/* "Branchage complet de Kiltikonet" (2026-09-04) —
+                        canonical Kiltikonet runtime binding, separate tree. */}
+                    <Route path="/kiltikonet-canonical" element={<CanonicalKltFormations />} />
+                    <Route path="/kiltikonet-canonical/:formationCode" element={<CanonicalKltFormationDetail />} />
+                    <Route path="/kiltikonet-canonical/:formationCode/:moduleCode" element={<CanonicalKltModuleView />} />
+                    {/* RAIL 2 — "Master -> Runtime Academy" (2026-09-06) —
+                        canonical KORA runtime binding, separate tree. */}
+                    <Route path="/kora-canonical" element={<CanonicalKorFormations />} />
+                    <Route path="/kora-canonical/:formationCode" element={<CanonicalKorFormationDetail />} />
+                    <Route path="/kora-canonical/:formationCode/:moduleCode" element={<CanonicalKorModuleView />} />
+                    {/* "raccorder ces corpus au même runtime/funnel Academy"
+                        (Founder, 2026-09-07) — canonical FREK runtime
+                        binding, separate tree. First of the 16 markdown-
+                        only Master 2D domains connected to the real runtime. */}
+                    <Route path="/frek-canonical" element={<CanonicalFrkFormations />} />
+                    <Route path="/frek-canonical/:formationCode" element={<CanonicalFrkFormationDetail />} />
+                    <Route path="/frek-canonical/:formationCode/:moduleCode" element={<CanonicalFrkModuleView />} />
+                  </Route>
+
+                  <Route element={<ProtectedRoute roles={TRAINER_ROLES} />}>
+                    <Route path="/trainer" element={<TrainerDashboard />} />
+                  </Route>
+                  <Route element={<ProtectedRoute roles={JURY_ROLES} />}>
+                    <Route path="/jury" element={<JuryDashboard />} />
+                  </Route>
+                  <Route element={<ProtectedRoute roles={ADMIN_ROLES} />}>
+                    <Route path="/admin" element={<AdminDashboard />} />
+                  </Route>
+                </Route>
+
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </RouteTransition>

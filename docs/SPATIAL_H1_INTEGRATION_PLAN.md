@@ -8,23 +8,33 @@ given, there is no ambiguity about what happens to each real surface —
 "Claude does not decide at random," per the Founder's own instruction.
 ```
 
-> **STATUT MIS À JOUR (2026-09-08, ACA-0014 étape 4 — TERMINÉE)** —
-> `H1_PRODUCTION_INTEGRATION` reste **PARTIELLEMENT AUTORISÉ ET
-> EXÉCUTÉ**. L'étape 4 de la séquence recommandée est désormais
-> complète : `Dashboard.js = WRAP`, `Roadmap.js = EXTEND` (Rail 3,
-> `ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`),
-> `ModuleJourney.js = EXTEND` (Rail 5, `ACADEMY_RAIL5_MODULE_JOURNEY_
-> ENGINE_REPORT.md`), `Badges.js = EXTEND`
-> (`ACADEMY_ACA0014_BADGES_H1_STEP4_REPORT.md`), et désormais
-> **`Missions.js = EXTEND` / `FrekProfile.js = EXTEND`**
-> (`ACADEMY_ACA0014_MISSIONS_FREK_H1_STEP4_REPORT.md`) — tous
-> réutilisent `SPATIAL_HUB_ENABLED`, aucun nouveau flag. Reste
-> `NOT_AUTHORIZED` : l'étape 5 (les deux items REPLACE-BLOCKED —
-> extension FLIP Formation→Module, upgrade des assets
-> environnementaux) et la promotion mobile-swipe `useSwipeRail()` —
-> chacun nécessite son propre feu vert explicite. Ce plan n'est donc
-> pas caduc, garder la table ci-dessous comme référence plutôt que la
-> refaire.
+> **STATUT MIS À JOUR (2026-09-08, étape 5 partiellement débloquée par
+> autorisation Founder explicite)** — `H1_PRODUCTION_INTEGRATION` reste
+> **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**. L'étape 4 de la séquence
+> recommandée est complète : `Dashboard.js = WRAP`, `Roadmap.js =
+> EXTEND` (Rail 3), `ModuleJourney.js = EXTEND` (Rail 5), `Badges.js`/
+> `Missions.js`/`FrekProfile.js = EXTEND`
+> (`ACADEMY_ACA0014_*_H1_STEP4_REPORT.md`), tous sur `SPATIAL_HUB_
+> ENABLED`, aucun nouveau flag.
+>
+> **Étape 5 — le premier des deux items REPLACE-BLOCKED, la
+> restructuration `Layout` -> route Outlet, est maintenant exécutée**
+> (2026-09-08, `ACADEMY_ACA0015_ROUTING_CONTINUITY_REPORT.md`) : Founder
+> a explicitement autorisé le déblocage complet du backlog ACA, y
+> compris les items REPLACE-BLOCKED. `App.js`'s `LayoutRoute`/
+> `ProtectedRoute` remplacent le pattern `Protected` (Layout monté par
+> route) — `Layout`/`AcademyBackdrop` survivent désormais réellement à
+> toute navigation intra-section (preuve DOM-identity dans `e2e/
+> environmental-continuity.spec.js`), fermant `ENVIRONMENT_RESET_PER_
+> ROUTE = FORBIDDEN` pour de vrai. Reste `NOT_AUTHORIZED`/en cours : le
+> second item REPLACE-BLOCKED (upgrade des assets environnementaux —
+> toujours hors scope, décision design séparée) ; l'extension FLIP
+> Formation→Module et le câblage `CROSSING`/`REVEALING` de
+> `cameraFollow.js` sur une vraie route restent à construire (le
+> restructuring ci-dessus est le prérequis, pas encore le câblage
+> lui-même — voir ACA-0015 en cours) ; la promotion mobile-swipe
+> `useSwipeRail()`. Ce plan n'est donc pas caduc, garder la table
+> ci-dessous comme référence plutôt que la refaire.
 
 For every real, already-shipped surface in `frontend/src`, one of four
 verdicts:
