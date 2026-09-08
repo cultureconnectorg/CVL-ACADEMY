@@ -12,6 +12,7 @@ import uuid
 from pymongo.errors import DuplicateKeyError
 
 from db import db, utc_now_iso
+from services.events import events
 from services.frek_core import frek_core
 from wallet import credit as wallet_credit
 
@@ -57,4 +58,18 @@ async def award_threshold_badges(user_id: str, cc: int) -> None:
             ref=b["code"],
             description=f"Badge « {b.get('name', b['code'])} » débloqué",
             badge_code=b["code"],
+        )
+        # ACA-0029 — real ecosystem handoff: the internal FrekCore
+        # signal + wallet credit above are both already real; this is
+        # the one piece that was missing — a real domain event any
+        # configured external system (the Wallet app, Command Center,
+        # ...) can actually receive. See services/integrations/
+        # subscribers.py's `_on_badge_awarded`.
+        await events.publish(
+            "academy_badge_awarded",
+            {
+                "user_id": user_id,
+                "badge_code": b["code"],
+                "jcc_reward": BADGE_JCC_REWARD,
+            },
         )

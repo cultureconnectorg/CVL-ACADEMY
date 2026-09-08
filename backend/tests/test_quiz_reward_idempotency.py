@@ -23,6 +23,7 @@ from mongomock_motor import AsyncMongoMockClient
 
 import api.quizzes as quizzes_module
 import badges_engine as badges_module
+import services.events as events_module
 import services.frek_core as frek_core_module
 from api.quizzes import submit_module_quiz
 from models import QuizSubmission, User
@@ -50,7 +51,9 @@ def _correct_answers():
 async def quiz_db(monkeypatch):
     client = AsyncMongoMockClient()
     mock_db = client["cvln_quiz_econ02_test"]
-    for module in (quizzes_module, frek_core_module, badges_module):
+    # ACA-0029 — award_threshold_badges now also publishes a real
+    # academy_badge_awarded event (db.event_log) via services/events.py.
+    for module in (quizzes_module, frek_core_module, badges_module, events_module):
         monkeypatch.setattr(module, "db", mock_db)
     return mock_db
 

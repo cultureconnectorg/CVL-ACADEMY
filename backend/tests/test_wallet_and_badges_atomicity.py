@@ -32,6 +32,7 @@ import pytest
 from mongomock_motor import AsyncMongoMockClient
 
 import badges_engine as badges_module
+import services.events as events_module
 import services.frek_core as frek_core_module
 import wallet.service as wallet_service_module
 from badges_engine import award_threshold_badges
@@ -48,7 +49,16 @@ async def wal_db(monkeypatch):
     await mock_db.user_badges.create_index(
         [("user_id", 1), ("badge_code", 1)], unique=True
     )
-    for module in (wallet_service_module, badges_module, frek_core_module):
+    # ACA-0029 — award_threshold_badges now also publishes a real
+    # academy_badge_awarded event (services/events.py), which writes to
+    # db.event_log — needs the same mock db as everything else here,
+    # or it reaches for a real (absent) MongoDB and hangs/times out.
+    for module in (
+        wallet_service_module,
+        badges_module,
+        frek_core_module,
+        events_module,
+    ):
         monkeypatch.setattr(module, "db", mock_db)
     return mock_db
 
@@ -100,8 +110,12 @@ async def test_credit_different_event_ids_both_apply(wal_db):
 async def test_credit_event_ids_are_scoped_per_user(wal_db):
     """The same economic_event_id string for two different users must
     not collide — the unique index is compound on (user_id, event_id)."""
-    await credit("u1", "jcc_earned", 10.0, economic_event_id="ev-shared", currency="jcc")
-    await credit("u2", "jcc_earned", 10.0, economic_event_id="ev-shared", currency="jcc")
+    await credit(
+        "u1", "jcc_earned", 10.0, economic_event_id="ev-shared", currency="jcc"
+    )
+    await credit(
+        "u2", "jcc_earned", 10.0, economic_event_id="ev-shared", currency="jcc"
+    )
     acc1 = await wal_db.wallet_accounts.find_one({"user_id": "u1"}, {"_id": 0})
     acc2 = await wal_db.wallet_accounts.find_one({"user_id": "u2"}, {"_id": 0})
     assert acc1["jcc_balance"] == 10.0

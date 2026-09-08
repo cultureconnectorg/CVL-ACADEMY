@@ -20,6 +20,7 @@ from mongomock_motor import AsyncMongoMockClient
 import api.missions as missions_module
 import badges_engine as badges_module
 import qualification.service as qualification_service_module
+import services.events as events_module
 import services.frek_core as frek_core_module
 from api.missions import accept_mission, submit_mission
 from models import User
@@ -34,6 +35,9 @@ async def mis_db(monkeypatch):
         frek_core_module,
         badges_module,
         qualification_service_module,
+        # ACA-0029 — award_threshold_badges now also publishes a real
+        # academy_badge_awarded event (db.event_log) via services/events.py.
+        events_module,
     ):
         monkeypatch.setattr(module, "db", mock_db)
     return mock_db

@@ -27,6 +27,19 @@ factory_maker_studio = EcosystemIntegration(
 good_mood = EcosystemIntegration("Good Mood", "GOOD_MOOD")
 culture_connect = EcosystemIntegration("Culture Connect", "CULTURE_CONNECT")
 kiltikonet = EcosystemIntegration("Kiltikonet", "KILTIKONET")
+# ACA-0029 — the real external djsayd/CVLN-Wallet product (its own
+# repo, its own backend/server.py — see docs/wal/README.md and the
+# WAL-2X formations grounded directly against it), distinct from
+# `backend/wallet/`, Academy's own internal CC/JCC ledger (rule 10,
+# already documented in docs/INTEGRATIONS_REPORT.md as "CVLN Wallet
+# (interne)") — that module stays exactly as-is, untouched by this
+# integration. Named "djsayd" here, deliberately not the shorter "CVLN
+# Wallet" the internal ledger's own doc row already uses, so the two
+# are never confused for the same system. This is the outbound handoff
+# *to* the real external product whenever Academy's own ledger records
+# something worth reflecting there (see subscribers.py's
+# `_on_badge_awarded`).
+wallet = EcosystemIntegration("CVLN Wallet (djsayd, external)", "CVLN_WALLET")
 
 _GENERIC = [
     intelligence_os,
@@ -38,6 +51,7 @@ _GENERIC = [
     good_mood,
     culture_connect,
     kiltikonet,
+    wallet,
 ]
 
 
