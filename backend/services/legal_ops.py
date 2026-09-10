@@ -1,8 +1,8 @@
 """Legal operations for CVLN Academy P0 requirements.
 
-Implements a legal matter registry, explicit review-policy decisions and a
-contract lifecycle. It records evidence and authority; it never fabricates a
-legal conclusion, signature or jurisdictional rule.
+Implements a legal matter registry, explicit review-policy decisions, contract
+lifecycle and evidence-backed signer authorization. It records evidence and authority;
+it never fabricates a legal conclusion, signature or jurisdictional rule.
 """
 
 from __future__ import annotations
@@ -196,5 +196,92 @@ async def transition_contract(
             "actor_id": actor_id,
             "created_at": now,
         }
+    )
+    return {**row, **update}
+
+
+async def authorize_contract_signer(
+    *,
+    actor_id: str,
+    contract_id: str,
+    signer_user_id: str,
+    signer_frek_id: str,
+    signer_role: str,
+    evidence_refs: Iterable[str],
+) -> Dict[str, Any]:
+    """Authorize one Academy/FREK identity to attest signing intent.
+
+    Authorization is never inferred from the counterparty display name. At least one
+    evidence reference is mandatory so the authority decision remains auditable.
+    """
+    contract = await db.legal_contracts.find_one({"id": contract_id}, {"_id": 0})
+    if not contract:
+        raise LookupError("contract not found")
+    if contract.get("status") not in {"IN_REVIEW", "APPROVED"}:
+        raise ValueError("signer authorization requires IN_REVIEW or APPROVED contract")
+    refs = list(dict.fromkeys(evidence_refs))
+    if not refs:
+        raise ValueError("signer authorization requires evidence")
+    if not signer_user_id.strip() or not signer_frek_id.strip():
+        raise ValueError("signer user and FREK identities are required")
+
+    existing = await db.contract_signer_authorizations.find_one(
+        {
+            "contract_id": contract_id,
+            "signer_user_id": signer_user_id,
+            "signer_frek_id": signer_frek_id,
+        },
+        {"_id": 0},
+    )
+    now = utc_now_iso()
+    if existing:
+        update = {
+            "signer_role": signer_role,
+            "evidence_refs": refs,
+            "status": "AUTHORIZED",
+            "authorized_by": actor_id,
+            "updated_at": now,
+        }
+        await db.contract_signer_authorizations.update_one(
+            {"id": existing["id"]}, {"$set": update}
+        )
+        return {**existing, **update}
+
+    row = {
+        "id": _id("SIGAUTH"),
+        "contract_id": contract_id,
+        "signer_user_id": signer_user_id,
+        "signer_frek_id": signer_frek_id,
+        "signer_role": signer_role,
+        "evidence_refs": refs,
+        "status": "AUTHORIZED",
+        "authorized_by": actor_id,
+        "created_at": now,
+        "updated_at": now,
+    }
+    await db.contract_signer_authorizations.insert_one(dict(row))
+    return row
+
+
+async def revoke_contract_signer(
+    *, actor_id: str, authorization_id: str, evidence_refs: Iterable[str]
+) -> Dict[str, Any]:
+    row = await db.contract_signer_authorizations.find_one(
+        {"id": authorization_id}, {"_id": 0}
+    )
+    if not row:
+        raise LookupError("signer authorization not found")
+    refs = list(dict.fromkeys(evidence_refs))
+    if not refs:
+        raise ValueError("revocation requires evidence")
+    now = utc_now_iso()
+    update = {
+        "status": "REVOKED",
+        "revocation_evidence_refs": refs,
+        "revoked_by": actor_id,
+        "updated_at": now,
+    }
+    await db.contract_signer_authorizations.update_one(
+        {"id": authorization_id}, {"$set": update}
     )
     return {**row, **update}
