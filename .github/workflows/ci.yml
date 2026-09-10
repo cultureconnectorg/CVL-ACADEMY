@@ -161,15 +161,25 @@ jobs:
           .venv-academy/bin/pip install --disable-pip-version-check -r academy/backend/requirements.txt
 
           python -m venv .venv-agent-factory
-          # Agent Factory currently pins emergentintegrations==0.2.0, which is not
-          # published on PyPI. The current repository contains no import/reference to
-          # that package, so exclude only that unavailable, unused dependency for this
-          # runtime contract smoke. Every other pinned runtime dependency is installed.
-          grep -v '^emergentintegrations==0.2.0$' agent-factory/backend/requirements.txt > /tmp/agent-factory-runtime-requirements.txt
+          # Emergent runtime wheels pinned by the external repos are not published on
+          # public PyPI. They are excluded from this cross-repo smoke only when the
+          # checked-out source has no import/reference to emergentintegrations.
+          if grep -R --exclude='requirements.txt' -n 'emergentintegrations' agent-factory/backend >/tmp/agent-factory-emergent-refs.txt 2>/dev/null; then
+            cat /tmp/agent-factory-emergent-refs.txt
+            echo 'Agent Factory uses emergentintegrations at runtime; CI cannot safely omit it.'
+            exit 1
+          fi
+          grep -v '^emergentintegrations==' agent-factory/backend/requirements.txt > /tmp/agent-factory-runtime-requirements.txt
           .venv-agent-factory/bin/pip install --disable-pip-version-check -r /tmp/agent-factory-runtime-requirements.txt
 
           python -m venv .venv-command-center
-          .venv-command-center/bin/pip install --disable-pip-version-check -r command-center/backend/requirements.txt
+          if grep -R --exclude='requirements.txt' -n 'emergentintegrations' command-center/backend >/tmp/command-center-emergent-refs.txt 2>/dev/null; then
+            cat /tmp/command-center-emergent-refs.txt
+            echo 'Command Center uses emergentintegrations at runtime; CI cannot safely omit it.'
+            exit 1
+          fi
+          grep -v '^emergentintegrations==' command-center/backend/requirements.txt > /tmp/command-center-runtime-requirements.txt
+          .venv-command-center/bin/pip install --disable-pip-version-check -r /tmp/command-center-runtime-requirements.txt
 
       - name: Generate ephemeral runtime credentials
         shell: bash
