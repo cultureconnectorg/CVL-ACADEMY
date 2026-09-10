@@ -72,6 +72,16 @@ class PrivacyIncidentCreate(BaseModel):
     description: str
 
 
+class PrivacyIncidentCascade(BaseModel):
+    impact: int = Field(ge=1, le=5)
+    probability: int = Field(ge=1, le=5)
+    owner: Optional[str] = None
+    mitigation: Optional[str] = None
+    deadline: Optional[str] = None
+    jurisdiction: Optional[str] = Field(default=None, max_length=120)
+    evidence_refs: List[str] = Field(default_factory=list)
+
+
 class SecurityAssetCreate(BaseModel):
     name: str
     asset_type: str
@@ -199,6 +209,18 @@ async def create_my_dsar(payload: DsarCreate, current: User = Depends(get_curren
 @router.post("/privacy/incidents")
 async def create_privacy_incident(payload: PrivacyIncidentCreate, current: User = Admin):
     return await core.create_privacy_incident(actor_id=current.id, **payload.model_dump())
+
+
+@router.post("/privacy/incidents/{incident_id}/cascade")
+async def cascade_privacy_incident(
+    incident_id: str, payload: PrivacyIncidentCascade, current: User = Admin
+):
+    try:
+        return await risk_ops.cascade_privacy_incident(
+            actor_id=current.id, incident_id=incident_id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
 
 
 @router.post("/security/assets")
