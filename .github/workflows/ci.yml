@@ -161,7 +161,12 @@ jobs:
           .venv-academy/bin/pip install --disable-pip-version-check -r academy/backend/requirements.txt
 
           python -m venv .venv-agent-factory
-          .venv-agent-factory/bin/pip install --disable-pip-version-check -r agent-factory/backend/requirements.txt
+          # Agent Factory currently pins emergentintegrations==0.2.0, which is not
+          # published on PyPI. The current repository contains no import/reference to
+          # that package, so exclude only that unavailable, unused dependency for this
+          # runtime contract smoke. Every other pinned runtime dependency is installed.
+          grep -v '^emergentintegrations==0.2.0$' agent-factory/backend/requirements.txt > /tmp/agent-factory-runtime-requirements.txt
+          .venv-agent-factory/bin/pip install --disable-pip-version-check -r /tmp/agent-factory-runtime-requirements.txt
 
           python -m venv .venv-command-center
           .venv-command-center/bin/pip install --disable-pip-version-check -r command-center/backend/requirements.txt
