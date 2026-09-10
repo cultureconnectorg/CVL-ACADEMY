@@ -1,27 +1,28 @@
 /**
- * ACA-0023 — Exact return-to-position, scroll + focus axes.
+ * ACA-0023 — Exact return-to-position, scroll + rail + focus axes.
  *
  * React Router v6 + lazy-loaded routes means browser-native restoration
  * cannot be trusted to run after async route content reaches its final
  * layout. This hook owns restoration for client-side history entries.
  *
- * Scroll and the last stable focus target are remembered independently.
- * Focus restoration is deliberately conservative: only elements with a
- * stable `id` or `data-testid` are remembered. No generated CSS path and
- * no text-content selector is used, so a DOM refactor cannot silently
- * focus an unrelated control.
+ * Document scroll, named spatial rails and the last stable focus target
+ * are remembered independently. Focus restoration is deliberately
+ * conservative: only stable `id` or `data-testid` targets are stored.
  */
 
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
 import {
+  getElementPositions,
   getFocusTarget,
   getPosition,
+  saveElementPosition,
   saveFocusTarget,
   savePosition,
 } from "@/lib/scrollRestoration";
 
 const RESTORE_ATTEMPTS = 5;
+const ELEMENT_MEMORY_ATTR = "data-scroll-memory";
 
 function focusDescriptor(element) {
   if (!element || element === document.body || element === document.documentElement) return null;
@@ -48,6 +49,12 @@ function canRestoreFocus(element) {
   return true;
 }
 
+function findMemoryElement(memoryKey) {
+  return Array.from(document.querySelectorAll(`[${ELEMENT_MEMORY_ATTR}]`)).find(
+    (element) => element.getAttribute(ELEMENT_MEMORY_ATTR) === memoryKey
+  );
+}
+
 export function useScrollRestoration() {
   const location = useLocation();
   const navType = useNavigationType();
@@ -72,21 +79,34 @@ export function useScrollRestoration() {
 
   useEffect(() => {
     currentKeyRef.current = location.key;
-    const onScroll = () => savePosition(currentKeyRef.current, window.scrollY);
+    const onWindowScroll = () => savePosition(currentKeyRef.current, window.scrollY);
+    const onElementScroll = (event) => {
+      const element = event.target;
+      const memoryKey = element?.getAttribute?.(ELEMENT_MEMORY_ATTR);
+      if (!memoryKey) return;
+      saveElementPosition(currentKeyRef.current, memoryKey, {
+        left: element.scrollLeft,
+        top: element.scrollTop,
+      });
+    };
     const onFocusIn = (event) => {
       const target = focusDescriptor(event.target);
       if (target) saveFocusTarget(currentKeyRef.current, target);
     };
-    window.addEventListener("scroll", onScroll, { passive: true });
+
+    window.addEventListener("scroll", onWindowScroll, { passive: true });
+    document.addEventListener("scroll", onElementScroll, true);
     document.addEventListener("focusin", onFocusIn);
     return () => {
-      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("scroll", onWindowScroll);
+      document.removeEventListener("scroll", onElementScroll, true);
       document.removeEventListener("focusin", onFocusIn);
     };
   }, [location.key]);
 
   useEffect(() => {
     const savedScroll = navType === "POP" ? getPosition(location.key) : undefined;
+    const savedElements = navType === "POP" ? getElementPositions(location.key) : {};
     const savedFocus = navType === "POP" ? getFocusTarget(location.key) : undefined;
 
     if (typeof savedScroll !== "number") window.scrollTo(0, 0);
@@ -94,6 +114,14 @@ export function useScrollRestoration() {
     let attempts = 0;
     let frame = requestAnimationFrame(function restoreContext() {
       if (typeof savedScroll === "number") window.scrollTo(0, savedScroll);
+
+      Object.entries(savedElements).forEach(([memoryKey, position]) => {
+        const element = findMemoryElement(memoryKey);
+        if (element) {
+          element.scrollLeft = position.left;
+          element.scrollTop = position.top;
+        }
+      });
 
       const focusTarget = resolveFocusTarget(savedFocus);
       if (canRestoreFocus(focusTarget)) {
