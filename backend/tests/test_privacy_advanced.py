@@ -82,6 +82,7 @@ async def _classified_resource():
         legal_basis_required=True,
     )
     policy = await _plain_policy("DATA_CLASSIFICATION")
+    access_policy = await _plain_policy("DATA_ACCESS")
     resource = await data_classification.declare_resource(
         actor_id="dpo",
         resource_kind="DATA",
@@ -95,6 +96,12 @@ async def _classified_resource():
         resource_record_id=resource["id"],
         data_class_code="IDENTITY",
         policy_version_id=policy["id"],
+        access_policy_version_id=access_policy["id"],
+        purpose="Operate learner identity profile",
+        legal_basis="CONTRACT",
+        retention_days=365,
+        processor_refs=[],
+        locations=["EU"],
         rationale="Identity profile",
         evidence_refs=["SCHEMA:users"],
     )
@@ -247,6 +254,7 @@ async def test_cross_border_requires_approved_classified_processor_and_policy(
         legal_basis_required=True,
     )
     class_policy = await _plain_policy("DATA_CLASSIFICATION")
+    access_policy = await _plain_policy("DATA_ACCESS")
     processor = await privacy_ops.register_processor(
         actor_id="dpo",
         name="EU Vendor",
@@ -261,6 +269,12 @@ async def test_cross_border_requires_approved_classified_processor_and_policy(
         resource_record_id=processor["classification_resource_id"],
         data_class_code="LEARNING",
         policy_version_id=class_policy["id"],
+        access_policy_version_id=access_policy["id"],
+        purpose="Provide contracted learner hosting",
+        legal_basis="CONTRACT",
+        retention_days=365,
+        processor_refs=[processor["id"]],
+        locations=["EU"],
         rationale="Vendor processes learner data",
         evidence_refs=["ASSESS-1"],
     )
