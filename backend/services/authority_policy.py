@@ -61,6 +61,10 @@ def _rule_matches(rule: Dict[str, Any], *, actor_role: str, action: str, context
         return False
     if not _match_dimension(_normalise(conditions.get("sensitivities")), context.get("sensitivity")):
         return False
+    if not _match_dimension(_normalise(conditions.get("risk_levels")), context.get("risk_level")):
+        return False
+    if not _match_dimension(_normalise(conditions.get("resource_types")), context.get("resource_type")):
+        return False
 
     required_level = conditions.get("minimum_authority_level")
     if required_level:
