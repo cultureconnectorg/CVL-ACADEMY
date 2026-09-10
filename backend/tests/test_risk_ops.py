@@ -169,3 +169,66 @@ async def test_review_can_close_with_evidence_without_claiming_coverage(risk_db)
     assert reviewed["status"] == "CLOSED"
     assert reviewed["coverage_confirmed"] is False
     assert reviewed["evidence_refs"] == ["BROKER-RESPONSE-1"]
+
+
+@pytest.mark.asyncio
+async def test_privacy_incident_cascade_projects_one_legal_case_risk_and_review(risk_db):
+    incident = await assurance_core.create_privacy_incident(
+        actor_id="dpo-1",
+        title="Learner identity disclosure",
+        severity="high",
+        data_classes=["IDENTITY"],
+        description="Disclosure detected in test fixture",
+    )
+
+    first = await risk_ops.cascade_privacy_incident(
+        actor_id="dpo-1",
+        incident_id=incident["id"],
+        impact=5,
+        probability=4,
+        owner="dpo",
+        mitigation="Contain and assess notification duties",
+        deadline="2026-09-11",
+        jurisdiction="FR",
+        evidence_refs=["INCIDENT-EVIDENCE-1"],
+    )
+    second = await risk_ops.cascade_privacy_incident(
+        actor_id="dpo-2",
+        incident_id=incident["id"],
+        impact=5,
+        probability=4,
+        owner="dpo",
+        mitigation="Contain and assess notification duties",
+        deadline="2026-09-11",
+        jurisdiction="FR",
+    )
+
+    assert first["incident"]["id"] == incident["id"]
+    assert first["legal_case"]["id"] == second["legal_case"]["id"]
+    assert first["legal_case"]["case_id"] == incident["id"]
+    assert first["legal_case"]["document_type"] == "PRIVACY_INCIDENT_CASE"
+    assert first["risk"]["id"] == second["risk"]["id"]
+    assert first["risk"]["source_type"] == "PRIVACY_INCIDENT"
+    assert first["insurance_review"] is not None
+    assert first["insurance_review"]["coverage_confirmed"] is False
+    assert first["insurance_review"]["id"] == second["insurance_review"]["id"]
+    assert await risk_db.legal_documents.count_documents({"case_id": incident["id"]}) == 1
+    assert await risk_db.risks.count_documents({"source_id": incident["id"]}) == 1
+    assert await risk_db.insurance_review_triggers.count_documents(
+        {"risk_id": first["risk"]["id"]}
+    ) == 1
+
+
+@pytest.mark.asyncio
+async def test_privacy_incident_cascade_requires_real_incident(risk_db):
+    with pytest.raises(LookupError, match="privacy incident not found"):
+        await risk_ops.cascade_privacy_incident(
+            actor_id="dpo-1",
+            incident_id="PINC-missing",
+            impact=5,
+            probability=4,
+        )
+
+    assert await risk_db.legal_documents.count_documents({}) == 0
+    assert await risk_db.risks.count_documents({}) == 0
+    assert await risk_db.insurance_review_triggers.count_documents({}) == 0
