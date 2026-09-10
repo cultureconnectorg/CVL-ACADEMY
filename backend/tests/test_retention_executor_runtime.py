@@ -53,6 +53,16 @@ async def _setup_job(*, trigger_at: str, action: str = "DELETE"):
         effective_at=_instant(timedelta(hours=-2)),
         evidence_refs=["XCP-002"],
     )
+    access_policy = await policy_registry.register_version(
+        actor_id="founder",
+        policy_key="DATA_ACCESS",
+        version="1.0.0",
+        kind="POLICY",
+        title="Data access",
+        content={"explicit": True},
+        effective_at=_instant(timedelta(hours=-2)),
+        evidence_refs=["PRI-001"],
+    )
     retention_policy = await policy_registry.register_version(
         actor_id="founder",
         policy_key="RETENTION",
@@ -76,6 +86,12 @@ async def _setup_job(*, trigger_at: str, action: str = "DELETE"):
         resource_record_id=resource["id"],
         data_class_code="IDENTITY",
         policy_version_id=class_policy["id"],
+        access_policy_version_id=access_policy["id"],
+        purpose="Execute evidence-backed learner retention policy",
+        legal_basis="CONTRACT",
+        retention_days=0,
+        processor_refs=[],
+        locations=["EU"],
         rationale="Identity data",
         evidence_refs=["SCHEMA:users"],
     )
