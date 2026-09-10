@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 from auth import require_role
 from db import db
 from models import User
-from services import accounting_workspace, expert_access, legal_expert_ops
+from services import accounting_workspace, expert_access, legal_expert_ops, legal_policy
 
 router = APIRouter(prefix="/expert", tags=["governance-expert"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -21,6 +21,12 @@ class LegalMatterExpertPatch(BaseModel):
     policy_version_id: str
     rationale: str
     evidence_refs: list[str] = Field(default_factory=list)
+
+
+class LegalExternalApproval(BaseModel):
+    policy_version_id: str = Field(min_length=1, max_length=240)
+    rationale: str = Field(min_length=3, max_length=4000)
+    evidence_refs: list[str] = Field(min_length=1)
 
 
 def _credential(x_cvln_expert_key: str | None = Header(default=None)) -> str:
@@ -74,6 +80,28 @@ async def expert_modify_legal_matter(
             policy_version_id=payload.policy_version_id,
             rationale=payload.rationale,
             evidence_refs=payload.evidence_refs,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@router.post("/legal/cases/{case_id}/matters/{matter_id}/external-approval")
+async def expert_external_legal_approval(
+    case_id: str,
+    matter_id: str,
+    payload: LegalExternalApproval,
+    raw_key: str = Depends(_credential),
+):
+    try:
+        return await legal_policy.record_external_expert_approval(
+            raw_key=raw_key,
+            case_id=case_id,
+            matter_id=matter_id,
+            **payload.model_dump(),
         )
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
