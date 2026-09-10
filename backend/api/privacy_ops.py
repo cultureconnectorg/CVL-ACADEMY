@@ -1,4 +1,4 @@
-"""Operational privacy controls: retention, deletion, processors and cascades."""
+"""Operational privacy controls: retention, deletion, processors and legacy cascades."""
 
 from __future__ import annotations
 
@@ -27,10 +27,13 @@ class RetentionRuleCreate(BaseModel):
 class ProcessorCreate(BaseModel):
     name: str
     service: str
-    data_classes: List[str]
-    regions: List[str]
+    purpose: Optional[str] = None
+    legal_entity: Optional[str] = None
+    data_classes: List[str] = Field(min_length=1)
+    regions: List[str] = Field(min_length=1)
     dpa_evidence_ref: Optional[str] = None
     subprocessor_url: Optional[str] = None
+    transfer_mechanism: Optional[str] = None
 
 
 class StateChange(BaseModel):
@@ -78,11 +81,18 @@ async def create_retention_rule(payload: RetentionRuleCreate, current: User = Ad
 
 @router.post("/processors")
 async def create_processor(payload: ProcessorCreate, current: User = Admin):
-    return await privacy_ops.register_processor(actor_id=current.id, **payload.model_dump())
+    try:
+        return await privacy_ops.register_processor(
+            actor_id=current.id, **payload.model_dump()
+        )
+    except ValueError as exc:
+        _raise(exc)
 
 
 @router.patch("/processors/{processor_id}")
-async def transition_processor(processor_id: str, payload: StateChange, current: User = Admin):
+async def transition_processor(
+    processor_id: str, payload: StateChange, current: User = Admin
+):
     try:
         return await privacy_ops.transition_processor(
             actor_id=current.id, processor_id=processor_id, status=payload.status
@@ -131,6 +141,7 @@ async def record_deletion_execution(
 async def cascade_incident_to_risk(
     incident_id: str, payload: IncidentCascade, current: User = Admin
 ):
+    """Legacy projection only; new incidents originate at /api/privacy/incidents."""
     try:
         return await privacy_ops.cascade_privacy_incident_to_risk(
             actor_id=current.id, incident_id=incident_id, **payload.model_dump()
