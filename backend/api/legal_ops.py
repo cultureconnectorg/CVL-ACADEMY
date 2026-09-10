@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from auth import get_current_user, require_role
 from models import User
-from services import legal_ops, proof_bridge
+from services import legal_ops, native_attestation_verifier, proof_bridge
 
 router = APIRouter(prefix="/legal", tags=["legal"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -71,12 +71,19 @@ class NativeAttestationCreate(BaseModel):
     evidence_refs: List[str] = Field(default_factory=list)
 
 
+class NativeAttestationVerify(BaseModel):
+    require_btc_anchor: bool = False
+
+
 def _translate(exc: Exception):
     if isinstance(exc, LookupError):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     if isinstance(exc, PermissionError):
         raise HTTPException(status_code=403, detail=str(exc)) from exc
-    if isinstance(exc, proof_bridge.FrekNotaryUnavailable):
+    if isinstance(
+        exc,
+        (proof_bridge.FrekNotaryUnavailable, native_attestation_verifier.FrekProofUnavailable),
+    ):
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -181,4 +188,34 @@ async def native_attestation(
         PermissionError,
         proof_bridge.FrekNotaryUnavailable,
     ) as exc:
+        _translate(exc)
+
+
+@router.get("/contracts/{contract_id}/native-attestations")
+async def list_native_attestations(contract_id: str, current: User = Admin):
+    try:
+        return await native_attestation_verifier.list_contract_attestations(contract_id)
+    except LookupError as exc:
+        _translate(exc)
+
+
+@router.post("/native-attestations/{attestation_id}/verify")
+async def verify_native_attestation(
+    attestation_id: str,
+    payload: NativeAttestationVerify,
+    current: User = Admin,
+):
+    """Independent verification gate against FREK's proof endpoint.
+
+    Verification checks local EvidencePackage integrity, the stored FREK block,
+    recomputed FREK block hash, chain proof linkage and optional BTC anchoring.
+    It records a verification event but never mutates the contract to SIGNED.
+    """
+    try:
+        return await native_attestation_verifier.verify_native_attestation(
+            actor_id=current.id,
+            attestation_id=attestation_id,
+            require_btc_anchor=payload.require_btc_anchor,
+        )
+    except (LookupError, native_attestation_verifier.FrekProofUnavailable) as exc:
         _translate(exc)
