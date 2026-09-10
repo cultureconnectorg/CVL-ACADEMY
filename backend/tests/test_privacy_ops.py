@@ -47,19 +47,7 @@ async def test_retention_rule_is_upserted_by_data_class_and_trigger(privacy_db):
 
 
 @pytest.mark.asyncio
-async def test_processor_requires_dpa_and_explicit_provider_classification(privacy_db):
-    processor = await privacy_ops.register_processor(
-        actor_id="dpo-1",
-        name="Vendor",
-        service="email",
-        data_classes=["IDENTITY"],
-        regions=["EU"],
-    )
-    with pytest.raises(ValueError, match="DPA evidence"):
-        await privacy_ops.transition_processor(
-            actor_id="dpo-1", processor_id=processor["id"], status="APPROVED"
-        )
-
+async def test_processor_dpa_is_contextual_but_provider_classification_is_mandatory(privacy_db):
     await assurance_core.register_data_class(
         actor_id="dpo-1",
         code="LEARNING",
@@ -88,38 +76,91 @@ async def test_processor_requires_dpa_and_explicit_provider_classification(priva
         effective_at="2026-09-10T00:00:00+00:00",
         evidence_refs=["PRI-001"],
     )
-    evidenced = await privacy_ops.register_processor(
+    processor = await privacy_ops.register_processor(
         actor_id="dpo-1",
-        name="Vendor 2",
+        name="Vendor",
         service="storage",
         purpose="Store learning evidence",
         data_classes=["LEARNING"],
         regions=["EU"],
-        dpa_evidence_ref="DPA-1",
     )
+    assert processor["dpa_state"] == "NOT_ASSESSED"
+
     with pytest.raises(ValueError, match="provider is unclassified"):
         await privacy_ops.transition_processor(
-            actor_id="dpo-1", processor_id=evidenced["id"], status="APPROVED"
+            actor_id="dpo-1", processor_id=processor["id"], status="APPROVED"
         )
 
     await data_classification.classify_resource(
         actor_id="dpo-1",
-        resource_record_id=evidenced["classification_resource_id"],
+        resource_record_id=processor["classification_resource_id"],
         data_class_code="LEARNING",
         policy_version_id=class_policy["id"],
         access_policy_version_id=access_policy["id"],
         purpose="Provide contracted learning evidence storage",
         legal_basis="CONTRACT",
         retention_days=365,
-        processor_refs=[evidenced["id"]],
+        processor_refs=[processor["id"]],
         locations=["EU"],
         rationale="Processor receives learning evidence",
         evidence_refs=["VENDOR-ASSESSMENT-1"],
     )
     approved = await privacy_ops.transition_processor(
-        actor_id="dpo-1", processor_id=evidenced["id"], status="APPROVED"
+        actor_id="dpo-1", processor_id=processor["id"], status="APPROVED"
     )
     assert approved["status"] == "APPROVED"
+    assert approved["approval_warnings"] == ["DPA_NOT_ASSESSED"]
+
+
+@pytest.mark.asyncio
+async def test_explicit_required_missing_dpa_blocks_specific_processor_context(privacy_db):
+    processor = await privacy_ops.register_processor(
+        actor_id="dpo-1",
+        name="Vendor",
+        service="email",
+        data_classes=["IDENTITY"],
+        regions=["EU"],
+    )
+    reviewed = await privacy_ops.record_processor_dpa_status(
+        actor_id="dpo-1",
+        processor_id=processor["id"],
+        dpa_state="REQUIRED_MISSING",
+        rationale="Contractual review says this processor context requires a DPA",
+        evidence_refs=["DPO-REVIEW-1"],
+    )
+    assert reviewed["dpa_state"] == "REQUIRED_MISSING"
+
+    await privacy_db.classification_resources.update_one(
+        {"id": processor["classification_resource_id"]},
+        {"$set": {"classification_status": "CLASSIFIED", "current_classification_id": "CLASS-1"}},
+    )
+    await privacy_db.resource_classifications.insert_one(
+        {"id": "CLASS-1", "status": "CURRENT"}
+    )
+    with pytest.raises(ValueError, match="explicitly requires missing DPA evidence"):
+        await privacy_ops.transition_processor(
+            actor_id="dpo-1", processor_id=processor["id"], status="APPROVED"
+        )
+
+
+@pytest.mark.asyncio
+async def test_dpa_not_required_is_evidence_backed_and_does_not_block_activation(privacy_db):
+    processor = await privacy_ops.register_processor(
+        actor_id="dpo-1",
+        name="Vendor",
+        service="public-status-feed",
+        data_classes=["PUBLIC"],
+        regions=["EU"],
+    )
+    reviewed = await privacy_ops.record_processor_dpa_status(
+        actor_id="dpo-1",
+        processor_id=processor["id"],
+        dpa_state="NOT_REQUIRED",
+        rationale="Reviewed scope contains no processor relationship requiring DPA",
+        evidence_refs=["DPO-REVIEW-2"],
+    )
+    assert reviewed["dpa_state"] == "NOT_REQUIRED"
+    assert reviewed["dpa_evidence_ref"] is None
 
 
 @pytest.mark.asyncio
