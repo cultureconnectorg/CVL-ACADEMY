@@ -121,7 +121,11 @@ async def authorize_remediation(
         "authorized_by": actor_id,
         "updated_at": now,
     }
-    await db.security_remediations.update_one({"id": remediation_id, "status": "REQUESTED"}, {"$set": update})
+    result = await db.security_remediations.update_one(
+        {"id": remediation_id, "status": "REQUESTED"}, {"$set": update}
+    )
+    if result.modified_count != 1:
+        raise ValueError("remediation authorization changed concurrently")
     await governance.audit_event(
         event_type="security.remediation.authorized",
         actor_id=actor_id,
@@ -144,21 +148,28 @@ async def record_external_dispatch(
     row = await db.security_remediations.find_one({"id": remediation_id}, {"_id": 0})
     if not row:
         raise LookupError("security remediation not found")
+    if row["status"] not in {"AUTHORIZED", "EXECUTING", "TESTING"}:
+        raise ValueError("external dispatch requires an authorized remediation")
+    normalized_target = target.strip().upper()
+    if normalized_target != row["target_system"]:
+        raise ValueError("dispatch target does not match remediation target_system")
     refs = list(dict.fromkeys(evidence_refs))
     if not remote_task_id.strip() or not refs:
         raise ValueError("real remote task id and dispatch evidence are required")
     dispatch = {
-        "target": target.strip().upper(),
+        "target": normalized_target,
         "status": "DISPATCHED_CONFIRMED",
         "remote_task_id": remote_task_id.strip(),
         "evidence_refs": refs,
         "recorded_by": actor_id,
         "recorded_at": utc_now_iso(),
     }
-    await db.security_remediations.update_one(
-        {"id": remediation_id},
+    result = await db.security_remediations.update_one(
+        {"id": remediation_id, "status": row["status"]},
         {"$set": {"external_dispatch": dispatch, "updated_at": utc_now_iso()}},
     )
+    if result.modified_count != 1:
+        raise ValueError("remediation changed during external dispatch recording")
     return {**row, "external_dispatch": dispatch}
 
 
