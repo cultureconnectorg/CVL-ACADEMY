@@ -55,15 +55,35 @@ async def audit_event(
     resource_type: str,
     resource_id: str,
     payload: Optional[Dict[str, Any]] = None,
+    before: Optional[Dict[str, Any]] = None,
+    after: Optional[Dict[str, Any]] = None,
+    reason: Optional[str] = None,
+    result: Optional[str] = None,
 ) -> Dict[str, Any]:
-    body = payload or {}
+    """Write the single Academy governance audit envelope.
+
+    Optional before/after/reason/result fields allow sensitive workflows to satisfy
+    GOV-010 without inventing separate domain audit stores. Existing callers remain
+    valid; the canonical payload hash covers the complete audit body.
+    """
+    body = {
+        "data": payload or {},
+        "before": before,
+        "after": after,
+        "reason": reason,
+        "result": result,
+    }
     event = {
         "id": _id("AUD"),
         "event_type": event_type,
         "actor_id": actor_id,
         "resource_type": resource_type,
         "resource_id": resource_id,
-        "payload": body,
+        "payload": payload or {},
+        "before": before,
+        "after": after,
+        "reason": reason,
+        "result": result,
         "payload_hash": _canonical_hash(body),
         "created_at": utc_now_iso(),
     }
@@ -99,6 +119,9 @@ async def create_case(
         resource_type="professional_case",
         resource_id=case["id"],
         payload={"domain": case["domain"], "sensitivity": case["sensitivity"]},
+        after=case,
+        reason="Professional case created",
+        result="CREATED",
     )
     return case
 
@@ -110,17 +133,26 @@ async def transition_case(*, case_id: str, status: str, actor_id: str) -> Dict[s
     before = await db.professional_cases.find_one({"id": case_id}, {"_id": 0})
     if not before:
         raise LookupError("case not found")
-    await db.professional_cases.update_one(
-        {"id": case_id}, {"$set": {"status": target, "updated_at": utc_now_iso()}}
+    now = utc_now_iso()
+    result = await db.professional_cases.update_one(
+        {"id": case_id, "status": before["status"]},
+        {"$set": {"status": target, "updated_at": now}},
     )
+    if result.modified_count != 1:
+        raise ValueError("case status changed concurrently")
+    after = {**before, "status": target, "updated_at": now}
     await audit_event(
         event_type="governance.case.status_changed",
         actor_id=actor_id,
         resource_type="professional_case",
         resource_id=case_id,
         payload={"from": before["status"], "to": target},
+        before=before,
+        after=after,
+        reason="Professional case lifecycle transition",
+        result=target,
     )
-    return {**before, "status": target}
+    return after
 
 
 async def create_expert(
@@ -148,6 +180,9 @@ async def create_expert(
         resource_type="expert",
         resource_id=expert["id"],
         payload={"domains": expert["domains"]},
+        after={k: v for k, v in expert.items() if k != "email"},
+        reason="Expert identity registered",
+        result="CREATED",
     )
     return expert
 
@@ -186,6 +221,9 @@ async def assign_expert(
             "expert_id": expert_id,
             "scope": assignment["scope"],
         },
+        after=assignment,
+        reason="Expert assigned to explicit case scope",
+        result="ASSIGNED",
     )
     return assignment
 
@@ -227,6 +265,8 @@ async def issue_expert_api_key(
             "scope": record["scope"],
             "expires_at": expiry,
         },
+        reason="Scoped external expert credential issued",
+        result="ACTIVE",
     )
     public = {k: v for k, v in record.items() if k != "token_hash"}
     return raw, public
@@ -269,6 +309,10 @@ async def rotate_expert_api_key(
         resource_type="expert_api_key",
         resource_id=key_id,
         payload={"new_key_id": new["id"], "expires_at": new["expires_at"]},
+        before={"id": old["id"], "status": old["status"]},
+        after={"id": old["id"], "status": "ROTATED", "rotated_to_key_id": new["id"]},
+        reason="Expert credential rotated",
+        result="ROTATED",
     )
     return raw, new
 
@@ -303,6 +347,9 @@ async def register_document_version(
         resource_type="professional_case",
         resource_id=case_id,
         payload={"version_id": version["id"], "content_hash": version["content_hash"]},
+        after=version,
+        reason="Immutable document version registered",
+        result="REGISTERED",
     )
     return version
 
@@ -344,6 +391,9 @@ async def create_decision(
             "state": target,
             "decision_hash": decision["decision_hash"],
         },
+        after=decision,
+        reason=rationale,
+        result=target,
     )
     return decision
 
@@ -360,14 +410,22 @@ async def transition_decision(
     if decision["state"] in TERMINAL_DECISION_STATES:
         raise ValueError("terminal decision cannot be mutated; create a superseding decision")
     now = utc_now_iso()
-    await db.governance_decisions.update_one(
-        {"id": decision_id}, {"$set": {"state": target, "updated_at": now}}
+    result = await db.governance_decisions.update_one(
+        {"id": decision_id, "state": decision["state"]},
+        {"$set": {"state": target, "updated_at": now}},
     )
+    if result.modified_count != 1:
+        raise ValueError("decision state changed concurrently")
+    after = {**decision, "state": target, "updated_at": now}
     await audit_event(
         event_type="governance.decision.state_changed",
         actor_id=actor_id,
         resource_type="decision",
         resource_id=decision_id,
         payload={"from": decision["state"], "to": target},
+        before=decision,
+        after=after,
+        reason=decision.get("rationale"),
+        result=target,
     )
-    return {**decision, "state": target, "updated_at": now}
+    return after
