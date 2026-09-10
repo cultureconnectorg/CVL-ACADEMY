@@ -1,8 +1,9 @@
 """Legal operations for CVLN Academy P0 requirements.
 
 Implements a legal matter registry, explicit review-policy decisions, contract
-lifecycle and evidence-backed signer authorization. It records evidence and authority;
-it never fabricates a legal conclusion, signature or jurisdictional rule.
+lifecycle, evidence-backed signer authorization, and a Human Authority signature gate.
+It records evidence and authority; it never fabricates a legal conclusion, signature
+or jurisdictional rule.
 """
 
 from __future__ import annotations
@@ -159,6 +160,19 @@ async def create_contract(
     return row
 
 
+async def _accepted_signature_decision(contract_id: str, refs: list[str]) -> Dict[str, Any] | None:
+    if not refs:
+        return None
+    return await db.contract_signature_decisions.find_one(
+        {
+            "id": {"$in": refs},
+            "contract_id": contract_id,
+            "outcome": "ACCEPTED_FOR_LIFECYCLE",
+        },
+        {"_id": 0},
+    )
+
+
 async def transition_contract(
     *,
     actor_id: str,
@@ -178,6 +192,8 @@ async def transition_contract(
     refs = list(dict.fromkeys(evidence_refs))
     if target in {"SIGNED", "TERMINATED", "RENEWED", "SUPERSEDED"} and not refs:
         raise ValueError(f"{target.lower()} transition requires evidence")
+    if target == "SIGNED" and not await _accepted_signature_decision(contract_id, refs):
+        raise ValueError("signed transition requires an accepted signature decision")
     now = utc_now_iso()
     update = {
         "status": target,
@@ -209,11 +225,6 @@ async def authorize_contract_signer(
     signer_role: str,
     evidence_refs: Iterable[str],
 ) -> Dict[str, Any]:
-    """Authorize one Academy/FREK identity to attest signing intent.
-
-    Authorization is never inferred from the counterparty display name. At least one
-    evidence reference is mandatory so the authority decision remains auditable.
-    """
     contract = await db.legal_contracts.find_one({"id": contract_id}, {"_id": 0})
     if not contract:
         raise LookupError("contract not found")
@@ -285,3 +296,66 @@ async def revoke_contract_signer(
         {"id": authorization_id}, {"$set": update}
     )
     return {**row, **update}
+
+
+async def record_signature_decision(
+    *,
+    actor_id: str,
+    contract_id: str,
+    policy_ref: str,
+    rationale: str,
+    native_attestation_ids: Iterable[str] = (),
+    external_evidence_refs: Iterable[str] = (),
+    require_btc_anchor: bool = False,
+) -> Dict[str, Any]:
+    """Human Authority gate deciding whether signature evidence is sufficient.
+
+    Native attestations must already have a successful independent FREK verification.
+    External signature evidence can also be accepted, but only by explicit human policy
+    decision. This function never labels evidence as eIDAS-qualified on its own.
+    """
+    contract = await db.legal_contracts.find_one({"id": contract_id}, {"_id": 0})
+    if not contract:
+        raise LookupError("contract not found")
+    if contract.get("status") != "APPROVED":
+        raise ValueError("signature decision requires an APPROVED contract")
+    if not policy_ref.strip() or not rationale.strip():
+        raise ValueError("policy_ref and rationale are required")
+
+    attestation_ids = list(dict.fromkeys(native_attestation_ids))
+    external_refs = list(dict.fromkeys(external_evidence_refs))
+    if not attestation_ids and not external_refs:
+        raise ValueError("signature decision requires native or external evidence")
+
+    verified_native: list[str] = []
+    for attestation_id in attestation_ids:
+        attestation = await db.native_signature_attestations.find_one(
+            {"id": attestation_id, "contract_id": contract_id}, {"_id": 0}
+        )
+        if not attestation:
+            raise ValueError(f"native attestation not found for contract: {attestation_id}")
+        allowed = ["VERIFIED_FREK_BTC"] if require_btc_anchor else ["VERIFIED_FREK", "VERIFIED_FREK_BTC"]
+        verification = await db.native_signature_verifications.find_one(
+            {"attestation_id": attestation_id, "status": {"$in": allowed}},
+            {"_id": 0},
+            sort=[("verified_at", -1)],
+        )
+        if not verification:
+            raise ValueError(f"native attestation is not independently verified: {attestation_id}")
+        verified_native.append(attestation_id)
+
+    row = {
+        "id": _id("SIGDEC"),
+        "contract_id": contract_id,
+        "outcome": "ACCEPTED_FOR_LIFECYCLE",
+        "policy_ref": policy_ref,
+        "rationale": rationale,
+        "native_attestation_ids": verified_native,
+        "external_evidence_refs": external_refs,
+        "require_btc_anchor": bool(require_btc_anchor),
+        "legal_effect_claimed": False,
+        "decided_by": actor_id,
+        "decided_at": utc_now_iso(),
+    }
+    await db.contract_signature_decisions.insert_one(dict(row))
+    return row
