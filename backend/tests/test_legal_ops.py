@@ -63,16 +63,12 @@ async def test_review_policy_decision_requires_explicit_policy_and_rationale(leg
 
 
 @pytest.mark.asyncio
-async def test_contract_lifecycle_rejects_skips_and_requires_evidence_for_signature(legal_db):
-    matter = await legal_ops.create_legal_matter(
-        actor_id="legal-1", title="Trainer agreement", matter_type="contract"
-    )
+async def test_contract_signed_transition_requires_accepted_signature_decision(legal_db):
     contract = await legal_ops.create_contract(
         actor_id="legal-1",
         title="Trainer services agreement",
         contract_type="services",
         counterparty="Trainer Example",
-        matter_id=matter["id"],
         jurisdiction="FR",
     )
 
@@ -81,13 +77,12 @@ async def test_contract_lifecycle_rejects_skips_and_requires_evidence_for_signat
             actor_id="legal-1", contract_id=contract["id"], status="ACTIVE"
         )
 
-    review = await legal_ops.transition_contract(
+    await legal_ops.transition_contract(
         actor_id="legal-1", contract_id=contract["id"], status="IN_REVIEW"
     )
     approved = await legal_ops.transition_contract(
         actor_id="legal-1", contract_id=contract["id"], status="APPROVED"
     )
-    assert review["status"] == "IN_REVIEW"
     assert approved["status"] == "APPROVED"
 
     with pytest.raises(ValueError, match="requires evidence"):
@@ -95,14 +90,132 @@ async def test_contract_lifecycle_rejects_skips_and_requires_evidence_for_signat
             actor_id="legal-1", contract_id=contract["id"], status="SIGNED"
         )
 
+    with pytest.raises(ValueError, match="accepted signature decision"):
+        await legal_ops.transition_contract(
+            actor_id="legal-1",
+            contract_id=contract["id"],
+            status="SIGNED",
+            evidence_refs=["ARBITRARY-SIGNATURE-REF"],
+        )
+
+    decision = await legal_ops.record_signature_decision(
+        actor_id="legal-1",
+        contract_id=contract["id"],
+        policy_ref="SIGNATURE-ACCEPTANCE-v1",
+        rationale="External signature evidence reviewed by authorized human",
+        external_evidence_refs=["DOCUSIGN-ENVELOPE-123"],
+    )
+    assert decision["outcome"] == "ACCEPTED_FOR_LIFECYCLE"
+    assert decision["legal_effect_claimed"] is False
+
     signed = await legal_ops.transition_contract(
         actor_id="legal-1",
         contract_id=contract["id"],
         status="SIGNED",
-        evidence_refs=["SIGNATURE-EVIDENCE-1"],
+        evidence_refs=[decision["id"]],
     )
     assert signed["status"] == "SIGNED"
-    assert signed["last_transition_evidence_refs"] == ["SIGNATURE-EVIDENCE-1"]
+    assert signed["last_transition_evidence_refs"] == [decision["id"]]
+
+
+@pytest.mark.asyncio
+async def test_native_signature_decision_requires_verified_attestation(legal_db):
+    contract = await legal_ops.create_contract(
+        actor_id="legal-1",
+        title="Artist agreement",
+        contract_type="services",
+        counterparty="Artist",
+    )
+    await legal_ops.transition_contract(
+        actor_id="legal-1", contract_id=contract["id"], status="IN_REVIEW"
+    )
+    await legal_ops.transition_contract(
+        actor_id="legal-1", contract_id=contract["id"], status="APPROVED"
+    )
+    await legal_db.native_signature_attestations.insert_one(
+        {"id": "NSIG-1", "contract_id": contract["id"]}
+    )
+
+    with pytest.raises(ValueError, match="not independently verified"):
+        await legal_ops.record_signature_decision(
+            actor_id="legal-1",
+            contract_id=contract["id"],
+            policy_ref="SIGNATURE-ACCEPTANCE-v1",
+            rationale="Native signature verification required",
+            native_attestation_ids=["NSIG-1"],
+        )
+
+    await legal_db.native_signature_verifications.insert_one(
+        {
+            "id": "NSIGVER-1",
+            "attestation_id": "NSIG-1",
+            "status": "VERIFIED_FREK",
+            "verified_at": "2026-09-10T16:00:00Z",
+        }
+    )
+    decision = await legal_ops.record_signature_decision(
+        actor_id="legal-1",
+        contract_id=contract["id"],
+        policy_ref="SIGNATURE-ACCEPTANCE-v1",
+        rationale="FREK proof verified and accepted under policy",
+        native_attestation_ids=["NSIG-1"],
+    )
+    assert decision["native_attestation_ids"] == ["NSIG-1"]
+
+
+@pytest.mark.asyncio
+async def test_btc_policy_rejects_frek_only_verification(legal_db):
+    contract = await legal_ops.create_contract(
+        actor_id="legal-1",
+        title="High assurance agreement",
+        contract_type="services",
+        counterparty="Partner",
+    )
+    await legal_ops.transition_contract(
+        actor_id="legal-1", contract_id=contract["id"], status="IN_REVIEW"
+    )
+    await legal_ops.transition_contract(
+        actor_id="legal-1", contract_id=contract["id"], status="APPROVED"
+    )
+    await legal_db.native_signature_attestations.insert_one(
+        {"id": "NSIG-BTC", "contract_id": contract["id"]}
+    )
+    await legal_db.native_signature_verifications.insert_one(
+        {
+            "id": "NSIGVER-FREK",
+            "attestation_id": "NSIG-BTC",
+            "status": "VERIFIED_FREK",
+            "verified_at": "2026-09-10T16:00:00Z",
+        }
+    )
+
+    with pytest.raises(ValueError, match="not independently verified"):
+        await legal_ops.record_signature_decision(
+            actor_id="legal-1",
+            contract_id=contract["id"],
+            policy_ref="HIGH-ASSURANCE-SIGNATURE-v1",
+            rationale="This contract requires BTC anchored proof",
+            native_attestation_ids=["NSIG-BTC"],
+            require_btc_anchor=True,
+        )
+
+    await legal_db.native_signature_verifications.insert_one(
+        {
+            "id": "NSIGVER-BTC",
+            "attestation_id": "NSIG-BTC",
+            "status": "VERIFIED_FREK_BTC",
+            "verified_at": "2026-09-10T17:00:00Z",
+        }
+    )
+    decision = await legal_ops.record_signature_decision(
+        actor_id="legal-1",
+        contract_id=contract["id"],
+        policy_ref="HIGH-ASSURANCE-SIGNATURE-v1",
+        rationale="BTC anchored FREK proof satisfies this policy",
+        native_attestation_ids=["NSIG-BTC"],
+        require_btc_anchor=True,
+    )
+    assert decision["require_btc_anchor"] is True
 
 
 @pytest.mark.asyncio
@@ -129,11 +242,18 @@ async def test_termination_cannot_be_recorded_without_evidence(legal_db):
         await legal_ops.transition_contract(
             actor_id="legal-1", contract_id=contract["id"], status=state
         )
+    decision = await legal_ops.record_signature_decision(
+        actor_id="legal-1",
+        contract_id=contract["id"],
+        policy_ref="SIGNATURE-ACCEPTANCE-v1",
+        rationale="External evidence accepted",
+        external_evidence_refs=["SIG-1"],
+    )
     await legal_ops.transition_contract(
         actor_id="legal-1",
         contract_id=contract["id"],
         status="SIGNED",
-        evidence_refs=["SIG-1"],
+        evidence_refs=[decision["id"]],
     )
     await legal_ops.transition_contract(
         actor_id="legal-1", contract_id=contract["id"], status="ACTIVE"
