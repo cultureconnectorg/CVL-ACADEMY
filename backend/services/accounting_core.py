@@ -17,6 +17,7 @@ from db import db, utc_now_iso
 
 
 PERIOD_STATES = {"OPEN", "CLOSED"}
+ANOMALY_STATES = {"OPEN", "RESOLVED", "WAIVED"}
 
 
 def _id(prefix: str) -> str:
@@ -28,6 +29,20 @@ def _to_cents(amount_eur: float) -> int:
     if cents < 0:
         raise ValueError("amount cannot be negative")
     return cents
+
+
+def _parse_instant(value: str, field: str) -> datetime:
+    try:
+        parsed = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field} must be ISO-8601") from exc
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError(f"{field} must include timezone")
+    return parsed.astimezone(timezone.utc)
+
+
+def _iso_utc(value: str, field: str) -> str:
+    return _parse_instant(value, field).isoformat()
 
 
 async def _next_number(sequence: str, year: int) -> int:
@@ -184,13 +199,17 @@ async def reconcile_payment(*, actor_id: str, payment_id: str) -> Dict[str, Any]
 
 
 async def create_period(*, actor_id: str, code: str, starts_at: str, ends_at: str) -> Dict[str, Any]:
-    if starts_at >= ends_at:
+    start = _parse_instant(starts_at, "starts_at")
+    end = _parse_instant(ends_at, "ends_at")
+    if start >= end:
         raise ValueError("accounting period start must precede end")
+    if await db.accounting_periods.find_one({"code": code.strip()}):
+        raise ValueError("accounting period code already exists")
     row = {
         "id": _id("PERIOD"),
-        "code": code,
-        "starts_at": starts_at,
-        "ends_at": ends_at,
+        "code": code.strip(),
+        "starts_at": start.isoformat(),
+        "ends_at": end.isoformat(),
         "status": "OPEN",
         "created_by": actor_id,
         "created_at": utc_now_iso(),
@@ -199,24 +218,188 @@ async def create_period(*, actor_id: str, code: str, starts_at: str, ends_at: st
     return row
 
 
-async def close_period(*, actor_id: str, period_id: str) -> Dict[str, Any]:
+async def create_period_anomaly(
+    *,
+    actor_id: str,
+    period_id: str,
+    code: str,
+    description: str,
+    evidence_refs: Iterable[str],
+) -> Dict[str, Any]:
+    period = await db.accounting_periods.find_one({"id": period_id}, {"_id": 0})
+    if not period:
+        raise LookupError("accounting period not found")
+    if period["status"] != "OPEN":
+        raise ValueError("cannot add anomaly to a closed period")
+    refs = list(dict.fromkeys(evidence_refs))
+    if not refs:
+        raise ValueError("accounting anomaly requires evidence")
+    row = {
+        "id": _id("ACCANOM"),
+        "period_id": period_id,
+        "code": code.strip().upper(),
+        "description": description.strip(),
+        "evidence_refs": refs,
+        "status": "OPEN",
+        "created_by": actor_id,
+        "created_at": utc_now_iso(),
+        "updated_at": utc_now_iso(),
+    }
+    await db.accounting_period_anomalies.insert_one(dict(row))
+    return row
+
+
+async def resolve_period_anomaly(
+    *,
+    actor_id: str,
+    anomaly_id: str,
+    resolution: str,
+    evidence_refs: Iterable[str],
+) -> Dict[str, Any]:
+    row = await db.accounting_period_anomalies.find_one({"id": anomaly_id}, {"_id": 0})
+    if not row:
+        raise LookupError("accounting period anomaly not found")
+    if row["status"] != "OPEN":
+        return row
+    refs = list(dict.fromkeys(evidence_refs))
+    if not refs or not resolution.strip():
+        raise ValueError("anomaly resolution requires explanation and evidence")
+    now = utc_now_iso()
+    result = await db.accounting_period_anomalies.update_one(
+        {"id": anomaly_id, "status": "OPEN"},
+        {
+            "$set": {
+                "status": "RESOLVED",
+                "resolution": resolution.strip(),
+                "resolution_evidence_refs": refs,
+                "resolved_by": actor_id,
+                "resolved_at": now,
+                "updated_at": now,
+            }
+        },
+    )
+    if result.modified_count != 1:
+        raise ValueError("accounting anomaly changed concurrently")
+    return {
+        **row,
+        "status": "RESOLVED",
+        "resolution": resolution.strip(),
+        "resolution_evidence_refs": refs,
+        "resolved_by": actor_id,
+        "resolved_at": now,
+        "updated_at": now,
+    }
+
+
+async def period_close_gate(period_id: str) -> Dict[str, Any]:
+    period = await db.accounting_periods.find_one({"id": period_id}, {"_id": 0})
+    if not period:
+        raise LookupError("accounting period not found")
+
+    open_anomalies = await db.accounting_period_anomalies.find(
+        {"period_id": period_id, "status": "OPEN"}, {"_id": 0}
+    ).to_list(5000)
+    payments = await db.payments.find(
+        {"created_at": {"$gte": period["starts_at"], "$lt": period["ends_at"]}}, {"_id": 0}
+    ).to_list(100000)
+
+    unreconciled: list[Dict[str, Any]] = []
+    missing_invoices: list[str] = []
+    for payment in payments:
+        latest = await db.accounting_reconciliations.find_one(
+            {"payment_id": payment["id"]}, {"_id": 0}, sort=[("checked_at", -1)]
+        )
+        if not latest or not latest.get("reconciled"):
+            unreconciled.append(
+                {
+                    "payment_id": payment["id"],
+                    "status": payment.get("status"),
+                    "reconciliation_id": latest.get("id") if latest else None,
+                    "issues": latest.get("issues", ["RECONCILIATION_MISSING"]) if latest else ["RECONCILIATION_MISSING"],
+                }
+            )
+        if payment.get("status") == "paid":
+            invoice = await db.accounting_invoices.find_one(
+                {"payment_id": payment["id"], "status": "ISSUED"}, {"_id": 0, "id": 1}
+            )
+            if not invoice:
+                missing_invoices.append(payment["id"])
+
+    blockers: list[Dict[str, Any]] = []
+    if open_anomalies:
+        blockers.append({"code": "OPEN_ANOMALIES", "count": len(open_anomalies)})
+    if unreconciled:
+        blockers.append({"code": "UNRECONCILED_PAYMENTS", "count": len(unreconciled)})
+    if missing_invoices:
+        blockers.append({"code": "MISSING_INVOICES_FOR_PAID_PAYMENTS", "count": len(missing_invoices)})
+
+    return {
+        "period_id": period_id,
+        "pass": not blockers,
+        "blocking_count": sum(int(item["count"]) for item in blockers),
+        "blockers": blockers,
+        "open_anomalies": open_anomalies,
+        "unreconciled_payments": unreconciled,
+        "missing_invoice_payment_ids": missing_invoices,
+        "supporting_documents_scope": "ACC-007_NOT_YET_AUTOMATED; missing documents must be registered as period anomalies",
+        "checked_at": utc_now_iso(),
+    }
+
+
+async def close_period(
+    *,
+    actor_id: str,
+    period_id: str,
+    evidence_refs: Iterable[str],
+    review_note: str,
+) -> Dict[str, Any]:
     row = await db.accounting_periods.find_one({"id": period_id}, {"_id": 0})
     if not row:
         raise LookupError("accounting period not found")
     if row["status"] == "CLOSED":
         return row
+    refs = list(dict.fromkeys(evidence_refs))
+    if not refs or not review_note.strip():
+        raise ValueError("period closure requires review_note and evidence_refs")
+    gate = await period_close_gate(period_id)
+    if not gate["pass"]:
+        raise ValueError("accounting period close gate failed")
     now = utc_now_iso()
-    await db.accounting_periods.update_one(
+    result = await db.accounting_periods.update_one(
         {"id": period_id, "status": "OPEN"},
-        {"$set": {"status": "CLOSED", "closed_at": now, "closed_by": actor_id}},
+        {
+            "$set": {
+                "status": "CLOSED",
+                "closed_at": now,
+                "closed_by": actor_id,
+                "close_evidence_refs": refs,
+                "close_review_note": review_note.strip(),
+                "close_gate_snapshot": gate,
+            }
+        },
     )
-    return {**row, "status": "CLOSED", "closed_at": now, "closed_by": actor_id}
+    if result.modified_count != 1:
+        raise ValueError("accounting period changed concurrently")
+    return {
+        **row,
+        "status": "CLOSED",
+        "closed_at": now,
+        "closed_by": actor_id,
+        "close_evidence_refs": refs,
+        "close_review_note": review_note.strip(),
+        "close_gate_snapshot": gate,
+    }
 
 
 async def register_account_mapping(
     *, actor_id: str, event_type: str, debit_account: str, credit_account: str,
     tax_code: Optional[str] = None, evidence_refs: Iterable[str] = (),
 ) -> Dict[str, Any]:
+    """Legacy compatibility helper.
+
+    The public API uses services.accounting_mappings, which versions mappings through
+    XCP-008. Keep this helper only for old internal callers until they migrate.
+    """
     row = {
         "id": _id("MAP"),
         "event_type": event_type.upper(),
