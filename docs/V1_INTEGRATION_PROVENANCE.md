@@ -22,8 +22,8 @@ That means PR #5 includes the canonical curriculum runtime and corpus work by an
 
 ## Branch roles for V1 closure
 
-- `main`: currently deployed/reference history; do not mutate until release evidence is complete.
-- `claude/cvln-academy-canonical-fms`: preserved checkpoint for the canonical pedagogical work.
+- `main`: current production/reference history; do not mutate until release evidence is complete.
+- `claude/cvln-academy-canonical-fms`: preserved checkpoint for canonical pedagogical work.
 - `claude/cvln-academy-production-r35l31`: single V1 integration/release candidate.
 - PR #5: only active merge candidate for the complete V1 state.
 
