@@ -1,11 +1,4 @@
-"""CVLN Academy API — one router per domain, aggregated here.
-
-Each sub-router owns one bounded concern (auth, onboarding, formations,
-learning journey, quiz, badges, missions, progression, mentor, FMS import,
-FMS lineage, canonical FMS runtime, canonical Kiltikonet runtime, skills,
-certification, templates, assistants, wallet, integrations). This module
-just mounts them all under the single `/api` prefix used by the app.
-"""
+"""CVLN Academy API — one router per domain, aggregated here."""
 
 from __future__ import annotations
 
@@ -35,6 +28,7 @@ from . import (
     orgs,
     payments,
     physical_sessions,
+    privacy_ops,
     professional_governance,
     professional_profile,
     progression,
@@ -78,6 +72,7 @@ for module in (
     payments,
     professional_governance,
     assurance,
+    privacy_ops,
     quality,
     professional_profile,
     ecosystem_builder,
