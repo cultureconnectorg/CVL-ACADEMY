@@ -53,6 +53,7 @@ from . import (
     qualification,
     retention_executor,
     security_remediation,
+    security_verification,
     skills,
     templates,
     threat_model,
@@ -112,6 +113,7 @@ for module in (
     quality,
     threat_model,
     security_remediation,
+    security_verification,
     professional_profile,
     ecosystem_builder,
 ):
