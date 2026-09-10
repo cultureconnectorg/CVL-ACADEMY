@@ -37,6 +37,7 @@ TRANSITIONS = {
     "SUPERSEDED": set(),
 }
 SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
+VERIFIED_SIGNATURE_STATES = {"VERIFIED_FREK", "VERIFIED_FREK_BTC"}
 
 
 def _id(prefix: str) -> str:
@@ -170,6 +171,37 @@ async def add_version(
     return version
 
 
+async def _verified_signature_for_current_version(
+    *, document_id: str, version: Dict[str, Any], refs: list[str]
+) -> Dict[str, Any] | None:
+    if not refs:
+        return None
+    attestation = await db.native_signature_attestations.find_one(
+        {
+            "id": {"$in": refs},
+            "document_hash": version["content_hash"],
+            "$or": [
+                {"legal_document_id": document_id},
+                {"legal_document_id": {"$exists": False}},
+            ],
+        },
+        {"_id": 0},
+    )
+    if not attestation:
+        return None
+    verification = await db.native_signature_verifications.find_one(
+        {
+            "attestation_id": attestation["id"],
+            "status": {"$in": sorted(VERIFIED_SIGNATURE_STATES)},
+        },
+        {"_id": 0},
+        sort=[("verified_at", -1)],
+    )
+    if not verification:
+        return None
+    return {"attestation": attestation, "verification": verification}
+
+
 async def transition_document(
     *,
     actor_id: str,
@@ -195,14 +227,16 @@ async def transition_document(
     if target in {"SIGNED", "SUPERSEDED"} and not refs:
         raise ValueError(f"{target} transition requires evidence")
     if target == "SIGNED":
-        signature = await db.contract_signature_decisions.find_one(
-            {"id": {"$in": refs}, "outcome": "ACCEPTED_FOR_LIFECYCLE"}, {"_id": 0}
+        version = await db.governance_document_versions.find_one(
+            {"id": doc["current_version_id"]}, {"_id": 0}
         )
-        generic_signature = await db.native_signature_attestations.find_one(
-            {"id": {"$in": refs}}, {"_id": 0}
+        if not version:
+            raise ValueError("current governance document version is missing")
+        verified = await _verified_signature_for_current_version(
+            document_id=document_id, version=version, refs=refs
         )
-        if not signature and not generic_signature:
-            raise ValueError("SIGNED requires accepted native/signature evidence")
+        if not verified:
+            raise ValueError("SIGNED requires verified native signature evidence")
 
     now = utc_now_iso()
     result = await db.legal_documents.update_one(
