@@ -1,0 +1,64 @@
+name: Exact Preview E2E
+
+on:
+  push:
+    branches:
+      - codex/cvln-academy-exact-preview-2026-09-10
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preview-e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+
+      - name: Build exact frontend
+        working-directory: frontend
+        env:
+          REACT_APP_BACKEND_URL: http://127.0.0.1:4173
+          CI: "false"
+        run: yarn build
+
+      - name: Start local static preview
+        working-directory: frontend
+        run: |
+          python3 -m http.server 4173 --directory build > /tmp/cvln-preview-http.log 2>&1 &
+          echo $! > /tmp/cvln-preview-http.pid
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:4173/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/cvln-preview-http.log
+          exit 1
+
+      - name: Exercise Academy UI
+        working-directory: frontend
+        run: |
+          mkdir -p preview-output
+          node preview/exact-preview-check.mjs
+
+      - name: Upload browser proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cvln-academy-exact-preview-browser-proof
+          path: frontend/preview-output
+          if-no-files-found: warn
+          retention-days: 3
