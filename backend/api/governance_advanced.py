@@ -1,4 +1,4 @@
-"""Advanced Professional Governance APIs (GOV-003/009/011)."""
+"""Advanced Professional Governance APIs (GOV-003/006/009/011)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,12 @@ from pydantic import BaseModel, Field
 
 from auth import require_role
 from models import User
-from services import expert_cost_ledger, governance_notifications, professional_workspace
+from services import (
+    expert_cost_ledger,
+    governance_notifications,
+    governance_review,
+    professional_workspace,
+)
 
 router = APIRouter(prefix="/governance-advanced", tags=["governance"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -42,6 +47,22 @@ class NotificationCreate(BaseModel):
     channels: Optional[List[str]] = None
 
 
+class ReviewCreate(BaseModel):
+    case_id: str
+    subject: str = Field(min_length=3, max_length=400)
+    prepared_by: str
+    evidence_refs: List[str] = Field(min_length=1)
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class ReviewTransition(BaseModel):
+    target_state: str
+    policy_version_id: Optional[str] = None
+    rationale: str = Field(min_length=3, max_length=4000)
+    evidence_refs: List[str] = Field(min_length=1)
+    authority_level: str = "A4_CVL_AUTHORITY"
+
+
 def _expert_key(x_cvln_expert_key: str | None = Header(default=None)) -> str:
     if not x_cvln_expert_key:
         raise HTTPException(status_code=401, detail="Expert credential required")
@@ -56,6 +77,33 @@ async def expert_workspace(case_id: str, raw_key: str = Depends(_expert_key)):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@router.post("/reviews")
+async def create_review(payload: ReviewCreate, current: User = Admin):
+    try:
+        return await governance_review.create_review(actor_id=current.id, **payload.model_dump())
+    except (LookupError, ValueError) as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.patch("/reviews/{review_id}")
+async def transition_review(
+    review_id: str, payload: ReviewTransition, current: User = Admin
+):
+    try:
+        return await governance_review.transition_review(
+            actor_id=current.id,
+            actor_role=current.role,
+            review_id=review_id,
+            **payload.model_dump(),
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @router.post("/expert-costs")
