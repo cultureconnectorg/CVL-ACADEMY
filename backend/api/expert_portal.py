@@ -17,6 +17,7 @@ from services import (
     legal_policy,
     legal_workspace,
     privacy_advanced,
+    risk_advanced,
     security_verification,
 )
 
@@ -49,7 +50,6 @@ async def expert_case(case_id: str, raw_key: str = Depends(_credential)):
         context = await expert_access.authorize_case_scope(raw_key, case_id, "case:read")
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
-
     case = await db.professional_cases.find_one({"id": case_id}, {"_id": 0})
     if not case:
         raise HTTPException(status_code=404, detail="Case not found")
@@ -97,6 +97,16 @@ async def expert_pentest_workspace(case_id: str, raw_key: str = Depends(_credent
         return await security_verification.get_pentest_workspace(
             raw_key=raw_key, case_id=case_id
         )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@router.get("/risk/cases/{case_id}/broker-workspace")
+async def expert_broker_workspace(case_id: str, raw_key: str = Depends(_credential)):
+    try:
+        return await risk_advanced.get_broker_workspace(raw_key=raw_key, case_id=case_id)
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except PermissionError as exc:
