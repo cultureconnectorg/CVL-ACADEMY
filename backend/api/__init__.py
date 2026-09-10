@@ -13,6 +13,7 @@ from fastapi import APIRouter
 
 from . import (
     assistants,
+    assurance,
     auth,
     badges,
     canonical,
@@ -75,6 +76,7 @@ for module in (
     commerce,
     payments,
     professional_governance,
+    assurance,
     professional_profile,
     ecosystem_builder,
 ):
