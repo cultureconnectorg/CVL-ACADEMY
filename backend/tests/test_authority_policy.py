@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 from mongomock_motor import AsyncMongoMockClient
 
-from services import authority_policy, professional_governance
+from services import authority_policy, policy_registry, professional_governance
 
 
 @pytest.fixture
@@ -11,6 +11,7 @@ async def authority_db(monkeypatch):
     client = AsyncMongoMockClient()
     test_db = client["cvln_authority_policy_test"]
     monkeypatch.setattr(authority_policy, "db", test_db)
+    monkeypatch.setattr(policy_registry, "db", test_db)
     monkeypatch.setattr(professional_governance, "db", test_db)
     yield test_db
     client.close()
@@ -104,7 +105,8 @@ async def test_matching_policy_produces_explicit_allow_and_reason(authority_db):
     assert decision["matched_rule_id"] == "LEGAL-A4"
     assert decision["request_id"] == "REQ-1"
     assert decision["reason"]
-    assert decision["policy_hash"] == policy["policy_hash"]
+    assert decision["policy_content_hash"] == policy["content_hash"]
+    assert decision["policy_effective_at"] == policy["effective_at"]
     assert len(decision["decision_hash"]) == 64
 
 
@@ -139,7 +141,7 @@ async def test_unknown_action_fails_closed(authority_db):
 @pytest.mark.asyncio
 async def test_tampered_policy_is_rejected(authority_db):
     policy = await _policy(authority_db)
-    await authority_db.authority_policy_versions.update_one(
+    await authority_db.governance_policy_versions.update_one(
         {"id": policy["id"]}, {"$set": {"title": "tampered"}}
     )
     with pytest.raises(ValueError, match="integrity check failed"):
@@ -164,6 +166,6 @@ async def test_decision_reuses_canonical_governance_audit(authority_db):
     )
     events = await authority_db.governance_audit_events.find({}, {"_id": 0}).to_list(20)
     event_types = {event["event_type"] for event in events}
-    assert "authority.policy_version.registered" in event_types
+    assert "governance.policy_version.registered" in event_types
     assert "authority.decision.recorded" in event_types
     assert any(event["resource_id"] == decision["id"] for event in events)
