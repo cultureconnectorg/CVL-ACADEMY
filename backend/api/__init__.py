@@ -38,6 +38,7 @@ from . import (
     professional_governance,
     professional_profile,
     progression,
+    quality,
     quizzes,
     qualification,
     skills,
@@ -77,6 +78,7 @@ for module in (
     payments,
     professional_governance,
     assurance,
+    quality,
     professional_profile,
     ecosystem_builder,
 ):
