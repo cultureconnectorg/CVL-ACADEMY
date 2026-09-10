@@ -1,4 +1,4 @@
-"""Legal P0 API for matters, review policy and contract lifecycle."""
+"""Legal P0 API for matters, review policy, contract lifecycle and native attestations."""
 
 from __future__ import annotations
 
@@ -7,9 +7,9 @@ from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from auth import require_role
+from auth import get_current_user, require_role
 from models import User
-from services import legal_ops
+from services import legal_ops, proof_bridge
 
 router = APIRouter(prefix="/legal", tags=["legal"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -54,9 +54,30 @@ class ContractState(BaseModel):
     evidence_refs: List[str] = Field(default_factory=list)
 
 
+class SignerAuthorizationCreate(BaseModel):
+    signer_user_id: str = Field(min_length=1, max_length=240)
+    signer_frek_id: str = Field(min_length=1, max_length=240)
+    signer_role: str = Field(min_length=2, max_length=120)
+    evidence_refs: List[str] = Field(min_length=1)
+
+
+class SignerAuthorizationRevoke(BaseModel):
+    evidence_refs: List[str] = Field(min_length=1)
+
+
+class NativeAttestationCreate(BaseModel):
+    document_hash: str = Field(min_length=64, max_length=64)
+    intent: str = Field(default="SIGN", min_length=4, max_length=16)
+    evidence_refs: List[str] = Field(default_factory=list)
+
+
 def _translate(exc: Exception):
     if isinstance(exc, LookupError):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, PermissionError):
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    if isinstance(exc, proof_bridge.FrekNotaryUnavailable):
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
@@ -105,4 +126,59 @@ async def change_contract_state(
             evidence_refs=payload.evidence_refs,
         )
     except (LookupError, ValueError) as exc:
+        _translate(exc)
+
+
+@router.post("/contracts/{contract_id}/signers")
+async def authorize_signer(
+    contract_id: str, payload: SignerAuthorizationCreate, current: User = Admin
+):
+    try:
+        return await legal_ops.authorize_contract_signer(
+            actor_id=current.id, contract_id=contract_id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
+
+
+@router.patch("/contracts/signers/{authorization_id}/revoke")
+async def revoke_signer(
+    authorization_id: str,
+    payload: SignerAuthorizationRevoke,
+    current: User = Admin,
+):
+    try:
+        return await legal_ops.revoke_contract_signer(
+            actor_id=current.id,
+            authorization_id=authorization_id,
+            evidence_refs=payload.evidence_refs,
+        )
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
+
+
+@router.post("/contracts/{contract_id}/native-attestation")
+async def native_attestation(
+    contract_id: str,
+    payload: NativeAttestationCreate,
+    current: User = Depends(get_current_user),
+):
+    """Notarize explicit signing intent through FREKCORE.
+
+    This endpoint returns a CVLN_NATIVE_ATTESTATION with ``legal_effect=none``.
+    It intentionally does not mark the contract SIGNED or claim eIDAS qualification.
+    """
+    try:
+        return await proof_bridge.create_contract_native_attestation(
+            actor_id=current.id,
+            actor_frek_id=current.frek_id,
+            contract_id=contract_id,
+            **payload.model_dump(),
+        )
+    except (
+        LookupError,
+        ValueError,
+        PermissionError,
+        proof_bridge.FrekNotaryUnavailable,
+    ) as exc:
         _translate(exc)
