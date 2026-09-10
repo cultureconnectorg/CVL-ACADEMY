@@ -1,4 +1,4 @@
-"""Data Classification Engine API (XCP-002)."""
+"""Data Classification Engine API (XCP-002 / PRI-001)."""
 
 from __future__ import annotations
 
@@ -27,6 +27,12 @@ class ResourceDeclaration(BaseModel):
 class ClassificationCreate(BaseModel):
     data_class_code: str = Field(min_length=1, max_length=120)
     policy_version_id: str = Field(min_length=1, max_length=240)
+    access_policy_version_id: str = Field(min_length=1, max_length=240)
+    purpose: str = Field(min_length=1, max_length=2000)
+    legal_basis: Optional[str] = Field(default=None, max_length=1000)
+    retention_days: int = Field(ge=0)
+    processor_refs: List[str]
+    locations: List[str] = Field(min_length=1)
     rationale: str = Field(min_length=3, max_length=4000)
     evidence_refs: List[str] = Field(min_length=1)
     handling_controls: Dict[str, Any] = Field(default_factory=dict)
