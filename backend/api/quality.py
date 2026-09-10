@@ -27,7 +27,7 @@ class ScopeCreate(BaseModel):
     partner_id: str
     formation_code: str
     cohort_id: Optional[str] = None
-    evidence_refs: List[str] = Field(default_factory=list)
+    evidence_refs: List[str] = Field(min_length=1)
 
 
 class EvidenceCreate(BaseModel):
@@ -60,6 +60,13 @@ class ComplaintCreate(BaseModel):
     category: str
     description: str = Field(min_length=3, max_length=8000)
     severity: str = "MEDIUM"
+    quality_level: Optional[str] = None
+
+
+class ComplaintEscalation(BaseModel):
+    quality_level: str
+    evidence_refs: List[str] = Field(min_length=1)
+    projection_domains: List[str] = Field(default_factory=list)
 
 
 class ComplaintState(BaseModel):
@@ -74,8 +81,21 @@ class ImprovementCreate(BaseModel):
     due_at: Optional[str] = None
 
 
+class AuditPackCreate(BaseModel):
+    partner_id: str
+    formation_code: str
+    cohort_id: Optional[str] = None
+    node_ids: List[str] = Field(min_length=1)
+    evidence_refs: List[str] = Field(min_length=1)
+
+
 def _translate(exc: Exception):
-    status = 404 if isinstance(exc, LookupError) else 422
+    if isinstance(exc, LookupError):
+        status = 404
+    elif isinstance(exc, PermissionError):
+        status = 403
+    else:
+        status = 422
     raise HTTPException(status_code=status, detail=str(exc)) from exc
 
 
@@ -88,7 +108,7 @@ async def create_partner(payload: PartnerCreate, current: User = Admin):
 async def create_scope(payload: ScopeCreate, current: User = Admin):
     try:
         return await quality.assign_formation_scope(actor_id=current.id, **payload.model_dump())
-    except LookupError as exc:
+    except (LookupError, ValueError) as exc:
         _translate(exc)
 
 
@@ -110,7 +130,10 @@ async def get_learner_file(
 
 @router.post("/attendance")
 async def add_attendance(payload: AttendanceCreate, current: User = Staff):
-    return await quality.record_attendance(actor_id=current.id, **payload.model_dump())
+    try:
+        return await quality.record_attendance(actor_id=current.id, **payload.model_dump())
+    except ValueError as exc:
+        _translate(exc)
 
 
 @router.post("/satisfaction/me")
@@ -126,16 +149,40 @@ async def satisfaction_summary(formation_code: str, current: User = Staff):
     return await quality.satisfaction_summary(formation_code)
 
 
+@router.get("/formations/{formation_code}/satisfaction-analysis")
+async def satisfaction_analysis(formation_code: str, current: User = Staff):
+    return await quality.satisfaction_analysis(formation_code)
+
+
 @router.post("/complaints/me")
 async def create_my_complaint(
     payload: ComplaintCreate,
     current: User = Depends(get_current_user),
 ):
-    return await quality.create_complaint(
-        actor_id=current.id,
-        user_id=current.id,
-        **payload.model_dump(),
-    )
+    try:
+        return await quality.create_complaint(
+            actor_id=current.id,
+            user_id=current.id,
+            **payload.model_dump(),
+        )
+    except ValueError as exc:
+        _translate(exc)
+
+
+@router.post("/complaints/{complaint_id}/classify-escalate")
+async def classify_escalate_complaint(
+    complaint_id: str,
+    payload: ComplaintEscalation,
+    current: User = Staff,
+):
+    try:
+        return await quality.classify_and_escalate_complaint(
+            actor_id=current.id,
+            complaint_id=complaint_id,
+            **payload.model_dump(),
+        )
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
 
 
 @router.patch("/complaints/{complaint_id}")
@@ -162,4 +209,22 @@ async def create_improvement(payload: ImprovementCreate, current: User = Staff):
             actor_id=current.id, **payload.model_dump()
         )
     except ValueError as exc:
+        _translate(exc)
+
+
+@router.post("/audit-packs")
+async def create_audit_pack(payload: AuditPackCreate, current: User = Staff):
+    try:
+        return await quality.create_quality_audit_pack(
+            actor_id=current.id, **payload.model_dump()
+        )
+    except (LookupError, ValueError, PermissionError) as exc:
+        _translate(exc)
+
+
+@router.get("/partners/{partner_id}/workspace")
+async def partner_workspace(partner_id: str, current: User = Staff):
+    try:
+        return await quality.quality_partner_workspace(partner_id)
+    except LookupError as exc:
         _translate(exc)
