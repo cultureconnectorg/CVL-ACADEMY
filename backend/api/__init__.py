@@ -39,6 +39,7 @@ from . import (
     qualification,
     skills,
     templates,
+    threat_model,
     wallet,
 )
 
@@ -78,6 +79,7 @@ for module in (
     assurance,
     privacy_ops,
     quality,
+    threat_model,
     professional_profile,
     ecosystem_builder,
 ):
