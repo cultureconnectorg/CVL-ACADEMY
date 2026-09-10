@@ -1,0 +1,53 @@
+name: Exact Preview Build
+
+on:
+  push:
+    branches:
+      - codex/cvln-academy-exact-preview-2026-09-10
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout exact branch
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: yarn install --frozen-lockfile
+
+      - name: Build exact frontend
+        working-directory: frontend
+        env:
+          REACT_APP_BACKEND_URL: http://127.0.0.1:4173
+          CI: "false"
+        run: yarn build
+
+      - name: Package exact source and build
+        run: |
+          mkdir -p preview-artifact
+          cp -R frontend/build preview-artifact/build
+          cp -R frontend/src preview-artifact/src
+          cp frontend/package.json preview-artifact/package.json
+          cp frontend/yarn.lock preview-artifact/yarn.lock
+          printf '%s\n' '${{ github.sha }}' > preview-artifact/SOURCE_COMMIT_SHA.txt
+          printf '%s\n' '${{ github.ref_name }}' > preview-artifact/SOURCE_BRANCH.txt
+
+      - name: Upload exact preview artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: cvln-academy-exact-preview
+          path: preview-artifact
+          if-no-files-found: error
+          retention-days: 3
