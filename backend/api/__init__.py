@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from . import (
     accounting,
     accounting_advanced,
+    accounting_protocols,
     assistants,
     assurance,
     auth,
@@ -105,6 +106,7 @@ for module in (
     payments,
     accounting,
     accounting_advanced,
+    accounting_protocols,
     professional_governance,
     governance_advanced,
     production_gates,
