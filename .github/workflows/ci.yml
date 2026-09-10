@@ -36,6 +36,21 @@ jobs:
           JWT_SECRET: ci-test-secret-not-a-real-secret
         run: python -m pytest tests/ -q --ignore=tests/backend_test.py
 
+  security:
+    name: security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Scan tracked files for live-secret signatures
+        run: python backend/scripts/check_secrets.py
+
   frontend:
     name: frontend
     runs-on: ubuntu-latest
