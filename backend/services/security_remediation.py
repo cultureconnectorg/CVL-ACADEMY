@@ -1,9 +1,8 @@
 """Security remediation protocol (SEC-011/SEC-012).
 
-This module is deliberately honest about the external boundary. It creates and
-tracks remediation work, verification evidence and rollback checkpoints inside
-Academy. It does NOT pretend that Agent Factory or Command Center accepted a task
-unless a real adapter/contract reports that outcome.
+Academy owns authorization, evidence and verification state. Real execution dispatch is
+sent to CVLN Agent Factory; Command Center receives the operational mirror. Neither
+external system is treated as successful without its real API returning a concrete id.
 
 AUTONOMOUS_FIX != AUTONOMOUS_TRUST: an agent may execute an authorised change,
 but verification evidence is required before the remediation can be marked VERIFIED.
@@ -16,6 +15,7 @@ from typing import Any, Dict, Iterable, Optional
 
 from db import db, utc_now_iso
 from services import professional_governance as governance
+from services import remediation_dispatch
 
 
 STATES = {
@@ -82,9 +82,10 @@ async def create_remediation(
         "status": "REQUESTED",
         "authority_decision_ref": None,
         "external_dispatch": {
-            "target": target_system.strip().upper(),
             "status": "PENDING_EXTERNAL_CONTRACT",
-            "remote_task_id": None,
+            "execution_dispatch_confirmed": False,
+            "operations_mirror_confirmed": False,
+            "results": {},
         },
         "execution_evidence_refs": [],
         "test_evidence_refs": [],
@@ -99,7 +100,11 @@ async def create_remediation(
         actor_id=actor_id,
         resource_type="security_remediation",
         resource_id=row["id"],
-        payload={"finding_id": finding_id, "threat_id": threat_id, "target_system": row["target_system"]},
+        payload={
+            "finding_id": finding_id,
+            "threat_id": threat_id,
+            "target_system": row["target_system"],
+        },
     )
     return row
 
@@ -136,6 +141,55 @@ async def authorize_remediation(
     return {**row, **update}
 
 
+async def dispatch_authorized_remediation(
+    *, actor_id: str, remediation_id: str
+) -> Dict[str, Any]:
+    """Perform the real CVLN dispatch after Academy authority approval.
+
+    Agent Factory must return a real mission id before execution is considered
+    dispatched. Command Center is mirrored independently and can leave the dispatch
+    PARTIAL without hiding the fact. No status transition to EXECUTING occurs here.
+    """
+    row = await db.security_remediations.find_one({"id": remediation_id}, {"_id": 0})
+    if not row:
+        raise LookupError("security remediation not found")
+    if row["status"] != "AUTHORIZED":
+        raise ValueError("automatic dispatch requires AUTHORIZED remediation")
+    if not row.get("authority_decision_ref"):
+        raise ValueError("automatic dispatch requires explicit authority decision")
+
+    prior = row.get("external_dispatch") or {}
+    if prior.get("execution_dispatch_confirmed"):
+        return row
+
+    dispatch = await remediation_dispatch.dispatch_remediation(row)
+    now = utc_now_iso()
+    result = await db.security_remediations.update_one(
+        {"id": remediation_id, "status": "AUTHORIZED"},
+        {"$set": {"external_dispatch": dispatch, "updated_at": now}},
+    )
+    if result.modified_count != 1:
+        raise ValueError("remediation changed during automatic dispatch")
+    await governance.audit_event(
+        event_type="security.remediation.external_dispatch",
+        actor_id=actor_id,
+        resource_type="security_remediation",
+        resource_id=remediation_id,
+        payload={
+            "status": dispatch["status"],
+            "execution_dispatch_confirmed": dispatch["execution_dispatch_confirmed"],
+            "operations_mirror_confirmed": dispatch["operations_mirror_confirmed"],
+            "agent_factory_task_id": (
+                dispatch.get("results", {}).get("agent_factory", {}).get("remote_task_id")
+            ),
+            "command_center_task_id": (
+                dispatch.get("results", {}).get("command_center", {}).get("remote_task_id")
+            ),
+        },
+    )
+    return {**row, "external_dispatch": dispatch, "updated_at": now}
+
+
 async def record_external_dispatch(
     *,
     actor_id: str,
@@ -144,7 +198,7 @@ async def record_external_dispatch(
     remote_task_id: str,
     evidence_refs: Iterable[str],
 ) -> Dict[str, Any]:
-    """Record a dispatch only after a real external adapter returns a task id."""
+    """Legacy/manual adapter record, retained for non-CVLN external systems."""
     row = await db.security_remediations.find_one({"id": remediation_id}, {"_id": 0})
     if not row:
         raise LookupError("security remediation not found")
@@ -157,12 +211,19 @@ async def record_external_dispatch(
     if not remote_task_id.strip() or not refs:
         raise ValueError("real remote task id and dispatch evidence are required")
     dispatch = {
-        "target": normalized_target,
-        "status": "DISPATCHED_CONFIRMED",
-        "remote_task_id": remote_task_id.strip(),
-        "evidence_refs": refs,
-        "recorded_by": actor_id,
-        "recorded_at": utc_now_iso(),
+        "status": "CONFIRMED",
+        "execution_dispatch_confirmed": True,
+        "operations_mirror_confirmed": False,
+        "results": {
+            "manual_external": {
+                "target": normalized_target,
+                "status": "DISPATCHED_CONFIRMED",
+                "remote_task_id": remote_task_id.strip(),
+                "evidence_refs": refs,
+                "recorded_by": actor_id,
+                "recorded_at": utc_now_iso(),
+            }
+        },
     }
     result = await db.security_remediations.update_one(
         {"id": remediation_id, "status": row["status"]},
@@ -188,8 +249,11 @@ async def transition_remediation(
         raise ValueError(f"invalid remediation transition {row['status']}->{target}")
     refs = list(dict.fromkeys(evidence_refs))
 
-    if target == "EXECUTING" and not row.get("authority_decision_ref"):
-        raise ValueError("execution requires explicit authority decision")
+    if target == "EXECUTING":
+        if not row.get("authority_decision_ref"):
+            raise ValueError("execution requires explicit authority decision")
+        if not (row.get("external_dispatch") or {}).get("execution_dispatch_confirmed"):
+            raise ValueError("execution requires confirmed Agent Factory/external dispatch")
     if target == "TESTING" and not refs:
         raise ValueError("testing transition requires execution evidence")
     if target == "VERIFIED":
@@ -201,7 +265,11 @@ async def transition_remediation(
         raise ValueError("rollback completion requires evidence")
 
     now = utc_now_iso()
-    update: Dict[str, Any] = {"status": target, "updated_at": now, "last_actor_id": actor_id}
+    update: Dict[str, Any] = {
+        "status": target,
+        "updated_at": now,
+        "last_actor_id": actor_id,
+    }
     if target == "TESTING":
         update["execution_evidence_refs"] = refs
     elif target == "VERIFIED":
@@ -228,4 +296,8 @@ async def remediation_gate() -> Dict[str, Any]:
     blockers = await db.security_remediations.find(
         {"status": {"$nin": ["VERIFIED", "ROLLED_BACK", "CANCELLED"]}}, {"_id": 0}
     ).to_list(1000)
-    return {"pass": len(blockers) == 0, "blocking_count": len(blockers), "blocking_remediations": blockers}
+    return {
+        "pass": len(blockers) == 0,
+        "blocking_count": len(blockers),
+        "blocking_remediations": blockers,
+    }
