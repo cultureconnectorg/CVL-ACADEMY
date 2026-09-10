@@ -58,18 +58,22 @@ test.describe("scroll, rail and focus restoration (ACA-0023)", () => {
     const rail = page.getByTestId("roadmap-scroll");
     await expect(rail).toBeVisible();
 
-    await rail.evaluate((element) => {
-      element.scrollLeft = 320;
+    const targetScrollLeft = await rail.evaluate((element) => {
+      const maxScrollLeft = Math.max(0, element.scrollWidth - element.clientWidth);
+      const target = Math.min(320, maxScrollLeft);
+      element.scrollLeft = target;
       element.dispatchEvent(new Event("scroll", { bubbles: false }));
+      return element.scrollLeft;
     });
-    await expect.poll(() => rail.evaluate((element) => element.scrollLeft)).toBe(320);
+    expect(targetScrollLeft).toBeGreaterThan(0);
+    await expect.poll(() => rail.evaluate((element) => element.scrollLeft)).toBe(targetScrollLeft);
 
     await page.getByTestId("nav-formations").click();
     await expect(page).toHaveURL(/\/formations$/);
 
     await page.goBack();
     await expect(page).toHaveURL(/\/roadmap$/);
-    await expect.poll(() => page.getByTestId("roadmap-scroll").evaluate((element) => element.scrollLeft)).toBe(320);
+    await expect.poll(() => page.getByTestId("roadmap-scroll").evaluate((element) => element.scrollLeft)).toBe(targetScrollLeft);
   });
 
   test("a fresh deep link to a route never previously scrolled starts at the top", async ({
