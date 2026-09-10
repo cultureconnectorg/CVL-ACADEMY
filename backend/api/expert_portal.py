@@ -17,6 +17,7 @@ from services import (
     legal_policy,
     legal_workspace,
     privacy_advanced,
+    security_verification,
 )
 
 router = APIRouter(prefix="/expert", tags=["governance-expert"])
@@ -71,10 +72,7 @@ async def expert_case(case_id: str, raw_key: str = Depends(_credential)):
 
 
 @router.get("/legal/cases/{case_id}/workspace")
-async def expert_legal_workspace(
-    case_id: str,
-    raw_key: str = Depends(_credential),
-):
+async def expert_legal_workspace(case_id: str, raw_key: str = Depends(_credential)):
     try:
         return await legal_workspace.get_workspace(raw_key=raw_key, case_id=case_id)
     except LookupError as exc:
@@ -84,12 +82,19 @@ async def expert_legal_workspace(
 
 
 @router.get("/privacy/cases/{case_id}/workspace")
-async def expert_privacy_workspace(
-    case_id: str,
-    raw_key: str = Depends(_credential),
-):
+async def expert_privacy_workspace(case_id: str, raw_key: str = Depends(_credential)):
     try:
-        return await privacy_advanced.get_privacy_workspace(
+        return await privacy_advanced.get_privacy_workspace(raw_key=raw_key, case_id=case_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@router.get("/security/cases/{case_id}/pentest-workspace")
+async def expert_pentest_workspace(case_id: str, raw_key: str = Depends(_credential)):
+    try:
+        return await security_verification.get_pentest_workspace(
             raw_key=raw_key, case_id=case_id
         )
     except LookupError as exc:
@@ -105,7 +110,6 @@ async def expert_modify_legal_matter(
     payload: LegalMatterExpertPatch,
     raw_key: str = Depends(_credential),
 ):
-    """FD-L01: direct legal-expert edit under scope, policy, evidence and audit."""
     try:
         return await legal_expert_ops.modify_legal_matter(
             raw_key=raw_key,
