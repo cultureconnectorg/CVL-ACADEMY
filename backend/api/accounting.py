@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from auth import require_role
 from models import User
-from services import accounting_core
+from services import accounting_core, accounting_mappings
 
 router = APIRouter(prefix="/accounting", tags=["accounting"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -51,8 +51,11 @@ class MappingCreate(BaseModel):
     event_type: str
     debit_account: str
     credit_account: str
+    version: str = Field(min_length=1, max_length=80)
+    effective_at: str = Field(min_length=10, max_length=64)
     tax_code: Optional[str] = None
-    evidence_refs: List[str] = Field(default_factory=list)
+    evidence_refs: List[str] = Field(min_length=1)
+    supersedes_version_id: Optional[str] = None
 
 
 def _raise(exc: Exception):
@@ -116,15 +119,31 @@ async def create_period(payload: PeriodCreate, current: User = Admin):
 async def close_period(period_id: str, current: User = Admin):
     try:
         return await accounting_core.close_period(actor_id=current.id, period_id=period_id)
-    except LookupError as exc:
+    except (LookupError, ValueError) as exc:
         _raise(exc)
 
 
 @router.post("/mappings")
 async def register_mapping(payload: MappingCreate, current: User = Admin):
-    return await accounting_core.register_account_mapping(
-        actor_id=current.id, **payload.model_dump()
-    )
+    try:
+        return await accounting_mappings.register_mapping_version(
+            actor_id=current.id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
+        _raise(exc)
+
+
+@router.get("/mappings/{event_type}")
+async def get_mapping(event_type: str, current: User = Admin):
+    try:
+        return await accounting_mappings.get_mapping(event_type)
+    except (LookupError, ValueError) as exc:
+        _raise(exc)
+
+
+@router.get("/mappings/{event_type}/history")
+async def mapping_history(event_type: str, current: User = Admin):
+    return await accounting_mappings.list_mapping_history(event_type)
 
 
 @router.get("/tax-preparation")
