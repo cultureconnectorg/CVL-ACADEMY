@@ -2,11 +2,12 @@ const { test, expect } = require("@playwright/test");
 const { mockAuthenticatedSession } = require("./fixtures/auth-fixture");
 
 // ACA-0023 — exact client-side return context. A real browser POP must
-// restore both the scroll axis and the last stable focused Academy
-// control for that history entry. A fresh PUSH/deep-link remains fresh.
+// restore document scroll, named spatial rail position and the last
+// stable focused Academy control for that history entry. A fresh
+// PUSH/deep-link remains fresh.
 test.use({ viewport: { width: 1280, height: 400 } });
 
-test.describe("scroll and focus restoration (ACA-0023)", () => {
+test.describe("scroll, rail and focus restoration (ACA-0023)", () => {
   test("browser back restores the exact scroll position; forward navigation starts at the top", async ({
     page,
   }) => {
@@ -49,6 +50,26 @@ test.describe("scroll and focus restoration (ACA-0023)", () => {
     await page.goBack();
     await expect(page).toHaveURL(/\/formations$/);
     await expect(page.getByTestId("formation-FMS-01")).toBeFocused();
+  });
+
+  test("browser back restores the roadmap spatial rail position", async ({ page }) => {
+    await mockAuthenticatedSession(page, { user: { stade: "pousse" } });
+    await page.goto("/roadmap");
+    const rail = page.getByTestId("roadmap-scroll");
+    await expect(rail).toBeVisible();
+
+    await rail.evaluate((element) => {
+      element.scrollLeft = 320;
+      element.dispatchEvent(new Event("scroll", { bubbles: false }));
+    });
+    await expect.poll(() => rail.evaluate((element) => element.scrollLeft)).toBe(320);
+
+    await page.getByTestId("nav-formations").click();
+    await expect(page).toHaveURL(/\/formations$/);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/roadmap$/);
+    await expect.poll(() => page.getByTestId("roadmap-scroll").evaluate((element) => element.scrollLeft)).toBe(320);
   });
 
   test("a fresh deep link to a route never previously scrolled starts at the top", async ({
