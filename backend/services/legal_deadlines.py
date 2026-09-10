@@ -15,7 +15,15 @@ from db import db, utc_now_iso
 from services.notifications import notifications
 from services import professional_governance as governance
 
-DEADLINE_TYPES = {"RENEWAL", "TERMINATION_NOTICE", "NOTICE", "EXPIRATION", "FILING", "REVIEW", "OTHER"}
+DEADLINE_TYPES = {
+    "RENEWAL",
+    "TERMINATION_NOTICE",
+    "NOTICE",
+    "EXPIRATION",
+    "FILING",
+    "REVIEW",
+    "OTHER",
+}
 DEADLINE_STATES = {"ACTIVE", "COMPLETED", "CANCELLED"}
 
 
@@ -50,8 +58,14 @@ async def create_deadline(
     if kind not in DEADLINE_TYPES:
         raise ValueError("invalid legal deadline type")
     due = _instant(due_at)
-    refs = list(dict.fromkeys(str(ref).strip() for ref in evidence_refs if str(ref).strip()))
-    thresholds = sorted({int(value) for value in reminder_days if int(value) >= 0}, reverse=True)
+    refs = list(
+        dict.fromkeys(
+            str(ref).strip() for ref in evidence_refs if str(ref).strip()
+        )
+    )
+    thresholds = sorted(
+        {int(value) for value in reminder_days if int(value) >= 0}, reverse=True
+    )
     if not refs:
         raise ValueError("legal deadline requires evidence")
     if not thresholds:
@@ -102,7 +116,9 @@ async def dispatch_due_reminders(
     *, actor_id: str, now: Optional[datetime] = None
 ) -> Dict[str, Any]:
     moment = (now or datetime.now(timezone.utc)).astimezone(timezone.utc)
-    rows = await db.legal_deadlines.find({"status": "ACTIVE"}, {"_id": 0}).to_list(5000)
+    rows = await db.legal_deadlines.find(
+        {"status": "ACTIVE"}, {"_id": 0}
+    ).to_list(5000)
     dispatched: list[Dict[str, Any]] = []
     overdue: list[str] = []
     for row in rows:
@@ -162,7 +178,11 @@ async def close_deadline(
     target = str(status or "").upper()
     if target not in {"COMPLETED", "CANCELLED"}:
         raise ValueError("deadline can only close as COMPLETED or CANCELLED")
-    refs = list(dict.fromkeys(str(ref).strip() for ref in evidence_refs if str(ref).strip()))
+    refs = list(
+        dict.fromkeys(
+            str(ref).strip() for ref in evidence_refs if str(ref).strip()
+        )
+    )
     if not refs:
         raise ValueError("deadline closure requires evidence")
     row = await db.legal_deadlines.find_one({"id": deadline_id}, {"_id": 0})
@@ -171,10 +191,16 @@ async def close_deadline(
     if row["status"] != "ACTIVE":
         raise ValueError("legal deadline is not active")
     now = utc_now_iso()
+    update = {
+        "status": target,
+        "closed_at": now,
+        "closed_by": actor_id,
+        "closure_evidence_refs": refs,
+        "updated_at": now,
+    }
     result = await db.legal_deadlines.update_one(
-        {"id": deadline_id, "status": "ACTIVE"},
-        {"$set": {"status": target, "closed_at": now, "closed_by": actor_id, "closure_evidence_refs": refs, "updated_at": now}},
+        {"id": deadline_id, "status": "ACTIVE"}, {"$set": update}
     )
     if result.modified_count != 1:
         raise ValueError("deadline closure lost race")
-    return {**row, "status": target, "closed_at": now, "closure_evidence_refs": refs}
+    return {**row, **update}
