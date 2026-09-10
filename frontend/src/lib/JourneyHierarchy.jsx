@@ -1,33 +1,7 @@
 /**
- * ModuleJourney spatial shell (W3-A) — visual depth hierarchy between the
- * 7 phases of a single module (hook -> objectives -> course -> workshop
- * -> deliverable -> quiz -> mini_mission), built entirely on top of
- * data ModuleJourney.js already computes (`phase_flags`, `openPhase`,
- * the existing `canOpen` derivation) — this file adds no new business
- * rule and reads no new field.
- *
- * Doctrine:
- *   CURRENT  -> FOREGROUND            (the open phase)
- *   ACQUIRED -> BEHIND_BUT_ACCESSIBLE (done, not open — still fully clickable)
- *   NEXT     -> HORIZON               (the one reachable, not-yet-entered
- *                                       phase — genuinely unlocked, so this
- *                                       is a legitimate HORIZON use per its
- *                                       own contract: "expose the next
- *                                       possibility", never a false unlock)
- *   LOCKED   -> DISTANT_SUBDUED       (not yet reachable)
- *
- * Forbidden by the W3-A authorization, and how this file avoids each:
- * - MODULE_CONTENT_CHANGE / MODULE_CODE_CHANGE: this file renders no
- *   content and reads no module/code field at all — it only classifies
- *   phase *position* (open/done/reachable), a purely presentational
- *   concern already implicit in ModuleJourney.js's own `canOpen` logic.
- * - PROGRESS_CHANGE: `deriveJourneyRole` never writes anything — it's a
- *   pure function of already-fetched state, called on every render, with
- *   zero side effects.
- * - UNLOCK_RULE_CHANGE: `canOpen` itself is computed by ModuleJourney.js
- *   exactly as before (`done || prevDone`) and passed in unchanged; this
- *   file only decides how a role *looks*, never whether a phase can open
- *   — the `disabled={!canOpen}` gate on the toggle button is untouched.
+ * ModuleJourney spatial shell — visual depth hierarchy between the
+ * seven phases of a module. Domain state remains authoritative in
+ * ModuleJourney.js; this file is presentation-only.
  */
 
 import { motion } from "framer-motion";
@@ -44,15 +18,6 @@ export const JOURNEY_ROLES = Object.freeze({
   LOCKED: "locked",
 });
 
-/**
- * Pure role derivation — no React, no motion — unit tested directly in
- * JourneyHierarchy.test.js, the same pattern spatial-state.js and
- * CvlnFocusField.jsx's deriveFocusRole already established.
- *
- * @param isOpen  this phase is the one currently expanded (CURRENT candidate)
- * @param done    this phase's `phase_flags[key]` is true (ACQUIRED candidate)
- * @param canOpen ModuleJourney.js's own existing gate — unchanged, just read
- */
 export function deriveJourneyRole({ isOpen, done, canOpen }) {
   if (isOpen) return JOURNEY_ROLES.CURRENT;
   if (done) return JOURNEY_ROLES.ACQUIRED;
@@ -60,12 +25,6 @@ export function deriveJourneyRole({ isOpen, done, canOpen }) {
   return JOURNEY_ROLES.LOCKED;
 }
 
-// One variant per role — depth expressed only through scale/opacity/
-// saturation, the same visual vocabulary motion-primitives.jsx and
-// CvlnFocusField.jsx already use. CURRENT is the only role with any
-// scale lift (FOREGROUND); ACQUIRED/NEXT/LOCKED form a deliberate
-// opacity staircase (0.88 -> 0.7 -> 0.45) so "how far" a phase is reads
-// at a glance without a single new color or icon.
 export const JOURNEY_VARIANTS = Object.freeze({
   current: { scale: 1.01, opacity: 1, filter: "saturate(1)" },
   acquired: { scale: 1, opacity: 0.88, filter: "saturate(0.9)" },
@@ -73,11 +32,6 @@ export const JOURNEY_VARIANTS = Object.freeze({
   locked: { scale: 1, opacity: 0.45, filter: "saturate(0.55)" },
 });
 
-// Each role reads its transition pacing from the same central tokens the
-// atomic primitives use (motion-tokens.js) — CURRENT settles at APPROACH
-// speed, NEXT explicitly reuses the HORIZON duration (this *is* a HORIZON
-// use), ACQUIRED/LOCKED both settle at RECEDE speed (both are a form of
-// stepping back, just to different degrees).
 const DURATION_KEY_BY_ROLE = Object.freeze({
   current: "approach",
   acquired: "recede",
@@ -85,35 +39,15 @@ const DURATION_KEY_BY_ROLE = Object.freeze({
   locked: "recede",
 });
 
-/**
- * Wraps one phase card. `isOpen`/`done`/`canOpen` are exactly the values
- * ModuleJourney.js already computes per phase in its `.map()` — nothing
- * new is derived from module content or progress here.
- *
- * RAIL 5 (2026-09-07): `idx`/`currentIdx` (also already computed by
- * ModuleJourney.js's own `.map()` — the phase's position and the open
- * phase's position) let this component, when `SPATIAL_MODULE_DEPTH` is
- * on, render through the same real physics/attention engine as
- * Dashboard/Roadmap (`useDepthPhysics`/`spatial/attention.js`, both
- * unmodified) instead of the static 4-bucket `JOURNEY_VARIANTS` table
- * above — real distance, real spring, not a renamed lookup. `role` (and
- * `deriveJourneyRole`) stay exactly as before either way: they're still
- * what decides *which* distance a phase gets (LOCKED phases read
- * farther than their raw index gap, matching the doctrine's "real,
- * disclosed reason to be farther" — never arbitrary), and still drive
- * `data-journey-role` for existing tests/selectors. Unlike `SpatialHub`,
- * `aria-hidden` is deliberately never applied here: a module's phase
- * list is a real sequential structure a learner needs to know the
- * shape of, not a rail where "more exists off to the side" is implicit
- * — every phase stays screen-reader-visible regardless of depth.
- */
 export function JourneyPhaseShell({ isOpen, done, canOpen, idx, currentIdx, children, className }) {
   const reduced = useReducedMotion();
   const role = deriveJourneyRole({ isOpen, done, canOpen });
+  const spatialClass = FEATURE_FLAGS.SPATIAL_MODULE_DEPTH ? "spatial-phase-shell" : "";
+  const classes = [className, spatialClass].filter(Boolean).join(" ");
 
   if (FEATURE_FLAGS.SPATIAL_MODULE_DEPTH && typeof idx === "number" && typeof currentIdx === "number") {
     return (
-      <PhysicsPhaseShell role={role} idx={idx} currentIdx={currentIdx} reduced={reduced} className={className}>
+      <PhysicsPhaseShell role={role} idx={idx} currentIdx={currentIdx} reduced={reduced} className={classes}>
         {children}
       </PhysicsPhaseShell>
     );
@@ -122,7 +56,7 @@ export function JourneyPhaseShell({ isOpen, done, canOpen, idx, currentIdx, chil
   const duration = motionDuration(DURATION_KEY_BY_ROLE[role], reduced) / 1000;
   return (
     <motion.div
-      className={className}
+      className={classes}
       animate={JOURNEY_VARIANTS[role]}
       transition={{ duration, ease: MOTION_EASING.standard }}
       data-journey-role={role}
@@ -134,8 +68,6 @@ export function JourneyPhaseShell({ isOpen, done, canOpen, idx, currentIdx, chil
 
 function PhysicsPhaseShell({ role, idx, currentIdx, reduced, children, className }) {
   const rawDistance = idx - currentIdx;
-  // LOCKED always reads farther than its raw index gap alone would say —
-  // a real, disclosed reason (not yet reachable), never an arbitrary bump.
   const targetDistance = role === JOURNEY_ROLES.LOCKED ? Math.max(rawDistance, 2) : rawDistance;
   const distance = useDepthPhysics(targetDistance, { reduced });
   const depth = computeDepthStyle(distance, { mobile: false });
@@ -147,7 +79,13 @@ function PhysicsPhaseShell({ role, idx, currentIdx, reduced, children, className
         transform: `translateY(${depth.translateY * 0.3}px) translateZ(${depth.translateZ}px) scale(${depth.scale})`,
       };
   return (
-    <div className={className} style={style} data-journey-role={role} data-tier={depth.tier}>
+    <div
+      className={className}
+      style={style}
+      data-journey-role={role}
+      data-tier={depth.tier}
+      data-phase-depth={Math.round(distance * 100) / 100}
+    >
       {children}
     </div>
   );
