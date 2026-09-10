@@ -42,9 +42,25 @@ class RevenueSplitCreate(BaseModel):
 
 
 class PeriodCreate(BaseModel):
-    code: str
+    code: str = Field(min_length=1, max_length=80)
     starts_at: str
     ends_at: str
+
+
+class PeriodClose(BaseModel):
+    review_note: str = Field(min_length=3, max_length=4000)
+    evidence_refs: List[str] = Field(min_length=1)
+
+
+class PeriodAnomalyCreate(BaseModel):
+    code: str = Field(min_length=2, max_length=120)
+    description: str = Field(min_length=3, max_length=4000)
+    evidence_refs: List[str] = Field(min_length=1)
+
+
+class PeriodAnomalyResolve(BaseModel):
+    resolution: str = Field(min_length=3, max_length=4000)
+    evidence_refs: List[str] = Field(min_length=1)
 
 
 class MappingCreate(BaseModel):
@@ -115,10 +131,44 @@ async def create_period(payload: PeriodCreate, current: User = Admin):
         _raise(exc)
 
 
-@router.post("/periods/{period_id}/close")
-async def close_period(period_id: str, current: User = Admin):
+@router.get("/periods/{period_id}/close-gate")
+async def get_period_close_gate(period_id: str, current: User = Admin):
     try:
-        return await accounting_core.close_period(actor_id=current.id, period_id=period_id)
+        return await accounting_core.period_close_gate(period_id)
+    except LookupError as exc:
+        _raise(exc)
+
+
+@router.post("/periods/{period_id}/anomalies")
+async def create_period_anomaly(
+    period_id: str, payload: PeriodAnomalyCreate, current: User = Admin
+):
+    try:
+        return await accounting_core.create_period_anomaly(
+            actor_id=current.id, period_id=period_id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
+        _raise(exc)
+
+
+@router.patch("/period-anomalies/{anomaly_id}/resolve")
+async def resolve_period_anomaly(
+    anomaly_id: str, payload: PeriodAnomalyResolve, current: User = Admin
+):
+    try:
+        return await accounting_core.resolve_period_anomaly(
+            actor_id=current.id, anomaly_id=anomaly_id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
+        _raise(exc)
+
+
+@router.post("/periods/{period_id}/close")
+async def close_period(period_id: str, payload: PeriodClose, current: User = Admin):
+    try:
+        return await accounting_core.close_period(
+            actor_id=current.id, period_id=period_id, **payload.model_dump()
+        )
     except (LookupError, ValueError) as exc:
         _raise(exc)
 
