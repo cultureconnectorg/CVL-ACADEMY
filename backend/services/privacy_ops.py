@@ -26,6 +26,13 @@ DELETION_STATES = {
     "REJECTED",
 }
 PROCESSOR_STATES = {"PROPOSED", "APPROVED", "SUSPENDED", "RETIRED"}
+DPA_STATES = {
+    "NOT_ASSESSED",
+    "REVIEW_REQUIRED",
+    "REQUIRED_MISSING",
+    "EVIDENCED",
+    "NOT_REQUIRED",
+}
 
 
 def _id(prefix: str) -> str:
@@ -99,10 +106,11 @@ async def register_processor(
     legal_entity: Optional[str] = None,
     transfer_mechanism: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """PRI-011: register provider and declare it into XCP-002 as UNCLASSIFIED.
+    """PRI-011/PRI-27: register a provider and its initial DPA evidence state.
 
-    Approval is intentionally separate. A provider cannot become APPROVED until it
-    has DPA evidence and its provider resource is explicitly classified.
+    DPA presence is contextual and is never, by itself, a universal activation rule.
+    Provider classification remains mandatory before APPROVED. A later explicit DPA
+    review can mark REQUIRED_MISSING and block approval for that specific context.
     """
     processor_id = _id("PROC")
     class_codes = sorted({x.upper() for x in data_classes if str(x).strip()})
@@ -116,7 +124,11 @@ async def register_processor(
         "data_classes": class_codes,
         "regions": region_list,
         "dpa_evidence_ref": dpa_evidence_ref,
-        "dpa_state": "EVIDENCED" if dpa_evidence_ref else "MISSING",
+        "dpa_state": "EVIDENCED" if dpa_evidence_ref else "NOT_ASSESSED",
+        "dpa_rationale": None,
+        "dpa_review_evidence_refs": [dpa_evidence_ref] if dpa_evidence_ref else [],
+        "dpa_reviewed_by": actor_id if dpa_evidence_ref else None,
+        "dpa_reviewed_at": utc_now_iso() if dpa_evidence_ref else None,
         "subprocessor_url": subprocessor_url,
         "transfer_mechanism": transfer_mechanism,
         "classification_resource_id": None,
@@ -166,6 +178,56 @@ async def register_processor(
     return {**row, "classification_resource_id": classification_resource["id"]}
 
 
+async def record_processor_dpa_status(
+    *,
+    actor_id: str,
+    processor_id: str,
+    dpa_state: str,
+    rationale: str,
+    evidence_refs: Iterable[str],
+    dpa_evidence_ref: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Record the contextual DPA review without inventing a universal DPA mandate."""
+    row = await db.privacy_processors.find_one({"id": processor_id}, {"_id": 0})
+    if not row:
+        raise LookupError("processor not found")
+    target = str(dpa_state or "").strip().upper()
+    if target not in DPA_STATES - {"NOT_ASSESSED"}:
+        raise ValueError("invalid DPA review state")
+    refs = _refs(evidence_refs)
+    if not rationale.strip() or not refs:
+        raise ValueError("DPA review requires rationale and evidence")
+    effective_dpa_ref = str(dpa_evidence_ref or row.get("dpa_evidence_ref") or "").strip() or None
+    if target == "EVIDENCED" and not effective_dpa_ref:
+        raise ValueError("EVIDENCED DPA state requires DPA evidence reference")
+    if effective_dpa_ref and effective_dpa_ref not in refs:
+        refs.append(effective_dpa_ref)
+
+    now = utc_now_iso()
+    update = {
+        "dpa_state": target,
+        "dpa_evidence_ref": effective_dpa_ref,
+        "dpa_rationale": rationale.strip(),
+        "dpa_review_evidence_refs": refs,
+        "dpa_reviewed_by": actor_id,
+        "dpa_reviewed_at": now,
+        "updated_at": now,
+    }
+    await db.privacy_processors.update_one({"id": processor_id}, {"$set": update})
+    await governance.audit_event(
+        event_type="privacy.processor.dpa_reviewed",
+        actor_id=actor_id,
+        resource_type="privacy_processor",
+        resource_id=processor_id,
+        before={"dpa_state": row.get("dpa_state"), "dpa_evidence_ref": row.get("dpa_evidence_ref")},
+        after={"dpa_state": target, "dpa_evidence_ref": effective_dpa_ref},
+        reason=rationale.strip(),
+        result=target,
+        payload={"evidence_refs": refs},
+    )
+    return {**row, **update}
+
+
 async def transition_processor(
     *, actor_id: str, processor_id: str, status: str
 ) -> Dict[str, Any]:
@@ -187,9 +249,8 @@ async def transition_processor(
     if target not in allowed.get(row["status"], set()):
         raise ValueError(f"invalid processor transition {row['status']}->{target}")
 
+    approval_warnings: list[str] = []
     if target == "APPROVED":
-        if not row.get("dpa_evidence_ref"):
-            raise ValueError("processor cannot be approved without DPA evidence")
         resource_id = row.get("classification_resource_id")
         resource = await db.classification_resources.find_one(
             {"id": resource_id}, {"_id": 0}
@@ -203,10 +264,22 @@ async def transition_processor(
         if not classification:
             raise ValueError("processor current provider classification is missing")
 
+        dpa_state = row.get("dpa_state", "NOT_ASSESSED")
+        if dpa_state == "REQUIRED_MISSING":
+            raise ValueError("processor DPA review explicitly requires missing DPA evidence")
+        if dpa_state in {"NOT_ASSESSED", "REVIEW_REQUIRED"}:
+            approval_warnings.append(f"DPA_{dpa_state}")
+
     now = utc_now_iso()
+    update = {
+        "status": target,
+        "updated_at": now,
+        "last_actor_id": actor_id,
+        "approval_warnings": approval_warnings if target == "APPROVED" else row.get("approval_warnings", []),
+    }
     result = await db.privacy_processors.update_one(
         {"id": processor_id, "status": row["status"]},
-        {"$set": {"status": target, "updated_at": now, "last_actor_id": actor_id}},
+        {"$set": update},
     )
     if result.modified_count != 1:
         raise ValueError("processor transition lost race")
@@ -215,9 +288,14 @@ async def transition_processor(
         actor_id=actor_id,
         resource_type="privacy_processor",
         resource_id=processor_id,
-        payload={"from": row["status"], "to": target},
+        payload={
+            "from": row["status"],
+            "to": target,
+            "dpa_state": row.get("dpa_state", "NOT_ASSESSED"),
+            "approval_warnings": update["approval_warnings"],
+        },
     )
-    return {**row, "status": target, "updated_at": now}
+    return {**row, **update}
 
 
 async def create_deletion_request(
