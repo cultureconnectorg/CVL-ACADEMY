@@ -78,6 +78,16 @@ async def test_processor_requires_dpa_and_explicit_provider_classification(priva
         effective_at="2026-09-10T00:00:00+00:00",
         evidence_refs=["XCP-002"],
     )
+    access_policy = await policy_registry.register_version(
+        actor_id="founder",
+        policy_key="DATA_ACCESS",
+        version="1.0.0",
+        kind="POLICY",
+        title="Data access",
+        content={"explicit": True},
+        effective_at="2026-09-10T00:00:00+00:00",
+        evidence_refs=["PRI-001"],
+    )
     evidenced = await privacy_ops.register_processor(
         actor_id="dpo-1",
         name="Vendor 2",
@@ -97,6 +107,12 @@ async def test_processor_requires_dpa_and_explicit_provider_classification(priva
         resource_record_id=evidenced["classification_resource_id"],
         data_class_code="LEARNING",
         policy_version_id=class_policy["id"],
+        access_policy_version_id=access_policy["id"],
+        purpose="Provide contracted learning evidence storage",
+        legal_basis="CONTRACT",
+        retention_days=365,
+        processor_refs=[evidenced["id"]],
+        locations=["EU"],
         rationale="Processor receives learning evidence",
         evidence_refs=["VENDOR-ASSESSMENT-1"],
     )
