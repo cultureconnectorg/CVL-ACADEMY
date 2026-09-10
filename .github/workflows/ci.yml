@@ -51,6 +51,15 @@ jobs:
       - name: Scan tracked files for live-secret signatures
         run: python backend/scripts/check_secrets.py
 
+      - name: Install security audit tools
+        run: python -m pip install --disable-pip-version-check bandit pip-audit
+
+      - name: SAST — Bandit medium/high findings fail the gate
+        run: bandit -q -r backend -x backend/tests -ll
+
+      - name: Python dependency vulnerability audit
+        run: pip-audit -r backend/requirements.txt
+
   frontend:
     name: frontend
     runs-on: ubuntu-latest
