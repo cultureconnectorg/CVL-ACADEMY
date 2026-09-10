@@ -132,3 +132,68 @@ async def auto_insurance_review_for_critical_risk(
         reason="Risk level requires insurance/transfer review",
         coverage_types=[risk.get("domain", "GENERAL")],
     )
+
+
+async def cascade_privacy_incident(
+    *,
+    actor_id: str,
+    incident_id: str,
+    impact: int,
+    probability: int,
+    owner: Optional[str] = None,
+    mitigation: Optional[str] = None,
+    deadline: Optional[str] = None,
+    jurisdiction: Optional[str] = None,
+    evidence_refs: Iterable[str] = (),
+) -> Dict[str, Any]:
+    """Project one real privacy incident into Legal + Risk + Insurance review.
+
+    Severity is intentionally *not* converted into impact/probability here: the
+    Academy target does not define that mapping, so callers must provide the
+    scored inputs explicitly instead of this service inventing policy.
+    """
+    incident = await db.privacy_incidents.find_one({"id": incident_id}, {"_id": 0})
+    if not incident:
+        raise LookupError("privacy incident not found")
+
+    legal = await db.legal_documents.find_one(
+        {"case_id": incident_id, "document_type": "PRIVACY_INCIDENT_CASE"}, {"_id": 0}
+    )
+    if not legal:
+        legal = await assurance_core.create_legal_document(
+            actor_id=actor_id,
+            title=f"Privacy incident case — {incident.get('title', incident_id)}",
+            document_type="PRIVACY_INCIDENT_CASE",
+            case_id=incident_id,
+            jurisdiction=jurisdiction,
+            metadata={
+                "source_type": "PRIVACY_INCIDENT",
+                "source_id": incident_id,
+                "severity": incident.get("severity"),
+                "data_classes": incident.get("data_classes", []),
+            },
+        )
+
+    risk = await cascade_incident_to_risk(
+        actor_id=actor_id,
+        incident_type="PRIVACY_INCIDENT",
+        incident_id=incident_id,
+        title=f"Privacy incident risk — {incident.get('title', incident_id)}",
+        domain="PRIVACY",
+        impact=impact,
+        probability=probability,
+        owner=owner,
+        mitigation=mitigation,
+        deadline=deadline,
+        evidence_refs=[legal["id"], *list(evidence_refs)],
+    )
+
+    insurance_review = await auto_insurance_review_for_critical_risk(
+        actor_id=actor_id, risk_id=risk["id"]
+    )
+    return {
+        "incident": incident,
+        "legal_case": legal,
+        "risk": risk,
+        "insurance_review": insurance_review,
+    }
