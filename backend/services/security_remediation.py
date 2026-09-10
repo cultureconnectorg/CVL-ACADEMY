@@ -1,4 +1,4 @@
-"""Security remediation protocol (SEC-011/SEC-012).
+"""Security remediation protocol (SEC-011/SEC-012/SEC-30..32).
 
 Academy owns authorization, evidence and verification state. Real execution dispatch is
 sent to CVLN Agent Factory; Command Center receives the operational mirror. Neither
@@ -14,6 +14,7 @@ import uuid
 from typing import Any, Dict, Iterable, Optional
 
 from db import db, utc_now_iso
+from services import authority_policy
 from services import professional_governance as governance
 from services import remediation_dispatch
 
@@ -39,6 +40,10 @@ TRANSITIONS = {
     "VERIFIED": set(),
     "ROLLED_BACK": set(),
     "CANCELLED": set(),
+}
+AUTHORIZATION_ACTIONS = {
+    "SECURITY_REMEDIATION_AUTHORIZE",
+    "SECURITY_AUTONOMOUS_FIX",
 }
 
 
@@ -109,25 +114,46 @@ async def create_remediation(
     return row
 
 
+async def _require_allow_authority(remediation: Dict[str, Any], decision_id: str) -> Dict[str, Any]:
+    if not decision_id.strip():
+        raise ValueError("authority decision reference is required")
+    decision = await authority_policy.get_decision(decision_id.strip())
+    if decision.get("decision") != "ALLOW":
+        raise PermissionError("security remediation requires an ALLOW authority decision")
+    if str(decision.get("action", "")).upper() not in AUTHORIZATION_ACTIONS:
+        raise ValueError("authority decision action does not authorize security remediation")
+    context = decision.get("context") or {}
+    if str(context.get("domain", "")).upper() != "SECURITY":
+        raise ValueError("authority decision must be scoped to SECURITY domain")
+    bound_id = context.get("remediation_id")
+    if bound_id != remediation["id"]:
+        raise ValueError("authority decision is not bound to this remediation")
+    target = context.get("target_system")
+    if target and str(target).upper() != remediation["target_system"]:
+        raise ValueError("authority decision target_system does not match remediation")
+    return decision
+
+
 async def authorize_remediation(
     *, actor_id: str, remediation_id: str, authority_decision_ref: str
 ) -> Dict[str, Any]:
     row = await db.security_remediations.find_one({"id": remediation_id}, {"_id": 0})
     if not row:
         raise LookupError("security remediation not found")
-    if row["status"] != "REQUESTED":
-        raise ValueError("only REQUESTED remediation can be authorized")
-    if not authority_decision_ref.strip():
-        raise ValueError("authority decision reference is required")
+    if row["status"] not in {"REQUESTED", "FAILED"}:
+        raise ValueError("only REQUESTED or FAILED remediation can be authorized")
+    decision = await _require_allow_authority(row, authority_decision_ref)
     now = utc_now_iso()
     update = {
         "status": "AUTHORIZED",
-        "authority_decision_ref": authority_decision_ref,
+        "authority_decision_ref": decision["id"],
+        "authority_decision_hash": decision.get("decision_hash"),
+        "authority_policy_version_id": decision.get("policy_version_id"),
         "authorized_by": actor_id,
         "updated_at": now,
     }
     result = await db.security_remediations.update_one(
-        {"id": remediation_id, "status": "REQUESTED"}, {"$set": update}
+        {"id": remediation_id, "status": row["status"]}, {"$set": update}
     )
     if result.modified_count != 1:
         raise ValueError("remediation authorization changed concurrently")
@@ -136,7 +162,12 @@ async def authorize_remediation(
         actor_id=actor_id,
         resource_type="security_remediation",
         resource_id=remediation_id,
-        payload={"authority_decision_ref": authority_decision_ref},
+        payload={
+            "authority_decision_ref": decision["id"],
+            "authority_decision_hash": decision.get("decision_hash"),
+            "authority_policy_version_id": decision.get("policy_version_id"),
+        },
+        result="AUTHORIZED",
     )
     return {**row, **update}
 
@@ -155,8 +186,7 @@ async def dispatch_authorized_remediation(
         raise LookupError("security remediation not found")
     if row["status"] != "AUTHORIZED":
         raise ValueError("automatic dispatch requires AUTHORIZED remediation")
-    if not row.get("authority_decision_ref"):
-        raise ValueError("automatic dispatch requires explicit authority decision")
+    await _require_allow_authority(row, str(row.get("authority_decision_ref") or ""))
 
     prior = row.get("external_dispatch") or {}
     if prior.get("execution_dispatch_confirmed"):
@@ -204,6 +234,7 @@ async def record_external_dispatch(
         raise LookupError("security remediation not found")
     if row["status"] not in {"AUTHORIZED", "EXECUTING", "TESTING"}:
         raise ValueError("external dispatch requires an authorized remediation")
+    await _require_allow_authority(row, str(row.get("authority_decision_ref") or ""))
     normalized_target = target.strip().upper()
     if normalized_target != row["target_system"]:
         raise ValueError("dispatch target does not match remediation target_system")
@@ -250,8 +281,7 @@ async def transition_remediation(
     refs = list(dict.fromkeys(evidence_refs))
 
     if target == "EXECUTING":
-        if not row.get("authority_decision_ref"):
-            raise ValueError("execution requires explicit authority decision")
+        await _require_allow_authority(row, str(row.get("authority_decision_ref") or ""))
         if not (row.get("external_dispatch") or {}).get("execution_dispatch_confirmed"):
             raise ValueError("execution requires confirmed Agent Factory/external dispatch")
     if target == "TESTING" and not refs:
