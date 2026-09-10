@@ -223,6 +223,7 @@ async def test_deletion_requires_a4_policy_then_verified_retention_jobs(privacy_
         legal_basis_required=True,
     )
     class_policy = await _policy("DATA_CLASSIFICATION")
+    access_policy = await _policy("DATA_ACCESS")
     retention_policy = await _policy("RETENTION")
     deletion_policy = await _authority_policy(
         "PRIVACY_DELETION", "PRIVACY_DELETION_APPROVE"
@@ -240,6 +241,12 @@ async def test_deletion_requires_a4_policy_then_verified_retention_jobs(privacy_
         resource_record_id=resource["id"],
         data_class_code="IDENTITY",
         policy_version_id=class_policy["id"],
+        access_policy_version_id=access_policy["id"],
+        purpose="Operate learner account until approved deletion",
+        legal_basis="CONTRACT",
+        retention_days=0,
+        processor_refs=[],
+        locations=["EU"],
         rationale="Identity profile",
         evidence_refs=["SCHEMA:users"],
     )
