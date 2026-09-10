@@ -95,7 +95,11 @@ export default function Roadmap() {
         {t("roadmap_p.hero_p")}
       </p>
 
-      <div className={`mt-12 flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory ${FEATURE_FLAGS.SPATIAL_HUB_ENABLED ? "spatial-rail-viewport spatial-stage-rail" : ""}`} data-testid="roadmap-scroll">
+      <div
+        className={`mt-12 flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory ${FEATURE_FLAGS.SPATIAL_HUB_ENABLED ? "spatial-rail-viewport spatial-stage-rail" : ""}`}
+        data-testid="roadmap-scroll"
+        data-scroll-memory="roadmap-stage-rail"
+      >
         {STAGES.map((s, i) => {
           const active = i === currentIdx;
           const done = i < currentIdx;
