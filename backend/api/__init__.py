@@ -44,6 +44,7 @@ from . import (
     quizzes,
     qualification,
     retention_executor,
+    security_remediation,
     skills,
     templates,
     threat_model,
@@ -94,6 +95,7 @@ for module in (
     privacy_ops,
     quality,
     threat_model,
+    security_remediation,
     professional_profile,
     ecosystem_builder,
 ):
