@@ -16,6 +16,7 @@ from services import (
     legal_expert_ops,
     legal_policy,
     legal_workspace,
+    privacy_advanced,
 )
 
 router = APIRouter(prefix="/expert", tags=["governance-expert"])
@@ -76,6 +77,21 @@ async def expert_legal_workspace(
 ):
     try:
         return await legal_workspace.get_workspace(raw_key=raw_key, case_id=case_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+
+
+@router.get("/privacy/cases/{case_id}/workspace")
+async def expert_privacy_workspace(
+    case_id: str,
+    raw_key: str = Depends(_credential),
+):
+    try:
+        return await privacy_advanced.get_privacy_workspace(
+            raw_key=raw_key, case_id=case_id
+        )
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except PermissionError as exc:
