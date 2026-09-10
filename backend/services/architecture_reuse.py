@@ -11,22 +11,102 @@ from typing import Any, Dict
 from db import db, utc_now_iso
 
 MANIFEST = [
-    {"theme": "Expert Identity & Assignment", "decision": "EXTEND", "canonical_owner": "Academy Auth/RBAC", "must_not_create": "Separate expert auth system"},
-    {"theme": "Event / Workflow Triggers", "decision": "EXTEND", "canonical_owner": "Academy Event Bus", "must_not_create": "Legal/Security/Quality event buses"},
-    {"theme": "Notifications", "decision": "EXTEND", "canonical_owner": "NotificationService", "must_not_create": "New notification core per domain"},
-    {"theme": "Provider / Ecosystem Registry", "decision": "EXTEND", "canonical_owner": "Integration Registry", "must_not_create": "Parallel vendor/provider registry"},
-    {"theme": "FREK Proof Adapter", "decision": "CONNECT/EXTEND", "canonical_owner": "Academy→FREK adapter", "must_not_create": "Domain-specific FREK clients"},
-    {"theme": "Commerce", "decision": "REUSE", "canonical_owner": "Commerce Core", "must_not_create": "Accounting commerce engine"},
-    {"theme": "Payments", "decision": "REUSE/EXTEND", "canonical_owner": "Payments Core", "must_not_create": "Accounting payment engine"},
-    {"theme": "Academy Internal Wallet", "decision": "REUSE", "canonical_owner": "Academy Wallet", "must_not_create": "Accounting wallet clone"},
-    {"theme": "Certification", "decision": "REUSE", "canonical_owner": "Certification Core", "must_not_create": "Quality certification database"},
-    {"theme": "Physical sessions / attendance", "decision": "REUSE", "canonical_owner": "Physical Delivery Core", "must_not_create": "Quality attendance clone"},
-    {"theme": "Learning / Progression Evidence", "decision": "COMPOSE", "canonical_owner": "Academy Learning Runtime", "must_not_create": "Quality evidence DB copying records"},
-    {"theme": "AI / Orchestration", "decision": "CONNECT", "canonical_owner": "Existing AI/Agent infrastructure", "must_not_create": "New Academy AI engine"},
-    {"theme": "Audit Trail", "decision": "EXTEND", "canonical_owner": "Professional Governance AuditEvent", "must_not_create": "Domain-specific audit stores"},
-    {"theme": "Signature", "decision": "BUILD ONCE", "canonical_owner": "Trust & Signature Service", "must_not_create": "Legal/Quality/Privacy signature engines"},
-    {"theme": "Documents / Versioning", "decision": "BUILD ONCE", "canonical_owner": "Professional Governance Document Registry", "must_not_create": "Legal/Privacy/Quality document stores"},
-    {"theme": "Incidents", "decision": "BUILD ONCE", "canonical_owner": "Professional Governance Incident Core", "must_not_create": "Separate incident source per domain"},
+    {
+        "theme": "Expert Identity & Assignment",
+        "decision": "EXTEND",
+        "canonical_owner": "Academy Auth/RBAC",
+        "must_not_create": "Separate expert auth system",
+    },
+    {
+        "theme": "Event / Workflow Triggers",
+        "decision": "EXTEND",
+        "canonical_owner": "Academy Event Bus",
+        "must_not_create": "Legal/Security/Quality event buses",
+    },
+    {
+        "theme": "Notifications",
+        "decision": "EXTEND",
+        "canonical_owner": "NotificationService",
+        "must_not_create": "New notification core per domain",
+    },
+    {
+        "theme": "Provider / Ecosystem Registry",
+        "decision": "EXTEND",
+        "canonical_owner": "Integration Registry",
+        "must_not_create": "Parallel vendor/provider registry",
+    },
+    {
+        "theme": "FREK Proof Adapter",
+        "decision": "CONNECT/EXTEND",
+        "canonical_owner": "Academy→FREK adapter",
+        "must_not_create": "Domain-specific FREK clients",
+    },
+    {
+        "theme": "Commerce",
+        "decision": "REUSE",
+        "canonical_owner": "Commerce Core",
+        "must_not_create": "Accounting commerce engine",
+    },
+    {
+        "theme": "Payments",
+        "decision": "REUSE/EXTEND",
+        "canonical_owner": "Payments Core",
+        "must_not_create": "Accounting payment engine",
+    },
+    {
+        "theme": "Academy Internal Wallet",
+        "decision": "REUSE",
+        "canonical_owner": "Academy Wallet",
+        "must_not_create": "Accounting wallet clone",
+    },
+    {
+        "theme": "Certification",
+        "decision": "REUSE",
+        "canonical_owner": "Certification Core",
+        "must_not_create": "Quality certification database",
+    },
+    {
+        "theme": "Physical sessions / attendance",
+        "decision": "REUSE",
+        "canonical_owner": "Physical Delivery Core",
+        "must_not_create": "Quality attendance clone",
+    },
+    {
+        "theme": "Learning / Progression Evidence",
+        "decision": "COMPOSE",
+        "canonical_owner": "Academy Learning Runtime",
+        "must_not_create": "Quality evidence DB copying records",
+    },
+    {
+        "theme": "AI / Orchestration",
+        "decision": "CONNECT",
+        "canonical_owner": "Existing AI/Agent infrastructure",
+        "must_not_create": "New Academy AI engine",
+    },
+    {
+        "theme": "Audit Trail",
+        "decision": "EXTEND",
+        "canonical_owner": "Professional Governance AuditEvent",
+        "must_not_create": "Domain-specific audit stores",
+    },
+    {
+        "theme": "Signature",
+        "decision": "BUILD ONCE",
+        "canonical_owner": "Trust & Signature Service",
+        "must_not_create": "Legal/Quality/Privacy signature engines",
+    },
+    {
+        "theme": "Documents / Versioning",
+        "decision": "BUILD ONCE",
+        "canonical_owner": "Professional Governance Document Registry",
+        "must_not_create": "Legal/Privacy/Quality document stores",
+    },
+    {
+        "theme": "Incidents",
+        "decision": "BUILD ONCE",
+        "canonical_owner": "Professional Governance Incident Core",
+        "must_not_create": "Separate incident source per domain",
+    },
 ]
 
 
