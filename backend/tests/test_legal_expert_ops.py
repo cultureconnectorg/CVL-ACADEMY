@@ -77,7 +77,7 @@ async def _setup(
     policy = await authority_policy.register_policy_version(
         actor_id="founder-1",
         policy_key="LEGAL_EXPERT_AUTHORITY",
-        version="1.0.0",
+        version=f"1.0.0-{case['id']}",
         title="Legal expert authority",
         rules=[
             {
