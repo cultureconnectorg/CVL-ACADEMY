@@ -63,7 +63,9 @@ async def create_invoice_from_payment(
     customer_name: str,
     customer_address: Optional[str] = None,
 ) -> Dict[str, Any]:
-    existing = await db.accounting_invoices.find_one({"payment_id": payment_id}, {"_id": 0})
+    existing = await db.accounting_invoices.find_one(
+        {"payment_id": payment_id}, {"_id": 0}
+    )
     if existing:
         return existing
     payment = await db.payments.find_one({"id": payment_id}, {"_id": 0})
@@ -175,7 +177,9 @@ async def reconcile_payment(*, actor_id: str, payment_id: str) -> Dict[str, Any]
         )
     provider_intent = payment.get("provider_payment_intent_id")
     status_match = bool(checkout) and checkout.get("status") == payment.get("status")
-    provider_evidence = bool(provider_intent) if payment.get("status") == "paid" else True
+    provider_evidence = (
+        bool(provider_intent) if payment.get("status") == "paid" else True
+    )
     reconciled = status_match and provider_evidence
     row = {
         "id": _id("RECON"),
@@ -198,7 +202,9 @@ async def reconcile_payment(*, actor_id: str, payment_id: str) -> Dict[str, Any]
     return row
 
 
-async def create_period(*, actor_id: str, code: str, starts_at: str, ends_at: str) -> Dict[str, Any]:
+async def create_period(
+    *, actor_id: str, code: str, starts_at: str, ends_at: str
+) -> Dict[str, Any]:
     start = _parse_instant(starts_at, "starts_at")
     end = _parse_instant(ends_at, "ends_at")
     if start >= end:
@@ -256,7 +262,9 @@ async def resolve_period_anomaly(
     resolution: str,
     evidence_refs: Iterable[str],
 ) -> Dict[str, Any]:
-    row = await db.accounting_period_anomalies.find_one({"id": anomaly_id}, {"_id": 0})
+    row = await db.accounting_period_anomalies.find_one(
+        {"id": anomaly_id}, {"_id": 0}
+    )
     if not row:
         raise LookupError("accounting period anomaly not found")
     if row["status"] != "OPEN":
@@ -300,27 +308,41 @@ async def period_close_gate(period_id: str) -> Dict[str, Any]:
         {"period_id": period_id, "status": "OPEN"}, {"_id": 0}
     ).to_list(5000)
     payments = await db.payments.find(
-        {"created_at": {"$gte": period["starts_at"], "$lt": period["ends_at"]}}, {"_id": 0}
+        {
+            "created_at": {
+                "$gte": period["starts_at"],
+                "$lt": period["ends_at"],
+            }
+        },
+        {"_id": 0},
     ).to_list(100000)
 
     unreconciled: list[Dict[str, Any]] = []
     missing_invoices: list[str] = []
     for payment in payments:
         latest = await db.accounting_reconciliations.find_one(
-            {"payment_id": payment["id"]}, {"_id": 0}, sort=[("checked_at", -1)]
+            {"payment_id": payment["id"]},
+            {"_id": 0},
+            sort=[("checked_at", -1)],
         )
         if not latest or not latest.get("reconciled"):
+            issues = (
+                latest.get("issues", ["RECONCILIATION_MISSING"])
+                if latest
+                else ["RECONCILIATION_MISSING"]
+            )
             unreconciled.append(
                 {
                     "payment_id": payment["id"],
                     "status": payment.get("status"),
                     "reconciliation_id": latest.get("id") if latest else None,
-                    "issues": latest.get("issues", ["RECONCILIATION_MISSING"]) if latest else ["RECONCILIATION_MISSING"],
+                    "issues": issues,
                 }
             )
         if payment.get("status") == "paid":
             invoice = await db.accounting_invoices.find_one(
-                {"payment_id": payment["id"], "status": "ISSUED"}, {"_id": 0, "id": 1}
+                {"payment_id": payment["id"], "status": "ISSUED"},
+                {"_id": 0, "id": 1},
             )
             if not invoice:
                 missing_invoices.append(payment["id"])
@@ -329,9 +351,16 @@ async def period_close_gate(period_id: str) -> Dict[str, Any]:
     if open_anomalies:
         blockers.append({"code": "OPEN_ANOMALIES", "count": len(open_anomalies)})
     if unreconciled:
-        blockers.append({"code": "UNRECONCILED_PAYMENTS", "count": len(unreconciled)})
+        blockers.append(
+            {"code": "UNRECONCILED_PAYMENTS", "count": len(unreconciled)}
+        )
     if missing_invoices:
-        blockers.append({"code": "MISSING_INVOICES_FOR_PAID_PAYMENTS", "count": len(missing_invoices)})
+        blockers.append(
+            {
+                "code": "MISSING_INVOICES_FOR_PAID_PAYMENTS",
+                "count": len(missing_invoices),
+            }
+        )
 
     return {
         "period_id": period_id,
@@ -341,7 +370,10 @@ async def period_close_gate(period_id: str) -> Dict[str, Any]:
         "open_anomalies": open_anomalies,
         "unreconciled_payments": unreconciled,
         "missing_invoice_payment_ids": missing_invoices,
-        "supporting_documents_scope": "ACC-007_NOT_YET_AUTOMATED; missing documents must be registered as period anomalies",
+        "supporting_documents_scope": (
+            "ACC-007_NOT_YET_AUTOMATED; missing documents must be registered "
+            "as period anomalies"
+        ),
         "checked_at": utc_now_iso(),
     }
 
@@ -392,8 +424,13 @@ async def close_period(
 
 
 async def register_account_mapping(
-    *, actor_id: str, event_type: str, debit_account: str, credit_account: str,
-    tax_code: Optional[str] = None, evidence_refs: Iterable[str] = (),
+    *,
+    actor_id: str,
+    event_type: str,
+    debit_account: str,
+    credit_account: str,
+    tax_code: Optional[str] = None,
+    evidence_refs: Iterable[str] = (),
 ) -> Dict[str, Any]:
     """Legacy compatibility helper.
 
@@ -419,11 +456,17 @@ async def register_account_mapping(
 
 
 async def tax_preparation_summary() -> Dict[str, Any]:
-    invoices = await db.accounting_invoices.find({"status": "ISSUED"}, {"_id": 0}).to_list(100000)
-    credits = await db.accounting_credit_notes.find({"status": "ISSUED"}, {"_id": 0}).to_list(100000)
+    invoices = await db.accounting_invoices.find(
+        {"status": "ISSUED"}, {"_id": 0}
+    ).to_list(100000)
+    credits = await db.accounting_credit_notes.find(
+        {"status": "ISSUED"}, {"_id": 0}
+    ).to_list(100000)
     gross = sum(int(row["amount_cents"]) for row in invoices)
     credit_total = sum(int(row["amount_cents"]) for row in credits)
-    mappings = await db.accounting_mappings.find({"status": "ACTIVE"}, {"_id": 0}).to_list(1000)
+    mappings = await db.accounting_mappings.find(
+        {"status": "ACTIVE"}, {"_id": 0}
+    ).to_list(1000)
     return {
         "currency": "EUR",
         "gross_invoiced_cents": gross,
