@@ -10,7 +10,13 @@ from pydantic import BaseModel, Field
 from auth import require_role
 from db import db
 from models import User
-from services import accounting_workspace, expert_access, legal_expert_ops, legal_policy
+from services import (
+    accounting_workspace,
+    expert_access,
+    legal_expert_ops,
+    legal_policy,
+    legal_workspace,
+)
 
 router = APIRouter(prefix="/expert", tags=["governance-expert"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -61,6 +67,19 @@ async def expert_case(case_id: str, raw_key: str = Depends(_credential)):
         },
         "granted_scope": context["assignment"].get("scope", []),
     }
+
+
+@router.get("/legal/cases/{case_id}/workspace")
+async def expert_legal_workspace(
+    case_id: str,
+    raw_key: str = Depends(_credential),
+):
+    try:
+        return await legal_workspace.get_workspace(raw_key=raw_key, case_id=case_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @router.patch("/legal/cases/{case_id}/matters/{matter_id}")
