@@ -36,6 +36,13 @@ class ProcessorCreate(BaseModel):
     transfer_mechanism: Optional[str] = None
 
 
+class ProcessorDpaReview(BaseModel):
+    dpa_state: str
+    rationale: str = Field(min_length=3, max_length=4000)
+    evidence_refs: List[str] = Field(min_length=1)
+    dpa_evidence_ref: Optional[str] = None
+
+
 class StateChange(BaseModel):
     status: str
 
@@ -86,6 +93,18 @@ async def create_processor(payload: ProcessorCreate, current: User = Admin):
             actor_id=current.id, **payload.model_dump()
         )
     except ValueError as exc:
+        _raise(exc)
+
+
+@router.post("/processors/{processor_id}/dpa-review")
+async def review_processor_dpa(
+    processor_id: str, payload: ProcessorDpaReview, current: User = Admin
+):
+    try:
+        return await privacy_ops.record_processor_dpa_status(
+            actor_id=current.id, processor_id=processor_id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
         _raise(exc)
 
 
