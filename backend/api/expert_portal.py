@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from auth import require_role
 from db import db
 from models import User
-from services import expert_access
+from services import accounting_workspace, expert_access
 
 router = APIRouter(prefix="/expert", tags=["governance-expert"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -45,6 +45,16 @@ async def expert_case(case_id: str, raw_key: str = Depends(_credential)):
         },
         "granted_scope": context["assignment"].get("scope", []),
     }
+
+
+@router.get("/accounting/cases/{case_id}/workspace")
+async def accountant_workspace(case_id: str, raw_key: str = Depends(_credential)):
+    try:
+        return await accounting_workspace.get_workspace(raw_key=raw_key, case_id=case_id)
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
 
 
 @router.delete("/keys/{key_id}")
