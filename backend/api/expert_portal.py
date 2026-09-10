@@ -1,16 +1,26 @@
-"""Minimal external-expert portal API with case-scoped credentials."""
+"""External-expert portal API with case-scoped credentials."""
 
 from __future__ import annotations
 
+from typing import Any
+
 from fastapi import APIRouter, Depends, Header, HTTPException
+from pydantic import BaseModel, Field
 
 from auth import require_role
 from db import db
 from models import User
-from services import accounting_workspace, expert_access
+from services import accounting_workspace, expert_access, legal_expert_ops
 
 router = APIRouter(prefix="/expert", tags=["governance-expert"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
+
+
+class LegalMatterExpertPatch(BaseModel):
+    patch: dict[str, Any]
+    policy_version_id: str
+    rationale: str
+    evidence_refs: list[str] = Field(default_factory=list)
 
 
 def _credential(x_cvln_expert_key: str | None = Header(default=None)) -> str:
@@ -45,6 +55,32 @@ async def expert_case(case_id: str, raw_key: str = Depends(_credential)):
         },
         "granted_scope": context["assignment"].get("scope", []),
     }
+
+
+@router.patch("/legal/cases/{case_id}/matters/{matter_id}")
+async def expert_modify_legal_matter(
+    case_id: str,
+    matter_id: str,
+    payload: LegalMatterExpertPatch,
+    raw_key: str = Depends(_credential),
+):
+    """FD-L01: direct legal-expert edit under scope, policy, evidence and audit."""
+    try:
+        return await legal_expert_ops.modify_legal_matter(
+            raw_key=raw_key,
+            case_id=case_id,
+            matter_id=matter_id,
+            patch=payload.patch,
+            policy_version_id=payload.policy_version_id,
+            rationale=payload.rationale,
+            evidence_refs=payload.evidence_refs,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
 
 
 @router.get("/accounting/cases/{case_id}/workspace")
