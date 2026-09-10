@@ -1,11 +1,11 @@
 """Cross-cutting Authority Policy Engine (XCP-001).
 
 The engine does not replace Academy authentication/RBAC. It consumes an already
-resolved actor identity/role plus explicit runtime context and an immutable policy
-version, then produces an auditable ALLOW / DENY / ESCALATE decision with reason.
+resolved actor identity/role plus explicit runtime context and one immutable policy
+version from the canonical XCP-008 registry, then records ALLOW / DENY / ESCALATE
+with an explicit reason.
 
-No policy => no authority decision. No matching rule => DENY. There is deliberately
-no hidden Founder/admin bypass: elevated authority must be expressed by policy.
+No matching rule => DENY. There is no hidden Founder/admin bypass.
 """
 
 from __future__ import annotations
@@ -16,7 +16,7 @@ import uuid
 from typing import Any, Dict, Iterable, Optional
 
 from db import db, utc_now_iso
-from services import professional_governance as governance
+from services import policy_registry, professional_governance as governance
 
 
 DECISIONS = {"ALLOW", "DENY", "ESCALATE"}
@@ -80,24 +80,13 @@ async def register_policy_version(
     effective_at: str,
     doctrine_ref: str,
     evidence_refs: Iterable[str],
+    supersedes_version_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Register one immutable, immediately-active authority policy version.
-
-    XCP-008 will own the broader doctrine/policy lifecycle and supersession model.
-    For XCP-001 the minimum safe primitive is an immutable version with evidence,
-    effective date and deterministic rule order.
-    """
-    key = policy_key.strip().upper()
-    ver = version.strip()
-    refs = list(dict.fromkeys(evidence_refs))
-    if not key or not ver or not title.strip() or not doctrine_ref.strip():
-        raise ValueError("policy_key, version, title and doctrine_ref are required")
-    if not refs:
-        raise ValueError("authority policy registration requires evidence")
+    """Register authority rules in the single canonical policy registry."""
+    if not doctrine_ref.strip():
+        raise ValueError("doctrine_ref is required")
     if not rules:
         raise ValueError("authority policy requires at least one rule")
-    if await db.authority_policy_versions.find_one({"policy_key": key, "version": ver}):
-        raise ValueError("authority policy version already exists")
 
     normalised_rules: list[Dict[str, Any]] = []
     for index, raw_rule in enumerate(rules):
@@ -116,33 +105,17 @@ async def register_policy_version(
         )
     normalised_rules.sort(key=lambda row: (row["priority"], row["id"]))
 
-    body = {
-        "policy_key": key,
-        "version": ver,
-        "title": title.strip(),
-        "rules": normalised_rules,
-        "effective_at": effective_at,
-        "doctrine_ref": doctrine_ref.strip(),
-        "evidence_refs": refs,
-    }
-    row = {
-        "id": _id("POLV"),
-        **body,
-        "policy_hash": _canonical_hash(body),
-        "status": "ACTIVE",
-        "created_by": actor_id,
-        "created_at": utc_now_iso(),
-        "immutable": True,
-    }
-    await db.authority_policy_versions.insert_one(dict(row))
-    await governance.audit_event(
-        event_type="authority.policy_version.registered",
+    return await policy_registry.register_version(
         actor_id=actor_id,
-        resource_type="authority_policy_version",
-        resource_id=row["id"],
-        payload={"policy_key": key, "version": ver, "policy_hash": row["policy_hash"]},
+        policy_key=policy_key,
+        version=version,
+        kind="POLICY",
+        title=title,
+        content={"rules": normalised_rules, "doctrine_ref": doctrine_ref.strip()},
+        effective_at=effective_at,
+        evidence_refs=evidence_refs,
+        supersedes_version_id=supersedes_version_id,
     )
-    return row
 
 
 async def evaluate_authority(
@@ -154,29 +127,17 @@ async def evaluate_authority(
     policy_version_id: str,
     request_id: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Evaluate one explicit authority question against one immutable version."""
-    policy = await db.authority_policy_versions.find_one(
-        {"id": policy_version_id, "status": "ACTIVE", "immutable": True}, {"_id": 0}
-    )
-    if not policy:
-        raise LookupError("active immutable authority policy version not found")
-
-    expected_hash = _canonical_hash(
-        {
-            "policy_key": policy["policy_key"],
-            "version": policy["version"],
-            "title": policy["title"],
-            "rules": policy["rules"],
-            "effective_at": policy["effective_at"],
-            "doctrine_ref": policy["doctrine_ref"],
-            "evidence_refs": policy["evidence_refs"],
-        }
-    )
-    if expected_hash != policy.get("policy_hash"):
-        raise ValueError("authority policy integrity check failed")
+    """Evaluate one explicit authority question against one effective version."""
+    policy = await policy_registry.require_effective_version(policy_version_id)
+    if policy.get("kind") != "POLICY":
+        raise ValueError("authority engine requires a POLICY version")
+    content = policy.get("content") or {}
+    rules = content.get("rules") or []
+    if not rules:
+        raise ValueError("authority policy has no rules")
 
     selected: Optional[Dict[str, Any]] = None
-    for rule in policy["rules"]:
+    for rule in rules:
         if _rule_matches(rule, actor_role=actor_role, action=action, context=context):
             selected = rule
             break
@@ -198,8 +159,10 @@ async def evaluate_authority(
         "policy_version_id": policy["id"],
         "policy_key": policy["policy_key"],
         "policy_version": policy["version"],
-        "policy_hash": policy["policy_hash"],
-        "doctrine_ref": policy["doctrine_ref"],
+        "policy_effective_at": policy["effective_at"],
+        "policy_content_hash": policy["content_hash"],
+        "policy_supersedes_version_id": policy.get("supersedes_version_id"),
+        "doctrine_ref": content.get("doctrine_ref"),
         "decided_at": now,
     }
     decision["decision_hash"] = _canonical_hash(decision)
@@ -213,6 +176,7 @@ async def evaluate_authority(
             "decision": effect,
             "action": decision["action"],
             "policy_version_id": policy["id"],
+            "policy_content_hash": policy["content_hash"],
             "decision_hash": decision["decision_hash"],
         },
     )
