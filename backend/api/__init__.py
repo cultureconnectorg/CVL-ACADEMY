@@ -34,6 +34,7 @@ from . import (
     orgs,
     payments,
     physical_sessions,
+    professional_governance,
     professional_profile,
     progression,
     quizzes,
@@ -73,6 +74,7 @@ for module in (
     integrations,
     commerce,
     payments,
+    professional_governance,
     professional_profile,
     ecosystem_builder,
 ):
