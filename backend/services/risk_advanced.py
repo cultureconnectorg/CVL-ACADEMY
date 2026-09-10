@@ -8,11 +8,11 @@ without pretending to purchase or validate insurance automatically.
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, Optional
 
 from db import db, utc_now_iso
-from services import authority_policy, evidence_graph, expert_access, risk_ops
+from services import authority_policy, evidence_graph, expert_access
 from services import professional_governance as governance
 
 
@@ -130,7 +130,9 @@ async def register_insurance_policy(
         "id": _id("INSPOL"),
         "provider": provider.strip(),
         "policy_ref": policy_ref.strip(),
-        "coverage_types": sorted({str(v).strip().upper() for v in coverage_types if str(v).strip()}),
+        "coverage_types": sorted(
+            {str(v).strip().upper() for v in coverage_types if str(v).strip()}
+        ),
         "limits": {str(k).upper(): int(v) for k, v in limits.items()},
         "starts_at": start.isoformat(),
         "ends_at": end.isoformat(),
@@ -153,7 +155,9 @@ async def link_risk_coverage(
 ) -> Dict[str, Any]:
     refs = _refs(evidence_refs)
     risk = await db.risks.find_one({"id": risk_id}, {"_id": 0})
-    policy = await db.insurance_policies.find_one({"id": insurance_policy_id}, {"_id": 0})
+    policy = await db.insurance_policies.find_one(
+        {"id": insurance_policy_id}, {"_id": 0}
+    )
     if not risk or not policy:
         raise LookupError("risk or insurance policy not found")
     target = coverage_type.strip().upper()
@@ -204,7 +208,9 @@ async def review_coverage_link(
 
 async def uncovered_asset_gate() -> Dict[str, Any]:
     """RSK-006/007: critical risks without confirmed active coverage are explicit."""
-    critical = await db.risks.find({"level": {"$gte": 4}}, {"_id": 0}).to_list(10000)
+    critical = await db.risks.find(
+        {"level": {"$gte": 4}}, {"_id": 0}
+    ).to_list(10000)
     now = datetime.now(timezone.utc)
     uncovered = []
     for risk in critical:
@@ -220,11 +226,23 @@ async def uncovered_asset_gate() -> Dict[str, Any]:
                 active = True
                 break
         if not active:
-            uncovered.append({"risk_id": risk["id"], "level": risk["level"], "domain": risk.get("domain")})
-    return {"pass": not uncovered, "uncovered_count": len(uncovered), "uncovered_risks": uncovered}
+            uncovered.append(
+                {
+                    "risk_id": risk["id"],
+                    "level": risk["level"],
+                    "domain": risk.get("domain"),
+                }
+            )
+    return {
+        "pass": not uncovered,
+        "uncovered_count": len(uncovered),
+        "uncovered_risks": uncovered,
+    }
 
 
-async def renewal_alerts(*, as_of: Optional[datetime] = None) -> list[Dict[str, Any]]:
+async def renewal_alerts(
+    *, as_of: Optional[datetime] = None
+) -> list[Dict[str, Any]]:
     moment = as_of or datetime.now(timezone.utc)
     policies = await db.insurance_policies.find({}, {"_id": 0}).to_list(10000)
     alerts = []
@@ -245,14 +263,20 @@ async def renewal_alerts(*, as_of: Optional[datetime] = None) -> list[Dict[str, 
 
 
 async def create_claim_package(
-    *, actor_id: str, risk_id: str, evidence_node_ids: Iterable[str], evidence_refs: Iterable[str]
+    *,
+    actor_id: str,
+    risk_id: str,
+    evidence_node_ids: Iterable[str],
+    evidence_refs: Iterable[str],
 ) -> Dict[str, Any]:
     return await evidence_graph.create_pack(
         actor_id=actor_id,
         title=f"Insurance claim evidence — {risk_id}",
         consumer="RISK",
         node_ids=evidence_node_ids,
-        purpose="Claim-support evidence package; coverage/legal acceptance remains external",
+        purpose=(
+            "Claim-support evidence package; coverage/legal acceptance remains external"
+        ),
         evidence_refs=evidence_refs,
     )
 
@@ -277,19 +301,30 @@ async def create_renewal_package(
 
 
 async def get_broker_workspace(*, raw_key: str, case_id: str) -> Dict[str, Any]:
-    context = await expert_access.authorize_case_scope(raw_key, case_id, "risk:insurance:read")
+    context = await expert_access.authorize_case_scope(
+        raw_key, case_id, "risk:insurance:read"
+    )
     case = await db.professional_cases.find_one({"id": case_id}, {"_id": 0})
     if not case:
         raise LookupError("professional case not found")
     if str(case.get("domain", "")).upper() != "RISK":
         raise PermissionError("broker workspace only exposes RISK cases")
     risk_ids = list((case.get("metadata") or {}).get("risk_ids", []))
-    policy_ids = list((case.get("metadata") or {}).get("insurance_policy_ids", []))
-    risks = await db.risks.find({"id": {"$in": risk_ids}}, {"_id": 0}).to_list(500)
-    policies = await db.insurance_policies.find({"id": {"$in": policy_ids}}, {"_id": 0}).to_list(500)
+    policy_ids = list(
+        (case.get("metadata") or {}).get("insurance_policy_ids", [])
+    )
+    risks = await db.risks.find(
+        {"id": {"$in": risk_ids}}, {"_id": 0}
+    ).to_list(500)
+    policies = await db.insurance_policies.find(
+        {"id": {"$in": policy_ids}}, {"_id": 0}
+    ).to_list(500)
     return {
         "case": case,
-        "expert": {"id": context["expert"]["id"], "display_name": context["expert"]["display_name"]},
+        "expert": {
+            "id": context["expert"]["id"],
+            "display_name": context["expert"]["display_name"],
+        },
         "granted_scope": context["assignment"].get("scope", []),
         "risks": risks,
         "insurance_policies": policies,
