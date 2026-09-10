@@ -62,6 +62,7 @@ from . import (
     regulatory_applicability,
     retention_executor,
     risk_advanced,
+    security_incident_protocol,
     security_remediation,
     security_verification,
     skills,
@@ -136,6 +137,7 @@ for module in (
     threat_model,
     security_remediation,
     security_verification,
+    security_incident_protocol,
     professional_profile,
     ecosystem_builder,
 ):
