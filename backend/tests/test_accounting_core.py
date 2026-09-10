@@ -139,8 +139,16 @@ async def test_period_close_and_tax_summary_do_not_invent_tax_amounts(accounting
         starts_at="2026-09-01T00:00:00+00:00",
         ends_at="2026-10-01T00:00:00+00:00",
     )
-    closed = await accounting_core.close_period(actor_id="admin-1", period_id=period["id"])
+    gate = await accounting_core.period_close_gate(period["id"])
+    assert gate["pass"] is True
+    closed = await accounting_core.close_period(
+        actor_id="admin-1",
+        period_id=period["id"],
+        review_note="Empty period reviewed",
+        evidence_refs=["ACCOUNTANT-REVIEW-1"],
+    )
     assert closed["status"] == "CLOSED"
+    assert closed["close_gate_snapshot"]["pass"] is True
 
     await accounting_core.register_account_mapping(
         actor_id="admin-1",
