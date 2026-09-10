@@ -10,6 +10,7 @@ on:
     branches: ["**"]
   pull_request:
     branches: ["**"]
+  workflow_dispatch:
 
 jobs:
   backend:
@@ -171,10 +172,10 @@ jobs:
 
   cvln-ecosystem-assistants-smoke:
     name: cvln-ecosystem-assistants-smoke
-    # Diagnostic only. These repositories are ecosystem assistants, not
-    # required Academy runtime dependencies. A drift/outage in one of them
-    # must not make the Academy product gate red.
-    continue-on-error: true
+    # Diagnostic only. Run it explicitly via workflow_dispatch when we want to
+    # validate Academy + Agent Factory + Command Center together. It is not a
+    # product CI dependency and therefore stays out of push/pull_request gates.
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
