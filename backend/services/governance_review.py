@@ -114,7 +114,11 @@ async def transition_review(
     if target in {"CVL_APPROVED", "EXPERT_VALIDATED"}:
         if not policy_version_id:
             raise ValueError("approval/validation requires authority policy version")
-        action = "PROFESSIONAL_REVIEW_CVL_APPROVE" if target == "CVL_APPROVED" else "PROFESSIONAL_REVIEW_EXPERT_VALIDATE"
+        action = (
+            "PROFESSIONAL_REVIEW_CVL_APPROVE"
+            if target == "CVL_APPROVED"
+            else "PROFESSIONAL_REVIEW_EXPERT_VALIDATE"
+        )
         authority = await authority_policy.evaluate_authority(
             actor_id=actor_id,
             actor_role=actor_role,
