@@ -18,7 +18,7 @@ contract errors are persisted by the caller as failed/partial dispatch evidence.
 from __future__ import annotations
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 import httpx
 
@@ -61,7 +61,9 @@ async def _post_json(
                 headers={"Authorization": f"Bearer {token}"},
             )
     except httpx.HTTPError as exc:
-        raise DispatchRejected(f"network error calling {url}: {type(exc).__name__}") from exc
+        raise DispatchRejected(
+            f"network error calling {url}: {type(exc).__name__}"
+        ) from exc
     if response.status_code >= 400:
         raise DispatchRejected(f"remote rejected request: HTTP {response.status_code}")
     try:
@@ -76,10 +78,6 @@ async def _post_json(
 async def dispatch_to_agent_factory(remediation: Dict[str, Any]) -> Dict[str, Any]:
     """Create a real Agent Factory mission for an already-authorized remediation."""
     base = _url("CVLN_AGENT_FACTORY_URL")
-    # The current Agent Factory contract accepts `svc_...` service identities or human
-    # JWTs. Mission creation itself requires AGT-000 service identity, admin, or Founder
-    # Council fallback. Academy supplies only a configured bearer token; the factory
-    # remains responsible for validating that token and authority.
     token = _token("CVLN_AGENT_FACTORY_SERVICE_TOKEN", "CVLN_AGENT_FACTORY_API_KEY")
 
     request_text = (
@@ -137,12 +135,7 @@ async def dispatch_to_agent_factory(remediation: Dict[str, Any]) -> Dict[str, An
 
 
 async def mirror_to_command_center(remediation: Dict[str, Any]) -> Dict[str, Any]:
-    """Create a real Command Center tracking task.
-
-    The current Command Center has human JWT auth only; this adapter therefore requires
-    an already-issued access token. That is a transitional integration boundary, not a
-    claim that Command Center already supports machine-to-machine credentials.
-    """
+    """Create a real Command Center tracking task."""
     base = _url("CVLN_COMMAND_CENTER_URL")
     token = _token("CVLN_COMMAND_CENTER_ACCESS_TOKEN", "CVLN_COMMAND_CENTER_API_KEY")
     task = await _post_json(
@@ -175,12 +168,7 @@ async def mirror_to_command_center(remediation: Dict[str, Any]) -> Dict[str, Any
 
 
 async def dispatch_remediation(remediation: Dict[str, Any]) -> Dict[str, Any]:
-    """Dispatch execution to Agent Factory and mirror control to Command Center.
-
-    Agent Factory is the execution dispatch. Command Center is an operations mirror.
-    A successful Agent Factory mission is required for `execution_dispatch_confirmed`.
-    Command Center failure is surfaced as PARTIAL rather than hidden.
-    """
+    """Dispatch execution to Agent Factory and mirror control to Command Center."""
     results: Dict[str, Any] = {}
 
     try:
@@ -199,7 +187,13 @@ async def dispatch_remediation(remediation: Dict[str, Any]) -> Dict[str, Any]:
 
     execution_ok = results["agent_factory"].get("status") == "DISPATCHED_CONFIRMED"
     mirror_ok = results["command_center"].get("status") == "DISPATCHED_CONFIRMED"
-    overall = "CONFIRMED" if execution_ok and mirror_ok else "PARTIAL" if execution_ok else "FAILED"
+    overall = (
+        "CONFIRMED"
+        if execution_ok and mirror_ok
+        else "PARTIAL"
+        if execution_ok
+        else "FAILED"
+    )
     return {
         "status": overall,
         "execution_dispatch_confirmed": execution_ok,
