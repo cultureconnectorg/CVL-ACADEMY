@@ -47,6 +47,16 @@ async def _classified_resource():
         effective_at="2026-09-10T00:00:00+00:00",
         evidence_refs=["XCP-002"],
     )
+    access_policy = await policy_registry.register_version(
+        actor_id="founder",
+        policy_key="DATA_ACCESS",
+        version="1.0.0",
+        kind="POLICY",
+        title="Data access",
+        content={"explicit": True},
+        effective_at="2026-09-10T00:00:00+00:00",
+        evidence_refs=["PRI-001"],
+    )
     resource = await data_classification.declare_resource(
         actor_id="admin",
         resource_kind="DATA",
@@ -60,6 +70,12 @@ async def _classified_resource():
         resource_record_id=resource["id"],
         data_class_code="IDENTITY",
         policy_version_id=class_policy["id"],
+        access_policy_version_id=access_policy["id"],
+        purpose="Retain learner identity data according to policy",
+        legal_basis="CONTRACT",
+        retention_days=30,
+        processor_refs=[],
+        locations=["EU"],
         rationale="Contains identity data",
         evidence_refs=["SCHEMA:users"],
     )
