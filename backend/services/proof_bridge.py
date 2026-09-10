@@ -1,10 +1,11 @@
 """CVLN Academy proof bridge — EvidencePackage + FREK Notary.
 
-This is a clean Academy implementation of two existing CVLN contracts:
+Clean Academy implementation of two existing CVLN contracts:
 
 * CVLN Intelligence OS EvidencePackage v1.1: content-addressed artefacts,
   ordered chain hash, independent verification fields, and ``legal_effect=none``.
-* FREKCORE Notary: ``POST /api/v1/notary/notarize`` with an ``emit`` client.
+* FREKCORE Notary: ``POST /api/v1/notary/notarize`` with an authenticated client
+  carrying the ``emit`` permission.
 
 The bridge deliberately does NOT fabricate a legal/eIDAS signature. A native Academy
 attestation is cryptographic evidence of a user's signing intent and document digest;
@@ -130,8 +131,6 @@ def verify_evidence_package(package: Dict[str, Any]) -> Dict[str, Any]:
     if not chain_ok:
         errors.append("chain_hash_mismatch")
 
-    # CVLN iOS requires signature verification as an independent step. Academy does
-    # not claim that step when no external signer signature is present.
     signature_present = bool(package.get("signature"))
     notary = package.get("frek_notary") or {}
     notarized = bool(notary.get("block_hash") and notary.get("height") is not None)
@@ -145,19 +144,65 @@ def verify_evidence_package(package: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def _frek_config() -> tuple[str, str]:
+def _frek_base_url() -> str:
     base_url = (os.environ.get("FREK_CORE_BASE_URL") or "").rstrip("/")
-    api_key = (os.environ.get("FREK_CORE_API_KEY") or "").strip()
-    if not base_url or not api_key:
+    if not base_url:
+        raise FrekNotaryUnavailable("FREK_CORE_BASE_URL is required for native attestation")
+    return base_url
+
+
+async def _frek_access_token(base_url: str) -> str:
+    """Resolve a real FREK v1 bearer token.
+
+    FREKCORE's actual auth contract is client_credentials at
+    ``POST /api/v1/auth/token``. ``FREK_CORE_ACCESS_TOKEN`` is accepted for an
+    already-issued runtime token. ``FREK_CORE_API_KEY`` remains a backwards-compatible
+    alias for that token because older Academy deployments already expose that variable.
+    """
+    direct = (
+        os.environ.get("FREK_CORE_ACCESS_TOKEN")
+        or os.environ.get("FREK_CORE_API_KEY")
+        or ""
+    ).strip()
+    if direct:
+        return direct
+
+    client_id = (os.environ.get("FREK_CORE_CLIENT_ID") or "").strip()
+    client_secret = (os.environ.get("FREK_CORE_CLIENT_SECRET") or "").strip()
+    if not client_id or not client_secret:
         raise FrekNotaryUnavailable(
-            "FREK_CORE_BASE_URL and FREK_CORE_API_KEY are required for native attestation"
+            "FREK client credentials or an issued access token are required"
         )
-    return base_url, api_key
+
+    try:
+        async with httpx.AsyncClient(timeout=8.0) as client:
+            response = await client.post(
+                f"{base_url}/api/v1/auth/token",
+                json={
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "grant_type": "client_credentials",
+                },
+            )
+    except httpx.HTTPError as exc:
+        raise FrekNotaryUnavailable(
+            f"FREK auth network error: {type(exc).__name__}"
+        ) from exc
+    if response.status_code >= 400:
+        raise FrekNotaryUnavailable(f"FREK auth rejected credentials: HTTP {response.status_code}")
+    try:
+        token = str(response.json().get("access_token") or "").strip()
+    except ValueError as exc:
+        raise FrekNotaryUnavailable("FREK auth returned non-JSON response") from exc
+    if not token:
+        raise FrekNotaryUnavailable("FREK auth response missing access_token")
+    return token
 
 
 async def notarize_package(package: Dict[str, Any]) -> Dict[str, Any]:
     """Create a real FREK-Chain block. Never falls back to a fake local proof."""
-    base_url, api_key = _frek_config()
+    base_url = _frek_base_url()
+    access_token = await _frek_access_token(base_url)
     payload = {
         "payload_type": "academy_evidence_package",
         "payload_id": package["package_id"],
@@ -176,10 +221,12 @@ async def notarize_package(package: Dict[str, Any]) -> Dict[str, Any]:
             response = await client.post(
                 f"{base_url}/api/v1/notary/notarize",
                 json=payload,
-                headers={"Authorization": f"Bearer {api_key}"},
+                headers={"Authorization": f"Bearer {access_token}"},
             )
     except httpx.HTTPError as exc:
-        raise FrekNotaryUnavailable(f"FREK Notary network error: {type(exc).__name__}") from exc
+        raise FrekNotaryUnavailable(
+            f"FREK Notary network error: {type(exc).__name__}"
+        ) from exc
 
     if response.status_code >= 400:
         raise FrekNotaryUnavailable(f"FREK Notary rejected request: HTTP {response.status_code}")
@@ -194,7 +241,7 @@ async def notarize_package(package: Dict[str, Any]) -> Dict[str, Any]:
     if block["payload_id"] != package["package_id"]:
         raise FrekNotaryUnavailable("FREK Notary payload_id mismatch")
 
-    updated = {
+    return {
         **package,
         "anchored_at": block["timestamp"],
         "verification_status": "FREK_NOTARIZED",
@@ -207,7 +254,6 @@ async def notarize_package(package: Dict[str, Any]) -> Dict[str, Any]:
             "btc_block_height": block.get("btc_block_height"),
         },
     }
-    return updated
 
 
 async def create_contract_native_attestation(
@@ -221,9 +267,9 @@ async def create_contract_native_attestation(
 ) -> Dict[str, Any]:
     """Evidence-first native signing intent bound to FREK identity and document hash.
 
-    The contract must already be APPROVED. The caller's explicit intent is preserved in
-    the package. Success means FREK_NOTARIZED, not LEGALLY_SIGNED. Contract state is not
-    changed here; that transition remains subject to the Academy legal workflow.
+    The contract must already be APPROVED. Success means FREK_NOTARIZED, not
+    LEGALLY_SIGNED. Contract state is not changed here; that transition remains subject
+    to the Academy legal workflow and signer-authority policy.
     """
     contract = await db.legal_contracts.find_one({"id": contract_id}, {"_id": 0})
     if not contract:
@@ -233,6 +279,18 @@ async def create_contract_native_attestation(
     normalized_hash = validate_sha256(document_hash)
     if intent.strip().upper() != "SIGN":
         raise ValueError("explicit SIGN intent is required")
+
+    authorization = await db.contract_signer_authorizations.find_one(
+        {
+            "contract_id": contract_id,
+            "signer_user_id": actor_id,
+            "signer_frek_id": actor_frek_id,
+            "status": "AUTHORIZED",
+        },
+        {"_id": 0},
+    )
+    if not authorization:
+        raise PermissionError("actor is not an authorized signer for this contract")
 
     existing = await db.native_signature_attestations.find_one(
         {
@@ -250,7 +308,7 @@ async def create_contract_native_attestation(
         subject=f"academy:contract:{contract_id}:signing-intent",
         claims=[
             {
-                "statement": "Actor explicitly asserted SIGN intent for this document digest",
+                "statement": "Authorized actor explicitly asserted SIGN intent for this document digest",
                 "status": "OBSERVED",
                 "evidence_ref": normalized_hash,
             }
@@ -263,8 +321,8 @@ async def create_contract_native_attestation(
                 "algorithm": "sha256",
             }
         ],
-        events=[f"actor:{actor_id}:SIGN"],
-        decisions=list(evidence_refs),
+        events=[f"actor:{actor_id}:SIGN", f"frek:{actor_frek_id}"],
+        decisions=[authorization["id"], *list(evidence_refs)],
     )
     package = await notarize_package(package)
     row = {
@@ -272,6 +330,7 @@ async def create_contract_native_attestation(
         "contract_id": contract_id,
         "actor_id": actor_id,
         "actor_frek_id": actor_frek_id,
+        "authorization_id": authorization["id"],
         "document_hash": normalized_hash,
         "intent": "SIGN",
         "evidence_package": package,
