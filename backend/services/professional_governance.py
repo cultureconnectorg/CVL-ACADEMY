@@ -1,0 +1,297 @@
+"""Professional Governance Core for CVLN Academy.
+
+Implements the first P0 primitives from the Academy integration masters:
+professional cases, scoped expert identities/assignments, document-version
+registry, review/decision workflow, and an append-only audit trail.
+
+The module deliberately does not pretend external systems are configured:
+FREK proof export/signature providers stay separate integration concerns.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import json
+import secrets
+import uuid
+from typing import Any, Dict, Iterable, Optional
+
+from db import db, utc_now_iso
+
+
+TERMINAL_DECISION_STATES = {"APPROVED", "REJECTED", "SUPERSEDED"}
+CASE_STATES = {"OPEN", "IN_REVIEW", "BLOCKED", "RESOLVED", "ARCHIVED"}
+DECISION_STATES = {"DRAFT", "PROPOSED", "APPROVED", "REJECTED", "SUPERSEDED"}
+
+
+def _id(prefix: str) -> str:
+    return f"{prefix}-{uuid.uuid4()}"
+
+
+def _canonical_hash(payload: Dict[str, Any]) -> str:
+    raw = json.dumps(payload, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+async def audit_event(
+    *,
+    event_type: str,
+    actor_id: str,
+    resource_type: str,
+    resource_id: str,
+    payload: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    """Append one immutable audit event and return its public representation."""
+    body = payload or {}
+    event = {
+        "id": _id("AUD"),
+        "event_type": event_type,
+        "actor_id": actor_id,
+        "resource_type": resource_type,
+        "resource_id": resource_id,
+        "payload": body,
+        "payload_hash": _canonical_hash(body),
+        "created_at": utc_now_iso(),
+    }
+    await db.governance_audit_events.insert_one(dict(event))
+    return event
+
+
+async def create_case(
+    *,
+    actor_id: str,
+    title: str,
+    domain: str,
+    description: str,
+    sensitivity: str = "INTERNAL",
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    case = {
+        "id": _id("CASE"),
+        "title": title,
+        "domain": domain.upper(),
+        "description": description,
+        "sensitivity": sensitivity.upper(),
+        "status": "OPEN",
+        "created_by": actor_id,
+        "created_at": utc_now_iso(),
+        "updated_at": utc_now_iso(),
+        "metadata": metadata or {},
+    }
+    await db.professional_cases.insert_one(dict(case))
+    await audit_event(
+        event_type="governance.case.created",
+        actor_id=actor_id,
+        resource_type="professional_case",
+        resource_id=case["id"],
+        payload={"domain": case["domain"], "sensitivity": case["sensitivity"]},
+    )
+    return case
+
+
+async def transition_case(*, case_id: str, status: str, actor_id: str) -> Dict[str, Any]:
+    target = status.upper()
+    if target not in CASE_STATES:
+        raise ValueError("invalid case status")
+    before = await db.professional_cases.find_one({"id": case_id}, {"_id": 0})
+    if not before:
+        raise LookupError("case not found")
+    await db.professional_cases.update_one(
+        {"id": case_id}, {"$set": {"status": target, "updated_at": utc_now_iso()}}
+    )
+    await audit_event(
+        event_type="governance.case.status_changed",
+        actor_id=actor_id,
+        resource_type="professional_case",
+        resource_id=case_id,
+        payload={"from": before["status"], "to": target},
+    )
+    return {**before, "status": target}
+
+
+async def create_expert(
+    *,
+    actor_id: str,
+    display_name: str,
+    email: str,
+    domains: Iterable[str],
+    organisation: Optional[str] = None,
+) -> Dict[str, Any]:
+    expert = {
+        "id": _id("EXP"),
+        "display_name": display_name,
+        "email": email.lower(),
+        "domains": sorted({d.upper() for d in domains}),
+        "organisation": organisation,
+        "status": "ACTIVE",
+        "created_by": actor_id,
+        "created_at": utc_now_iso(),
+    }
+    await db.governance_experts.insert_one(dict(expert))
+    await audit_event(
+        event_type="governance.expert.created",
+        actor_id=actor_id,
+        resource_type="expert",
+        resource_id=expert["id"],
+        payload={"domains": expert["domains"]},
+    )
+    return expert
+
+
+async def assign_expert(
+    *,
+    actor_id: str,
+    case_id: str,
+    expert_id: str,
+    scope: Iterable[str],
+    authority_level: str = "A3_EXTERNAL_EXPERT",
+) -> Dict[str, Any]:
+    case = await db.professional_cases.find_one({"id": case_id}, {"_id": 0})
+    expert = await db.governance_experts.find_one({"id": expert_id}, {"_id": 0})
+    if not case or not expert:
+        raise LookupError("case or expert not found")
+    assignment = {
+        "id": _id("ASN"),
+        "case_id": case_id,
+        "expert_id": expert_id,
+        "scope": sorted(set(scope)),
+        "authority_level": authority_level,
+        "status": "ACTIVE",
+        "assigned_by": actor_id,
+        "assigned_at": utc_now_iso(),
+        "revoked_at": None,
+    }
+    await db.governance_expert_assignments.insert_one(dict(assignment))
+    await audit_event(
+        event_type="governance.expert.assigned",
+        actor_id=actor_id,
+        resource_type="professional_case",
+        resource_id=case_id,
+        payload={"assignment_id": assignment["id"], "expert_id": expert_id, "scope": assignment["scope"]},
+    )
+    return assignment
+
+
+async def issue_expert_api_key(*, actor_id: str, assignment_id: str) -> tuple[str, Dict[str, Any]]:
+    assignment = await db.governance_expert_assignments.find_one(
+        {"id": assignment_id, "status": "ACTIVE"}, {"_id": 0}
+    )
+    if not assignment:
+        raise LookupError("active assignment not found")
+    raw = f"cvln_exp_{secrets.token_urlsafe(32)}"
+    record = {
+        "id": _id("KEY"),
+        "assignment_id": assignment_id,
+        "expert_id": assignment["expert_id"],
+        "case_id": assignment["case_id"],
+        "scope": assignment["scope"],
+        "token_hash": hashlib.sha256(raw.encode("utf-8")).hexdigest(),
+        "status": "ACTIVE",
+        "created_by": actor_id,
+        "created_at": utc_now_iso(),
+        "revoked_at": None,
+    }
+    await db.governance_api_keys.insert_one(dict(record))
+    await audit_event(
+        event_type="governance.expert_api_key.issued",
+        actor_id=actor_id,
+        resource_type="expert_assignment",
+        resource_id=assignment_id,
+        payload={"key_id": record["id"], "scope": record["scope"]},
+    )
+    public = {k: v for k, v in record.items() if k != "token_hash"}
+    return raw, public
+
+
+async def register_document_version(
+    *,
+    actor_id: str,
+    case_id: str,
+    document_type: str,
+    title: str,
+    content_hash: str,
+    parent_version_id: Optional[str] = None,
+    metadata: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
+    if not await db.professional_cases.find_one({"id": case_id}):
+        raise LookupError("case not found")
+    version = {
+        "id": _id("DOCV"),
+        "case_id": case_id,
+        "document_type": document_type.upper(),
+        "title": title,
+        "content_hash": content_hash.lower(),
+        "parent_version_id": parent_version_id,
+        "metadata": metadata or {},
+        "created_by": actor_id,
+        "created_at": utc_now_iso(),
+    }
+    await db.governance_document_versions.insert_one(dict(version))
+    await audit_event(
+        event_type="governance.document.version_registered",
+        actor_id=actor_id,
+        resource_type="professional_case",
+        resource_id=case_id,
+        payload={"version_id": version["id"], "content_hash": version["content_hash"]},
+    )
+    return version
+
+
+async def create_decision(
+    *,
+    actor_id: str,
+    case_id: str,
+    subject: str,
+    rationale: str,
+    state: str = "PROPOSED",
+    evidence_refs: Optional[Iterable[str]] = None,
+) -> Dict[str, Any]:
+    target = state.upper()
+    if target not in DECISION_STATES:
+        raise ValueError("invalid decision state")
+    if not await db.professional_cases.find_one({"id": case_id}):
+        raise LookupError("case not found")
+    decision = {
+        "id": _id("DEC"),
+        "case_id": case_id,
+        "subject": subject,
+        "rationale": rationale,
+        "state": target,
+        "evidence_refs": list(evidence_refs or []),
+        "created_by": actor_id,
+        "created_at": utc_now_iso(),
+        "updated_at": utc_now_iso(),
+    }
+    decision["decision_hash"] = _canonical_hash(decision)
+    await db.governance_decisions.insert_one(dict(decision))
+    await audit_event(
+        event_type="governance.decision.created",
+        actor_id=actor_id,
+        resource_type="professional_case",
+        resource_id=case_id,
+        payload={"decision_id": decision["id"], "state": target, "decision_hash": decision["decision_hash"]},
+    )
+    return decision
+
+
+async def transition_decision(*, actor_id: str, decision_id: str, state: str) -> Dict[str, Any]:
+    target = state.upper()
+    if target not in DECISION_STATES:
+        raise ValueError("invalid decision state")
+    decision = await db.governance_decisions.find_one({"id": decision_id}, {"_id": 0})
+    if not decision:
+        raise LookupError("decision not found")
+    if decision["state"] in TERMINAL_DECISION_STATES:
+        raise ValueError("terminal decision cannot be mutated; create a superseding decision")
+    now = utc_now_iso()
+    await db.governance_decisions.update_one(
+        {"id": decision_id}, {"$set": {"state": target, "updated_at": now}}
+    )
+    await audit_event(
+        event_type="governance.decision.state_changed",
+        actor_id=actor_id,
+        resource_type="decision",
+        resource_id=decision_id,
+        payload={"from": decision["state"], "to": target},
+    )
+    return {**decision, "state": target, "updated_at": now}
