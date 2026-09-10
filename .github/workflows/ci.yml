@@ -1,6 +1,10 @@
 name: CI
 
 # REL-01 / ACA-0031 — real repository regression gate.
+# Architecture rule: CVLN Academy is autonomous. Command Center, Agent Factory,
+# CVLN Intelligence OS and the other CVLN systems are optional ecosystem
+# capabilities. Their absence or temporary failure must never prevent Academy
+# from starting or make Academy's blocking CI fail.
 on:
   push:
     branches: ["**"]
@@ -114,8 +118,63 @@ jobs:
           REACT_APP_ACADEMY_SPATIAL_ENVIRONMENT: "true"
         run: npx playwright test e2e/spatial-closure.spec.js
 
-  cvln-runtime-integration:
-    name: cvln-runtime-integration
+  academy-runtime-autonomy:
+    name: academy-runtime-autonomy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Academy runtime
+        run: pip install --disable-pip-version-check -r backend/requirements.txt
+
+      - name: Prove Academy starts with CVLN assistants absent
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Deliberately do NOT configure Command Center, Agent Factory,
+          # CVLN Intelligence OS or any other external CVLN service here.
+          MONGO_URL=mongodb://127.0.0.1:27017 \
+          DB_NAME=cvln_academy_autonomy_ci \
+          JWT_SECRET=academy-autonomy-ci-secret \
+          ENVIRONMENT=development \
+          CORS_ORIGINS=http://127.0.0.1 \
+          nohup uvicorn server:app --app-dir backend --host 127.0.0.1 --port 8100 \
+            > /tmp/academy-autonomy.log 2>&1 &
+          echo $! > /tmp/academy-autonomy.pid
+          for _ in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8100/api/ >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/academy-autonomy.log
+          exit 1
+
+      - name: Show Academy log on failure
+        if: failure()
+        run: tail -n 250 /tmp/academy-autonomy.log 2>/dev/null || true
+
+  cvln-ecosystem-assistants-smoke:
+    name: cvln-ecosystem-assistants-smoke
+    # Diagnostic only. These repositories are ecosystem assistants, not
+    # required Academy runtime dependencies. A drift/outage in one of them
+    # must not make the Academy product gate red.
+    continue-on-error: true
     runs-on: ubuntu-latest
     timeout-minutes: 25
     services:
@@ -161,17 +220,10 @@ jobs:
           .venv-academy/bin/pip install --disable-pip-version-check -r academy/backend/requirements.txt
 
           python -m venv .venv-agent-factory
-          # Agent Factory pins emergentintegrations, which is not available from
-          # public PyPI. Its provider import is lazy inside EmergentProvider.generate;
-          # this integration smoke intentionally runs without EMERGENT_LLM_KEY and
-          # proves the real sovereign/runtime path instead of pretending to test the
-          # unavailable external provider wheel.
           grep -v '^emergentintegrations==' agent-factory/backend/requirements.txt > /tmp/agent-factory-runtime-requirements.txt
           .venv-agent-factory/bin/pip install --disable-pip-version-check -r /tmp/agent-factory-runtime-requirements.txt
 
           python -m venv .venv-command-center
-          # Same constraint for Command Center: keep every published dependency and
-          # omit only the unavailable Emergent adapter package for this runtime smoke.
           grep -v '^emergentintegrations==' command-center/backend/requirements.txt > /tmp/command-center-runtime-requirements.txt
           .venv-command-center/bin/pip install --disable-pip-version-check -r /tmp/command-center-runtime-requirements.txt
 
@@ -229,14 +281,20 @@ jobs:
             > /tmp/command-center.log 2>&1 &
           echo $! > /tmp/command-center.pid
 
-          RESPONSE=""
-          for _ in $(seq 1 60); do
-            RESPONSE=$(curl -sS -X POST http://127.0.0.1:8102/api/auth/register \
-              -H 'Content-Type: application/json' \
-              -d "{\"email\":\"runtime-manager@command.invalid\",\"password\":\"$COMMAND_PASSWORD\",\"name\":\"Runtime Manager\",\"role\":\"manager\"}" || true)
-            if echo "$RESPONSE" | jq -e '.access_token' >/dev/null 2>&1; then break; fi
+          # Wait for the real API process before exercising auth. This keeps
+          # service boot latency distinct from authentication failures.
+          for _ in $(seq 1 90); do
+            if curl -sS http://127.0.0.1:8102/openapi.json >/dev/null 2>&1; then break; fi
+            if ! kill -0 "$(cat /tmp/command-center.pid)" 2>/dev/null; then
+              cat /tmp/command-center.log
+              exit 1
+            fi
             sleep 1
           done
+
+          RESPONSE=$(curl -sS -X POST http://127.0.0.1:8102/api/auth/register \
+            -H 'Content-Type: application/json' \
+            -d "{\"email\":\"runtime-manager@command.invalid\",\"password\":\"$COMMAND_PASSWORD\",\"name\":\"Runtime Manager\",\"role\":\"manager\"}" || true)
           COMMAND_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token // empty')
           if [ -z "$COMMAND_TOKEN" ]; then
             cat /tmp/command-center.log
@@ -246,7 +304,7 @@ jobs:
           echo "::add-mask::$COMMAND_TOKEN"
           echo "CVLN_COMMAND_CENTER_ACCESS_TOKEN=$COMMAND_TOKEN" >> "$GITHUB_ENV"
 
-      - name: Start real Academy candidate
+      - name: Start real Academy candidate with optional assistants enabled
         shell: bash
         run: |
           set -euo pipefail
