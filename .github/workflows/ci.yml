@@ -113,3 +113,173 @@ jobs:
           REACT_APP_ACADEMY_SPATIAL_MODULE_DEPTH: "true"
           REACT_APP_ACADEMY_SPATIAL_ENVIRONMENT: "true"
         run: npx playwright test e2e/spatial-closure.spec.js
+
+  cvln-runtime-integration:
+    name: cvln-runtime-integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout Academy candidate
+        uses: actions/checkout@v4
+        with:
+          path: academy
+
+      - name: Checkout Agent Factory real runtime
+        uses: actions/checkout@v4
+        with:
+          repository: frekcore/CVLNAgentfactory
+          ref: CVLN-AGENT-FACTORY
+          path: agent-factory
+
+      - name: Checkout Command Center real runtime
+        uses: actions/checkout@v4
+        with:
+          repository: kimoune2025-a11y/Command-center
+          ref: main
+          path: command-center
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build isolated Python runtimes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m venv .venv-academy
+          .venv-academy/bin/pip install --disable-pip-version-check -r academy/backend/requirements.txt
+
+          python -m venv .venv-agent-factory
+          .venv-agent-factory/bin/pip install --disable-pip-version-check -r agent-factory/backend/requirements.txt
+
+          python -m venv .venv-command-center
+          .venv-command-center/bin/pip install --disable-pip-version-check -r command-center/backend/requirements.txt
+
+      - name: Generate ephemeral runtime credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          AGENT_TOKEN="svc_$(python -c 'import secrets; print(secrets.token_urlsafe(32))')"
+          AGENT_JWT="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          COMMAND_JWT="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          ACADEMY_JWT="$(python -c 'import secrets; print(secrets.token_urlsafe(48))')"
+          COMMAND_PASSWORD="$(python -c 'import secrets; print("Cc-" + secrets.token_urlsafe(24))')"
+          for VALUE in "$AGENT_TOKEN" "$AGENT_JWT" "$COMMAND_JWT" "$ACADEMY_JWT" "$COMMAND_PASSWORD"; do
+            echo "::add-mask::$VALUE"
+          done
+          {
+            echo "CVLN_AGENT_FACTORY_SERVICE_TOKEN=$AGENT_TOKEN"
+            echo "AGENT_JWT_SECRET=$AGENT_JWT"
+            echo "COMMAND_JWT_SECRET=$COMMAND_JWT"
+            echo "ACADEMY_JWT_SECRET=$ACADEMY_JWT"
+            echo "COMMAND_PASSWORD=$COMMAND_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Start real Agent Factory
+        shell: bash
+        run: |
+          set -euo pipefail
+          MONGO_URL=mongodb://127.0.0.1:27017 \
+          DB_NAME=cvln_agent_factory_runtime_ci \
+          JWT_SECRET="$AGENT_JWT_SECRET" \
+          AGENT000_SERVICE_TOKEN="$CVLN_AGENT_FACTORY_SERVICE_TOKEN" \
+          ADMIN_EMAIL=runtime-admin@factory.invalid \
+          ADMIN_PASSWORD="$(python -c 'import secrets; print("Af-" + secrets.token_urlsafe(24))')" \
+          CORS_ORIGINS=http://127.0.0.1 \
+          nohup .venv-agent-factory/bin/uvicorn server:app \
+            --app-dir agent-factory/backend --host 127.0.0.1 --port 8101 \
+            > /tmp/agent-factory.log 2>&1 &
+          echo $! > /tmp/agent-factory.pid
+          for _ in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8101/api/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/agent-factory.log
+          exit 1
+
+      - name: Start real Command Center and obtain real manager JWT
+        shell: bash
+        run: |
+          set -euo pipefail
+          MONGO_URL=mongodb://127.0.0.1:27017 \
+          DB_NAME=cvln_command_center_runtime_ci \
+          JWT_SECRET="$COMMAND_JWT_SECRET" \
+          nohup .venv-command-center/bin/uvicorn server:app \
+            --app-dir command-center/backend --host 127.0.0.1 --port 8102 \
+            > /tmp/command-center.log 2>&1 &
+          echo $! > /tmp/command-center.pid
+
+          RESPONSE=""
+          for _ in $(seq 1 60); do
+            RESPONSE=$(curl -sS -X POST http://127.0.0.1:8102/api/auth/register \
+              -H 'Content-Type: application/json' \
+              -d "{\"email\":\"runtime-manager@command.invalid\",\"password\":\"$COMMAND_PASSWORD\",\"name\":\"Runtime Manager\",\"role\":\"manager\"}" || true)
+            if echo "$RESPONSE" | jq -e '.access_token' >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          COMMAND_TOKEN=$(echo "$RESPONSE" | jq -r '.access_token // empty')
+          if [ -z "$COMMAND_TOKEN" ]; then
+            cat /tmp/command-center.log
+            echo "Command Center registration failed: $RESPONSE"
+            exit 1
+          fi
+          echo "::add-mask::$COMMAND_TOKEN"
+          echo "CVLN_COMMAND_CENTER_ACCESS_TOKEN=$COMMAND_TOKEN" >> "$GITHUB_ENV"
+
+      - name: Start real Academy candidate
+        shell: bash
+        run: |
+          set -euo pipefail
+          MONGO_URL=mongodb://127.0.0.1:27017 \
+          DB_NAME=cvln_academy_runtime_integration \
+          JWT_SECRET="$ACADEMY_JWT_SECRET" \
+          ENVIRONMENT=development \
+          CORS_ORIGINS=http://127.0.0.1 \
+          CVLN_AGENT_FACTORY_URL=http://127.0.0.1:8101/api \
+          CVLN_AGENT_FACTORY_SERVICE_TOKEN="$CVLN_AGENT_FACTORY_SERVICE_TOKEN" \
+          CVLN_COMMAND_CENTER_URL=http://127.0.0.1:8102 \
+          CVLN_COMMAND_CENTER_ACCESS_TOKEN="$CVLN_COMMAND_CENTER_ACCESS_TOKEN" \
+          nohup .venv-academy/bin/uvicorn server:app \
+            --app-dir academy/backend --host 127.0.0.1 --port 8100 \
+            > /tmp/academy.log 2>&1 &
+          echo $! > /tmp/academy.pid
+          for _ in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:8100/api/ >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/academy.log
+          exit 1
+
+      - name: Prove Academy to Agent Factory to Command Center round-trip
+        shell: bash
+        env:
+          ACADEMY_URL: http://127.0.0.1:8100
+          MONGO_URL: mongodb://127.0.0.1:27017
+          DB_NAME: cvln_academy_runtime_integration
+          CVLN_AGENT_FACTORY_URL: http://127.0.0.1:8101/api
+          CVLN_COMMAND_CENTER_URL: http://127.0.0.1:8102
+        run: |
+          set -euo pipefail
+          .venv-academy/bin/python academy/backend/scripts/runtime_integration_smoke.py
+
+      - name: Show service logs on failure
+        if: failure()
+        shell: bash
+        run: |
+          echo '===== Academy ====='
+          tail -n 250 /tmp/academy.log 2>/dev/null || true
+          echo '===== Agent Factory ====='
+          tail -n 250 /tmp/agent-factory.log 2>/dev/null || true
+          echo '===== Command Center ====='
+          tail -n 250 /tmp/command-center.log 2>/dev/null || true
