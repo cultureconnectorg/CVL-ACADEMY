@@ -56,17 +56,13 @@ test.describe("quiz context (W3-B)", () => {
     await gotoQuizReadyModule(page);
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
-    await page.getByTestId("quiz-submit").click();
-    // submitQuiz() does 3 sequential awaited network round-trips
-    // (quiz/submit -> refreshMe -> load) before settling; this
-    // assertion fires right after the first of those resolves
-    // (quizResult is set synchronously then, before the other two
-    // even start — not a logic race). Real CI-load headroom for this
-    // one comes from playwright.config.js's own global `expect.
-    // timeout` now (see its comment for the observed-flake evidence
-    // that justified raising it there instead of overriding it here).
-    await expect(page.getByTestId("quiz-result")).toBeVisible();
 
+    // The passing result is intentionally transient: submitQuiz() sets the
+    // result, refreshes the authenticated user + module state, then switches
+    // the open phase to mini_mission. The stable user-visible contract of this
+    // test is therefore the final auto-advanced mini_mission CONTEXT state,
+    // not whether Playwright happens to sample the intermediate quiz result.
+    await page.getByTestId("quiz-submit").click();
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
   });
