@@ -95,12 +95,11 @@ async def issue_refresh_token(user_id: str) -> str:
 
 
 async def rotate_refresh_token(raw_token: str) -> tuple[str, str, str]:
-    """Validate + revoke the given refresh token and issue a fresh pair.
+    """Validate + atomically revoke a refresh token, then issue a fresh pair.
 
-    Returns (new_access_token, new_refresh_token, user_id). Raises
-    HTTPException(401) if the token is missing, expired, or already revoked
-    (revoked-but-presented again is treated as a signal to fail closed, not
-    silently re-issue).
+    The conditional update makes rotation single-winner under concurrent reuse:
+    two requests may both read the same still-valid token, but only one can
+    transition `revoked=False` to `True`. The loser fails closed with 401.
     """
     token_hash = _hash_opaque_token(raw_token)
     doc = await db.refresh_tokens.find_one({"token_hash": token_hash})
@@ -112,10 +111,14 @@ async def rotate_refresh_token(raw_token: str) -> tuple[str, str, str]:
     if expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=401, detail="Refresh token expiré")
 
-    user_id = doc["user_id"]
-    await db.refresh_tokens.update_one(
-        {"token_hash": token_hash}, {"$set": {"revoked": True}}
+    result = await db.refresh_tokens.update_one(
+        {"token_hash": token_hash, "revoked": False},
+        {"$set": {"revoked": True}},
     )
+    if result.modified_count != 1:
+        raise HTTPException(status_code=401, detail="Refresh token invalide ou révoqué")
+
+    user_id = doc["user_id"]
     new_access = make_token(user_id)
     new_refresh = await issue_refresh_token(user_id)
     return new_access, new_refresh, user_id
@@ -146,7 +149,7 @@ async def issue_password_reset_token(user_id: str) -> str:
 
 
 async def consume_password_reset_token(raw_token: str) -> str:
-    """Returns the user_id and marks the token used, or raises 400."""
+    """Return user_id and atomically consume a valid single-use reset token."""
     token_hash = _hash_opaque_token(raw_token)
     doc = await db.password_resets.find_one({"token_hash": token_hash})
     if not doc or doc.get("used"):
@@ -156,9 +159,11 @@ async def consume_password_reset_token(raw_token: str) -> str:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Lien de réinitialisation expiré")
-    await db.password_resets.update_one(
-        {"token_hash": token_hash}, {"$set": {"used": True}}
+    result = await db.password_resets.update_one(
+        {"token_hash": token_hash, "used": False}, {"$set": {"used": True}}
     )
+    if result.modified_count != 1:
+        raise HTTPException(status_code=400, detail="Lien de réinitialisation invalide")
     return doc["user_id"]
 
 
@@ -188,9 +193,11 @@ async def consume_email_verification_token(raw_token: str) -> str:
         expires_at = expires_at.replace(tzinfo=timezone.utc)
     if expires_at < datetime.now(timezone.utc):
         raise HTTPException(status_code=400, detail="Lien de vérification expiré")
-    await db.email_verifications.update_one(
-        {"token_hash": token_hash}, {"$set": {"used": True}}
+    result = await db.email_verifications.update_one(
+        {"token_hash": token_hash, "used": False}, {"$set": {"used": True}}
     )
+    if result.modified_count != 1:
+        raise HTTPException(status_code=400, detail="Lien de vérification invalide")
     return doc["user_id"]
 
 
