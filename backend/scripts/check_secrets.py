@@ -25,6 +25,12 @@ SKIP_SUFFIXES = {
     ".lock",
 }
 
+# This one test file intentionally contains synthetic strings matching the
+# detector in order to prove the detector fails closed. Keeping this explicit
+# is safer than excluding the entire tests/ tree, where a real secret could
+# otherwise be committed unnoticed.
+ALLOWLIST_PATHS = {Path("backend/tests/test_secret_scanner.py")}
+
 
 def tracked_files() -> list[Path]:
     proc = subprocess.run(
@@ -54,8 +60,11 @@ def scan_file(path: Path) -> list[tuple[str, int]]:
 def main() -> int:
     findings = []
     for path in tracked_files():
+        relative = path.relative_to(ROOT)
+        if relative in ALLOWLIST_PATHS:
+            continue
         for kind, line in scan_file(path):
-            findings.append((path.relative_to(ROOT), line, kind))
+            findings.append((relative, line, kind))
     if findings:
         for path, line, kind in findings:
             print(f"SECRET_SIGNATURE {kind} {path}:{line}")
