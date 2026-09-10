@@ -45,9 +45,23 @@ async def test_remediation_requires_exactly_one_security_source(remediation_db):
 
 
 @pytest.mark.asyncio
-async def test_external_dispatch_is_never_claimed_without_real_task_id_and_evidence(remediation_db):
+async def test_external_dispatch_is_never_claimed_without_authority_remote_id_and_evidence(remediation_db):
     row = await _remediation(remediation_db)
     assert row["external_dispatch"]["status"] == "PENDING_EXTERNAL_CONTRACT"
+    with pytest.raises(ValueError, match="authorized remediation"):
+        await security_remediation.record_external_dispatch(
+            actor_id="sec-1",
+            remediation_id=row["id"],
+            target="CVLN_AGENT_FACTORY",
+            remote_task_id="REMOTE-1",
+            evidence_refs=["HTTP-202"],
+        )
+
+    await security_remediation.authorize_remediation(
+        actor_id="founder-1",
+        remediation_id=row["id"],
+        authority_decision_ref="AUTHDEC-1",
+    )
     with pytest.raises(ValueError, match="real remote task id"):
         await security_remediation.record_external_dispatch(
             actor_id="sec-1",
@@ -56,8 +70,24 @@ async def test_external_dispatch_is_never_claimed_without_real_task_id_and_evide
             remote_task_id="",
             evidence_refs=[],
         )
-    stored = await remediation_db.security_remediations.find_one({"id": row["id"]}, {"_id": 0})
-    assert stored["external_dispatch"]["status"] == "PENDING_EXTERNAL_CONTRACT"
+    with pytest.raises(ValueError, match="target does not match"):
+        await security_remediation.record_external_dispatch(
+            actor_id="sec-1",
+            remediation_id=row["id"],
+            target="CVLN_COMMAND_CENTER",
+            remote_task_id="REMOTE-1",
+            evidence_refs=["HTTP-202"],
+        )
+
+    dispatched = await security_remediation.record_external_dispatch(
+        actor_id="sec-1",
+        remediation_id=row["id"],
+        target="CVLN_AGENT_FACTORY",
+        remote_task_id="REMOTE-1",
+        evidence_refs=["HTTP-202", "REMOTE-RESPONSE-HASH"],
+    )
+    assert dispatched["external_dispatch"]["status"] == "DISPATCHED_CONFIRMED"
+    assert dispatched["external_dispatch"]["remote_task_id"] == "REMOTE-1"
 
 
 @pytest.mark.asyncio
