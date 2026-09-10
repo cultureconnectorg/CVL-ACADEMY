@@ -38,6 +38,7 @@ const CanonicalKorModuleView = lazy(() => import("@/pages/CanonicalKorModuleView
 const CanonicalFrkFormations = lazy(() => import("@/pages/CanonicalFrkFormations"));
 const CanonicalFrkFormationDetail = lazy(() => import("@/pages/CanonicalFrkFormationDetail"));
 const CanonicalFrkModuleView = lazy(() => import("@/pages/CanonicalFrkModuleView"));
+const ExpertWorkspace = lazy(() => import("@/pages/ExpertWorkspace"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const ProfessionalWorkspace = lazy(() => import("@/pages/admin/ProfessionalWorkspace"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
@@ -92,6 +93,7 @@ function App() {
                   <Route path="/formations/:code" element={<FormationDetail />} />
                   <Route path="/offers" element={<Offers />} />
                   <Route path="/id/:frekId" element={<ProfessionalPublicProfile />} />
+                  <Route path="/expert" element={<ExpertWorkspace />} />
 
                   <Route element={<ProtectedRoute />}>
                     <Route path="/dashboard" element={<Dashboard />} />
