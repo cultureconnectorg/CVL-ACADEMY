@@ -31,6 +31,7 @@ class PolicyVersionCreate(BaseModel):
     effective_at: str = Field(min_length=10, max_length=64)
     doctrine_ref: str = Field(min_length=1, max_length=240)
     evidence_refs: List[str] = Field(min_length=1)
+    supersedes_version_id: Optional[str] = Field(default=None, max_length=240)
 
 
 class AuthorityEvaluation(BaseModel):
