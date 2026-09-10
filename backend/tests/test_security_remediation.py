@@ -3,14 +3,14 @@ from __future__ import annotations
 import pytest
 from mongomock_motor import AsyncMongoMockClient
 
-from services import professional_governance, remediation_dispatch, security_remediation
+from services import authority_policy, professional_governance, remediation_dispatch, security_remediation
 
 
 @pytest.fixture
 async def remediation_db(monkeypatch):
     client = AsyncMongoMockClient()
     test_db = client["cvln_security_remediation_test"]
-    for module in (security_remediation, professional_governance):
+    for module in (security_remediation, professional_governance, authority_policy):
         monkeypatch.setattr(module, "db", test_db)
     yield test_db
     client.close()
@@ -32,12 +32,31 @@ async def _remediation(remediation_db):
     )
 
 
-async def _authorize_and_confirm_dispatch(remediation_id: str):
-    await security_remediation.authorize_remediation(
+async def _authorize(remediation_db, remediation_id: str, *, decision="ALLOW", action="SECURITY_AUTONOMOUS_FIX", bound_id=None):
+    decision_id = "AUTHDEC-1"
+    await remediation_db.authority_decisions.insert_one(
+        {
+            "id": decision_id,
+            "decision": decision,
+            "action": action,
+            "context": {
+                "domain": "SECURITY",
+                "remediation_id": bound_id or remediation_id,
+                "target_system": "CVLN_AGENT_FACTORY",
+            },
+            "decision_hash": "AUTH-HASH-1",
+            "policy_version_id": "POL-1",
+        }
+    )
+    return await security_remediation.authorize_remediation(
         actor_id="founder-1",
         remediation_id=remediation_id,
-        authority_decision_ref="AUTHDEC-1",
+        authority_decision_ref=decision_id,
     )
+
+
+async def _authorize_and_confirm_dispatch(remediation_db, remediation_id: str):
+    await _authorize(remediation_db, remediation_id)
     return await security_remediation.record_external_dispatch(
         actor_id="sec-1",
         remediation_id=remediation_id,
@@ -62,9 +81,41 @@ async def test_remediation_requires_exactly_one_security_source(remediation_db):
 
 
 @pytest.mark.asyncio
-async def test_manual_external_dispatch_requires_authority_id_and_evidence(
-    remediation_db,
-):
+async def test_remediation_rejects_fake_denied_or_cross_resource_authority(remediation_db):
+    row = await _remediation(remediation_db)
+    await remediation_db.authority_decisions.insert_one(
+        {
+            "id": "AUTH-DENY",
+            "decision": "DENY",
+            "action": "SECURITY_AUTONOMOUS_FIX",
+            "context": {"domain": "SECURITY", "remediation_id": row["id"]},
+        }
+    )
+    with pytest.raises(PermissionError, match="ALLOW authority decision"):
+        await security_remediation.authorize_remediation(
+            actor_id="founder-1",
+            remediation_id=row["id"],
+            authority_decision_ref="AUTH-DENY",
+        )
+
+    await remediation_db.authority_decisions.insert_one(
+        {
+            "id": "AUTH-OTHER",
+            "decision": "ALLOW",
+            "action": "SECURITY_AUTONOMOUS_FIX",
+            "context": {"domain": "SECURITY", "remediation_id": "REMED-OTHER"},
+        }
+    )
+    with pytest.raises(ValueError, match="not bound to this remediation"):
+        await security_remediation.authorize_remediation(
+            actor_id="founder-1",
+            remediation_id=row["id"],
+            authority_decision_ref="AUTH-OTHER",
+        )
+
+
+@pytest.mark.asyncio
+async def test_manual_external_dispatch_requires_authority_id_and_evidence(remediation_db):
     row = await _remediation(remediation_db)
     assert row["external_dispatch"]["status"] == "PENDING_EXTERNAL_CONTRACT"
     with pytest.raises(ValueError, match="authorized remediation"):
@@ -76,11 +127,7 @@ async def test_manual_external_dispatch_requires_authority_id_and_evidence(
             evidence_refs=["HTTP-202"],
         )
 
-    await security_remediation.authorize_remediation(
-        actor_id="founder-1",
-        remediation_id=row["id"],
-        authority_decision_ref="AUTHDEC-1",
-    )
+    await _authorize(remediation_db, row["id"])
     with pytest.raises(ValueError, match="real remote task id"):
         await security_remediation.record_external_dispatch(
             actor_id="sec-1",
@@ -107,17 +154,11 @@ async def test_manual_external_dispatch_requires_authority_id_and_evidence(
     )
     assert dispatched["external_dispatch"]["status"] == "CONFIRMED"
     assert dispatched["external_dispatch"]["execution_dispatch_confirmed"] is True
-    assert (
-        dispatched["external_dispatch"]["results"]["manual_external"]
-        ["remote_task_id"]
-        == "REMOTE-1"
-    )
+    assert dispatched["external_dispatch"]["results"]["manual_external"]["remote_task_id"] == "REMOTE-1"
 
 
 @pytest.mark.asyncio
-async def test_execution_requires_authority_and_confirmed_execution_dispatch(
-    remediation_db,
-):
+async def test_execution_requires_authority_and_confirmed_execution_dispatch(remediation_db):
     row = await _remediation(remediation_db)
     with pytest.raises(ValueError, match="invalid remediation transition"):
         await security_remediation.transition_remediation(
@@ -125,11 +166,7 @@ async def test_execution_requires_authority_and_confirmed_execution_dispatch(
             remediation_id=row["id"],
             status="EXECUTING",
         )
-    authorized = await security_remediation.authorize_remediation(
-        actor_id="founder-1",
-        remediation_id=row["id"],
-        authority_decision_ref="AUTHDEC-1",
-    )
+    authorized = await _authorize(remediation_db, row["id"])
     with pytest.raises(ValueError, match="confirmed Agent Factory/external dispatch"):
         await security_remediation.transition_remediation(
             actor_id="agent-1",
@@ -153,15 +190,9 @@ async def test_execution_requires_authority_and_confirmed_execution_dispatch(
 
 
 @pytest.mark.asyncio
-async def test_authorized_auto_dispatch_persists_real_remote_ids_and_is_idempotent(
-    remediation_db, monkeypatch
-):
+async def test_authorized_auto_dispatch_persists_real_remote_ids_and_is_idempotent(remediation_db, monkeypatch):
     row = await _remediation(remediation_db)
-    await security_remediation.authorize_remediation(
-        actor_id="founder-1",
-        remediation_id=row["id"],
-        authority_decision_ref="AUTHDEC-1",
-    )
+    await _authorize(remediation_db, row["id"])
     calls = 0
 
     async def fake_dispatch(_row):
@@ -172,14 +203,8 @@ async def test_authorized_auto_dispatch_persists_real_remote_ids_and_is_idempote
             "execution_dispatch_confirmed": True,
             "operations_mirror_confirmed": True,
             "results": {
-                "agent_factory": {
-                    "status": "DISPATCHED_CONFIRMED",
-                    "remote_task_id": "MISSION-42",
-                },
-                "command_center": {
-                    "status": "DISPATCHED_CONFIRMED",
-                    "remote_task_id": "TASK-99",
-                },
+                "agent_factory": {"status": "DISPATCHED_CONFIRMED", "remote_task_id": "MISSION-42"},
+                "command_center": {"status": "DISPATCHED_CONFIRMED", "remote_task_id": "TASK-99"},
             },
         }
 
@@ -192,28 +217,16 @@ async def test_authorized_auto_dispatch_persists_real_remote_ids_and_is_idempote
     )
     assert first["external_dispatch"]["status"] == "CONFIRMED"
     assert first["external_dispatch"]["execution_dispatch_confirmed"] is True
-    assert (
-        first["external_dispatch"]["results"]["agent_factory"]["remote_task_id"]
-        == "MISSION-42"
-    )
-    assert (
-        first["external_dispatch"]["results"]["command_center"]["remote_task_id"]
-        == "TASK-99"
-    )
+    assert first["external_dispatch"]["results"]["agent_factory"]["remote_task_id"] == "MISSION-42"
+    assert first["external_dispatch"]["results"]["command_center"]["remote_task_id"] == "TASK-99"
     assert second["external_dispatch"]["execution_dispatch_confirmed"] is True
     assert calls == 1
 
 
 @pytest.mark.asyncio
-async def test_command_center_failure_does_not_hide_confirmed_agent_factory_dispatch(
-    remediation_db, monkeypatch
-):
+async def test_command_center_failure_does_not_hide_confirmed_agent_factory_dispatch(remediation_db, monkeypatch):
     row = await _remediation(remediation_db)
-    await security_remediation.authorize_remediation(
-        actor_id="founder-1",
-        remediation_id=row["id"],
-        authority_decision_ref="AUTHDEC-1",
-    )
+    await _authorize(remediation_db, row["id"])
 
     async def fake_dispatch(_row):
         return {
@@ -221,14 +234,8 @@ async def test_command_center_failure_does_not_hide_confirmed_agent_factory_disp
             "execution_dispatch_confirmed": True,
             "operations_mirror_confirmed": False,
             "results": {
-                "agent_factory": {
-                    "status": "DISPATCHED_CONFIRMED",
-                    "remote_task_id": "MISSION-43",
-                },
-                "command_center": {
-                    "status": "NOT_CONFIGURED",
-                    "error": "CVLN_COMMAND_CENTER_URL is not configured",
-                },
+                "agent_factory": {"status": "DISPATCHED_CONFIRMED", "remote_task_id": "MISSION-43"},
+                "command_center": {"status": "NOT_CONFIGURED", "error": "CVLN_COMMAND_CENTER_URL is not configured"},
             },
         }
 
@@ -246,11 +253,7 @@ async def test_command_center_failure_does_not_hide_confirmed_agent_factory_disp
 @pytest.mark.asyncio
 async def test_agent_factory_dispatch_failure_blocks_execution(remediation_db, monkeypatch):
     row = await _remediation(remediation_db)
-    await security_remediation.authorize_remediation(
-        actor_id="founder-1",
-        remediation_id=row["id"],
-        authority_decision_ref="AUTHDEC-1",
-    )
+    await _authorize(remediation_db, row["id"])
 
     async def fake_dispatch(_row):
         return {
@@ -259,10 +262,7 @@ async def test_agent_factory_dispatch_failure_blocks_execution(remediation_db, m
             "operations_mirror_confirmed": True,
             "results": {
                 "agent_factory": {"status": "FAILED", "error": "HTTP 403"},
-                "command_center": {
-                    "status": "DISPATCHED_CONFIRMED",
-                    "remote_task_id": "TASK-100",
-                },
+                "command_center": {"status": "DISPATCHED_CONFIRMED", "remote_task_id": "TASK-100"},
             },
         }
 
@@ -279,7 +279,7 @@ async def test_agent_factory_dispatch_failure_blocks_execution(remediation_db, m
 @pytest.mark.asyncio
 async def test_verified_requires_execution_and_test_evidence(remediation_db):
     row = await _remediation(remediation_db)
-    await _authorize_and_confirm_dispatch(row["id"])
+    await _authorize_and_confirm_dispatch(remediation_db, row["id"])
     await security_remediation.transition_remediation(
         actor_id="agent-1", remediation_id=row["id"], status="EXECUTING"
     )
@@ -317,7 +317,7 @@ async def test_verified_requires_execution_and_test_evidence(remediation_db):
 @pytest.mark.asyncio
 async def test_rollback_requires_evidence_and_closes_gate(remediation_db):
     row = await _remediation(remediation_db)
-    await _authorize_and_confirm_dispatch(row["id"])
+    await _authorize_and_confirm_dispatch(remediation_db, row["id"])
     await security_remediation.transition_remediation(
         actor_id="agent-1", remediation_id=row["id"], status="EXECUTING"
     )
