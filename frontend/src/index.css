@@ -26,7 +26,6 @@
     --ring: 15 74% 54%;
     --radius: 0.75rem;
 
-    /* CVLN palette */
     --cvln-bg: #FAFAFA;
     --cvln-bg-warm: #F3F1EC;
     --cvln-surface: #FFFFFF;
@@ -37,7 +36,6 @@
     --cvln-forest: #143628;
     --cvln-amber: #F59E0B;
 
-    /* stages végétaux */
     --st-graine: #A37D62;
     --st-pousse: #86EFAC;
     --st-racine: #C2410C;
@@ -73,16 +71,13 @@ body {
     letter-spacing: 0.02em;
 }
 
-/* Selection */
 ::selection { background: var(--cvln-orange); color: white; }
 
-/* Scrollbar (minimal) */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: #d9d5cc; border-radius: 20px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--cvln-orange); }
 
-/* Glass panel */
 .glass {
     background: rgba(255, 255, 255, 0.75);
     backdrop-filter: blur(20px);
@@ -91,7 +86,6 @@ body {
     box-shadow: 0 10px 40px -20px rgba(0, 0, 0, 0.15);
 }
 
-/* Card default */
 .cvln-card {
     background: var(--cvln-surface);
     border: 1px solid rgba(0, 0, 0, 0.06);
@@ -104,7 +98,6 @@ body {
     border-color: rgba(224, 90, 51, 0.4);
 }
 
-/* Pill button */
 .btn-primary {
     display: inline-flex; align-items: center; justify-content: center;
     padding: 12px 22px; border-radius: 999px;
@@ -124,7 +117,6 @@ body {
 }
 .btn-outline:hover { background: var(--cvln-forest); color: white; }
 
-/* stage chip */
 .stade-chip {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 4px 10px; border-radius: 999px;
@@ -132,7 +124,6 @@ body {
     background: rgba(20,54,40,0.06); color: var(--cvln-forest);
 }
 
-/* progress line (stages) */
 .stage-line {
     height: 4px; background: rgba(0,0,0,0.08); border-radius: 999px; overflow: hidden;
 }
@@ -140,14 +131,12 @@ body {
     height: 100%; background: linear-gradient(90deg, var(--cvln-orange), var(--st-arbre));
 }
 
-/* micro noise on hero */
 .noise::before {
     content: ""; position: absolute; inset: 0; pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.04 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)'/%3E%3C/svg%3E");
     opacity: 0.6;
 }
 
-/* smooth fade */
 .fade-in {
     animation: fadeIn 500ms ease both;
 }
@@ -158,26 +147,8 @@ body {
 
 /* ===================================================================
    Spatial shell — visual language ported from the validated H0.10
-   prototype (docs/SPATIAL_H10_PERCEPTUAL_REFINEMENT_REPORT.md), applied
-   directly to the real app's own DOM/components rather than a separate
-   mockup. Every color here reuses the existing --cvln- and --st- tokens
-   above verbatim — the prototype was itself built from those tokens
-   ("Real CVLN tokens from frontend/src/index.css", its own header
-   comment), so this is the SAME palette, not a new one.
-
-   What is genuinely new (didn't exist before this pass): the layered
-   environmental backdrop (env-base/env-light/env-botanical, replacing
-   AcademyBackdrop's single flat radial gradient), the horizontal glass
-   primary-rail navigation (replacing the vertical sidebar), and the
-   "target tile" treatment (a real dark, motif-textured card driven by
-   the SAME real data-tier attribute the physics/attention engine
-   already stamps on every spatial node — lib/spatial/attention.js's
-   real ATTENTION_TIERS, never a new classification scheme). All of it
-   is additive CSS: nothing here changes what data a page fetches or
-   how progress/eligibility/certification are computed — only how the
-   same real data is drawn. Gated the same way every spatial surface
-   already is (FEATURE_FLAGS, default off) — see each consuming
-   component for its own flag.
+   prototype and applied to the real app DOM. Spatial styles stay
+   additive and feature-flagged by their consuming components.
    =================================================================== */
 
 @property --env-glow-1 { syntax: "<color>"; inherits: true; initial-value: #E05A33; }
@@ -207,7 +178,6 @@ body {
     transition: opacity 700ms cubic-bezier(.25,.1,.25,1), --formation-signature 700ms cubic-bezier(.25,.1,.25,1);
 }
 
-/* ---- horizontal glass primary rail (desktop nav) ---- */
 .primary-rail-nav {
     display: flex; align-items: center; gap: 5px; padding: 5px;
     background: rgba(255,255,255,0.72); border: 1px solid rgba(0,0,0,0.09); border-radius: 999px;
@@ -225,17 +195,11 @@ body {
 .rail-nav-item-inner[data-active="true"] { background: var(--cvln-forest); color: #fff; transform: scale(1.04); box-shadow: 0 10px 26px -12px rgba(20,54,40,.55); }
 .rail-nav-item-inner[data-active="false"]:hover { color: var(--cvln-ink); background: rgba(0,0,0,.04); }
 
-/* ---- rail viewport: soft edge bleed instead of a hard crop ---- */
 .spatial-rail-viewport {
     -webkit-mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
     mask-image: linear-gradient(to right, transparent 0, black 28px, black calc(100% - 28px), transparent 100%);
 }
 
-/* ---- spatial tile: the same real data-tier the physics/attention
-   engine already stamps (lib/spatial/attention.js's ATTENTION_TIERS)
-   drives a real discrete look change on top of the continuous inline
-   transform the physics engine writes per frame — never a second,
-   competing animation system. ---- */
 .spatial-tile { position: relative; overflow: hidden; }
 .spatial-tile[data-tier="PRIMARY_ATTENTION"] {
     background: linear-gradient(155deg, color-mix(in srgb, var(--formation-signature, var(--cvln-orange)) 90%, #0c0a06) 0%, color-mix(in srgb, var(--formation-signature, var(--cvln-orange)) 62%, #14100a) 100%);
@@ -244,12 +208,96 @@ body {
 .spatial-tile[data-tier="PRIMARY_ATTENTION"] .spatial-tile-eyebrow { color: rgba(255,255,255,.7); }
 .spatial-tile[data-tier="PRIMARY_ATTENTION"] .spatial-tile-meta { color: rgba(255,255,255,.85); }
 
-/* Spatial Learning W1-A — accessibility safety baseline.
-   Neutralizes every animation/transition duration (the existing hover
-   transforms above, .fade-in) for anyone with the OS-level "reduce
-   motion" preference set — never removes functionality, only timing.
-   This is the floor every future motion primitive (W1-B onward) must
-   also respect; it isn't itself a new visible behavior. */
+/* H0.10 closure: Roadmap */
+.spatial-stage-rail { perspective: 1100px; padding-inline: 30px; margin-inline: -30px; }
+.spatial-stage-card {
+    min-height: 330px;
+    transform-style: preserve-3d;
+    box-shadow: 0 24px 70px -48px rgba(20,54,40,.62);
+}
+.spatial-stage-card::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--cvln-orange) 7%, transparent), transparent 42%, color-mix(in srgb, var(--cvln-forest) 7%, transparent));
+}
+.spatial-stage-card.is-current-stage { box-shadow: 0 34px 82px -42px rgba(20,54,40,.72); }
+.spatial-stage-card.is-crossed-stage:not([data-tier="PRIMARY_ATTENTION"]) { background: color-mix(in srgb, var(--cvln-surface) 94%, var(--cvln-forest)); }
+.spatial-stage-card[data-stage="graine"] { --formation-signature: var(--st-graine); }
+.spatial-stage-card[data-stage="pousse"] { --formation-signature: var(--st-pousse); }
+.spatial-stage-card[data-stage="racine"] { --formation-signature: var(--st-racine); }
+.spatial-stage-card[data-stage="branches"] { --formation-signature: var(--st-branches); }
+.spatial-stage-card[data-stage="arbre"] { --formation-signature: var(--st-arbre); }
+.spatial-stage-card[data-stage="foret"] { --formation-signature: var(--st-foret); }
+.spatial-stage-card[data-tier="PRIMARY_ATTENTION"] .spatial-stage-icon { filter: drop-shadow(0 14px 20px rgba(0,0,0,.25)); }
+.spatial-progress-card {
+    background: rgba(255,255,255,.76); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px);
+    border-color: rgba(20,54,40,.1); box-shadow: 0 24px 64px -46px rgba(20,54,40,.55);
+}
+
+/* H0.10 closure: formation discovery */
+.spatial-next-action {
+    background: rgba(255,255,255,.8); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    border-color: color-mix(in srgb, var(--cvln-orange) 22%, transparent);
+    box-shadow: 0 28px 74px -52px rgba(224,90,51,.72);
+}
+.spatial-pole-filter { position: relative; z-index: 2; }
+.spatial-formation-grid { perspective: 1200px; }
+.spatial-formation-card {
+    min-height: 250px;
+    border-color: color-mix(in srgb, var(--formation-card-accent, var(--cvln-orange)) 14%, rgba(0,0,0,.05));
+    background:
+        radial-gradient(110% 72% at 100% 0%, color-mix(in srgb, var(--formation-card-accent, var(--cvln-orange)) 10%, transparent), transparent 58%),
+        rgba(255,255,255,.92);
+    box-shadow: 0 24px 64px -50px color-mix(in srgb, var(--formation-card-accent, var(--cvln-forest)) 55%, transparent);
+}
+.spatial-formation-card::after {
+    content: ""; position: absolute; width: 130px; height: 130px; right: -52px; bottom: -64px; border-radius: 45% 55% 58% 42%;
+    background: color-mix(in srgb, var(--formation-card-accent, var(--cvln-orange)) 8%, transparent); pointer-events: none;
+}
+.spatial-formation-card[data-focus-state="target"] {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--formation-card-accent, var(--cvln-orange)) 74%, #11100d), color-mix(in srgb, var(--cvln-forest) 78%, #0a0907));
+    border-color: transparent; color: #fff;
+    box-shadow: 0 30px 84px -40px color-mix(in srgb, var(--formation-card-accent, var(--cvln-orange)) 62%, transparent);
+}
+.spatial-formation-card[data-focus-state="target"] .spatial-tile-meta { color: rgba(255,255,255,.76); }
+.spatial-formation-card[data-focus-state="target"] .spatial-card-arrow { color: #fff; }
+.spatial-formation-card[data-focus-state="target"] .border-black\/5 { border-color: rgba(255,255,255,.12); }
+
+/* H0.10 closure: badge cluster */
+.spatial-badge-grid { perspective: 1150px; }
+.spatial-badge-card {
+    min-height: 285px;
+    transform-style: preserve-3d;
+    border-color: color-mix(in srgb, var(--badge-accent, var(--cvln-orange)) 14%, rgba(0,0,0,.05));
+    box-shadow: 0 26px 68px -52px color-mix(in srgb, var(--badge-accent, var(--cvln-forest)) 60%, transparent);
+}
+.spatial-badge-card::before {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(80% 55% at 50% 0%, color-mix(in srgb, var(--badge-accent, var(--cvln-orange)) 10%, transparent), transparent 70%);
+}
+.spatial-badge-card[data-tier="PRIMARY_ATTENTION"] { --formation-signature: var(--badge-accent); }
+.spatial-badge-card[data-tier="PRIMARY_ATTENTION"] .spatial-badge-medallion {
+    box-shadow: 0 0 0 9px rgba(255,255,255,.08), 0 24px 46px -18px rgba(0,0,0,.52);
+}
+.spatial-badge-card[data-owned="true"]:not([data-tier="PRIMARY_ATTENTION"]) { background: color-mix(in srgb, var(--cvln-surface) 95%, var(--cvln-forest)); }
+
+/* H0.10 closure: ModuleJourney */
+.spatial-phase-shell { position: relative; transform-style: preserve-3d; }
+.spatial-phase-shell > .cvln-card {
+    position: relative;
+    background: rgba(255,255,255,.86);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 24px 70px -54px rgba(20,54,40,.65);
+}
+.spatial-phase-shell[data-journey-role="current"] > .cvln-card {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--cvln-orange) 82%, #11100d), color-mix(in srgb, var(--cvln-forest) 84%, #090806));
+    border-color: transparent; color: #fff;
+    box-shadow: 0 34px 90px -42px rgba(20,54,40,.78);
+}
+.spatial-phase-shell[data-journey-role="current"] > .cvln-card .text-\[--cvln-ink-2\] { color: rgba(255,255,255,.72); }
+.spatial-phase-shell[data-journey-role="current"] > .cvln-card .border-black\/5 { border-color: rgba(255,255,255,.12); }
+.spatial-phase-shell[data-journey-role="next"] > .cvln-card { border-color: color-mix(in srgb, var(--cvln-orange) 24%, transparent); }
+.spatial-phase-shell[data-journey-role="locked"] > .cvln-card { background: rgba(255,255,255,.6); }
+
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {
         animation-duration: 0.01ms !important;
