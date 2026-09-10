@@ -42,6 +42,10 @@ class ExpertAssignmentCreate(BaseModel):
     authority_level: str = "A3_EXTERNAL_EXPERT"
 
 
+class ExpertKeyIssue(BaseModel):
+    expires_at: str = Field(min_length=10, max_length=64)
+
+
 class DocumentVersionCreate(BaseModel):
     document_type: str
     title: str
@@ -68,8 +72,6 @@ async def list_cases(
     status: Optional[str] = None,
     current: User = Depends(get_current_user),
 ):
-    # Staff/admin users use this internal workspace. Students must never see
-    # professional cases, even if they guess the endpoint.
     if current.role == "student":
         raise HTTPException(status_code=403, detail="Professional workspace required")
     query: Dict[str, Any] = {}
@@ -126,12 +128,36 @@ async def assign_expert(case_id: str, payload: ExpertAssignmentCreate, current: 
 
 
 @router.post("/assignments/{assignment_id}/api-key")
-async def issue_expert_api_key(assignment_id: str, current: User = AdminUser):
+async def issue_expert_api_key(
+    assignment_id: str, payload: ExpertKeyIssue, current: User = AdminUser
+):
     try:
-        raw, record = await gov.issue_expert_api_key(actor_id=current.id, assignment_id=assignment_id)
+        raw, record = await gov.issue_expert_api_key(
+            actor_id=current.id,
+            assignment_id=assignment_id,
+            expires_at=payload.expires_at,
+        )
     except LookupError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    # The raw token is returned exactly once. Only its SHA-256 hash is stored.
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {"api_key": raw, "record": record}
+
+
+@router.post("/api-keys/{key_id}/rotate")
+async def rotate_expert_api_key(
+    key_id: str, payload: ExpertKeyIssue, current: User = AdminUser
+):
+    try:
+        raw, record = await gov.rotate_expert_api_key(
+            actor_id=current.id,
+            key_id=key_id,
+            expires_at=payload.expires_at,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
     return {"api_key": raw, "record": record}
 
 
