@@ -70,10 +70,27 @@ async def authorize_remediation(
         _translate(exc)
 
 
+@router.post("/{remediation_id}/dispatch")
+async def automatic_dispatch(remediation_id: str, current: User = Admin):
+    """Dispatch an authorized remediation to Agent Factory and Command Center.
+
+    Agent Factory owns execution/orchestration. Command Center receives the operational
+    task mirror. The returned status remains PARTIAL/FAILED when either real contract
+    cannot confirm what happened.
+    """
+    try:
+        return await security_remediation.dispatch_authorized_remediation(
+            actor_id=current.id, remediation_id=remediation_id
+        )
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
+
+
 @router.post("/{remediation_id}/dispatch-confirmed")
 async def dispatch_confirmed(
     remediation_id: str, payload: DispatchConfirmed, current: User = Admin
 ):
+    """Manual legacy hook for a non-CVLN execution adapter with external evidence."""
     try:
         return await security_remediation.record_external_dispatch(
             actor_id=current.id,
