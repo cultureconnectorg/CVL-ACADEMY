@@ -108,7 +108,7 @@ async def test_startup_raises_when_ensure_indexes_fails(monkeypatch):
 async def test_startup_survives_seed_failures(monkeypatch):
     """Seed data is NOT a correctness/security invariant — a failure
     there must stay logged-and-continue, never fatal, unlike
-    ensure_indexes() above."""
+    ensure_indexes() and the PG-13 manifest above."""
     import server
 
     monkeypatch.setattr(server, "register_integration_subscribers", lambda: None)
@@ -119,7 +119,12 @@ async def test_startup_survives_seed_failures(monkeypatch):
     async def _boom():
         raise RuntimeError("simulated seed failure")
 
+    async def _locked_manifest(*, actor_id):
+        assert actor_id == "SYSTEM_STARTUP"
+        return {"status": "LOCKED"}
+
     monkeypatch.setattr(server, "ensure_indexes", _ok)
+    monkeypatch.setattr(server.architecture_reuse, "sync_manifest", _locked_manifest)
     monkeypatch.setattr(server, "seed_if_empty", _boom)
     monkeypatch.setattr(server, "seed_default_definitions", _ok)
 
