@@ -1,40 +1,65 @@
 /**
- * ACA-0023 (scroll slice) — Exact return-to-position, scroll axis.
+ * ACA-0023 — Exact return-to-position, scroll + focus axes.
  *
- * React Router v6 + lazy-loaded routes means the browser's own
- * `history.scrollRestoration = "auto"` can't be trusted: by the time it
- * fires, the async route content often hasn't painted its real height
- * yet, so it restores against the wrong layout. This hook takes manual
- * control instead — the standard SPA pattern.
+ * React Router v6 + lazy-loaded routes means browser-native restoration
+ * cannot be trusted to run after async route content reaches its final
+ * layout. This hook owns restoration for client-side history entries.
  *
- * Scope, deliberately: the browser-history scroll axis of ACA-0023
- * only. The camera/rail/focus axes are a real, separate decision tied
- * to whether the spatial engine is actually mounted in production
- * (ACA-0014, still flag-gated off) — nothing here assumes or depends
- * on it, and nothing here claims to restore camera/rail/focus state.
+ * Scroll and the last stable focus target are remembered independently.
+ * Focus restoration is deliberately conservative: only elements with a
+ * stable `id` or `data-testid` are remembered. No generated CSS path and
+ * no text-content selector is used, so a DOM refactor cannot silently
+ * focus an unrelated control.
  */
 
 import { useEffect, useRef } from "react";
 import { useLocation, useNavigationType } from "react-router-dom";
-import { getPosition, savePosition } from "@/lib/scrollRestoration";
+import {
+  getFocusTarget,
+  getPosition,
+  saveFocusTarget,
+  savePosition,
+} from "@/lib/scrollRestoration";
 
 const RESTORE_ATTEMPTS = 5;
+
+function focusDescriptor(element) {
+  if (!element || element === document.body || element === document.documentElement) return null;
+  if (element.id) return { kind: "id", value: element.id };
+  const testId = element.getAttribute?.("data-testid");
+  if (testId) return { kind: "testid", value: testId };
+  return null;
+}
+
+function resolveFocusTarget(target) {
+  if (!target) return null;
+  if (target.kind === "id") return document.getElementById(target.value);
+  if (target.kind === "testid") {
+    return Array.from(document.querySelectorAll("[data-testid]")).find(
+      (element) => element.getAttribute("data-testid") === target.value
+    );
+  }
+  return null;
+}
+
+function canRestoreFocus(element) {
+  if (!element || typeof element.focus !== "function") return false;
+  if (element.matches?.(":disabled, [aria-disabled='true']")) return false;
+  return true;
+}
 
 export function useScrollRestoration() {
   const location = useLocation();
   const navType = useNavigationType();
   const currentKeyRef = useRef(location.key);
 
-  // Take manual control once — the browser's own "auto" restoration
-  // would otherwise race this hook on the very next back/forward.
   useEffect(() => {
     if (typeof window === "undefined" || !window.history) return;
     const previous = window.history.scrollRestoration;
     try {
       window.history.scrollRestoration = "manual";
     } catch {
-      // Some embedders/browsers disallow setting this — restoration
-      // below still runs, just alongside whatever the browser also does.
+      // Some embedders disallow changing it. Our own restoration still runs.
     }
     return () => {
       try {
@@ -45,35 +70,39 @@ export function useScrollRestoration() {
     };
   }, []);
 
-  // Continuously remember the scroll position of whichever location is
-  // current — no "about to leave" event to miss, no timing race with
-  // whatever unmounts first.
   useEffect(() => {
     currentKeyRef.current = location.key;
     const onScroll = () => savePosition(currentKeyRef.current, window.scrollY);
+    const onFocusIn = (event) => {
+      const target = focusDescriptor(event.target);
+      if (target) saveFocusTarget(currentKeyRef.current, target);
+    };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    document.addEventListener("focusin", onFocusIn);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("focusin", onFocusIn);
+    };
   }, [location.key]);
 
-  // On arrival: a real browser back/forward (POP) with a remembered
-  // position restores it; everything else (a Link click, a redirect,
-  // or a POP to a history entry never scrolled on) lands at the top —
-  // the standard SPA default a user expects from a fresh navigation.
   useEffect(() => {
-    const saved = navType === "POP" ? getPosition(location.key) : undefined;
-    if (typeof saved !== "number") {
-      window.scrollTo(0, 0);
-      return;
-    }
-    // Lazy-loaded route content may not have its real height on the
-    // very first frame after mount — retry across a few rAFs rather
-    // than assuming layout is already settled.
+    const savedScroll = navType === "POP" ? getPosition(location.key) : undefined;
+    const savedFocus = navType === "POP" ? getFocusTarget(location.key) : undefined;
+
+    if (typeof savedScroll !== "number") window.scrollTo(0, 0);
+
     let attempts = 0;
-    let frame = requestAnimationFrame(function tryScroll() {
-      window.scrollTo(0, saved);
+    let frame = requestAnimationFrame(function restoreContext() {
+      if (typeof savedScroll === "number") window.scrollTo(0, savedScroll);
+
+      const focusTarget = resolveFocusTarget(savedFocus);
+      if (canRestoreFocus(focusTarget)) {
+        focusTarget.focus({ preventScroll: true });
+      }
+
       attempts += 1;
       if (attempts < RESTORE_ATTEMPTS) {
-        frame = requestAnimationFrame(tryScroll);
+        frame = requestAnimationFrame(restoreContext);
       }
     });
     return () => cancelAnimationFrame(frame);
