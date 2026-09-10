@@ -24,6 +24,22 @@ test.describe("H0.10 production spatial closure", () => {
     await expect(page.getByTestId("roadmap-scroll")).toHaveClass(/spatial-stage-rail/);
   });
 
+  test("Roadmap keeps acquired stages accessible and marks future stages as horizon, never completed", async ({ page }) => {
+    await page.goto("/roadmap");
+
+    const acquired = page.getByTestId("stage-graine");
+    const current = page.getByTestId("stage-pousse");
+    const future = page.getByTestId("stage-racine");
+
+    await expect(acquired).toHaveAttribute("data-progression-state", "acquired");
+    await expect(acquired).toContainText("✓");
+    await expect(current).toHaveAttribute("data-progression-state", "current");
+    await expect(future).toHaveAttribute("data-progression-state", "future");
+    await expect(future).toHaveAttribute("aria-disabled", "true");
+    await expect(future).toContainText(/Verrouill|Locked|Bloquead|Bloke/i);
+    await expect(future).not.toContainText("✓");
+  });
+
   test("Formations uses the finished focus-card language without changing routing", async ({ page }) => {
     await page.goto("/formations");
     await expect(page.getByTestId("formations-page")).toBeVisible();
