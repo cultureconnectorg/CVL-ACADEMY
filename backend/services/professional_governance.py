@@ -2,10 +2,8 @@
 
 Implements the first P0 primitives from the Academy integration masters:
 professional cases, scoped expert identities/assignments, document-version
-registry, review/decision workflow, and an append-only audit trail.
-
-The module deliberately does not pretend external systems are configured:
-FREK proof export/signature providers stay separate integration concerns.
+registry, review/decision workflow, append-only audit trail and scoped expert
+credential lifecycle.
 """
 
 from __future__ import annotations
@@ -14,6 +12,7 @@ import hashlib
 import json
 import secrets
 import uuid
+from datetime import datetime, timezone
 from typing import Any, Dict, Iterable, Optional
 
 from db import db, utc_now_iso
@@ -33,6 +32,22 @@ def _canonical_hash(payload: Dict[str, Any]) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
 
+def _normalise_expiry(expires_at: str) -> str:
+    raw = (expires_at or "").strip()
+    if not raw:
+        raise ValueError("expert credential expiry is required")
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError("expires_at must be a valid ISO-8601 datetime") from exc
+    if parsed.tzinfo is None:
+        raise ValueError("expires_at must include a timezone")
+    now = datetime.now(timezone.utc)
+    if parsed.astimezone(timezone.utc) <= now:
+        raise ValueError("expires_at must be in the future")
+    return parsed.astimezone(timezone.utc).isoformat()
+
+
 async def audit_event(
     *,
     event_type: str,
@@ -41,7 +56,6 @@ async def audit_event(
     resource_id: str,
     payload: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Append one immutable audit event and return its public representation."""
     body = payload or {}
     event = {
         "id": _id("AUD"),
@@ -167,17 +181,24 @@ async def assign_expert(
         actor_id=actor_id,
         resource_type="professional_case",
         resource_id=case_id,
-        payload={"assignment_id": assignment["id"], "expert_id": expert_id, "scope": assignment["scope"]},
+        payload={
+            "assignment_id": assignment["id"],
+            "expert_id": expert_id,
+            "scope": assignment["scope"],
+        },
     )
     return assignment
 
 
-async def issue_expert_api_key(*, actor_id: str, assignment_id: str) -> tuple[str, Dict[str, Any]]:
+async def issue_expert_api_key(
+    *, actor_id: str, assignment_id: str, expires_at: str
+) -> tuple[str, Dict[str, Any]]:
     assignment = await db.governance_expert_assignments.find_one(
         {"id": assignment_id, "status": "ACTIVE"}, {"_id": 0}
     )
     if not assignment:
         raise LookupError("active assignment not found")
+    expiry = _normalise_expiry(expires_at)
     raw = f"cvln_exp_{secrets.token_urlsafe(32)}"
     record = {
         "id": _id("KEY"),
@@ -189,7 +210,11 @@ async def issue_expert_api_key(*, actor_id: str, assignment_id: str) -> tuple[st
         "status": "ACTIVE",
         "created_by": actor_id,
         "created_at": utc_now_iso(),
+        "expires_at": expiry,
         "revoked_at": None,
+        "rotated_to_key_id": None,
+        "last_used_at": None,
+        "usage_count": 0,
     }
     await db.governance_api_keys.insert_one(dict(record))
     await audit_event(
@@ -197,10 +222,55 @@ async def issue_expert_api_key(*, actor_id: str, assignment_id: str) -> tuple[st
         actor_id=actor_id,
         resource_type="expert_assignment",
         resource_id=assignment_id,
-        payload={"key_id": record["id"], "scope": record["scope"]},
+        payload={
+            "key_id": record["id"],
+            "scope": record["scope"],
+            "expires_at": expiry,
+        },
     )
     public = {k: v for k, v in record.items() if k != "token_hash"}
     return raw, public
+
+
+async def rotate_expert_api_key(
+    *, actor_id: str, key_id: str, expires_at: str
+) -> tuple[str, Dict[str, Any]]:
+    old = await db.governance_api_keys.find_one(
+        {"id": key_id, "status": "ACTIVE"}, {"_id": 0}
+    )
+    if not old:
+        raise LookupError("active expert API key not found")
+    raw, new = await issue_expert_api_key(
+        actor_id=actor_id,
+        assignment_id=old["assignment_id"],
+        expires_at=expires_at,
+    )
+    now = utc_now_iso()
+    result = await db.governance_api_keys.update_one(
+        {"id": key_id, "status": "ACTIVE"},
+        {
+            "$set": {
+                "status": "ROTATED",
+                "revoked_at": now,
+                "revoked_by": actor_id,
+                "rotated_to_key_id": new["id"],
+            }
+        },
+    )
+    if result.modified_count != 1:
+        await db.governance_api_keys.update_one(
+            {"id": new["id"]},
+            {"$set": {"status": "REVOKED", "revoked_at": now, "revoked_by": actor_id}},
+        )
+        raise ValueError("expert credential rotation lost race")
+    await audit_event(
+        event_type="governance.expert_api_key.rotated",
+        actor_id=actor_id,
+        resource_type="expert_api_key",
+        resource_id=key_id,
+        payload={"new_key_id": new["id"], "expires_at": new["expires_at"]},
+    )
+    return raw, new
 
 
 async def register_document_version(
@@ -269,12 +339,18 @@ async def create_decision(
         actor_id=actor_id,
         resource_type="professional_case",
         resource_id=case_id,
-        payload={"decision_id": decision["id"], "state": target, "decision_hash": decision["decision_hash"]},
+        payload={
+            "decision_id": decision["id"],
+            "state": target,
+            "decision_hash": decision["decision_hash"],
+        },
     )
     return decision
 
 
-async def transition_decision(*, actor_id: str, decision_id: str, state: str) -> Dict[str, Any]:
+async def transition_decision(
+    *, actor_id: str, decision_id: str, state: str
+) -> Dict[str, Any]:
     target = state.upper()
     if target not in DECISION_STATES:
         raise ValueError("invalid decision state")
