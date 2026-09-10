@@ -39,6 +39,7 @@ jobs:
           mkdir -p preview-artifact
           cp -R frontend/build preview-artifact/build
           cp -R frontend/src preview-artifact/src
+          cp -R backend preview-artifact/backend
           cp frontend/package.json preview-artifact/package.json
           cp frontend/yarn.lock preview-artifact/yarn.lock
           printf '%s\n' '${{ github.sha }}' > preview-artifact/SOURCE_COMMIT_SHA.txt
