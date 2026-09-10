@@ -75,6 +75,14 @@ class NativeAttestationVerify(BaseModel):
     require_btc_anchor: bool = False
 
 
+class SignatureDecisionCreate(BaseModel):
+    policy_ref: str = Field(min_length=1, max_length=240)
+    rationale: str = Field(min_length=3, max_length=4000)
+    native_attestation_ids: List[str] = Field(default_factory=list)
+    external_evidence_refs: List[str] = Field(default_factory=list)
+    require_btc_anchor: bool = False
+
+
 def _translate(exc: Exception):
     if isinstance(exc, LookupError):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
@@ -170,11 +178,6 @@ async def native_attestation(
     payload: NativeAttestationCreate,
     current: User = Depends(get_current_user),
 ):
-    """Notarize explicit signing intent through FREKCORE.
-
-    This endpoint returns a CVLN_NATIVE_ATTESTATION with ``legal_effect=none``.
-    It intentionally does not mark the contract SIGNED or claim eIDAS qualification.
-    """
     try:
         return await proof_bridge.create_contract_native_attestation(
             actor_id=current.id,
@@ -205,12 +208,6 @@ async def verify_native_attestation(
     payload: NativeAttestationVerify,
     current: User = Admin,
 ):
-    """Independent verification gate against FREK's proof endpoint.
-
-    Verification checks local EvidencePackage integrity, the stored FREK block,
-    recomputed FREK block hash, chain proof linkage and optional BTC anchoring.
-    It records a verification event but never mutates the contract to SIGNED.
-    """
     try:
         return await native_attestation_verifier.verify_native_attestation(
             actor_id=current.id,
@@ -218,4 +215,21 @@ async def verify_native_attestation(
             require_btc_anchor=payload.require_btc_anchor,
         )
     except (LookupError, native_attestation_verifier.FrekProofUnavailable) as exc:
+        _translate(exc)
+
+
+@router.post("/contracts/{contract_id}/signature-decision")
+async def signature_decision(
+    contract_id: str,
+    payload: SignatureDecisionCreate,
+    current: User = Admin,
+):
+    """Human Authority gate before an APPROVED contract may become SIGNED."""
+    try:
+        return await legal_ops.record_signature_decision(
+            actor_id=current.id,
+            contract_id=contract_id,
+            **payload.model_dump(),
+        )
+    except (LookupError, ValueError) as exc:
         _translate(exc)
