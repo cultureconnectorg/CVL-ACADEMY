@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 from auth import get_current_user, require_role
 from models import User
 from services import assurance_core as core
+from services import risk_ops
 
 router = APIRouter(prefix="/assurance", tags=["assurance"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -106,6 +107,31 @@ class RiskCreate(BaseModel):
 
 class TreatmentCreate(BaseModel):
     treatment: str
+
+
+class IncidentCascadeCreate(BaseModel):
+    incident_type: str = Field(min_length=2, max_length=80)
+    incident_id: str = Field(min_length=1, max_length=240)
+    title: str = Field(min_length=3, max_length=240)
+    domain: str = Field(min_length=2, max_length=120)
+    impact: int = Field(ge=1, le=5)
+    probability: int = Field(ge=1, le=5)
+    owner: Optional[str] = None
+    mitigation: Optional[str] = None
+    deadline: Optional[str] = None
+    evidence_refs: List[str] = Field(default_factory=list)
+
+
+class InsuranceReviewTriggerCreate(BaseModel):
+    reason: str = Field(min_length=3, max_length=2000)
+    coverage_types: List[str] = Field(min_length=1)
+    broker_or_provider: Optional[str] = Field(default=None, max_length=240)
+
+
+class InsuranceReviewRecord(BaseModel):
+    coverage_confirmed: bool
+    evidence_refs: List[str] = Field(default_factory=list)
+    notes: Optional[str] = Field(default=None, max_length=4000)
 
 
 def _translate(exc: Exception):
@@ -220,3 +246,46 @@ async def set_risk_treatment(risk_id: str, payload: TreatmentCreate, current: Us
 @router.get("/risks/critical-gate")
 async def critical_risk_gate(current: User = Admin):
     return await core.critical_risk_gate()
+
+
+@router.post("/risks/cascade-incident")
+async def cascade_incident(payload: IncidentCascadeCreate, current: User = Admin):
+    try:
+        return await risk_ops.cascade_incident_to_risk(actor_id=current.id, **payload.model_dump())
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
+
+
+@router.post("/risks/{risk_id}/insurance-review")
+async def create_insurance_review(
+    risk_id: str, payload: InsuranceReviewTriggerCreate, current: User = Admin
+):
+    try:
+        return await risk_ops.create_insurance_review_trigger(
+            actor_id=current.id, risk_id=risk_id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
+
+
+@router.post("/risks/{risk_id}/insurance-review/auto")
+async def auto_insurance_review(risk_id: str, current: User = Admin):
+    try:
+        result = await risk_ops.auto_insurance_review_for_critical_risk(
+            actor_id=current.id, risk_id=risk_id
+        )
+        return {"triggered": result is not None, "review": result}
+    except LookupError as exc:
+        _translate(exc)
+
+
+@router.patch("/insurance-reviews/{trigger_id}")
+async def record_insurance_review(
+    trigger_id: str, payload: InsuranceReviewRecord, current: User = Admin
+):
+    try:
+        return await risk_ops.record_insurance_review(
+            actor_id=current.id, trigger_id=trigger_id, **payload.model_dump()
+        )
+    except (LookupError, ValueError) as exc:
+        _translate(exc)
