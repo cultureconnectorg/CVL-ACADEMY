@@ -231,17 +231,16 @@ async def test_legal_expert_cannot_cross_case_or_non_legal_boundary(legal_expert
             evidence_refs=["EVIDENCE-ATTEMPT-4"],
         )
 
-    privacy_case, _expert2, _assignment2, key2, matter2, policy2 = await _setup(
-        legal_expert_db,
-        case_domain="PRIVACY",
+    await legal_expert_db.professional_cases.update_one(
+        {"id": case["id"]}, {"$set": {"domain": "PRIVACY"}}
     )
     with pytest.raises(PermissionError, match="requires a LEGAL professional case"):
         await legal_expert_ops.modify_legal_matter(
-            raw_key=key2,
-            case_id=privacy_case["id"],
-            matter_id=matter2["id"],
+            raw_key=raw_key,
+            case_id=case["id"],
+            matter_id=matter["id"],
             patch={"title": "Wrong-domain edit"},
-            policy_version_id=policy2["id"],
+            policy_version_id=policy["id"],
             rationale="Must fail.",
             evidence_refs=["EVIDENCE-ATTEMPT-5"],
         )
