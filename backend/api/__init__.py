@@ -5,6 +5,7 @@ from __future__ import annotations
 from fastapi import APIRouter
 
 from . import (
+    accounting,
     assistants,
     assurance,
     auth,
@@ -71,6 +72,7 @@ for module in (
     integrations,
     commerce,
     payments,
+    accounting,
     professional_governance,
     expert_portal,
     assurance,
