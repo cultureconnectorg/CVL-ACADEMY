@@ -14,15 +14,20 @@ import uuid
 from typing import Any, Dict, Iterable, Optional
 
 from db import db, utc_now_iso
-from services import authority_policy
+from services import authority_policy, expert_access
 from services import professional_governance as governance
 
 
 APPROVAL_KINDS = {"INTERNAL_APPROVED", "EXTERNAL_LEGAL_APPROVED"}
+EXTERNAL_APPROVAL_SCOPE = "legal:approval:write"
 
 
 def _id(prefix: str) -> str:
     return f"{prefix}-{uuid.uuid4()}"
+
+
+def _refs(values: Iterable[str]) -> list[str]:
+    return list(dict.fromkeys(str(ref).strip() for ref in values if str(ref).strip()))
 
 
 async def decide_review_requirement(
@@ -36,7 +41,7 @@ async def decide_review_requirement(
     context: Optional[Dict[str, Any]] = None,
     evidence_refs: Iterable[str],
 ) -> Dict[str, Any]:
-    refs = list(dict.fromkeys(str(ref) for ref in evidence_refs if str(ref)))
+    refs = _refs(evidence_refs)
     if not refs:
         raise ValueError("legal review decision requires evidence")
     matter = await db.legal_matters.find_one({"id": matter_id}, {"_id": 0})
@@ -48,12 +53,13 @@ async def decide_review_requirement(
         actor_role=actor_role,
         action="LEGAL_REVIEW_DECIDE",
         context={
+            **(context or {}),
             "domain": "LEGAL",
             "jurisdiction": matter.get("jurisdiction"),
             "authority_level": authority_level,
             "risk_level": str(risk_level or "").upper(),
             "resource_type": matter.get("matter_type"),
-            **(context or {}),
+            "matter_id": matter_id,
         },
         policy_version_id=policy_version_id,
     )
@@ -115,7 +121,7 @@ async def record_approval(
     kind = str(approval_kind or "").upper()
     if kind not in APPROVAL_KINDS:
         raise ValueError("invalid legal approval kind")
-    refs = list(dict.fromkeys(str(ref) for ref in evidence_refs if str(ref)))
+    refs = _refs(evidence_refs)
     rationale = str(rationale or "").strip()
     if not refs or not rationale:
         raise ValueError("legal approval requires rationale and evidence")
@@ -137,6 +143,7 @@ async def record_approval(
             "jurisdiction": matter.get("jurisdiction"),
             "authority_level": authority_level,
             "resource_type": matter.get("matter_type"),
+            "matter_id": matter_id,
         },
         policy_version_id=policy_version_id,
     )
@@ -177,6 +184,44 @@ async def record_approval(
         },
     )
     return {**row, "authority": decision}
+
+
+async def record_external_expert_approval(
+    *,
+    raw_key: str,
+    case_id: str,
+    matter_id: str,
+    policy_version_id: str,
+    rationale: str,
+    evidence_refs: Iterable[str],
+) -> Dict[str, Any]:
+    context = await expert_access.authorize_case_scope(
+        raw_key, case_id, EXTERNAL_APPROVAL_SCOPE
+    )
+    case = await db.professional_cases.find_one({"id": case_id}, {"_id": 0})
+    matter = await db.legal_matters.find_one({"id": matter_id}, {"_id": 0})
+    if not case or str(case.get("domain", "")).upper() != "LEGAL":
+        raise PermissionError("external legal approval requires a LEGAL case")
+    if not matter or matter.get("case_id") != case_id:
+        raise PermissionError("legal matter is outside the assigned case")
+    expert = context["expert"]
+    if "LEGAL" not in {str(domain).upper() for domain in expert.get("domains", [])}:
+        raise PermissionError("expert identity is not authorised for LEGAL domain")
+    result = await record_approval(
+        actor_id=expert["id"],
+        actor_role="EXTERNAL_EXPERT",
+        authority_level=context["assignment"].get(
+            "authority_level", "A3_EXTERNAL_EXPERT"
+        ),
+        matter_id=matter_id,
+        approval_kind="EXTERNAL_LEGAL_APPROVED",
+        policy_version_id=policy_version_id,
+        rationale=rationale,
+        evidence_refs=evidence_refs,
+    )
+    result["assignment_id"] = context["assignment"]["id"]
+    result["credential_key_id"] = context["key"]["id"]
+    return result
 
 
 async def approval_state(matter_id: str) -> Dict[str, Any]:
