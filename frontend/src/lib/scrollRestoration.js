@@ -2,9 +2,9 @@
  * ACA-0023 — Exact return-to-position memory.
  *
  * Pure, framework-free stores keyed by React Router's `location.key`
- * (a unique id per history entry, not per pathname). Scroll and focus
- * therefore return to the exact history entry instead of leaking state
- * between two visits to the same route.
+ * (a unique id per history entry, not per pathname). Document scroll,
+ * named spatial rails and focus therefore return to the exact history
+ * entry instead of leaking state between two visits to the same route.
  *
  * In-memory only, deliberately: a hard refresh starts from a fresh
  * document. This memory exists only for client-side back/forward within
@@ -15,6 +15,7 @@ const MAX_ENTRIES = 50;
 
 const positions = new Map();
 const focusTargets = new Map();
+const elementPositions = new Map();
 
 function setBounded(map, key, value) {
   if (!key) return;
@@ -43,8 +44,22 @@ export function getFocusTarget(key) {
   return focusTargets.get(key);
 }
 
+export function saveElementPosition(key, memoryKey, position) {
+  if (!key || !memoryKey || !position) return;
+  const existing = elementPositions.get(key) || {};
+  setBounded(elementPositions, key, {
+    ...existing,
+    [memoryKey]: { left: position.left || 0, top: position.top || 0 },
+  });
+}
+
+export function getElementPositions(key) {
+  return elementPositions.get(key) || {};
+}
+
 export function clearPositions() {
   positions.clear();
+  elementPositions.clear();
 }
 
 export function clearFocusTargets() {
