@@ -49,9 +49,10 @@ async def test_workspace_only_returns_assigned_case_records(workspace_db):
     other = await governance.create_case(
         actor_id="admin-1", title="Other", domain="LEGAL", description="Other case"
     )
-    _expert, _assignment, raw = await _assignment(
+    _expert, assignment_row, raw = await _assignment(
         workspace_db, case["id"], ["legal:workspace:read"]
     )
+    assert assignment_row["case_id"] == case["id"]
     own_matter = await legal_ops.create_legal_matter(
         actor_id="admin-1", title="Own", matter_type="CONTRACT", case_id=case["id"]
     )
@@ -78,7 +79,10 @@ async def test_workspace_fails_closed_without_scope_or_assignment(workspace_db):
     other = await governance.create_case(
         actor_id="admin-1", title="Other", domain="LEGAL", description="Other case"
     )
-    _expert, _assignment, raw = await _assignment(workspace_db, case["id"], ["case:read"])
+    _expert, assignment_row, raw = await _assignment(
+        workspace_db, case["id"], ["case:read"]
+    )
+    assert assignment_row["case_id"] == case["id"]
     with pytest.raises(PermissionError, match="scope denied"):
         await legal_workspace.get_workspace(raw_key=raw, case_id=case["id"])
     with pytest.raises(PermissionError, match="not assigned"):
