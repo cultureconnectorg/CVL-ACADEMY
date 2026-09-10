@@ -1,9 +1,13 @@
 const { test, expect } = require("@playwright/test");
 
+const productionPwaSmoke = process.env.PWA_PRODUCTION_SMOKE === "true";
+
 // RG-07 / LRN-008 — real production-build PWA smoke. This is not run by
 // the normal dev-server E2E pass because service-worker registration is
 // intentionally production-only. `playwright.pwa.config.js` serves the
 // actual `build/` directory so this test exercises the shipped worker.
+test.skip(!productionPwaSmoke, "Runs only against the production build");
+
 test("installed production shell reloads while offline and never fabricates API data", async ({
   page,
   context,
