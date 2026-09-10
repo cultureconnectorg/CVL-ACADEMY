@@ -23,7 +23,13 @@ REGULATORY_AREAS = {
     "REG-07": "IP_COPYRIGHT_IMAGE_RIGHTS",
     "REG-08": "ACCESSIBILITY",
 }
-STATES = {"UNKNOWN", "REVIEW_REQUIRED", "APPLICABLE", "NOT_APPLICABLE", "SUPERSEDED"}
+STATES = {
+    "UNKNOWN",
+    "REVIEW_REQUIRED",
+    "APPLICABLE",
+    "NOT_APPLICABLE",
+    "SUPERSEDED",
+}
 
 
 def _id(prefix: str) -> str:
@@ -48,8 +54,11 @@ async def declare_scope(
     if reg not in REGULATORY_AREAS:
         raise ValueError("unknown regulatory area")
     refs = _refs(evidence_refs)
-    if not all(str(v).strip() for v in (jurisdiction, activity, entity_ref, product_scope)) or not refs:
-        raise ValueError("regulatory scope requires jurisdiction, activity, entity, product and evidence")
+    required = (jurisdiction, activity, entity_ref, product_scope)
+    if not all(str(v).strip() for v in required) or not refs:
+        raise ValueError(
+            "regulatory scope requires jurisdiction, activity, entity, product and evidence"
+        )
     row = {
         "id": _id("REGSCOPE"),
         "regulatory_id": reg,
@@ -95,7 +104,9 @@ async def record_applicability_decision(
         raise ValueError("applicability outcome must be APPLICABLE or NOT_APPLICABLE")
     refs = _refs(source_refs)
     if not rationale.strip() or not authority_ref.strip() or not refs:
-        raise ValueError("applicability decision requires rationale, authority and sources")
+        raise ValueError(
+            "applicability decision requires rationale, authority and sources"
+        )
     previous = None
     if scope.get("current_decision_id"):
         previous = await db.regulatory_applicability_decisions.find_one(
@@ -144,8 +155,12 @@ async def record_applicability_decision(
     return row
 
 
-async def applicability_gate(*, regulatory_id: Optional[str] = None) -> Dict[str, Any]:
-    query: Dict[str, Any] = {"status": {"$in": ["UNKNOWN", "REVIEW_REQUIRED"]}}
+async def applicability_gate(
+    *, regulatory_id: Optional[str] = None
+) -> Dict[str, Any]:
+    query: Dict[str, Any] = {
+        "status": {"$in": ["UNKNOWN", "REVIEW_REQUIRED"]}
+    }
     if regulatory_id:
         reg = regulatory_id.upper()
         if reg not in REGULATORY_AREAS:
@@ -156,5 +171,8 @@ async def applicability_gate(*, regulatory_id: Optional[str] = None) -> Dict[str
         "pass": len(rows) == 0,
         "open_count": len(rows),
         "open_scopes": rows,
-        "note": "PASS means recorded applicability decisions exist; it does not certify legal correctness without the referenced authority evidence.",
+        "note": (
+            "PASS means recorded applicability decisions exist; it does not certify "
+            "legal correctness without the referenced authority evidence."
+        ),
     }
