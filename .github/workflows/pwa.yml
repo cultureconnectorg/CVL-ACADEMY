@@ -1,0 +1,41 @@
+name: PWA Production Smoke
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch:
+
+jobs:
+  pwa-production-offline:
+    name: pwa-production-offline
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "yarn"
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build production PWA
+        env:
+          CI: "true"
+        run: yarn build
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Prove service worker shell works offline and API stays live-only
+        env:
+          PWA_PRODUCTION_SMOKE: "true"
+        run: npx playwright test --config=playwright.pwa.config.js
