@@ -65,6 +65,7 @@ from . import (
     skills,
     templates,
     threat_model,
+    trust_signature,
     wallet,
 )
 
@@ -110,6 +111,7 @@ for module in (
     retention_executor,
     evidence_graph,
     critical_proof,
+    trust_signature,
     incident_core,
     expert_portal,
     expert_validations,
