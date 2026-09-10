@@ -17,14 +17,6 @@ const STAGE_SIGNAL = {
   branches: "FREK-LINK", arbre: "FREK-CERT", foret: "FREK-CONTRIB",
 };
 
-/** RAIL 3 continuous-depth wrapper — corrected the same day it was first
- * shipped ("j'ai pas l'impression que c'est au niveau de ce que nous
- * avions commencé"): the first pass drove this with a fixed-duration
- * Framer Motion tween. This is `spatial/physics.js`'s real rAF spring
- * (via `useDepthPhysics`), the same engine H0.9 built and verified — not
- * a re-derivation, the actual module, unmodified. A dedicated component
- * because `useDepthPhysics` is a real hook and hooks can't be called
- * per-iteration inside `STAGES.map()` in the parent. */
 function StageDepthCard({ s, i, currentIdx, active, done, reduced, t }) {
   const targetDistance = currentIdx === -1 ? 0 : i - currentIdx;
   const distance = useDepthPhysics(targetDistance, { reduced });
@@ -41,28 +33,26 @@ function StageDepthCard({ s, i, currentIdx, active, done, reduced, t }) {
     <motion.div
       data-testid={`stage-${s.code}`}
       data-tier={depth.tier}
+      data-stage={s.code}
       aria-current={active ? "true" : undefined}
       style={style}
-      className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col
-        ${active ? "border-2 border-[--cvln-orange]" : ""}`}
+      className={`snap-start min-w-[280px] max-w-[280px] cvln-card spatial-tile spatial-stage-card p-6 flex flex-col
+        ${active ? "is-current-stage" : ""} ${done ? "is-crossed-stage" : ""}`}
     >
       <StageCardBody s={s} done={done} active={active} t={t} />
     </motion.div>
   );
 }
 
-/** Shared card body — identical markup whichever wrapper (FocusFieldItem
- * or the RAIL 3 continuous-depth motion.div) renders it, so the two
- * treatments can never drift in content, only in motion. */
 function StageCardBody({ s, done, active, t }) {
   return (
     <>
-      <div className="text-6xl mb-4">{s.emoji}</div>
-      <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">
+      <div className="spatial-stage-icon text-6xl mb-4" aria-hidden="true">{s.emoji}</div>
+      <div className="spatial-tile-eyebrow text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">
         {s.cc}+ CC
       </div>
       <h3 className="font-display font-bold text-2xl tracking-tight mt-2">{t(`stades.${s.code}`)}</h3>
-      <p className="text-sm text-[--cvln-ink-2] mt-3">{s.desc}</p>
+      <p className="spatial-tile-meta text-sm text-[--cvln-ink-2] mt-3">{s.desc}</p>
       <div className="mt-auto pt-6">
         <div className="mono text-xs text-[--cvln-orange] font-semibold">{s.signal}</div>
         {done && <div className="text-xs mt-2 text-[--cvln-forest] font-bold">✓ {t("roadmap_p.crossed")}</div>}
@@ -79,12 +69,6 @@ export default function Roadmap() {
   const currentIdx = STAGE_CODES.indexOf(user?.stade);
   const [canonical, setCanonical] = useState(null);
 
-  // GLOBAL_PROGRESS (reconciliation 2026-09-07): canonical_progress ->
-  // learning-path -> FREK profile -> Spatial. Same `/progression/summary`
-  // convergence data Dashboard.js already renders — this stage rail is
-  // the legacy GRAINE..FORÊT stade visualization (CC-credits-driven,
-  // untouched), so canonical content viewed is shown as its own
-  // honestly-labeled card below the rail, never blended into a stage.
   useEffect(() => {
     api.get("/progression/summary").then((r) => setCanonical(r.data.canonical));
   }, []);
@@ -93,10 +77,6 @@ export default function Roadmap() {
     code, emoji: STAGE_EMOJI[code], cc: STAGE_CC[code],
     desc: t(`roadmap_p.stage_desc_${code}`), signal: STAGE_SIGNAL[code],
   }));
-  // W3-D: progression is felt spatially (the current stage stands
-  // forward, every other stage recedes) rather than through a "Level N"
-  // counter — GRAINE_POUSSE_RACINE_BRANCHES_ARBRE_FORET stays an
-  // environmental transformation, never a level/XP readout.
   const currentStageCode = STAGE_CODES[currentIdx];
 
   return (
@@ -109,16 +89,11 @@ export default function Roadmap() {
         {t("roadmap_p.hero_p")}
       </p>
 
-      <div className="mt-12 flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory" data-testid="roadmap-scroll">
+      <div className={`mt-12 flex gap-6 overflow-x-auto pb-8 snap-x snap-mandatory ${FEATURE_FLAGS.SPATIAL_HUB_ENABLED ? "spatial-rail-viewport spatial-stage-rail" : ""}`} data-testid="roadmap-scroll">
         {STAGES.map((s, i) => {
           const active = i === currentIdx;
           const done = i < currentIdx;
 
-          // RAIL 3 (flag-gated): the stage rail's own real distance —
-          // `i - currentIdx`, driven by `user.stade`, the same real field
-          // FocusFieldItem's binary target/secondary already reads via
-          // `currentStageCode`. Continuous, never a second progression
-          // source: `currentIdx` is the one real signal both branches use.
           if (FEATURE_FLAGS.SPATIAL_HUB_ENABLED) {
             return (
               <StageDepthCard
@@ -150,7 +125,7 @@ export default function Roadmap() {
       </div>
 
       {canonical?.canonical_modules_total > 0 && (
-        <div className="mt-8 max-w-md cvln-card p-6" data-testid="roadmap-canonical-progress">
+        <div className={`mt-8 max-w-md cvln-card p-6 ${FEATURE_FLAGS.SPATIAL_HUB_ENABLED ? "spatial-progress-card" : ""}`} data-testid="roadmap-canonical-progress">
           <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">
             <span>{t("canonical_progress")}</span>
             <span className="text-[--cvln-orange]">{canonical.canonical_progress_pct}%</span>
