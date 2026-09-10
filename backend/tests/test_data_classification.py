@@ -37,6 +37,32 @@ async def _policy():
     )
 
 
+async def _access_policy():
+    return await policy_registry.register_version(
+        actor_id="founder-1",
+        policy_key="DATA_ACCESS",
+        version="1.0.0",
+        kind="POLICY",
+        title="Academy data access",
+        content={"rule": "least privilege"},
+        effective_at="2026-09-10T00:00:00+00:00",
+        evidence_refs=["PRI-001", "FOUNDER:CLASSIFY_ALL"],
+    )
+
+
+def _context(access_policy_id: str, **overrides):
+    base = {
+        "access_policy_version_id": access_policy_id,
+        "purpose": "Provide the Academy service",
+        "legal_basis": "contract",
+        "retention_days": 365,
+        "processor_refs": [],
+        "locations": ["EU"],
+    }
+    base.update(overrides)
+    return base
+
+
 @pytest.mark.asyncio
 async def test_declared_resource_is_unclassified_until_explicit_decision(classification_db):
     resource = await data_classification.declare_resource(
@@ -54,7 +80,7 @@ async def test_declared_resource_is_unclassified_until_explicit_decision(classif
 
 
 @pytest.mark.asyncio
-async def test_classification_reuses_existing_privacy_taxonomy_and_policy_registry(classification_db):
+async def test_classification_requires_complete_founder_context(classification_db):
     await assurance_core.register_data_class(
         actor_id="dpo-1",
         code="IDENTITY",
@@ -64,6 +90,7 @@ async def test_classification_reuses_existing_privacy_taxonomy_and_policy_regist
         legal_basis_required=True,
     )
     policy = await _policy()
+    access = await _access_policy()
     resource = await data_classification.declare_resource(
         actor_id="admin-1",
         resource_kind="data",
@@ -81,18 +108,84 @@ async def test_classification_reuses_existing_privacy_taxonomy_and_policy_regist
         rationale="Profile contains identity attributes",
         evidence_refs=["SCHEMA:users"],
         handling_controls={"access": "need_to_know"},
+        **_context(
+            access["id"],
+            purpose="Learner account management",
+            legal_basis="contract",
+            retention_days=3650,
+            processor_refs=["PROC-CLOUD"],
+            locations=["EU", "FR"],
+        ),
     )
     assert classification["data_class_code"] == "IDENTITY"
-    assert classification["policy_version_id"] == policy["id"]
+    assert classification["purpose"] == "Learner account management"
+    assert classification["legal_basis"] == "contract"
+    assert classification["retention_days"] == 3650
+    assert classification["processor_refs"] == ["PROC-CLOUD"]
+    assert classification["locations"] == ["EU", "FR"]
+    assert classification["access_policy_version_id"] == access["id"]
+    assert classification["owner"] == "academy"
     assert classification["sensitivity"] == "SENSITIVE"
     assert len(classification["classification_hash"]) == 64
-    gate = await data_classification.unclassified_gate()
-    assert gate["pass"] is True
+    assert (await data_classification.unclassified_gate())["pass"] is True
+
+
+@pytest.mark.asyncio
+async def test_required_legal_basis_and_location_fail_closed(classification_db):
+    await assurance_core.register_data_class(
+        actor_id="dpo-1",
+        code="PERSONAL",
+        name="Personal data",
+        sensitivity="personal",
+        retention_days=365,
+        legal_basis_required=True,
+    )
+    policy = await _policy()
+    access = await _access_policy()
+    resource = await data_classification.declare_resource(
+        actor_id="admin-1",
+        resource_kind="data",
+        resource_type="profile",
+        resource_id="USR-X",
+        owner="academy",
+        source="mongo",
+    )
+    with pytest.raises(ValueError, match="legal basis"):
+        await data_classification.classify_resource(
+            actor_id="dpo-1",
+            resource_record_id=resource["id"],
+            data_class_code="PERSONAL",
+            policy_version_id=policy["id"],
+            access_policy_version_id=access["id"],
+            purpose="Profile",
+            legal_basis=None,
+            retention_days=365,
+            processor_refs=[],
+            locations=["EU"],
+            rationale="Personal profile",
+            evidence_refs=["SCHEMA"],
+        )
+    with pytest.raises(ValueError, match="at least one location"):
+        await data_classification.classify_resource(
+            actor_id="dpo-1",
+            resource_record_id=resource["id"],
+            data_class_code="PERSONAL",
+            policy_version_id=policy["id"],
+            access_policy_version_id=access["id"],
+            purpose="Profile",
+            legal_basis="contract",
+            retention_days=365,
+            processor_refs=[],
+            locations=[],
+            rationale="Personal profile",
+            evidence_refs=["SCHEMA"],
+        )
 
 
 @pytest.mark.asyncio
 async def test_unknown_data_class_is_rejected(classification_db):
     policy = await _policy()
+    access = await _access_policy()
     resource = await data_classification.declare_resource(
         actor_id="admin-1",
         resource_kind="object",
@@ -109,6 +202,7 @@ async def test_unknown_data_class_is_rejected(classification_db):
             policy_version_id=policy["id"],
             rationale="Do not invent taxonomy",
             evidence_refs=["TEST"],
+            **_context(access["id"]),
         )
 
 
@@ -119,7 +213,7 @@ async def test_wrong_policy_cannot_govern_classification(classification_db):
         code="PUBLIC",
         name="Public data",
         sensitivity="public",
-        retention_days=None,
+        retention_days=365,
         legal_basis_required=False,
     )
     policy = await policy_registry.register_version(
@@ -132,6 +226,7 @@ async def test_wrong_policy_cannot_govern_classification(classification_db):
         effective_at="2026-09-10T00:00:00+00:00",
         evidence_refs=["LEGAL"],
     )
+    access = await _access_policy()
     resource = await data_classification.declare_resource(
         actor_id="admin-1",
         resource_kind="object",
@@ -148,6 +243,7 @@ async def test_wrong_policy_cannot_govern_classification(classification_db):
             policy_version_id=policy["id"],
             rationale="Public web content",
             evidence_refs=["ROUTE:/"],
+            **_context(access["id"], legal_basis=None),
         )
 
 
@@ -163,6 +259,7 @@ async def test_reclassification_is_append_only_and_supersedes_previous(classific
             legal_basis_required=True,
         )
     policy = await _policy()
+    access = await _access_policy()
     resource = await data_classification.declare_resource(
         actor_id="admin-1",
         resource_kind="provider",
@@ -178,6 +275,7 @@ async def test_reclassification_is_append_only_and_supersedes_previous(classific
         policy_version_id=policy["id"],
         rationale="Initial assessment",
         evidence_refs=["ASSESS-1"],
+        **_context(access["id"]),
     )
     second = await data_classification.classify_resource(
         actor_id="dpo-1",
@@ -186,6 +284,7 @@ async def test_reclassification_is_append_only_and_supersedes_previous(classific
         policy_version_id=policy["id"],
         rationale="Provider now receives personal metadata",
         evidence_refs=["ASSESS-2"],
+        **_context(access["id"]),
     )
     old = await classification_db.resource_classifications.find_one(
         {"id": first["id"]}, {"_id": 0}
