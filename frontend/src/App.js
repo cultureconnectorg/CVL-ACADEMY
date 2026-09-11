@@ -10,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
 import LegalFooter from "@/components/LegalFooter";
 import CookieConsent from "@/components/CookieConsent";
+import SpatialWorldFrame from "@/components/spatial/SpatialWorldFrame.jsx";
 import { RouteTransition } from "@/lib/RouteTransition";
 
 const Landing = lazy(() => import("@/pages/Landing"));
@@ -42,7 +43,7 @@ function PageFallback() {
 function LegalGuard({ children }) {
   const { user, loading } = useAuth();
   const [state, setState] = useState("checking");
-  const userId = user?.id;
+  const userId = user?.id || null;
 
   useEffect(() => {
     let alive = true;
@@ -80,40 +81,42 @@ function App() {
     <I18nProvider>
       <AuthProvider>
         <BrowserRouter>
-          <Suspense fallback={<PageFallback />}>
-            <RouteTransition>
-              <Routes>
-                <Route path="/" element={<Landing />} />
-                <Route path="/legal/accept" element={<LegalAcceptance />} />
-                <Route path="/legal/:slug" element={<LegalHub />} />
-                <Route path="/onboarding" element={<LegalGuard><Onboarding /></LegalGuard>} />
-                <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-                <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
-                <Route path="/formations" element={<Protected><Formations /></Protected>} />
-                <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
-                <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
-                <Route path="/missions" element={<Protected><Missions /></Protected>} />
-                <Route path="/badges" element={<Protected><Badges /></Protected>} />
-                <Route path="/frek-profile" element={<Protected><FrekProfile /></Protected>} />
-                <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
-                <Route path="/skills" element={<Protected><Skills /></Protected>} />
-                <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
-                <Route
-                  path="/trainer"
-                  element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
-                />
-                <Route
-                  path="/jury"
-                  element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
-                />
-                <Route
-                  path="/admin"
-                  element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
-                />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </RouteTransition>
-          </Suspense>
+          <SpatialWorldFrame>
+            <Suspense fallback={<PageFallback />}>
+              <RouteTransition>
+                <Routes>
+                  <Route path="/" element={<Landing />} />
+                  <Route path="/legal/accept" element={<LegalAcceptance />} />
+                  <Route path="/legal/:slug" element={<LegalHub />} />
+                  <Route path="/onboarding" element={<LegalGuard><Onboarding /></LegalGuard>} />
+                  <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+                  <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
+                  <Route path="/formations" element={<Protected><Formations /></Protected>} />
+                  <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
+                  <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
+                  <Route path="/missions" element={<Protected><Missions /></Protected>} />
+                  <Route path="/badges" element={<Protected><Badges /></Protected>} />
+                  <Route path="/frek-profile" element={<Protected><FrekProfile /></Protected>} />
+                  <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
+                  <Route path="/skills" element={<Protected><Skills /></Protected>} />
+                  <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
+                  <Route
+                    path="/trainer"
+                    element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
+                  />
+                  <Route
+                    path="/jury"
+                    element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
+                  />
+                  <Route
+                    path="/admin"
+                    element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
+                  />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Routes>
+              </RouteTransition>
+            </Suspense>
+          </SpatialWorldFrame>
           <LegalFooter onManageCookies={() => setCookieManagerToken((n) => n + 1)} />
           <CookieConsent manageToken={cookieManagerToken} />
         </BrowserRouter>
