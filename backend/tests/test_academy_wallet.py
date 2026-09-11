@@ -40,10 +40,9 @@ class FakeCollection:
     async def insert_one(self, doc):
         if "effect_key" in doc:
             for existing in self.docs:
-                if (
-                    existing.get("user_id") == doc.get("user_id")
-                    and existing.get("effect_key") == doc.get("effect_key")
-                ):
+                if existing.get("user_id") == doc.get("user_id") and existing.get(
+                    "effect_key"
+                ) == doc.get("effect_key"):
                     raise DuplicateKeyError("duplicate effect")
         if "user_id" in doc and "jcc_balance" in doc:
             for existing in self.docs:
