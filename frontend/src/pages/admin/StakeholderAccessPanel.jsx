@@ -57,11 +57,11 @@ export default function StakeholderAccessPanel() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email du représentant (optionnel)"
         />
-        <button type="submit" className="btn-outline" disabled={!orgId}>Générer l'accès</button>
+        <button type="submit" className="btn-outline" disabled={!orgId}>Générer l&apos;accès</button>
       </form>
       {code && (
         <div className="mt-4 rounded-xl bg-[--cvln-bg-warm] p-4 text-sm" data-testid="stakeholder-invite-code">
-          <div className="font-semibold">Code d'accès</div>
+          <div className="font-semibold">Code d&apos;accès</div>
           <div className="mono break-all mt-1">{code}</div>
           <div className="text-xs text-[--cvln-ink-2] mt-2">
             Lien à transmettre : /stakeholder/claim/{code}
