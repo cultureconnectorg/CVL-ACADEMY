@@ -44,9 +44,15 @@ async def ensure_indexes() -> None:
     )
     await db.template_definitions.create_index("type", unique=True)
 
-    # Wallet
+    # Academy mini-wallet — bounded to CVLN Academy, separate from CVLN-Wallet.
     await db.wallet_accounts.create_index("user_id", unique=True)
     await db.wallet_transactions.create_index([("user_id", 1), ("created_at", -1)])
+    await db.wallet_transactions.create_index(
+        [("user_id", 1), ("effect_key", 1)],
+        unique=True,
+        name="academy_wallet_effect_unique",
+        partialFilterExpression={"effect_key": {"$type": "string"}},
+    )
 
     # Assistants / mentor
     await db.mentor_conversations.create_index(

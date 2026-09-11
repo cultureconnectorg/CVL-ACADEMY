@@ -1,4 +1,8 @@
-"""CVLN Wallet API — balance/history + Apple/Google Wallet pass payloads."""
+"""CVLN Academy mini-wallet API — balance/history + pass payloads.
+
+This API is scoped to the Academy learner experience. It is not the separate
+CVLN-Wallet group product and does not process production card payments.
+"""
 
 from __future__ import annotations
 
@@ -17,7 +21,7 @@ from wallet import (
     list_transactions,
 )
 
-router = APIRouter(prefix="/wallet", tags=["wallet"])
+router = APIRouter(prefix="/wallet", tags=["academy-mini-wallet"])
 
 
 @router.get("/me", response_model=WalletSummary)

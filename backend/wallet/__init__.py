@@ -1,5 +1,8 @@
-"""CVLN Wallet — see service.py (ledger) and passes.py (Apple/Google Wallet
-payloads) for the public entry points."""
+"""CVLN Academy mini-wallet public entry points.
+
+This package is local to CVLN Academy. It must not be confused with the
+separate group-level CVLN-Wallet product or treated as a production PSP rail.
+"""
 
 from .models import WalletAccount, WalletSummary, WalletTransaction
 from .passes import build_apple_pass_payload, build_google_pass_payload
