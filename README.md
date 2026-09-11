@@ -1,95 +1,128 @@
 # CVLN Academy
 
-Plateforme d’apprentissage progressive du groupe CVLN : formations, missions, certifications et parcours culturels, avec une expérience **Spatial Learning** pensée comme un chemin continu plutôt qu’une suite d’écrans isolés.
+CVLN Academy est la plateforme d’apprentissage du groupe CVLN dédiée aux compétences culturelles, créatives, techniques et entrepreneuriales. Elle réunit formations, missions, progression et certification dans une expérience pensée comme un parcours continu.
 
-Langues prévues dans l’interface : FR / EN / Kreyòl / ES. Le catalogue seedé couvre 30 formations, 13 pôles et 233 modules, avec la progression Graine → Pousse → Racine → Branches → Arbre → Forêt.
+L’expérience **Spatial Learning** organise l’apprentissage comme un chemin : l’utilisateur conserve son contexte, visualise sa progression et avance de **Graine → Pousse → Racine → Branches → Arbre → Forêt**.
 
-## État actuel — 11 septembre 2026
+## Produit
 
-La branche `main` intègre désormais :
+CVLN Academy comprend notamment :
 
-- le socle Spatial Learning et la continuité de contexte entre routes ;
-- la vérification ligne par ligne des **137 exigences du classeur Spatial**, avec un gate CI dédié ;
-- les tests frontend unitaires et Playwright utilisés par la CI Spatial ;
-- le backend FastAPI/MongoDB et ses tests de régression ;
-- un **Legal Center** avec CGU, règlement Academy, charte IA et politique de confidentialité ;
-- un **legal gate versionné** avant les parcours apprenants concernés ;
-- la signature manuscrite/souris, la preuve d’acceptation et le hash de signature ;
-- le bandeau de consentement cookies et les surfaces de transparence IA ;
-- les moteurs FMS import/lineage, certification, lifecycle, skills et les adaptateurs d’intégration CVLN.
+- un catalogue de formations organisé par pôles et modules ;
+- des parcours apprenants et une progression structurée ;
+- une expérience Spatial Learning ;
+- des espaces adaptés aux rôles de la plateforme ;
+- des mécanismes de certification et de suivi de compétences ;
+- des surfaces juridiques et d’acceptation nécessaires aux parcours concernés ;
+- des points d’intégration avec l’écosystème CVLN.
 
-> Evidence First : ce README décrit l’état présent dans `main`. Les documents d’audit ou de cible ne doivent pas être interprétés comme des fonctionnalités livrées lorsqu’ils ne sont pas reliés au runtime.
+L’interface prévoit une expérience multilingue en **FR / EN / Kreyòl / ES**.
 
-## Stack
+## Architecture
 
-- **Backend** : FastAPI, Motor/MongoDB, Python
-- **Frontend** : React 19, Create React App via craco, Tailwind CSS, shadcn/ui
-- **Tests frontend** : Jest/React Testing Library + Playwright
-- **CI** : GitHub Actions, dont `.github/workflows/spatial-excel-ci.yml`
-- **IA / écosystème** : adaptateurs Academy vers les services CVLN ; consulter le rapport d’intégrations pour distinguer ce qui est réellement branché de ce qui reste contractuel
+```text
+CVL-ACADEMY/
+├── backend/                  API FastAPI, domaine et persistance
+├── frontend/                 Application React
+│   └── e2e/                  Tests runtime Playwright
+├── docs/                     Documentation technique, produit et audits
+├── scripts/                  Outils de contrôle et de traçabilité
+├── memory/                   Historique produit et décisions
+└── .github/workflows/        Intégration continue
+```
 
-## Démarrer
+### Stack principale
 
-Voir [`docs/DEVELOPER_GUIDE.md`](docs/DEVELOPER_GUIDE.md) pour les instructions détaillées.
+- **Frontend** : React 19, craco, Tailwind CSS, shadcn/ui
+- **Backend** : FastAPI, Python, Motor/MongoDB
+- **Tests frontend** : Jest, React Testing Library, Playwright
+- **Tests backend** : pytest
+- **Qualité** : ESLint, Black, isort, Flake8, mypy
+- **CI** : GitHub Actions
+
+## Démarrage local
+
+### Backend
 
 ```bash
-# Backend
 cd backend
 pip install -r requirements.txt
 cp .env.example .env
-# renseigner au minimum MONGO_URL / DB_NAME / JWT_SECRET
 uvicorn server:app --reload --port 8000
+```
 
-# Frontend
+Configurer au minimum les variables attendues par l’environnement, notamment `MONGO_URL`, `DB_NAME` et `JWT_SECRET`. Ne jamais versionner de secrets réels.
+
+### Frontend
+
+```bash
 cd frontend
 yarn install
 cp .env.example .env
-# REACT_APP_BACKEND_URL=http://localhost:8000
 yarn start
 ```
 
+Exemple de configuration locale :
+
+```env
+REACT_APP_BACKEND_URL=http://localhost:8000
+```
+
+Pour les instructions de développement détaillées, consulter [`docs/DEVELOPER_GUIDE.md`](docs/DEVELOPER_GUIDE.md).
+
 ## Vérification
 
-```bash
-# 137 exigences Spatial : une vérification par ligne
-node --test scripts/spatial-requirements.test.mjs
+### Frontend
 
-# Frontend
+```bash
 cd frontend
 npx eslint src e2e playwright.config.js
 CI=true yarn test --watchAll=false
 CI=true yarn build
 npx playwright test
+```
 
-# Backend
+### Backend
+
+```bash
 cd backend
 black --check .
 pytest tests/ -n 0 --ignore=tests/backend_test.py
 ```
 
-La CI Spatial exécute aussi des contrôles `isort`, `flake8` et `mypy` sur les fichiers backend modifiés par la tranche concernée, afin de ne pas attribuer artificiellement à une modification une dette préexistante hors de son périmètre.
+Des contrôles supplémentaires de qualité, de typage, de traçabilité et de runtime sont exécutés par les workflows GitHub Actions du dépôt. **La présence d’un test ou d’un workflow ne signifie pas qu’il est vert : le résultat GitHub Actions du commit concerné reste la preuve d’exécution.**
 
-## Documentation principale
+## Documentation
 
 | Document | Rôle |
 |---|---|
 | [`docs/DEVELOPER_GUIDE.md`](docs/DEVELOPER_GUIDE.md) | Installation, architecture, conventions et API |
-| [`docs/AUDIT_REPORT.md`](docs/AUDIT_REPORT.md) | Audit technique historique ; à lire avec la date et le commit correspondant |
 | [`docs/ACADEMY_CURRENT_FUNNEL_AUDIT.md`](docs/ACADEMY_CURRENT_FUNNEL_AUDIT.md) | État observé du funnel Academy |
-| [`docs/ACADEMY_SPATIAL_END_TO_END_ARCHITECTURE.md`](docs/ACADEMY_SPATIAL_END_TO_END_ARCHITECTURE.md) | Architecture Spatial Learning de bout en bout |
-| [`docs/SPATIAL_UPGRADE_SPEC.md`](docs/SPATIAL_UPGRADE_SPEC.md) | Spécification de l’upgrade Spatial |
-| [`docs/INTEGRATIONS_REPORT.md`](docs/INTEGRATIONS_REPORT.md) | Statut réel des intégrations CVLN |
+| [`docs/ACADEMY_SPATIAL_END_TO_END_ARCHITECTURE.md`](docs/ACADEMY_SPATIAL_END_TO_END_ARCHITECTURE.md) | Architecture Spatial Learning |
+| [`docs/SPATIAL_UPGRADE_SPEC.md`](docs/SPATIAL_UPGRADE_SPEC.md) | Spécification Spatial |
+| [`docs/INTEGRATIONS_REPORT.md`](docs/INTEGRATIONS_REPORT.md) | État des intégrations CVLN |
 | [`docs/FMS_IMPORT_VALIDATION_REPORT.md`](docs/FMS_IMPORT_VALIDATION_REPORT.md) | Validation du moteur d’import FMS |
-| [`docs/I18N_AUDIT_REPORT.md`](docs/I18N_AUDIT_REPORT.md) | Couverture multilingue observée |
+| [`docs/I18N_AUDIT_REPORT.md`](docs/I18N_AUDIT_REPORT.md) | Audit de la couverture multilingue |
+| [`docs/AUDIT_REPORT.md`](docs/AUDIT_REPORT.md) | Rapport d’audit daté ; ne pas le confondre avec l’état courant |
 | [`INTEGRATION_CONTRACT.md`](INTEGRATION_CONTRACT.md) | Contrat d’intégration REST |
-| [`memory/PRD.md`](memory/PRD.md) | Historique produit et décisions |
-| [`frontend/e2e/README.md`](frontend/e2e/README.md) | Périmètre et exécution des tests Playwright |
+| [`frontend/README.md`](frontend/README.md) | Guide frontend |
+| [`frontend/e2e/README.md`](frontend/e2e/README.md) | Guide Playwright / E2E |
 
-## Conformité Academy
+## Evidence First
 
-Le parcours protégé utilise un bundle juridique versionné. Les documents publics sont accessibles via le Legal Center et l’API expose les exigences/acceptations. Une évolution substantielle d’un document requis doit entraîner une nouvelle version du bundle afin que l’acceptation soit redemandée.
+CVLN Academy applique les principes suivants :
 
-Les textes présents dans l’application constituent une couche technique de conformité ; ils ne remplacent pas la validation finale de l’entité juridique, de ses coordonnées, de son SIREN/SIRET, de ses responsables, de ses sous-traitants, durées de conservation et autres mentions propres à l’exploitation réelle.
+- **Current != Target** : une cible ou une spécification n’est pas l’état actuel du produit ;
+- **Evidence First** : une capacité est considérée comme vérifiée uniquement lorsqu’une preuve appropriée existe ;
+- **Human Authority** : les décisions structurantes non décidées explicitement ne doivent pas être inventées par l’automatisation.
+
+Les matrices Excel, rapports d’audit, résultats détaillés de CI et preuves ligne par ligne sont conservés dans leurs documents, scripts et workflows dédiés plutôt que reproduits dans ce README.
+
+## Conformité
+
+Les mécanismes techniques de conformité présents dans l’application ne remplacent pas la validation juridique de l’exploitation réelle. Avant mise en production, les mentions liées à l’entité exploitante, ses coordonnées, identifiants légaux, responsables, sous-traitants, traitements et durées de conservation doivent correspondre à la situation juridique effective.
+
+Aucun secret, identifiant privé ou donnée personnelle réelle ne doit être ajouté à la documentation du dépôt.
 
 ## Licence
 
