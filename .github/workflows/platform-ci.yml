@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   backend:
-    name: Backend quality and tests
+    name: Backend delta quality and full tests
     runs-on: ubuntu-latest
     services:
       mongodb:
@@ -35,6 +35,8 @@ jobs:
       CORS_ORIGINS: http://127.0.0.1:4173
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -45,16 +47,32 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install "isort>=5.13.2,<6"
-      - name: Black
-        working-directory: backend
-        run: black --check .
-      - name: Isort
-        working-directory: backend
-        run: isort --check-only .
-      - name: Flake8
-        working-directory: backend
-        run: flake8 --config=.flake8 .
-      - name: Pytest
+      - name: Resolve changed backend Python files
+        id: changed
+        shell: bash
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "main" ]; then
+            base="HEAD^"
+          else
+            base="$(git merge-base origin/main HEAD)"
+          fi
+          mapfile -t files < <(git diff --name-only "$base" HEAD -- 'backend/**/*.py' 'backend/*.py')
+          printf '%s\n' "${files[@]}" > /tmp/backend-python-files.txt
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "has_files=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_files=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Black changed files
+        if: steps.changed.outputs.has_files == 'true'
+        run: xargs black --check < /tmp/backend-python-files.txt
+      - name: Isort changed files
+        if: steps.changed.outputs.has_files == 'true'
+        run: xargs isort --check-only < /tmp/backend-python-files.txt
+      - name: Flake8 changed files
+        if: steps.changed.outputs.has_files == 'true'
+        run: xargs flake8 --config=backend/.flake8 < /tmp/backend-python-files.txt
+      - name: Pytest full backend suite
         working-directory: backend
         run: pytest tests/ -n 0 --ignore=tests/backend_test.py
 
