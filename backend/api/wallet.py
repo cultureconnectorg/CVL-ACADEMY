@@ -8,9 +8,8 @@ from __future__ import annotations
 
 from typing import List
 
-from fastapi import APIRouter, Depends
-
 from auth import get_current_user
+from fastapi import APIRouter, Depends
 from models import User
 from wallet import (
     WalletSummary,
