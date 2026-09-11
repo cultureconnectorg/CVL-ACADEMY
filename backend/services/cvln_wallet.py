@@ -25,7 +25,9 @@ class CVLNWalletClient:
     def __init__(self) -> None:
         self.base_url = os.environ.get("CVLN_WALLET_URL", "").rstrip("/")
         self.api_key = os.environ.get("CVLN_WALLET_API_KEY", "")
-        self.timeout_seconds = float(os.environ.get("CVLN_WALLET_TIMEOUT_SECONDS", "10"))
+        self.timeout_seconds = float(
+            os.environ.get("CVLN_WALLET_TIMEOUT_SECONDS", "10")
+        )
 
     def is_remote_enabled(self) -> bool:
         return bool(self.base_url and self.api_key)
@@ -50,11 +52,15 @@ class CVLNWalletClient:
             async with httpx.AsyncClient(
                 base_url=self.base_url, timeout=self.timeout_seconds
             ) as client:
-                response = await client.get("/api/v1/entity/me", headers=self._headers())
+                response = await client.get(
+                    "/api/v1/entity/me", headers=self._headers()
+                )
                 response.raise_for_status()
                 return response.json()
         except (httpx.TimeoutException, httpx.NetworkError) as exc:
-            raise CVLNWalletAmbiguousResult("CVLN Wallet entity lookup ambiguous") from exc
+            raise CVLNWalletAmbiguousResult(
+                "CVLN Wallet entity lookup ambiguous"
+            ) from exc
 
     async def charge(self, frek_id: str, amount_cc: float, note: str) -> Dict[str, Any]:
         """Charge a Wallet user exactly once per Academy attempt.
@@ -74,10 +80,14 @@ class CVLNWalletClient:
                 response.raise_for_status()
                 data = response.json()
                 if data.get("ok") is not True:
-                    raise CVLNWalletAmbiguousResult("CVLN Wallet returned non-confirmed charge")
+                    raise CVLNWalletAmbiguousResult(
+                        "CVLN Wallet returned non-confirmed charge"
+                    )
                 return data
         except (httpx.TimeoutException, httpx.NetworkError) as exc:
-            raise CVLNWalletAmbiguousResult("CVLN Wallet charge outcome ambiguous") from exc
+            raise CVLNWalletAmbiguousResult(
+                "CVLN Wallet charge outcome ambiguous"
+            ) from exc
 
 
 cvln_wallet = CVLNWalletClient()
