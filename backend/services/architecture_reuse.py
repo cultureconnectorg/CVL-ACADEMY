@@ -1,7 +1,8 @@
-"""PG-13 / Deduplication Map canonical manifest.
+"""PG-13 / GOV-18 canonical no-duplicate architecture manifest.
 
-The manifest records the Founder-approved REUSE/EXTEND/BUILD-ONCE decisions so new
-components can be checked against one canonical owner before implementation.
+The manifest records Founder-approved REUSE/EXTEND/BUILD-ONCE decisions. Runtime
+registration rejects conflicting component choices and the gate also scans stored
+records so a legacy/manual conflicting write cannot silently pass production closure.
 """
 
 from __future__ import annotations
@@ -9,6 +10,7 @@ from __future__ import annotations
 from typing import Any, Dict
 
 from db import db, utc_now_iso
+from services import professional_governance as governance
 
 MANIFEST = [
     {
@@ -110,6 +112,16 @@ MANIFEST = [
 ]
 
 
+def _allowed_decisions(expected: str) -> set[str]:
+    value = str(expected).upper()
+    allowed = {value}
+    if value == "REUSE/EXTEND":
+        allowed |= {"REUSE", "EXTEND"}
+    if value == "CONNECT/EXTEND":
+        allowed |= {"CONNECT", "EXTEND"}
+    return allowed
+
+
 async def sync_manifest(*, actor_id: str) -> Dict[str, Any]:
     for index, entry in enumerate(MANIFEST, start=1):
         row = {
@@ -140,13 +152,7 @@ async def register_build_decision(
     if not manifest:
         raise LookupError("deduplication manifest theme not found")
     normalized = decision.strip().upper()
-    expected = str(manifest["decision"]).upper()
-    allowed = {expected}
-    if expected == "REUSE/EXTEND":
-        allowed |= {"REUSE", "EXTEND"}
-    if expected == "CONNECT/EXTEND":
-        allowed |= {"CONNECT", "EXTEND"}
-    if normalized not in allowed:
+    if normalized not in _allowed_decisions(manifest["decision"]):
         raise ValueError("build decision conflicts with locked deduplication manifest")
     if canonical_owner.strip() != manifest["canonical_owner"]:
         raise ValueError("component points to wrong canonical owner")
@@ -163,15 +169,48 @@ async def register_build_decision(
         "recorded_at": utc_now_iso(),
     }
     await db.architecture_build_decisions.insert_one(dict(row))
+    await governance.audit_event(
+        event_type="governance.architecture.build_decision_recorded",
+        actor_id=actor_id,
+        resource_type="architecture_build_decision",
+        resource_id=f"{manifest['id']}:{row['component']}",
+        after=row,
+        reason="GOV-18 no-duplicate architecture decision",
+        result=normalized,
+        payload={
+            "manifest_id": manifest["id"],
+            "theme": theme,
+            "canonical_owner": row["canonical_owner"],
+            "evidence_ref": row["evidence_ref"],
+        },
+    )
     return row
 
 
 async def gate() -> Dict[str, Any]:
     manifest = await db.architecture_reuse_manifest.find({}, {"_id": 0}).to_list(1000)
     unlocked = [row for row in manifest if row.get("status") != "LOCKED"]
+    by_id = {row.get("id"): row for row in manifest}
+    decisions = await db.architecture_build_decisions.find({}, {"_id": 0}).to_list(10000)
+    conflicts = []
+    for decision in decisions:
+        owner = by_id.get(decision.get("manifest_id"))
+        reason = None
+        if not owner:
+            reason = "MANIFEST_REFERENCE_MISSING"
+        elif decision.get("canonical_owner") != owner.get("canonical_owner"):
+            reason = "CANONICAL_OWNER_MISMATCH"
+        elif str(decision.get("decision", "")).upper() not in _allowed_decisions(
+            owner.get("decision", "")
+        ):
+            reason = "DECISION_CONFLICT"
+        if reason:
+            conflicts.append({**decision, "conflict_reason": reason})
     return {
-        "pass": len(manifest) == len(MANIFEST) and not unlocked,
+        "pass": len(manifest) == len(MANIFEST) and not unlocked and not conflicts,
         "manifest_count": len(manifest),
         "expected_count": len(MANIFEST),
         "unlocked": unlocked,
+        "conflict_count": len(conflicts),
+        "conflicts": conflicts,
     }
