@@ -84,7 +84,8 @@ jobs:
           pip install -r requirements.txt
           pip install "isort>=5.13.2,<6"
       - name: Black full backend
-        run: black --check backend
+        working-directory: backend
+        run: black --check .
       - name: Isort changed backend files
         shell: bash
         run: |
@@ -95,9 +96,11 @@ jobs:
             isort --check-only "${files[@]}"
           fi
       - name: Flake8 full backend
-        run: flake8 backend
+        working-directory: backend
+        run: flake8 .
       - name: Mypy full backend
-        run: mypy --ignore-missing-imports backend
+        working-directory: backend
+        run: mypy --ignore-missing-imports .
       - name: Unit/integration tests without external HTTP E2E
         working-directory: backend
         run: pytest tests/ -n 0 --ignore=tests/backend_test.py
