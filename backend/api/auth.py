@@ -49,6 +49,7 @@ from services.notifications import notifications
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 OAUTH_PROVIDERS = ("google", "apple", "github", "microsoft")
+EXTERNAL_STAKEHOLDER_ROLES = ("partner", "institution")
 
 
 def _provider_env_configured(provider: str) -> bool:
@@ -71,15 +72,20 @@ async def _apply_invitation(user_id: str, invite_code: str) -> None:
         if expires_at < datetime.now(timezone.utc):
             raise HTTPException(status_code=400, detail="Code d'invitation expiré")
 
+    role = inv["role"]
+    user_updates = {
+        "role": role,
+        "org_id": inv.get("org_id"),
+        "cohort_id": inv.get("cohort_id"),
+    }
+    # Partner/institution accounts do not go through the learner FREK Origin
+    # Story. Their role-specific portal is their onboarding destination.
+    if role in EXTERNAL_STAKEHOLDER_ROLES:
+        user_updates["onboarding_completed"] = True
+
     await db.users.update_one(
         {"id": user_id},
-        {
-            "$set": {
-                "role": inv["role"],
-                "org_id": inv.get("org_id"),
-                "cohort_id": inv.get("cohort_id"),
-            }
-        },
+        {"$set": user_updates},
     )
     await db.invitations.update_one(
         {"code": invite_code},

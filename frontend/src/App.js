@@ -13,6 +13,7 @@ import CookieConsent from "@/components/CookieConsent";
 import { RouteTransition } from "@/lib/RouteTransition";
 
 const Landing = lazy(() => import("@/pages/Landing"));
+const Invite = lazy(() => import("@/pages/Invite"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Formations = lazy(() => import("@/pages/Formations"));
@@ -30,10 +31,14 @@ const LegalAcceptance = lazy(() => import("@/pages/LegalAcceptance"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
+const StakeholderDashboard = lazy(() => import("@/pages/stakeholder/StakeholderDashboard"));
 
 const ADMIN_ROLES = ["admin", "super_admin", "founder"];
 const TRAINER_ROLES = ["trainer", ...ADMIN_ROLES];
 const JURY_ROLES = ["jury", ...ADMIN_ROLES];
+const PARTNER_ROLES = ["partner", ...ADMIN_ROLES];
+const INSTITUTION_ROLES = ["institution", ...ADMIN_ROLES];
+const ONBOARDING_EXEMPT_ROLES = ["partner", "institution"];
 
 function PageFallback() {
   return <div className="p-10 text-[--cvln-ink-2]">…</div>;
@@ -67,9 +72,20 @@ function Protected({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
-  if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
+  if (!user.onboarding_completed && !ONBOARDING_EXEMPT_ROLES.includes(user.role)) {
+    return <Navigate to="/onboarding" replace />;
+  }
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <LegalGuard><Layout>{children}</Layout></LegalGuard>;
+}
+
+function DashboardEntry() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/" replace />;
+  if (user.role === "partner") return <Navigate to="/partner" replace />;
+  if (user.role === "institution") return <Navigate to="/institution" replace />;
+  return <Protected><Dashboard /></Protected>;
 }
 
 function App() {
@@ -83,10 +99,11 @@ function App() {
             <RouteTransition>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/invite/:code" element={<Invite />} />
                 <Route path="/legal/accept" element={<LegalAcceptance />} />
                 <Route path="/legal/:slug" element={<LegalHub />} />
                 <Route path="/onboarding" element={<LegalGuard><Onboarding /></LegalGuard>} />
-                <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+                <Route path="/dashboard" element={<DashboardEntry />} />
                 <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
                 <Route path="/formations" element={<Protected><Formations /></Protected>} />
                 <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
@@ -104,6 +121,14 @@ function App() {
                 <Route
                   path="/jury"
                   element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
+                />
+                <Route
+                  path="/partner"
+                  element={<Protected roles={PARTNER_ROLES}><StakeholderDashboard /></Protected>}
+                />
+                <Route
+                  path="/institution"
+                  element={<Protected roles={INSTITUTION_ROLES}><StakeholderDashboard /></Protected>}
                 />
                 <Route
                   path="/admin"

@@ -24,17 +24,24 @@ const STUDENT_NAV = [
 ];
 
 const STAFF_NAV = [
-  { to: "/trainer", key: "trainer_space", Icon: PeopleTag,   roles: ["trainer", "admin", "super_admin", "founder"] },
-  { to: "/jury",    key: "jury_space",    Icon: ShieldSearch, roles: ["jury", "admin", "super_admin", "founder"] },
-  { to: "/admin",   key: "admin_cms",     Icon: Settings,    roles: ["admin", "super_admin", "founder"] },
+  { to: "/trainer", key: "trainer_space", Icon: PeopleTag, roles: ["trainer", "admin", "super_admin", "founder"] },
+  { to: "/jury", key: "jury_space", Icon: ShieldSearch, roles: ["jury", "admin", "super_admin", "founder"] },
+  { to: "/partner", label: "Espace partenaire", Icon: PeopleTag, roles: ["partner", "admin", "super_admin", "founder"] },
+  { to: "/institution", label: "Espace institution", Icon: ShieldCheck, roles: ["institution", "admin", "super_admin", "founder"] },
+  { to: "/admin", key: "admin_cms", Icon: Settings, roles: ["admin", "super_admin", "founder"] },
 ];
+
+const EXTERNAL_ROLES = ["partner", "institution"];
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const { t, lang, setLang } = useI18n();
   const nav = useNavigate();
   const location = useLocation();
-  const NAV = [...STUDENT_NAV, ...STAFF_NAV.filter((item) => item.roles.includes(user?.role))];
+  const roleNav = STAFF_NAV.filter((item) => item.roles.includes(user?.role));
+  const NAV = EXTERNAL_ROLES.includes(user?.role)
+    ? roleNav
+    : [...STUDENT_NAV, ...roleNav];
   // MENTOR = CONTEXTUAL_PRESENCE (W3-C): the FAB/panel only mounts where a
   // pedagogical context justifies it — never a permanent floating chatbot
   // on every screen. See mentorPresence.js for the exact, deliberately
@@ -67,10 +74,10 @@ export default function Layout({ children }) {
         </div>
 
         <nav className="flex flex-col gap-1" data-testid="sidebar-nav">
-          {NAV.map(({ to, key, Icon }) => (
+          {NAV.map(({ to, key, label, Icon }) => (
             <NavLink
               key={to} to={to}
-              data-testid={`nav-${key}`}
+              data-testid={`nav-${key || to.replace("/", "")}`}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition
                  ${isActive
@@ -79,7 +86,7 @@ export default function Layout({ children }) {
               }
             >
               <Icon width={18} height={18} />
-              {t(key)}
+              {label || t(key)}
             </NavLink>
           ))}
         </nav>
