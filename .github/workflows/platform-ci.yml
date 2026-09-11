@@ -68,7 +68,7 @@ jobs:
         run: xargs black --check < /tmp/backend-python-files.txt
       - name: Isort changed files
         if: steps.changed.outputs.has_files == 'true'
-        run: xargs isort --check-only < /tmp/backend-python-files.txt
+        run: xargs isort --check-only --profile black --src-path backend < /tmp/backend-python-files.txt
       - name: Flake8 changed files
         if: steps.changed.outputs.has_files == 'true'
         run: xargs flake8 --config=backend/.flake8 < /tmp/backend-python-files.txt
