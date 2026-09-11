@@ -63,11 +63,15 @@ async def create_order(inp: OrderCreate, current: User = Depends(get_current_use
     try:
         wallet_entity = await cvln_wallet.entity_info()
     except CVLNWalletNotConfigured as exc:
-        raise HTTPException(status_code=503, detail="CVLN_WALLET_NOT_CONFIGURED") from exc
+        raise HTTPException(
+            status_code=503, detail="CVLN_WALLET_NOT_CONFIGURED"
+        ) from exc
     except CVLNWalletAmbiguousResult as exc:
         raise HTTPException(status_code=503, detail="CVLN_WALLET_UNAVAILABLE") from exc
     except httpx.HTTPStatusError as exc:
-        raise HTTPException(status_code=502, detail="CVLN_WALLET_REJECTED_ENTITY_AUTH") from exc
+        raise HTTPException(
+            status_code=502, detail="CVLN_WALLET_REJECTED_ENTITY_AUTH"
+        ) from exc
 
     rate_eur = float(wallet_entity.get("rate_eur", 0))
     amount_jcc = amount_eur_to_jcc(float(offer["amount_eur"]), rate_eur)
@@ -108,11 +112,12 @@ async def get_order(order_id: str, current: User = Depends(get_current_user)):
 
 
 @router.post("/orders/{order_id}/pay-wallet")
-async def pay_order_with_wallet(order_id: str, current: User = Depends(get_current_user)):
+async def pay_order_with_wallet(
+    order_id: str, current: User = Depends(get_current_user)
+):
     attempt_id = f"pay_{uuid.uuid4().hex[:16]}"
     now = utc_now_iso()
 
-    # Atomic claim: one Academy process may initiate the external charge.
     order = await db.commercial_orders.find_one_and_update(
         {
             "order_id": order_id,
@@ -150,10 +155,10 @@ async def pay_order_with_wallet(order_id: str, current: User = Depends(get_curre
             {"order_id": order_id, "payment_attempt_id": attempt_id},
             {"$set": {"status": "PENDING_PAYMENT", "updated_at": utc_now_iso()}},
         )
-        raise HTTPException(status_code=503, detail="CVLN_WALLET_NOT_CONFIGURED") from exc
+        raise HTTPException(
+            status_code=503, detail="CVLN_WALLET_NOT_CONFIGURED"
+        ) from exc
     except CVLNWalletAmbiguousResult as exc:
-        # Never retry automatically: the Wallet endpoint may have charged before
-        # the network outcome became unknown.
         await db.commercial_orders.update_one(
             {"order_id": order_id, "payment_attempt_id": attempt_id},
             {
