@@ -70,7 +70,9 @@ async def create_cohort(
     # only inside their own organisation; platform admins retain cross-org access.
     if current.role not in ADMIN_ROLES:
         if current.role != "trainer" or current.org_id != org_id:
-            raise HTTPException(status_code=403, detail="Accès refusé à cette organisation")
+            raise HTTPException(
+                status_code=403, detail="Accès refusé à cette organisation"
+            )
 
     org = await db.organisations.find_one({"id": org_id}, {"_id": 0})
     if not org:
