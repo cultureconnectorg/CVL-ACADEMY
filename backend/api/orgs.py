@@ -116,9 +116,7 @@ async def create_invitation(
     if inp.email:
         org_name = None
         if inp.org_id:
-            org_doc = await db.organisations.find_one(
-                {"id": inp.org_id}, {"_id": 0}
-            )
+            org_doc = await db.organisations.find_one({"id": inp.org_id}, {"_id": 0})
             org_name = org_doc["name"] if org_doc else None
         await notifications.send_invitation(inp.email, invitation.code, org_name)
 
