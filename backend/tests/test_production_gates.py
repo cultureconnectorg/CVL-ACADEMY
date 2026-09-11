@@ -9,6 +9,7 @@ from services import (
     data_classification,
     evidence_graph,
     production_gates,
+    professional_governance,
     retention_executor,
     security_remediation,
     threat_model,
@@ -25,6 +26,7 @@ async def gates_db(monkeypatch):
         data_classification,
         evidence_graph,
         production_gates,
+        professional_governance,
         retention_executor,
         security_remediation,
         threat_model,
@@ -81,6 +83,21 @@ async def test_architecture_manifest_is_locked_and_conflicts_fail(gates_db):
             canonical_owner="Payments Core",
             evidence_ref="BAD",
         )
+
+    await gates_db.architecture_build_decisions.insert_one(
+        {
+            "theme": "Payments",
+            "component": "legacy manual payment clone",
+            "decision": "BUILD",
+            "canonical_owner": "Payments Core",
+            "manifest_id": "REUSE-07",
+            "evidence_ref": "LEGACY-BAD",
+        }
+    )
+    gate = await architecture_reuse.gate()
+    assert gate["pass"] is False
+    assert gate["conflict_count"] == 1
+    assert gate["conflicts"][0]["conflict_reason"] == "DECISION_CONFLICT"
 
 
 @pytest.mark.asyncio
