@@ -12,13 +12,7 @@ import os
 from dataclasses import dataclass
 from typing import Dict, Iterable, Tuple
 
-from .models import (
-    Capability,
-    ConnectionMode,
-    ConnectorDescriptor,
-    FundingCase,
-    PreparedEnvelope,
-)
+from . import models as bridge_models
 
 
 class UnknownConnector(ValueError):
@@ -33,8 +27,8 @@ class UnsupportedCapability(ValueError):
 class ConnectorDefinition:
     code: str
     name: str
-    connection_mode: ConnectionMode
-    capabilities: Tuple[Capability, ...]
+    connection_mode: bridge_models.ConnectionMode
+    capabilities: Tuple[bridge_models.Capability, ...]
     notes: str
     credential_env_vars: Tuple[str, ...] = ()
     live_write_implemented: bool = False
@@ -47,8 +41,8 @@ class ConnectorDefinition:
             return all(bool(os.environ.get(name)) for name in self.credential_env_vars)
         return self.connection_mode in {"STANDARD_FILE", "OPEN_DATA"}
 
-    def describe(self) -> ConnectorDescriptor:
-        return ConnectorDescriptor(
+    def describe(self) -> bridge_models.ConnectorDescriptor:
+        return bridge_models.ConnectorDescriptor(
             code=self.code,
             name=self.name,
             connection_mode=self.connection_mode,
@@ -140,12 +134,12 @@ connector_registry: Dict[str, ConnectorDefinition] = {
 }
 
 
-def describe_connectors() -> Iterable[ConnectorDescriptor]:
+def describe_connectors() -> Iterable[bridge_models.ConnectorDescriptor]:
     return [connector.describe() for connector in _DEFINITIONS]
 
 
 def require_capability(
-    connector_code: str, capability: Capability
+    connector_code: str, capability: bridge_models.Capability
 ) -> ConnectorDefinition:
     connector = connector_registry.get(connector_code)
     if connector is None:
@@ -156,10 +150,10 @@ def require_capability(
 
 
 def prepare_case(
-    funding_case: FundingCase,
+    funding_case: bridge_models.FundingCase,
     connector_code: str,
-    capability: Capability = "APPLICATION_PREPARE",
-) -> PreparedEnvelope:
+    capability: bridge_models.Capability = "APPLICATION_PREPARE",
+) -> bridge_models.PreparedEnvelope:
     """Build a non-submitting envelope from the canonical FundingCase.
 
     The payload intentionally remains CVLN_CANONICAL_V1. A target schema mapper
@@ -167,7 +161,7 @@ def prepare_case(
     financeur-specific format.
     """
     require_capability(connector_code, capability)
-    return PreparedEnvelope(
+    return bridge_models.PreparedEnvelope(
         case_id=funding_case.id,
         connector_code=connector_code,
         capability=capability,
