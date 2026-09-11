@@ -37,6 +37,16 @@ def test_agora_is_explicitly_unavailable():
     assert agora.configured is False
 
 
+def test_portal_and_manual_connectors_are_never_marked_configured():
+    for code in ("france_travail", "afdas", "agefma", "ladom", "ctm_fse"):
+        assert connector_registry[code].describe().configured is False
+
+
+def test_file_and_open_data_connectors_can_be_locally_available():
+    assert connector_registry["edof"].describe().configured is True
+    assert connector_registry["france_competences"].describe().configured is True
+
+
 def test_prepare_case_keeps_canonical_format_and_never_submits():
     envelope = prepare_case(_case(), "france_travail", "APPLICATION_PREPARE")
     assert envelope.format == "CVLN_CANONICAL_V1"
