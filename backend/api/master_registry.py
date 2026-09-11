@@ -2,18 +2,15 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from auth import require_role
 from db import db
 from models import User
 from services.cartography_2d_runtime import SHEET_ROW_COUNTS
 from services.economy_importer import evaluate_sale_policy
-from services.protocol_master_runtime import (
-    EXPECTED_DOMAINS,
-    EXPECTED_ROWS,
-    evaluate_protocol_control,
-)
+from services.protocol_execution import execute_protocol_control_runtime
+from services.protocol_master_runtime import EXPECTED_DOMAINS, EXPECTED_ROWS
 from services.requirement_registry import promote_verified
 
 router = APIRouter(prefix="/master", tags=["master-registry"])
@@ -25,7 +22,7 @@ class VerificationPayload(BaseModel):
 
 
 class ProtocolExecutionPayload(BaseModel):
-    context: dict = {}
+    context: dict = Field(default_factory=dict)
 
 
 @router.get("/catalogue")
@@ -40,18 +37,13 @@ async def list_master_catalogue(
         query["domain"] = domain
     if status:
         query["status"] = status
-    return await db.academy_catalogue_master.find(
-        query,
-        {"_id": 0},
-    ).limit(limit).to_list(limit)
+    cursor = db.academy_catalogue_master.find(query, {"_id": 0}).limit(limit)
+    return await cursor.to_list(limit)
 
 
 @router.get("/catalogue/{code}")
 async def get_master_catalogue(code: str, current: User = Admin):
-    row = await db.academy_catalogue_master.find_one(
-        {"code": code},
-        {"_id": 0},
-    )
+    row = await db.academy_catalogue_master.find_one({"code": code}, {"_id": 0})
     if not row:
         raise HTTPException(status_code=404, detail="catalogue row not found")
     return row
@@ -59,10 +51,7 @@ async def get_master_catalogue(code: str, current: User = Admin):
 
 @router.get("/economy/{code}")
 async def get_master_economy(code: str, current: User = Admin):
-    row = await db.academy_economy_master.find_one(
-        {"code": code},
-        {"_id": 0},
-    )
+    row = await db.academy_economy_master.find_one({"code": code}, {"_id": 0})
     if not row:
         raise HTTPException(status_code=404, detail="economy row not found")
     return row
@@ -74,10 +63,7 @@ async def get_sale_policy(
     gates: list[str] = Query(default=[]),
     current: User = Admin,
 ):
-    row = await db.academy_economy_master.find_one(
-        {"code": code},
-        {"_id": 0},
-    )
+    row = await db.academy_economy_master.find_one({"code": code}, {"_id": 0})
     if not row:
         raise HTTPException(status_code=404, detail="economy row not found")
     return {"code": code, **evaluate_sale_policy(row, set(gates))}
@@ -86,8 +72,7 @@ async def get_sale_policy(
 @router.get("/cartography-2d/summary")
 async def cartography_2d_summary(current: User = Admin):
     manifest = await db.academy_cartography_2d_manifest.find_one(
-        {"kind": "CARTOGRAPHY_2D_WORKBOOK"},
-        {"_id": 0},
+        {"kind": "CARTOGRAPHY_2D_WORKBOOK"}, {"_id": 0}
     )
     runtime_rows = await db.academy_cartography_2d_rows.count_documents({})
     proof_rows = await db.academy_requirement_registry.count_documents(
@@ -118,14 +103,11 @@ async def cartography_2d_sheet(
     current: User = Admin,
 ):
     if sheet not in SHEET_ROW_COUNTS:
-        raise HTTPException(
-            status_code=404,
-            detail="unknown cartography 2D sheet",
-        )
-    return await db.academy_cartography_2d_rows.find(
-        {"sheet": sheet},
-        {"_id": 0},
-    ).sort("excel_row", 1).limit(limit).to_list(limit)
+        raise HTTPException(status_code=404, detail="unknown cartography 2D sheet")
+    cursor = db.academy_cartography_2d_rows.find(
+        {"sheet": sheet}, {"_id": 0}
+    ).sort("excel_row", 1)
+    return await cursor.limit(limit).to_list(limit)
 
 
 @router.get("/cartography-2d/sheet/{sheet}/row/{excel_row}")
@@ -135,19 +117,12 @@ async def cartography_2d_row(
     current: User = Admin,
 ):
     if sheet not in SHEET_ROW_COUNTS:
-        raise HTTPException(
-            status_code=404,
-            detail="unknown cartography 2D sheet",
-        )
+        raise HTTPException(status_code=404, detail="unknown cartography 2D sheet")
     row = await db.academy_cartography_2d_rows.find_one(
-        {"sheet": sheet, "excel_row": excel_row},
-        {"_id": 0},
+        {"sheet": sheet, "excel_row": excel_row}, {"_id": 0}
     )
     if not row:
-        raise HTTPException(
-            status_code=404,
-            detail="cartography 2D row not found",
-        )
+        raise HTTPException(status_code=404, detail="cartography 2D row not found")
     return row
 
 
@@ -158,8 +133,7 @@ async def protocol_master_summary(current: User = Admin):
         {"family": "PROTOCOL_MASTER"}
     )
     manifest = await db.academy_protocol_manifest.find_one(
-        {"kind": "PROTOCOL_MASTER_WORKBOOK"},
-        {"_id": 0},
+        {"kind": "PROTOCOL_MASTER_WORKBOOK"}, {"_id": 0}
     )
     return {
         "expected_rows": EXPECTED_ROWS,
@@ -177,26 +151,19 @@ async def list_protocol_controls(
     current: User = Admin,
 ):
     query = {"domain": domain} if domain else {}
-    return await db.academy_protocol_controls.find(
-        query,
-        {"_id": 0},
-    ).sort("excel_row", 1).limit(limit).to_list(limit)
+    cursor = db.academy_protocol_controls.find(query, {"_id": 0}).sort(
+        "excel_row", 1
+    )
+    return await cursor.limit(limit).to_list(limit)
 
 
 @router.get("/protocols/{control_id}")
-async def get_protocol_control(
-    control_id: str,
-    current: User = Admin,
-):
+async def get_protocol_control(control_id: str, current: User = Admin):
     row = await db.academy_protocol_controls.find_one(
-        {"control_id": control_id},
-        {"_id": 0},
+        {"control_id": control_id}, {"_id": 0}
     )
     if not row:
-        raise HTTPException(
-            status_code=404,
-            detail="protocol control not found",
-        )
+        raise HTTPException(status_code=404, detail="protocol control not found")
     return row
 
 
@@ -207,22 +174,24 @@ async def execute_protocol_control(
     current: User = Admin,
 ):
     row = await db.academy_protocol_controls.find_one(
-        {"control_id": control_id},
-        {"_id": 0},
+        {"control_id": control_id}, {"_id": 0}
     )
     if not row:
-        raise HTTPException(
-            status_code=404,
-            detail="protocol control not found",
-        )
+        raise HTTPException(status_code=404, detail="protocol control not found")
     context = dict(payload.context)
     context.setdefault("actor_id", current.id)
-    decision = evaluate_protocol_control(row, context)
+    try:
+        decision = await execute_protocol_control_runtime(
+            control=row,
+            context=context,
+            actor_role=current.role,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     await db.academy_protocol_executions.insert_one(
-        {
-            **decision,
-            "context_keys": sorted(context.keys()),
-        }
+        {**decision, "context_keys": sorted(context.keys())}
     )
     return decision
 
@@ -244,13 +213,9 @@ async def requirement_summary(current: User = Admin):
 
 
 @router.get("/requirements/{requirement_id:path}")
-async def get_requirement(
-    requirement_id: str,
-    current: User = Admin,
-):
+async def get_requirement(requirement_id: str, current: User = Admin):
     row = await db.academy_requirement_registry.find_one(
-        {"requirement_id": requirement_id},
-        {"_id": 0},
+        {"requirement_id": requirement_id}, {"_id": 0}
     )
     if not row:
         raise HTTPException(status_code=404, detail="requirement not found")
