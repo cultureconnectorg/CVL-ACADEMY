@@ -23,7 +23,8 @@ class CheckoutSession(BaseModel):
     id: str = Field(default_factory=_uid)
     user_id: str
     offer_id: str
-    formation_code: Optional[str] = None
+    economy_code: Optional[str] = None
+    formation_code: Optional[str] = None  # compatibility alias for formation-scoped callers
     amount_eur: float
     currency: str = "EUR"
     provider: PaymentProvider = "stripe"
@@ -40,6 +41,7 @@ class PaymentRecord(BaseModel):
     checkout_session_id: str
     user_id: str
     offer_id: str
+    economy_code: Optional[str] = None
     formation_code: Optional[str] = None
     amount_eur: float
     currency: str = "EUR"
@@ -53,6 +55,7 @@ class PaymentRecord(BaseModel):
 
 class CheckoutRequest(BaseModel):
     offer_id: str
+    economy_code: Optional[str] = None
     formation_code: Optional[str] = None
     success_url: str
     cancel_url: str
