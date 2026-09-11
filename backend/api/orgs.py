@@ -53,7 +53,7 @@ async def create_org(
 # ============ COHORTS ============
 @router.get("/orgs/{org_id}/cohorts", response_model=List[Cohort])
 async def list_cohorts(org_id: str, current: User = Depends(get_current_user)):
-    # Staff of the org (or platform admins) can list its cohorts.
+    # Staff/stakeholders of the org (or platform admins) can list its cohorts.
     if current.role not in ADMIN_ROLES and current.org_id != org_id:
         raise HTTPException(status_code=403, detail="Accès refusé à cette organisation")
     docs = await db.cohorts.find({"org_id": org_id}, {"_id": 0}).to_list(500)
@@ -73,10 +73,26 @@ async def create_cohort(
 
 
 # ============ INVITATIONS ============
+def _assert_invitation_role_allowed(current: User, requested_role: str) -> None:
+    """Keep privilege assignment server-side and explicit.
+
+    Trainers can only invite learners. External stakeholder and elevated roles
+    remain a CVLN admin decision, preventing role escalation through the generic
+    invitation endpoint.
+    """
+    if current.role == "trainer" and requested_role != "student":
+        raise HTTPException(
+            status_code=403,
+            detail="Un formateur peut uniquement inviter des apprenants",
+        )
+
+
 @router.post("/invitations", response_model=Invitation)
 async def create_invitation(
     inp: InvitationInput, current: User = Depends(require_role(*ADMIN_ROLES, "trainer"))
 ):
+    _assert_invitation_role_allowed(current, inp.role)
+
     if inp.org_id:
         org = await db.organisations.find_one({"id": inp.org_id}, {"_id": 0})
         if not org:
@@ -85,6 +101,19 @@ async def create_invitation(
         cohort = await db.cohorts.find_one({"id": inp.cohort_id}, {"_id": 0})
         if not cohort:
             raise HTTPException(status_code=404, detail="Cohorte introuvable")
+        if inp.org_id and cohort.get("org_id") != inp.org_id:
+            raise HTTPException(
+                status_code=400,
+                detail="La cohorte n'appartient pas à l'organisation indiquée",
+            )
+
+    # Trainers are additionally tenant-bound: even a valid learner invitation
+    # cannot target another organisation.
+    if current.role == "trainer" and inp.org_id != current.org_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Un formateur ne peut inviter que dans sa propre organisation",
+        )
 
     invitation = Invitation(
         code=secrets.token_urlsafe(8),
