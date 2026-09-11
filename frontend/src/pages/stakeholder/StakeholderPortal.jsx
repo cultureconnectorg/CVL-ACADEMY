@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Buildings, Community, GraduationCap, PeopleTag } from "iconoir-react";
+import { Building, Community, GraduationCap, PeopleTag } from "iconoir-react";
 import { api } from "@/lib/api";
 
 const COPY = {
@@ -69,7 +69,7 @@ export default function StakeholderPortal({ expectedType }) {
 
       <div className="cvln-card p-6 mt-6">
         <h2 className="font-display font-bold text-xl tracking-tight flex items-center gap-2">
-          <Buildings width={18} height={18} className="text-[--cvln-orange]" /> Cohortes rattachées
+          <Building width={18} height={18} className="text-[--cvln-orange]" /> Cohortes rattachées
         </h2>
         <div className="mt-4 space-y-2">
           {overview.cohorts.length === 0 ? (
