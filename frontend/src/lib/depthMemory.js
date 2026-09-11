@@ -17,6 +17,13 @@ function safeParse(raw, fallback = null) {
   }
 }
 
+function findByTestId(value) {
+  if (!value || typeof document === "undefined") return null;
+  return [...document.querySelectorAll("[data-testid]")].find(
+    (element) => element.getAttribute("data-testid") === value,
+  ) || null;
+}
+
 export function routeDepthKey(pathname) {
   return `${PREFIX}route:${pathname}`;
 }
@@ -65,13 +72,8 @@ export function restoreRouteDepth(pathname) {
 
   const restore = () => {
     window.scrollTo?.(snapshot.x || 0, snapshot.y || 0);
-    let target = null;
-    if (snapshot.focusTestId) {
-      target = document.querySelector(`[data-testid="${CSS.escape(snapshot.focusTestId)}"]`);
-    }
-    if (!target && snapshot.focusId) {
-      target = document.getElementById(snapshot.focusId);
-    }
+    let target = findByTestId(snapshot.focusTestId);
+    if (!target && snapshot.focusId) target = document.getElementById(snapshot.focusId);
     target?.focus?.({ preventScroll: true });
   };
 
