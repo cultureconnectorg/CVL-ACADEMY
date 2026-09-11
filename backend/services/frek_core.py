@@ -1,18 +1,22 @@
-"""FrekCore integration layer.
+"""FrekCore integration boundary for CVLN Academy.
 
-CVLN Academy is a CLIENT of the CVLN ecosystem. This module is the sole boundary
-through which the app talks to FrekCore (identity, badges, progression, proofs of skill).
+Identity doctrine
+-----------------
+A FREK-ID is a sovereign ecosystem identity. Academy is a client of that
+identity; pedagogical roles, organisation memberships and permissions remain
+Academy-local projections around the same FREK-ID.
 
-For the current stage, we ship a LOCAL implementation that mimics the FrekCore contract
-so the rest of the app can develop against a stable interface. When the real FrekCore
-endpoints are provided, only this file changes.
+Two authority modes are intentionally explicit:
 
-Contract (public methods):
-    mint_frek_id()                     -> str            (unique cultural identifier)
-    emit_signal(user_id, signal, meta) -> None           (FREK-TIME, WORK, SCORE, ...)
-    issue_proof(user_id, kind, meta)   -> str            (badge / cert / mission)
-    resolve_stade(cc_credits)          -> str            (graine..foret)
-    is_remote_enabled()                -> bool
+* ``local_dev``: development/test only. Academy may mint a local sequential
+  FREK-ID so the application can run without the ecosystem service.
+* ``frekcore``: sovereign mode. FREKCORE is the only authority allowed to mint
+  a FREK-ID. If FREKCORE is unavailable, identity creation fails closed instead
+  of silently creating a potentially conflicting local identity.
+
+Set ``FREK_CORE_IDENTITY_AUTHORITY=frekcore`` together with
+``FREK_CORE_BASE_URL`` (and normally ``FREK_CORE_API_KEY``) for an integrated
+deployment.
 """
 
 from __future__ import annotations
@@ -24,10 +28,13 @@ import httpx
 
 from db import db, utc_now_iso
 
-FREK_CORE_BASE_URL = os.environ.get(
-    "FREK_CORE_BASE_URL"
-)  # optional; when set, remote calls are attempted
+FREK_CORE_BASE_URL = os.environ.get("FREK_CORE_BASE_URL", "").rstrip("/")
 FREK_CORE_API_KEY = os.environ.get("FREK_CORE_API_KEY")
+FREK_CORE_IDENTITY_AUTHORITY = os.environ.get(
+    "FREK_CORE_IDENTITY_AUTHORITY", "local_dev"
+).strip().lower()
+
+VALID_IDENTITY_AUTHORITIES = {"local_dev", "frekcore"}
 
 STADE_THRESHOLDS = [
     ("foret", 300),
@@ -50,11 +57,30 @@ VALID_SIGNALS = {
 }
 
 
+class FrekCoreUnavailableError(RuntimeError):
+    """Raised when FREKCORE is the authority but cannot fulfil identity work."""
+
+
+class FrekCoreConfigurationError(RuntimeError):
+    """Raised when the configured identity authority is invalid or incomplete."""
+
+
 class FrekCoreClient:
-    """Public client used everywhere. Swap remote impl by wiring FREK_CORE_BASE_URL."""
+    """Single Academy boundary to the ecosystem identity service."""
+
+    def identity_authority(self) -> str:
+        if FREK_CORE_IDENTITY_AUTHORITY not in VALID_IDENTITY_AUTHORITIES:
+            raise FrekCoreConfigurationError(
+                "FREK_CORE_IDENTITY_AUTHORITY must be 'local_dev' or 'frekcore'"
+            )
+        return FREK_CORE_IDENTITY_AUTHORITY
 
     def is_remote_enabled(self) -> bool:
         return bool(FREK_CORE_BASE_URL)
+
+    def is_sovereign_identity_enabled(self) -> bool:
+        """True only when Academy is configured to delegate identity to FREKCORE."""
+        return self.identity_authority() == "frekcore" and self.is_remote_enabled()
 
     async def _remote_post(
         self, path: str, payload: Dict[str, Any]
@@ -67,30 +93,46 @@ class FrekCoreClient:
                 if FREK_CORE_API_KEY
                 else {}
             )
-            async with httpx.AsyncClient(timeout=8.0) as c:
-                r = await c.post(
+            async with httpx.AsyncClient(timeout=8.0) as client:
+                response = await client.post(
                     f"{FREK_CORE_BASE_URL}{path}", json=payload, headers=headers
                 )
-                if r.status_code < 400:
-                    return r.json()
-        except Exception:
-            pass
+                if response.status_code < 400:
+                    body = response.json()
+                    return body if isinstance(body, dict) else None
+        except (httpx.HTTPError, ValueError):
+            return None
         return None
 
     async def mint_frek_id(self) -> str:
-        """Reserve a stable, sequential FREK-ID like FREK-042."""
-        # Try remote first
-        remote = await self._remote_post("/mint", {})
-        if remote and "frek_id" in remote:
-            return remote["frek_id"]
-        # Local fallback: counter document
+        """Mint a FREK-ID according to the configured identity authority.
+
+        In ``frekcore`` mode, no local fallback is permitted. This prevents
+        Academy from independently minting an identifier that could conflict
+        with another CVLN platform.
+        """
+        authority = self.identity_authority()
+
+        if authority == "frekcore":
+            if not self.is_remote_enabled():
+                raise FrekCoreConfigurationError(
+                    "FREKCORE is the identity authority but FREK_CORE_BASE_URL is unset"
+                )
+            remote = await self._remote_post("/mint", {})
+            frek_id = (remote or {}).get("frek_id")
+            if not isinstance(frek_id, str) or not frek_id.strip():
+                raise FrekCoreUnavailableError(
+                    "FREKCORE did not return a valid frek_id; local minting is forbidden"
+                )
+            return frek_id.strip()
+
+        # Explicit local development/test authority only.
         res: Optional[Dict[str, Any]] = await db.counters.find_one_and_update(
             {"_id": "frek_id"},
             {"$inc": {"seq": 1}},
             upsert=True,
             return_document=True,
         )
-        # motor returns the updated doc; seq starts at 1
         seq = (res or {}).get("seq") or 1
         return f"FREK-{seq:03d}"
 
@@ -108,7 +150,8 @@ class FrekCoreClient:
             }
         )
         await db.users.update_one({"id": user_id}, {"$inc": {f"signals.{signal}": 1}})
-        # best-effort remote mirror
+        # Signals are mirrored best-effort. Identity minting itself is fail-closed
+        # in sovereign mode; telemetry must not make Academy unusable.
         await self._remote_post(
             "/signal", {"user_id": user_id, "signal": signal, "meta": meta or {}}
         )
@@ -116,25 +159,23 @@ class FrekCoreClient:
     async def issue_proof(
         self, user_id: str, kind: str, meta: Optional[Dict[str, Any]] = None
     ) -> str:
-        """Issue a portable proof (badge/cert). Returns a proof reference id."""
         remote = await self._remote_post(
             "/proof",
-            {
-                "user_id": user_id,
-                "kind": kind,
-                "meta": meta or {},
-            },
+            {"user_id": user_id, "kind": kind, "meta": meta or {}},
         )
         if remote and "proof_id" in remote:
-            return remote["proof_id"]
-        # Local proof id
+            return str(remote["proof_id"])
+
+        # Proof fallback remains local for now. This is deliberately distinct
+        # from sovereign identity minting and can be tightened when the FREKCORE
+        # proof contract is made mandatory.
         import uuid
 
         return f"PROOF-{uuid.uuid4().hex[:10].upper()}"
 
     def resolve_stade(self, cc_credits: int) -> str:
-        for name, thr in STADE_THRESHOLDS:
-            if cc_credits >= thr:
+        for name, threshold in STADE_THRESHOLDS:
+            if cc_credits >= threshold:
                 return name
         return "graine"
 
