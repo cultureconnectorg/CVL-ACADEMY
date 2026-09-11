@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import uuid
 
+from pymongo.errors import DuplicateKeyError
+
 from db import db, utc_now_iso
 from services.frek_core import frek_core
 from wallet import credit as wallet_credit
@@ -24,22 +26,35 @@ async def award_threshold_badges(user_id: str, cc: int) -> None:
         exists = await db.user_badges.find_one(
             {"user_id": user_id, "badge_code": b["code"]}
         )
+        newly_awarded = False
         if not exists:
-            await db.user_badges.insert_one(
-                {
-                    "id": str(uuid.uuid4()),
-                    "user_id": user_id,
-                    "badge_code": b["code"],
-                    "earned_at": utc_now_iso(),
-                }
-            )
+            try:
+                await db.user_badges.insert_one(
+                    {
+                        "id": str(uuid.uuid4()),
+                        "user_id": user_id,
+                        "badge_code": b["code"],
+                        "earned_at": utc_now_iso(),
+                    }
+                )
+                newly_awarded = True
+            except DuplicateKeyError:
+                # A concurrent request awarded the same badge first.
+                pass
+
+        if newly_awarded:
             await frek_core.emit_signal(user_id, "FREK-CERT", {"badge": b["code"]})
-            await wallet_credit(
-                user_id,
-                "badge_earned",
-                BADGE_JCC_REWARD,
-                currency="jcc",
-                ref=b["code"],
-                description=f"Badge « {b.get('name', b['code'])} » débloqué",
-                badge_code=b["code"],
-            )
+
+        # Always retry the Academy mini-wallet effect. Its stable effect key
+        # makes this safe and also heals the case where badge insertion
+        # succeeded but a previous process crashed before crediting the wallet.
+        await wallet_credit(
+            user_id,
+            "badge_earned",
+            BADGE_JCC_REWARD,
+            currency="jcc",
+            ref=b["code"],
+            description=f"Badge « {b.get('name', b['code'])} » débloqué",
+            badge_code=b["code"],
+            effect_key=f"badge:{b['code']}",
+        )
