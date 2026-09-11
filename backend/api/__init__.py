@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
+# isort: off
 from . import (
     assistants,
     auth,
@@ -34,6 +35,7 @@ from . import (
     templates,
     wallet,
 )
+# isort: on
 from .legal import require_legal_acceptance
 
 router = APIRouter(prefix="/api")
