@@ -51,7 +51,7 @@ jobs:
           pip install "isort>=5.13.2,<6"
       - name: Black Economy files
         working-directory: backend
-        run: black --check economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
+        run: black --check --diff economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
       - name: Isort Economy files
         working-directory: backend
         run: isort --check-only economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
