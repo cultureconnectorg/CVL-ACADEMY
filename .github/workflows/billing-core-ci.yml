@@ -31,19 +31,19 @@ jobs:
           pip install "isort>=5.13.2,<6"
       - name: Black billing files
         working-directory: backend
-        run: black --check --diff billing.py api/billing.py tests/test_billing_core.py
+        run: black --check --diff billing.py billing_einvoice.py api/billing.py api/commercial.py tests/test_billing_core.py tests/test_billing_api.py
       - name: Isort billing files
         working-directory: backend
-        run: isort --profile black --check-only --diff billing.py api/billing.py tests/test_billing_core.py
+        run: isort --profile black --check-only --diff billing.py billing_einvoice.py api/billing.py api/commercial.py tests/test_billing_core.py tests/test_billing_api.py
       - name: Flake8 billing files
         working-directory: backend
-        run: flake8 --config=.flake8 billing.py api/billing.py tests/test_billing_core.py
+        run: flake8 --config=.flake8 billing.py billing_einvoice.py api/billing.py api/commercial.py tests/test_billing_core.py tests/test_billing_api.py
       - name: Mypy billing runtime
         working-directory: backend
-        run: mypy --ignore-missing-imports billing.py api/billing.py
-      - name: Billing invariants
+        run: mypy --ignore-missing-imports billing.py billing_einvoice.py api/billing.py api/commercial.py
+      - name: Billing and Factur-X invariants
         working-directory: backend
-        run: pytest -q tests/test_billing_core.py -n 0
+        run: pytest -q tests/test_billing_core.py tests/test_billing_api.py -n 0
       - name: Commercial regression
         working-directory: backend
         run: pytest -q tests/test_commercial_wallet_policy.py tests/test_commercial_wallet_runtime.py -n 0
