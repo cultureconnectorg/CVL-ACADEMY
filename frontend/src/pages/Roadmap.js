@@ -31,16 +31,18 @@ export default function Roadmap() {
 
   useEffect(() => {
     const rail = railRef.current;
+    let secondFrame = null;
     const restore = () => restoreElementDepth("/roadmap", "stage-rail", rail);
     const firstFrame = window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(restore);
+      secondFrame = window.requestAnimationFrame(restore);
     });
 
     return () => {
       window.cancelAnimationFrame(firstFrame);
-      // Keep the unmount capture as a final safety net. The primary snapshot
-      // is written on every native rail scroll below, before refs can detach.
-      captureElementDepth("/roadmap", "stage-rail", rail);
+      if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
+      // Do not write here: once unmount/layout removal begins the detached
+      // element may report scrollLeft=0 and overwrite the exact live snapshot.
+      // Native onScroll is the authoritative capture point below.
     };
   }, []);
 
