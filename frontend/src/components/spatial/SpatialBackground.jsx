@@ -1,28 +1,34 @@
 import { useEffect, useRef } from "react";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import "./spatial-background.css";
 
 /**
  * CVLN Academy world layer.
  *
- * This does not replace Spatial Learning. It consumes the existing Spatial
- * runtime contract: SPATIAL_ENGINE + SPATIAL_ENVIRONMENT gates, the shared
- * reduced-motion hook, and the doctrine that depth/light/movement convey
- * context rather than exist as decoration.
- *
- * Safe fallback: when Spatial is disabled, the world remains visible but
- * static. No pointer/keyboard interaction is ever captured.
+ * Visuals follow the existing Spatial topology. This component never defines
+ * navigation or product state; it only consumes a pathname and translates the
+ * already-authoritative topology node into camera/environment variables.
  */
-export default function SpatialBackground() {
+export default function SpatialBackground({ pathname = "/" }) {
   const rootRef = useRef(null);
   const reduced = useReducedMotion();
   const spatialEnabled = FEATURE_FLAGS.SPATIAL_ENGINE && FEATURE_FLAGS.SPATIAL_ENVIRONMENT;
   const motionEnabled = spatialEnabled && !reduced;
+  const { node, scene } = sceneForPathname(pathname);
 
   useEffect(() => {
     const root = rootRef.current;
-    if (!root || typeof window === "undefined" || !motionEnabled) return undefined;
+    if (!root || typeof window === "undefined") return undefined;
+
+    root.style.setProperty("--scene-x", `${scene.x}vw`);
+    root.style.setProperty("--scene-y", `${scene.y}vh`);
+    root.style.setProperty("--scene-scale", String(scene.scale));
+    root.style.setProperty("--scene-light", String(scene.light));
+    root.style.setProperty("--scene-depth", String(scene.depth));
+
+    if (!motionEnabled) return undefined;
 
     let frame = null;
     let targetX = 0;
@@ -62,14 +68,17 @@ export default function SpatialBackground() {
       window.removeEventListener("scroll", onScroll);
       if (frame) window.cancelAnimationFrame(frame);
     };
-  }, [motionEnabled]);
+  }, [motionEnabled, scene]);
 
   return (
     <div
       ref={rootRef}
-      className="spatial-background"
+      className={`spatial-background spatial-background--${scene.zone}`}
       aria-hidden="true"
       data-testid="spatial-background"
+      data-spatial-node={node || "NONE"}
+      data-spatial-zone={scene.zone}
+      data-spatial-camera={scene.camera}
       data-spatial-engine={spatialEnabled ? "on" : "off"}
       data-spatial-motion={motionEnabled ? "full" : reduced ? "reduced" : "static"}
     >
