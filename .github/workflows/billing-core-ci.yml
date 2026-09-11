@@ -1,0 +1,49 @@
+name: Billing Core CI
+
+on:
+  push:
+    branches:
+      - feat/billing-invoicing-core-20260911
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  billing-core:
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URL: mongodb://127.0.0.1:27017
+      DB_NAME: cvln_academy_ci
+      JWT_SECRET: cvln-academy-ci-only-not-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install "isort>=5.13.2,<6"
+      - name: Black billing files
+        working-directory: backend
+        run: black --check --diff billing.py api/billing.py tests/test_billing_core.py
+      - name: Isort billing files
+        working-directory: backend
+        run: isort --profile black --check-only --diff billing.py api/billing.py tests/test_billing_core.py
+      - name: Flake8 billing files
+        working-directory: backend
+        run: flake8 --config=.flake8 billing.py api/billing.py tests/test_billing_core.py
+      - name: Mypy billing runtime
+        working-directory: backend
+        run: mypy --ignore-missing-imports billing.py api/billing.py
+      - name: Billing invariants
+        working-directory: backend
+        run: pytest -q tests/test_billing_core.py -n 0
+      - name: Commercial regression
+        working-directory: backend
+        run: pytest -q tests/test_commercial_wallet_policy.py tests/test_commercial_wallet_runtime.py -n 0
