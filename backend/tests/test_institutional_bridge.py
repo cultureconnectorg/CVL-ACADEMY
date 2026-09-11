@@ -4,8 +4,8 @@ import pytest
 
 from services.institutional_bridge.models import FundingCase
 from services.institutional_bridge.registry import (
-    UnsupportedCapability,
     UnknownConnector,
+    UnsupportedCapability,
     connector_registry,
     describe_connectors,
     prepare_case,
