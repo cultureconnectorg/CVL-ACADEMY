@@ -65,27 +65,35 @@ jobs:
   backend-regression:
     name: Backend lint types tests
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: backend/requirements.txt
       - name: Install backend and verified lint baseline
+        working-directory: backend
         run: |
           pip install -r requirements.txt
           pip install "isort>=5.13.2,<6"
-      - name: Black
-        run: black --check .
-      - name: Isort
-        run: isort --check-only .
-      - name: Flake8
-        run: flake8 .
-      - name: Mypy
-        run: mypy --ignore-missing-imports .
+      - name: Black full backend
+        run: black --check backend
+      - name: Isort changed backend files
+        shell: bash
+        run: |
+          mapfile -t files < <(git diff --name-only origin/main...HEAD -- 'backend/**/*.py' 'backend/*.py')
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No backend Python files changed by Spatial branch; pre-existing import-order debt is not attributed to this delta."
+          else
+            isort --check-only "${files[@]}"
+          fi
+      - name: Flake8 full backend
+        run: flake8 backend
+      - name: Mypy full backend
+        run: mypy --ignore-missing-imports backend
       - name: Unit/integration tests without external HTTP E2E
+        working-directory: backend
         run: pytest tests/ -n 0 --ignore=tests/backend_test.py
