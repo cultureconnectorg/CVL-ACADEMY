@@ -63,9 +63,7 @@ def paid_order(user_id="user-billing-1"):
     }
 
 
-async def test_profile_intent_issue_and_replay_keep_one_number(
-    billing_db, learner
-):
+async def test_profile_intent_issue_and_replay_keep_one_number(billing_db, learner):
     await billing_db.commercial_orders.insert_one(paid_order())
     await api_billing.upsert_billing_profile(
         BillingProfileInput(
@@ -78,9 +76,7 @@ async def test_profile_intent_issue_and_replay_keep_one_number(
         learner,
     )
 
-    first_intent = await api_billing.ensure_invoice_intent(
-        "ord_billing_api_1", learner
-    )
+    first_intent = await api_billing.ensure_invoice_intent("ord_billing_api_1", learner)
     second_intent = await api_billing.ensure_invoice_intent(
         "ord_billing_api_1", learner
     )
