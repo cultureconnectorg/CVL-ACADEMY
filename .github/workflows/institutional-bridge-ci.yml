@@ -32,6 +32,7 @@ jobs:
     env:
       MONGO_URL: mongodb://localhost:27017
       DB_NAME: cvln_test
+      JWT_SECRET: cvln-academy-ci-only-secret-not-for-production-2026
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
