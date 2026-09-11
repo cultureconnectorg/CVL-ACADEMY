@@ -1,0 +1,45 @@
+name: Route Page Wiring CI
+
+on:
+  pull_request:
+    paths:
+      - "frontend/src/**"
+      - "frontend/e2e/**"
+      - "frontend/playwright.config.js"
+      - "frontend/package.json"
+      - "frontend/yarn.lock"
+      - ".github/workflows/routes-page-wiring-ci.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: route-page-wiring-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  route-page-wiring:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run route wiring E2E
+        run: yarn test:e2e routing.spec.js auth-guards.spec.js page-route-wiring.spec.js
