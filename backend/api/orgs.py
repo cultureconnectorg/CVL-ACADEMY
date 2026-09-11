@@ -62,7 +62,9 @@ async def list_cohorts(org_id: str, current: User = Depends(get_current_user)):
 
 @router.post("/orgs/{org_id}/cohorts", response_model=Cohort)
 async def create_cohort(
-    org_id: str, inp: CohortInput, current: User = Depends(get_current_user)
+    org_id: str,
+    inp: CohortInput,
+    current: User = Depends(get_current_user),
 ):
     # The trainer dashboard exposes cohort creation. Trainers may create cohorts
     # only inside their own organisation; platform admins retain cross-org access.
