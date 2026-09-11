@@ -1,24 +1,26 @@
-"""Canonical Economy 3D traceability runtime.
+"""Canonical Economy 3D line-by-line traceability runtime.
 
-This module exposes a fail-closed projection derived from the canonical
-CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx workbook, sheet Mapping_812.
+Source of truth:
+CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx / Mapping_812!A1:Y813.
 
-The source workbook remains authoritative and is frozen by SHA-256. The repo
-projection contains the commercial/economic decision fields needed to verify
-all 812 source lines independently in CI. It is deliberately NOT a checkout or
-payment engine; commercial transaction runtime is a later gate.
+The workbook stays authoritative. This repository stores one plain-text line
+per canonical item (Code|economic-class), plus frozen SHA-256 identifiers for
+the workbook and full Mapping_812 source data. All pricing, public/private,
+packaging, activation, channel and revenue rules below are the invariants found
+in the canonical workbook for each economic class.
+
+This module proves Economy 3D source decisions are present and queryable. It
+does NOT claim checkout, payment, invoice, subscription or entitlement runtime.
 """
 
 from __future__ import annotations
 
-import base64
-import gzip
 import hashlib
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-DATA_PATH = Path(__file__).parent / "data" / "economy_3d_traceability_v1.json.gz.b64"
+DATA_PATH = Path(__file__).parent / "data" / "economy_3d_classes_v1.txt"
 EXPECTED_RECORD_COUNT = 812
 EXPECTED_WORKBOOK_SHA256 = (
     "be41260e722ac3daa1974ef52fb0f48f8c31536a8be420469b139755bb9c6bc0"
@@ -26,8 +28,8 @@ EXPECTED_WORKBOOK_SHA256 = (
 EXPECTED_MAPPING_SHA256 = (
     "03c512d7cf8644030612e8f70d890fd997735db3789f3ea06608d050143d010a"
 )
-EXPECTED_PROJECTION_SHA256 = (
-    "ccb1e13034c615cc23c35b6eac76e5950fc379fea54fad421c6a18c3197abe02"
+EXPECTED_CLASS_PROJECTION_SHA256 = (
+    "3a20b4c76890c70e628f87bd5a013eaa63812b4c4964e0e02fdb83c819f3152f"
 )
 EXPECTED_SEGMENTS = {
     "Marché": 437,
@@ -44,19 +46,93 @@ EXPECTED_PRICE_BUCKETS = {
     "NOT_FOR_SALE": 221,
     "€0 standalone": 1,
 }
-PROJECTION_COLUMNS = (
-    "code",
-    "nature_economique",
-    "moteur_primaire",
-    "public",
-    "pricing_status",
-    "packaging_v1",
-    "prix_public_v1",
-    "activation_gate",
-    "canal",
-    "revenue_recognition",
-    "economic_status",
-)
+
+CLASS_POLICY: Dict[str, Dict[str, str]] = {
+    "M": {
+        "nature_economique": "Marché",
+        "moteur_primaire": "B2C Learning",
+        "public": "OUI",
+        "pricing_status": "DECIDED_V1",
+        "packaging_v1": "INCLUDED_PRO + ELIGIBLE_PATH",
+        "prix_public_v1": "€990 path / subscription",
+        "activation_gate": "CANONICALIZED",
+        "canal": "B2C+B2B+B2G",
+        "revenue_recognition": "External revenue",
+        "economic_status": "DECIDED_V1",
+    },
+    "X": {
+        "nature_economique": "Cross-ecosystem",
+        "moteur_primaire": "B2B Workforce/Learning-to-Work",
+        "public": "SÉLECTIF",
+        "pricing_status": "DECIDED_V1",
+        "packaging_v1": "CROSS_CVLN_PROGRAM",
+        "prix_public_v1": "B2B/B2G/Enterprise bundle",
+        "activation_gate": "VERTICALS_CANONICALIZED + HANDOFF_VERIFIED",
+        "canal": "B2B/B2G/Internal",
+        "revenue_recognition": "Program/enterprise revenue",
+        "economic_status": "DECIDED_V1",
+    },
+    "I": {
+        "nature_economique": "Interne",
+        "moteur_primaire": "Internal Value",
+        "public": "NON",
+        "pricing_status": "DECIDED_V1",
+        "packaging_v1": "INTERNAL_QUALIFICATION",
+        "prix_public_v1": "NOT_FOR_SALE",
+        "activation_gate": "PRODUCT_VERIFIED + ROLE_DEFINED",
+        "canal": "Internal",
+        "revenue_recognition": "Internal value",
+        "economic_status": "DECIDED_V1",
+    },
+    "R": {
+        "nature_economique": "Interne restreint",
+        "moteur_primaire": "Internal Value",
+        "public": "NON",
+        "pricing_status": "DECIDED_V1",
+        "packaging_v1": "RESTRICTED_INTERNAL",
+        "prix_public_v1": "NOT_FOR_SALE",
+        "activation_gate": "PRODUCT_VERIFIED + NEED_TO_KNOW + APPROVAL",
+        "canal": "Internal restricted",
+        "revenue_recognition": "Internal value",
+        "economic_status": "DECIDED_V1",
+    },
+    "P": {
+        "nature_economique": "Interne privilégié",
+        "moteur_primaire": "Internal Value",
+        "public": "NON",
+        "pricing_status": "DECIDED_V1",
+        "packaging_v1": "PRIVILEGED_INTERNAL",
+        "prix_public_v1": "NOT_FOR_SALE",
+        "activation_gate": "PRODUCT_VERIFIED + PRIVILEGED_APPROVAL + AUDIT",
+        "canal": "Internal privileged",
+        "revenue_recognition": "Internal value",
+        "economic_status": "DECIDED_V1",
+    },
+    "B": {
+        "nature_economique": "Bridge",
+        "moteur_primaire": "Learning-to-Work",
+        "public": "SÉLECTIF",
+        "pricing_status": "DECIDED_V1",
+        "packaging_v1": "BUNDLED_BRIDGE",
+        "prix_public_v1": "€0 standalone",
+        "activation_gate": "CANONICALIZED + ELIGIBILITY_RULES",
+        "canal": "Career+B2B/B2G",
+        "revenue_recognition": "Bundled/program revenue",
+        "economic_status": "DECIDED_V1",
+    },
+    "H": {
+        "nature_economique": "Hold",
+        "moteur_primaire": "None",
+        "public": "NON",
+        "pricing_status": "DECIDED_V1",
+        "packaging_v1": "HOLD_FROM_SALE",
+        "prix_public_v1": "NOT_FOR_SALE",
+        "activation_gate": "RECONCILIATION_REQUIRED",
+        "canal": "None",
+        "revenue_recognition": "None",
+        "economic_status": "DECIDED_HOLD",
+    },
+}
 
 
 class Economy3DError(RuntimeError):
@@ -65,44 +141,44 @@ class Economy3DError(RuntimeError):
 
 @lru_cache(maxsize=1)
 def load_manifest() -> Dict[str, Any]:
-    encoded = DATA_PATH.read_text(encoding="utf-8").strip()
-    try:
-        payload = gzip.decompress(base64.b64decode(encoded, validate=True))
-        projection = payload.decode("utf-8")
-    except Exception as exc:  # pragma: no cover - defensive corruption guard
-        raise Economy3DError(
-            "Economy 3D traceability projection is unreadable"
-        ) from exc
+    raw = DATA_PATH.read_bytes()
+    projection_hash = hashlib.sha256(raw).hexdigest()
+    if projection_hash != EXPECTED_CLASS_PROJECTION_SHA256:
+        raise Economy3DError("Economy 3D class projection SHA-256 drift")
 
-    projection_hash = hashlib.sha256(payload).hexdigest()
-    if projection_hash != EXPECTED_PROJECTION_SHA256:
-        raise Economy3DError("Economy 3D projection SHA-256 drift")
-
-    parsed: List[Dict[str, Any]] = []
-    lines = projection.splitlines()
+    lines = raw.decode("utf-8").splitlines()
     if len(lines) != EXPECTED_RECORD_COUNT:
         raise Economy3DError(
             f"expected {EXPECTED_RECORD_COUNT} Economy 3D lines, got {len(lines)}"
         )
+
+    parsed: List[Dict[str, Any]] = []
     for index, line in enumerate(lines, start=1):
-        fields = line.split("|")
-        if len(fields) != len(PROJECTION_COLUMNS):
-            raise Economy3DError(
-                f"ACA-ECO-{index:04d}: malformed projection column count"
-            )
-        record = dict(zip(PROJECTION_COLUMNS, fields))
-        record["requirement_id"] = f"ACA-ECO-{index:04d}"
-        record["source_row"] = index + 1
-        parsed.append(record)
+        parts = line.split("|")
+        if len(parts) != 2:
+            raise Economy3DError(f"ACA-ECO-{index:04d}: malformed Code|Class line")
+        code, class_code = parts
+        policy = CLASS_POLICY.get(class_code)
+        if not code or policy is None:
+            raise Economy3DError(f"ACA-ECO-{index:04d}: unknown code or class")
+        parsed.append(
+            {
+                "requirement_id": f"ACA-ECO-{index:04d}",
+                "source_row": index + 1,
+                "code": code,
+                "class_code": class_code,
+                **policy,
+            }
+        )
 
     manifest: Dict[str, Any] = {
-        "schema_version": "1.1.0",
+        "schema_version": "1.2.0",
         "source_workbook": "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx",
         "source_sheet": "Mapping_812",
         "source_range": "A1:Y813",
         "source_workbook_sha256": EXPECTED_WORKBOOK_SHA256,
         "source_mapping_sha256": EXPECTED_MAPPING_SHA256,
-        "projection_sha256": projection_hash,
+        "class_projection_sha256": projection_hash,
         "record_count": len(parsed),
         "records": parsed,
     }
@@ -135,146 +211,40 @@ def record_by_requirement_id(requirement_id: str) -> Dict[str, Any]:
 
 
 def commercial_class(record: Dict[str, Any]) -> str:
-    nature = record["nature_economique"]
-    if nature == "Marché":
+    class_code = record["class_code"]
+    if class_code == "M":
         return "PUBLIC_MARKET"
-    if nature == "Cross-ecosystem":
+    if class_code == "X":
         return "CROSS_ECOSYSTEM_PROGRAM"
-    if nature in {"Interne", "Interne restreint", "Interne privilégié"}:
+    if class_code in {"I", "R", "P"}:
         return "INTERNAL_NOT_FOR_SALE"
-    if nature == "Bridge":
+    if class_code == "B":
         return "BUNDLED_BRIDGE"
-    if nature == "Hold":
+    if class_code == "H":
         return "HOLD_FROM_SALE"
-    raise Economy3DError(f"Unknown economic nature: {nature!r}")
+    raise Economy3DError(f"Unknown economic class: {class_code!r}")
 
 
 def validate_record(record: Dict[str, Any], index: int) -> None:
     expected_id = f"ACA-ECO-{index:04d}"
-    expected_row = index + 1
     if record.get("requirement_id") != expected_id:
-        raise Economy3DError(
-            f"record {index}: expected {expected_id}, "
-            f"got {record.get('requirement_id')!r}"
-        )
-    if record.get("source_row") != expected_row:
-        raise Economy3DError(
-            f"{expected_id}: expected source row {expected_row}, "
-            f"got {record.get('source_row')!r}"
-        )
+        raise Economy3DError(f"record {index}: requirement id drift")
+    if record.get("source_row") != index + 1:
+        raise Economy3DError(f"{expected_id}: source row drift")
     code = record.get("code")
     if not isinstance(code, str) or not code.strip():
         raise Economy3DError(f"{expected_id}: code is missing")
-    if record.get("pricing_status") != "DECIDED_V1":
-        raise Economy3DError(f"{expected_id}: pricing_status is not DECIDED_V1")
-
-    nature = record.get("nature_economique")
-    price = record.get("prix_public_v1")
-    public = record.get("public")
-    package = record.get("packaging_v1")
-    gate = record.get("activation_gate")
-    channel = record.get("canal")
-    recognition = record.get("revenue_recognition")
-    status = record.get("economic_status")
-    engine = record.get("moteur_primaire")
-
-    if nature == "Marché":
-        expected = (
-            engine == "B2C Learning"
-            and price == "€990 path / subscription"
-            and public == "OUI"
-            and package == "INCLUDED_PRO + ELIGIBLE_PATH"
-            and gate == "CANONICALIZED"
-            and channel == "B2C+B2B+B2G"
-            and recognition == "External revenue"
-            and status == "DECIDED_V1"
-        )
-        if not expected:
-            raise Economy3DError(f"{expected_id}: public-market policy drift")
-    elif nature == "Cross-ecosystem":
-        expected = (
-            engine == "B2B Workforce/Learning-to-Work"
-            and price == "B2B/B2G/Enterprise bundle"
-            and public == "SÉLECTIF"
-            and package == "CROSS_CVLN_PROGRAM"
-            and gate == "VERTICALS_CANONICALIZED + HANDOFF_VERIFIED"
-            and channel == "B2B/B2G/Internal"
-            and recognition == "Program/enterprise revenue"
-            and status == "DECIDED_V1"
-        )
-        if not expected:
-            raise Economy3DError(f"{expected_id}: cross-ecosystem policy drift")
-    elif nature == "Interne":
-        expected = (
-            engine == "Internal Value"
-            and price == "NOT_FOR_SALE"
-            and public == "NON"
-            and package == "INTERNAL_QUALIFICATION"
-            and gate == "PRODUCT_VERIFIED + ROLE_DEFINED"
-            and channel == "Internal"
-            and recognition == "Internal value"
-            and status == "DECIDED_V1"
-        )
-        if not expected:
-            raise Economy3DError(f"{expected_id}: internal policy drift")
-    elif nature == "Interne restreint":
-        expected = (
-            engine == "Internal Value"
-            and price == "NOT_FOR_SALE"
-            and public == "NON"
-            and package == "RESTRICTED_INTERNAL"
-            and gate == "PRODUCT_VERIFIED + NEED_TO_KNOW + APPROVAL"
-            and channel == "Internal restricted"
-            and recognition == "Internal value"
-            and status == "DECIDED_V1"
-        )
-        if not expected:
-            raise Economy3DError(f"{expected_id}: restricted-internal policy drift")
-    elif nature == "Interne privilégié":
-        expected = (
-            engine == "Internal Value"
-            and price == "NOT_FOR_SALE"
-            and public == "NON"
-            and package == "PRIVILEGED_INTERNAL"
-            and gate == "PRODUCT_VERIFIED + PRIVILEGED_APPROVAL + AUDIT"
-            and channel == "Internal privileged"
-            and recognition == "Internal value"
-            and status == "DECIDED_V1"
-        )
-        if not expected:
-            raise Economy3DError(f"{expected_id}: privileged-internal policy drift")
-    elif nature == "Bridge":
-        expected = (
-            engine == "Learning-to-Work"
-            and price == "€0 standalone"
-            and public == "SÉLECTIF"
-            and package == "BUNDLED_BRIDGE"
-            and gate == "CANONICALIZED + ELIGIBILITY_RULES"
-            and channel == "Career+B2B/B2G"
-            and recognition == "Bundled/program revenue"
-            and status == "DECIDED_V1"
-        )
-        if not expected:
-            raise Economy3DError(f"{expected_id}: bridge policy drift")
-    elif nature == "Hold":
-        expected = (
-            engine == "None"
-            and price == "NOT_FOR_SALE"
-            and public == "NON"
-            and package == "HOLD_FROM_SALE"
-            and gate == "RECONCILIATION_REQUIRED"
-            and channel == "None"
-            and recognition == "None"
-            and status == "DECIDED_HOLD"
-        )
-        if not expected:
-            raise Economy3DError(f"{expected_id}: hold policy drift")
-    else:
-        raise Economy3DError(f"{expected_id}: unknown economic nature {nature!r}")
+    class_code = record.get("class_code")
+    policy = CLASS_POLICY.get(str(class_code))
+    if policy is None:
+        raise Economy3DError(f"{expected_id}: unknown class")
+    for key, expected in policy.items():
+        if record.get(key) != expected:
+            raise Economy3DError(f"{expected_id}: {key} policy drift")
 
 
 def validate_manifest(manifest: Dict[str, Any]) -> None:
-    if manifest.get("schema_version") != "1.1.0":
+    if manifest.get("schema_version") != "1.2.0":
         raise Economy3DError("unsupported Economy 3D traceability schema")
     if (
         manifest.get("source_workbook")
@@ -292,10 +262,7 @@ def validate_manifest(manifest: Dict[str, Any]) -> None:
 
     items = manifest.get("records")
     if not isinstance(items, list) or len(items) != EXPECTED_RECORD_COUNT:
-        raise Economy3DError(
-            f"expected {EXPECTED_RECORD_COUNT} Economy 3D records, "
-            f"got {len(items) if isinstance(items, list) else 'non-list'}"
-        )
+        raise Economy3DError("Economy 3D record count drift")
 
     codes = set()
     ids = set()
