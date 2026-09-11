@@ -9,11 +9,8 @@ from db import db
 from models import User
 from services.cartography_2d_runtime import SHEET_ROW_COUNTS
 from services.economy_importer import evaluate_sale_policy
-from services.protocol_master_runtime import (
-    EXPECTED_DOMAINS,
-    EXPECTED_ROWS,
-    evaluate_protocol_control,
-)
+from services.protocol_execution import execute_protocol_control_runtime
+from services.protocol_master_runtime import EXPECTED_DOMAINS, EXPECTED_ROWS
 from services.requirement_registry import promote_verified
 
 router = APIRouter(prefix="/master", tags=["master-registry"])
@@ -183,7 +180,16 @@ async def execute_protocol_control(
         raise HTTPException(status_code=404, detail="protocol control not found")
     context = dict(payload.context)
     context.setdefault("actor_id", current.id)
-    decision = evaluate_protocol_control(row, context)
+    try:
+        decision = await execute_protocol_control_runtime(
+            control=row,
+            context=context,
+            actor_role=current.role,
+        )
+    except LookupError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     await db.academy_protocol_executions.insert_one(
         {**decision, "context_keys": sorted(context.keys())}
     )
