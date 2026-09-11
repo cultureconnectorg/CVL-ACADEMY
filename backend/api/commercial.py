@@ -228,9 +228,7 @@ async def pay_order_with_wallet(
             }
         },
     )
-    paid_order = await db.commercial_orders.find_one(
-        {"order_id": order_id}, {"_id": 0}
-    )
+    paid_order = await db.commercial_orders.find_one({"order_id": order_id}, {"_id": 0})
     billing_document = build_invoice_intent(paid_order)
     billing_document["created_at"] = paid_at
     billing_document["updated_at"] = paid_at
