@@ -17,6 +17,8 @@ export default function SpatialBackground({ pathname = "/" }) {
   const spatialEnabled = FEATURE_FLAGS.SPATIAL_ENGINE && FEATURE_FLAGS.SPATIAL_ENVIRONMENT;
   const motionEnabled = spatialEnabled && !reduced;
   const { node, scene } = sceneForPathname(pathname);
+  const publicUrl = process.env.PUBLIC_URL || "";
+  const worldImage = `url("${publicUrl}/spatial/cvln-academy-spatial-world.svg")`;
 
   useEffect(() => {
     const root = rootRef.current;
@@ -75,6 +77,7 @@ export default function SpatialBackground({ pathname = "/" }) {
       ref={rootRef}
       className={`spatial-background spatial-background--${scene.zone}`}
       aria-hidden="true"
+      style={{ "--spatial-world-image": worldImage }}
       data-testid="spatial-background"
       data-spatial-node={node || "NONE"}
       data-spatial-zone={scene.zone}
