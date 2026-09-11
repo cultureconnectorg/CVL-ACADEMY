@@ -40,12 +40,15 @@ class CVLNWalletClient:
             "contract": "entity-api-v1",
         }
 
-    def _headers(self) -> Dict[str, str]:
+    def _headers(self, idempotency_key: str | None = None) -> Dict[str, str]:
         if not self.is_remote_enabled():
             raise CVLNWalletNotConfigured(
                 "CVLN Wallet non configuré (CVLN_WALLET_URL / CVLN_WALLET_API_KEY)"
             )
-        return {"X-API-Key": self.api_key}
+        headers = {"X-API-Key": self.api_key}
+        if idempotency_key:
+            headers["Idempotency-Key"] = idempotency_key
+        return headers
 
     async def entity_info(self) -> Dict[str, Any]:
         try:
@@ -62,12 +65,19 @@ class CVLNWalletClient:
                 "CVLN Wallet entity lookup ambiguous"
             ) from exc
 
-    async def charge(self, frek_id: str, amount_cc: float, note: str) -> Dict[str, Any]:
-        """Charge a Wallet user exactly once per Academy attempt.
+    async def charge(
+        self,
+        frek_id: str,
+        amount_cc: float,
+        note: str,
+        idempotency_key: str,
+    ) -> Dict[str, Any]:
+        """Charge a Wallet user with an Academy-owned stable attempt key.
 
-        The current Wallet entity endpoint does not yet expose an entity-scoped
-        Idempotency-Key contract. Academy therefore MUST NOT auto-retry this call
-        after timeout/network ambiguity; the order is moved to REQUIRES_REVIEW.
+        Academy sends `Idempotency-Key` now. Until the Wallet entity endpoint
+        proves server-side support for that header, Academy still refuses to
+        auto-retry after a timeout/network ambiguity and moves the order to
+        REQUIRES_REVIEW.
         """
         payload = {"frek_id": frek_id, "amount": amount_cc, "note": note}
         try:
@@ -75,7 +85,9 @@ class CVLNWalletClient:
                 base_url=self.base_url, timeout=self.timeout_seconds
             ) as client:
                 response = await client.post(
-                    "/api/v1/entity/charge", json=payload, headers=self._headers()
+                    "/api/v1/entity/charge",
+                    json=payload,
+                    headers=self._headers(idempotency_key),
                 )
                 response.raise_for_status()
                 data = response.json()
