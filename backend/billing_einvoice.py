@@ -182,7 +182,7 @@ def _render_regular_pdf(
     breakdown = invoice_breakdown(document["amount_eur"])
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
-    width, height = A4
+    _, height = A4
     y = height - 55
     c.setFont("Helvetica-Bold", 18)
     c.drawString(48, y, f"FACTURE {document['legal_invoice_number']}")
