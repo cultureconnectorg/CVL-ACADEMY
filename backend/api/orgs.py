@@ -77,9 +77,14 @@ async def create_invitation(
     # tenant boundaries are enforced server-side, never trusted from the UI.
     if current.role == "trainer":
         if inp.role != "student":
-            raise HTTPException(status_code=403, detail="Un formateur ne peut inviter que des apprenants")
+            raise HTTPException(
+                status_code=403,
+                detail="Un formateur ne peut inviter que des apprenants",
+            )
         if not current.org_id or inp.org_id != current.org_id:
-            raise HTTPException(status_code=403, detail="Invitation limitée à votre organisation")
+            raise HTTPException(
+                status_code=403, detail="Invitation limitée à votre organisation"
+            )
 
     if inp.org_id:
         org = await db.organisations.find_one({"id": inp.org_id}, {"_id": 0})
@@ -90,7 +95,10 @@ async def create_invitation(
         if not cohort:
             raise HTTPException(status_code=404, detail="Cohorte introuvable")
         if inp.org_id and cohort.get("org_id") != inp.org_id:
-            raise HTTPException(status_code=400, detail="La cohorte n'appartient pas à cette organisation")
+            raise HTTPException(
+                status_code=400,
+                detail="La cohorte n'appartient pas à cette organisation",
+            )
 
     invitation = Invitation(
         code=secrets.token_urlsafe(8),
@@ -99,14 +107,18 @@ async def create_invitation(
         org_id=inp.org_id,
         cohort_id=inp.cohort_id,
         invited_by=current.id,
-        expires_at=(datetime.now(timezone.utc) + timedelta(days=inp.expires_in_days)).isoformat(),
+        expires_at=(
+            datetime.now(timezone.utc) + timedelta(days=inp.expires_in_days)
+        ).isoformat(),
     )
     await db.invitations.insert_one(invitation.model_dump())
 
     if inp.email:
         org_name = None
         if inp.org_id:
-            org_doc = await db.organisations.find_one({"id": inp.org_id}, {"_id": 0})
+            org_doc = await db.organisations.find_one(
+                {"id": inp.org_id}, {"_id": 0}
+            )
             org_name = org_doc["name"] if org_doc else None
         await notifications.send_invitation(inp.email, invitation.code, org_name)
 
