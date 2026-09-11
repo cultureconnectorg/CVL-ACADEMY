@@ -74,7 +74,7 @@ export default function StakeholderAccessPanel() {
           placeholder="Email du représentant (optionnel)"
         />
         <button type="submit" className="btn-outline" disabled={!orgId}>
-          Générer l'accès
+          Générer l’accès
         </button>
       </form>
       {code && (
@@ -82,7 +82,7 @@ export default function StakeholderAccessPanel() {
           className="mt-4 rounded-xl bg-[--cvln-bg-warm] p-4 text-sm"
           data-testid="stakeholder-invite-code"
         >
-          <div className="font-semibold">Code d'accès</div>
+          <div className="font-semibold">Code d’accès</div>
           <div className="mono break-all mt-1">{code}</div>
           <div className="text-xs text-[--cvln-ink-2] mt-2">
             Lien à transmettre : /stakeholder/claim/{code}
