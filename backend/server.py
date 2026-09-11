@@ -19,6 +19,8 @@ from services.integrations.subscribers import (
 from template_engine import seed_default_definitions
 
 app = FastAPI(title="CVLN Academy OS", version="0.1")
+app.state.startup_ready = False
+app.state.startup_error = None
 
 app.add_middleware(
     CORSMiddleware,
@@ -40,6 +42,8 @@ logger = logging.getLogger("cvln")
 
 @app.on_event("startup")
 async def on_startup():
+    app.state.startup_ready = False
+    app.state.startup_error = None
     register_integration_subscribers()
     try:
         await ensure_indexes()
@@ -51,11 +55,14 @@ async def on_startup():
             inserted,
             skipped,
         )
-        logger.info("Seed done.")
-    except Exception as e:  # noqa: BLE001
-        logger.exception("Seed failed: %s", e)
+        app.state.startup_ready = True
+        logger.info("Seed done; application ready.")
+    except Exception as exc:  # noqa: BLE001
+        app.state.startup_error = f"{type(exc).__name__}: {exc}"
+        logger.exception("Startup initialization failed: %s", exc)
 
 
 @app.on_event("shutdown")
 async def on_shutdown():
+    app.state.startup_ready = False
     client.close()
