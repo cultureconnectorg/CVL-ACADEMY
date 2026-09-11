@@ -31,7 +31,6 @@ from services.notifications import notifications
 router = APIRouter(tags=["orgs"])
 
 
-# ============ ORGANISATIONS ============
 @router.get("/orgs", response_model=List[Organisation])
 async def list_orgs(current: User = Depends(require_role(*ADMIN_ROLES))):
     docs = await db.organisations.find({}, {"_id": 0}).to_list(500)
@@ -50,10 +49,8 @@ async def create_org(
     return org
 
 
-# ============ COHORTS ============
 @router.get("/orgs/{org_id}/cohorts", response_model=List[Cohort])
 async def list_cohorts(org_id: str, current: User = Depends(get_current_user)):
-    # Staff of the org (or platform admins) can list its cohorts.
     if current.role not in ADMIN_ROLES and current.org_id != org_id:
         raise HTTPException(status_code=403, detail="Accès refusé à cette organisation")
     docs = await db.cohorts.find({"org_id": org_id}, {"_id": 0}).to_list(500)
@@ -72,11 +69,23 @@ async def create_cohort(
     return cohort
 
 
-# ============ INVITATIONS ============
 @router.post("/invitations", response_model=Invitation)
 async def create_invitation(
     inp: InvitationInput, current: User = Depends(require_role(*ADMIN_ROLES, "trainer"))
 ):
+    # Trainers can only invite learners into their own organisation. Role and
+    # tenant boundaries are enforced server-side, never trusted from the UI.
+    if current.role == "trainer":
+        if inp.role != "student":
+            raise HTTPException(
+                status_code=403,
+                detail="Un formateur ne peut inviter que des apprenants",
+            )
+        if not current.org_id or inp.org_id != current.org_id:
+            raise HTTPException(
+                status_code=403, detail="Invitation limitée à votre organisation"
+            )
+
     if inp.org_id:
         org = await db.organisations.find_one({"id": inp.org_id}, {"_id": 0})
         if not org:
@@ -85,6 +94,11 @@ async def create_invitation(
         cohort = await db.cohorts.find_one({"id": inp.cohort_id}, {"_id": 0})
         if not cohort:
             raise HTTPException(status_code=404, detail="Cohorte introuvable")
+        if inp.org_id and cohort.get("org_id") != inp.org_id:
+            raise HTTPException(
+                status_code=400,
+                detail="La cohorte n'appartient pas à cette organisation",
+            )
 
     invitation = Invitation(
         code=secrets.token_urlsafe(8),
@@ -111,8 +125,6 @@ async def create_invitation(
 
 @router.get("/invitations/{code}")
 async def get_invitation(code: str):
-    """Public lookup so the signup UI can preview an invite before the user
-    registers (role/org name — never leaks who invited them)."""
     inv = await db.invitations.find_one({"code": code}, {"_id": 0})
     if not inv:
         raise HTTPException(status_code=404, detail="Invitation introuvable")

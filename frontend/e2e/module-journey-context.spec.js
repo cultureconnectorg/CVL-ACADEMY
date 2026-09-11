@@ -56,8 +56,18 @@ test.describe("quiz context (W3-B)", () => {
     await gotoQuizReadyModule(page);
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
+
+    // Auto-advance is driven by ModuleJourney.submitQuiz() only after its
+    // post-submit module reload has completed. Synchronize on that reload,
+    // then assert the actual destination state instead of a transient quiz
+    // result that is unmounted by the successful auto-advance.
+    const moduleReload = page.waitForResponse(
+      (response) =>
+        response.request().method() === "GET" &&
+        response.url().includes("/api/modules/FMS-01/FMS-01-M01")
+    );
     await page.getByTestId("quiz-submit").click();
-    await expect(page.getByTestId("quiz-result")).toBeVisible();
+    await moduleReload;
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
