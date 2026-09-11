@@ -80,7 +80,11 @@ class FakeCollection:
             projected = []
             for doc in docs:
                 projected.append(
-                    {k: v for k, v in doc.items() if projection.get(k) == 1 or k not in projection}
+                    {
+                        k: v
+                        for k, v in doc.items()
+                        if projection.get(k) == 1 or k not in projection
+                    }
                 )
             docs = projected
         return FakeCursor(docs)
