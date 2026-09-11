@@ -119,7 +119,9 @@ async def get_billing_profile(current: User = Depends(get_current_user)):
 
 
 @router.post("/orders/{order_id}/invoice-intent")
-async def ensure_invoice_intent(order_id: str, current: User = Depends(get_current_user)):
+async def ensure_invoice_intent(
+    order_id: str, current: User = Depends(get_current_user)
+):
     order = await db.commercial_orders.find_one(
         {"order_id": order_id, "user_id": current.id}, {"_id": 0}
     )
@@ -237,7 +239,9 @@ async def issue_order_invoice(order_id: str, current: User = Depends(get_current
                 }
             },
         )
-        raise HTTPException(status_code=422, detail="EINVOICE_GENERATION_FAILED") from exc
+        raise HTTPException(
+            status_code=422, detail="EINVOICE_GENERATION_FAILED"
+        ) from exc
 
     issued_at = artifact["issued_at"]
     await db.billing_documents.update_one(
