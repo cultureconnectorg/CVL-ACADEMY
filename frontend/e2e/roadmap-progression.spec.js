@@ -52,9 +52,15 @@ test.describe("roadmap spatial progression (W3-D)", () => {
     await mockAuthenticatedSession(page, { user: { stade: "pousse" } });
     await page.goto("/roadmap");
     const rail = page.getByTestId("roadmap-scroll");
-    await rail.evaluate((el) => { el.scrollLeft = 360; });
+
+    // The rail becomes horizontally scrollable only after its lazy content and
+    // layout have settled. Wait for real overflow before writing scrollLeft so
+    // this assertion tests depth memory, not a race with first layout.
+    await expect.poll(() => rail.evaluate((el) => el.scrollWidth - el.clientWidth)).toBeGreaterThan(0);
+
+    await rail.evaluate((el) => { el.scrollLeft = Math.min(360, el.scrollWidth - el.clientWidth); });
+    await expect.poll(() => rail.evaluate((el) => el.scrollLeft)).toBeGreaterThan(0);
     const before = await rail.evaluate((el) => el.scrollLeft);
-    expect(before).toBeGreaterThan(0);
 
     await page.getByTestId("nav-formations").click();
     await expect(page).toHaveURL(/\/formations$/);
