@@ -10,6 +10,7 @@ on:
       - "backend/infra_indexes.py"
       - "frontend/src/pages/admin/AdminDashboard.js"
       - "frontend/src/pages/admin/InstitutionalBridgePanel.js"
+      - "frontend/src/pages/LegalAcceptance.jsx"
       - ".github/workflows/institutional-bridge-ci.yml"
   pull_request:
     paths:
@@ -20,6 +21,7 @@ on:
       - "backend/infra_indexes.py"
       - "frontend/src/pages/admin/AdminDashboard.js"
       - "frontend/src/pages/admin/InstitutionalBridgePanel.js"
+      - "frontend/src/pages/LegalAcceptance.jsx"
 
 jobs:
   backend:
@@ -38,16 +40,13 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
-      - name: Capture Black diff
-        run: black --diff api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py > ../black.diff || true
-      - uses: actions/upload-artifact@v4
-        with:
-          name: institutional-bridge-black-diff
-          path: black.diff
       - run: black --check api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
       - run: isort --profile black --check-only api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
       - run: flake8 api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
+      - run: mypy --ignore-missing-imports api/institutional.py services/institutional_bridge
       - run: pytest tests/test_institutional_bridge.py -q
+      - name: Existing backend regression suite
+        run: pytest tests/ -n 0 --ignore=tests/backend_test.py
 
   frontend:
     runs-on: ubuntu-latest
