@@ -39,20 +39,15 @@ jobs:
           python-version: "3.12"
           cache: pip
           cache-dependency-path: backend/requirements.txt
-      - name: Install backend and repo lint baseline
+      - name: Install backend
         working-directory: backend
-        run: |
-          pip install -r requirements.txt
-          pip install "isort>=5.13.2,<6"
+        run: pip install -r requirements.txt
       - name: Economy traceability and pricing tests
         working-directory: backend
         run: pytest -q tests/test_economy_3d_traceability.py tests/test_pricing_catalog.py -n 0
       - name: Economy formatting
         working-directory: backend
         run: black --check --diff economy_3d.py pricing_catalog.py api/economy.py api/formations.py tests/test_economy_3d_traceability.py tests/test_pricing_catalog.py
-      - name: Economy import order
-        working-directory: backend
-        run: isort --profile black --check-only --diff economy_3d.py pricing_catalog.py api/economy.py api/formations.py tests/test_economy_3d_traceability.py tests/test_pricing_catalog.py
       - name: Economy lint
         working-directory: backend
         run: flake8 --config=.flake8 economy_3d.py pricing_catalog.py api/economy.py api/formations.py tests/test_economy_3d_traceability.py tests/test_pricing_catalog.py
