@@ -1,15 +1,14 @@
-"""Auth (FrekID) — local auth plus FREKCORE sovereign SSO.
+"""Auth (FREK-ID) — Academy authentication with FREKCORE identity delegation.
 
-FREKCORE is the canonical CVLN identity provider. Academy may keep local
-email/password auth for development and migration, but the `/auth/frek/*`
-flow treats FREKCORE as the authority for identity and only creates an
-Academy projection after a successful OpenID Connect exchange.
+FREKCORE owns the ecosystem FREK-ID. CVLN Academy owns its local account,
+session, pedagogical role, organisation, cohort and progression. Registration
+asks FREKCORE for the FREK-ID in integrated mode; Academy does not reimplement
+FREKCORE authentication or an identity portal here.
 """
 
 from __future__ import annotations
 
 import os
-import secrets
 from datetime import datetime, timezone
 from typing import Literal
 
@@ -44,7 +43,6 @@ from models import (
     VerifyEmailInput,
 )
 from services.frek_core import frek_core
-from services.frek_oidc import frek_oidc
 from services.notifications import notifications
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -93,20 +91,36 @@ async def _apply_invitation(user_id: str, invite_code: str) -> None:
 
 @router.post("/register", response_model=AuthResponse)
 async def register(inp: RegisterInput):
-    existing = await db.users.find_one({"email": inp.email.lower()}, {"_id": 0})
+    email = inp.email.lower()
+    existing = await db.users.find_one({"email": email}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email déjà utilisé")
-    frek_id = await next_frek_id()
+
+    # FREKCORE owns the ecosystem identity. Only minimal Academy context is
+    # attached to the emission request; roles/cohorts/progression stay local.
+    frek_id = await next_frek_id(
+        email,
+        metadata={"application": "cvln_academy", "lang": inp.lang},
+    )
+
+    # Defensive local uniqueness: a FREK-ID already projected in Academy may
+    # not be attached to a second local account.
+    existing_frek = await db.users.find_one({"frek_id": frek_id}, {"_id": 0})
+    if existing_frek:
+        raise HTTPException(
+            status_code=409,
+            detail="Ce FREK-ID est déjà lié à un compte CVLN Academy",
+        )
+
     user = User(
         frek_id=frek_id,
-        email=inp.email.lower(),
+        email=email,
         display_name=inp.display_name.strip(),
         password_hash=hash_password(inp.password),
         lang=inp.lang,
         cc_credits=5,
     )
-    doc = user.model_dump()
-    await db.users.insert_one(doc)
+    await db.users.insert_one(user.model_dump())
 
     if inp.invite_code:
         await _apply_invitation(user.id, inp.invite_code)
@@ -131,102 +145,6 @@ async def login(inp: LoginInput):
     if not doc or not verify_password(inp.password, doc.get("password_hash", "")):
         raise HTTPException(status_code=401, detail="Identifiants invalides")
     user = User(**doc)
-    refresh_token = await issue_refresh_token(user.id)
-    return AuthResponse(
-        token=make_token(user.id), refresh_token=refresh_token, user=user_public(user)
-    )
-
-
-# ============ FREKCORE OpenID Connect — canonical CVLN identity ============
-class FrekStartInput(BaseModel):
-    return_to: str = "/"
-
-
-class FrekCallbackInput(BaseModel):
-    code: str
-    state: str
-
-
-@router.get("/frek/config")
-async def frek_config():
-    return {
-        "configured": frek_oidc.is_configured(),
-        "provider": "FREKCORE",
-        "protocol": "openid-connect",
-    }
-
-
-@router.post("/frek/start")
-async def frek_start(inp: FrekStartInput):
-    return await frek_oidc.begin(inp.return_to)
-
-
-@router.post("/frek/callback", response_model=AuthResponse)
-async def frek_callback(inp: FrekCallbackInput):
-    identity = await frek_oidc.exchange(inp.code, inp.state)
-    frek_id = identity["frek_id"]
-    subject = identity["subject"]
-
-    doc = await db.users.find_one({"frek_id": frek_id}, {"_id": 0})
-    created = False
-
-    if not doc:
-        email = identity.get("email")
-        if not email or not identity.get("email_verified"):
-            raise HTTPException(
-                status_code=422,
-                detail="FREKCORE doit fournir un email vérifié pour créer la projection Academy",
-            )
-        email = email.lower()
-        email_owner = await db.users.find_one({"email": email}, {"_id": 0})
-        if email_owner and email_owner.get("frek_id") != frek_id:
-            raise HTTPException(
-                status_code=409,
-                detail=(
-                    "Un compte Academy existe déjà avec cet email. "
-                    "Liaison FREK manuelle requise pour éviter une prise de compte."
-                ),
-            )
-
-        user = User(
-            frek_id=frek_id,
-            email=email,
-            display_name=str(identity.get("display_name") or frek_id)[:80],
-            password_hash=hash_password(secrets.token_urlsafe(48)),
-            email_verified=True,
-            cc_credits=5,
-        )
-        doc = user.model_dump()
-        doc["frek_subject"] = subject
-        doc["identity_provider"] = "frekcore"
-        await db.users.insert_one(doc)
-        created = True
-    else:
-        stored_subject = doc.get("frek_subject")
-        if stored_subject and stored_subject != subject:
-            raise HTTPException(status_code=409, detail="Sujet FREKCORE incohérent")
-        await db.users.update_one(
-            {"id": doc["id"]},
-            {
-                "$set": {
-                    "frek_subject": subject,
-                    "identity_provider": "frekcore",
-                    "email_verified": bool(
-                        doc.get("email_verified") or identity.get("email_verified")
-                    ),
-                }
-            },
-        )
-        doc = await db.users.find_one({"id": doc["id"]}, {"_id": 0})
-
-    user = User(**doc)
-    if created:
-        await frek_core.emit_signal(
-            user.id,
-            "FREK-LINK",
-            {"reason": "academy_projection_created", "frek_id": frek_id},
-        )
-
     refresh_token = await issue_refresh_token(user.id)
     return AuthResponse(
         token=make_token(user.id), refresh_token=refresh_token, user=user_public(user)
