@@ -12,12 +12,11 @@ import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Literal, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, EmailStr, Field
-
 from auth import get_current_user, require_role
 from db import db
+from fastapi import APIRouter, Depends, HTTPException
 from models import ADMIN_ROLES, User
+from pydantic import BaseModel, EmailStr, Field
 
 router = APIRouter(prefix="/stakeholders", tags=["stakeholders"])
 
