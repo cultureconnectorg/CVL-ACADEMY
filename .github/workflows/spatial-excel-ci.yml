@@ -100,9 +100,9 @@ jobs:
         run: |
           mapfile -t files < <(git diff --name-only origin/main...HEAD -- 'backend/**/*.py' 'backend/*.py')
           if [ ${#files[@]} -eq 0 ]; then
-            echo "No backend Python files changed by Spatial branch; pre-existing Flake8 debt in backend/lx.py is tracked separately."
+            echo "No backend Python files changed by Spatial branch."
           else
-            flake8 "${files[@]}"
+            flake8 --config=backend/.flake8 "${files[@]}"
           fi
       - name: Mypy changed backend files
         shell: bash
