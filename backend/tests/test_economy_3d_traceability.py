@@ -37,8 +37,7 @@ def test_economy_3d_manifest_has_exactly_812_unique_lines():
 
 def test_economy_3d_source_identity_is_frozen():
     assert (
-        MANIFEST["source_workbook"]
-        == "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx"
+        MANIFEST["source_workbook"] == "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx"
     )
     assert MANIFEST["source_sheet"] == "Mapping_812"
     assert MANIFEST["source_range"] == "A1:Y813"
