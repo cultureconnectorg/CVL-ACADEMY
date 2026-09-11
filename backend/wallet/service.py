@@ -10,9 +10,8 @@ from __future__ import annotations
 
 from typing import List, Literal, Optional
 
-from pymongo.errors import DuplicateKeyError
-
 from db import db, utc_now_iso
+from pymongo.errors import DuplicateKeyError
 
 from .models import TransactionType, WalletAccount, WalletSummary, WalletTransaction
 
