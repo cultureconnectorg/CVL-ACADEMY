@@ -3,8 +3,8 @@
 Each sub-router owns one bounded concern (auth, onboarding, formations,
 learning journey, quiz, badges, missions, progression, mentor, FMS import,
 FMS lineage, skills, certification, templates, assistants, wallet,
-integrations, economy). This module just mounts them all under the single `/api`
-prefix used by the app.
+integrations, economy, commercial). This module just mounts them all under the
+single `/api` prefix used by the app.
 """
 
 from __future__ import annotations
@@ -16,6 +16,7 @@ from . import (
     auth,
     badges,
     certification,
+    commercial,
     economy,
     fms,
     fms_lineage,
@@ -34,6 +35,7 @@ from . import (
     templates,
     wallet,
 )
+from .commercial_access import require_commercial_learning_access
 from .legal import require_legal_acceptance
 
 router = APIRouter(prefix="/api")
@@ -59,12 +61,28 @@ for module in (
 ):
     router.include_router(module.router)
 
-# Journey surfaces are fail-closed server-side: a user cannot start onboarding,
-# learning, quizzes, missions, progression, AI mentoring, certification or wallet
-# activity by bypassing the React app while the current legal bundle is unsigned.
+# Learning routes have both the legal gate and, when enabled, the Economy 3D
+# commercial entitlement gate. This prevents direct API bypass of paid access.
+router.include_router(
+    learning.router,
+    dependencies=[
+        Depends(require_legal_acceptance),
+        Depends(require_commercial_learning_access),
+    ],
+)
+
+# Commercial transactions themselves require the legal bundle too.
+router.include_router(
+    commercial.router,
+    dependencies=[Depends(require_legal_acceptance)],
+)
+
+# Remaining journey surfaces are fail-closed server-side: a user cannot start
+# onboarding, quizzes, missions, progression, AI mentoring, certification or
+# the legacy Academy wallet activity by bypassing the React app while the
+# current legal bundle is unsigned.
 for module in (
     onboarding,
-    learning,
     quizzes,
     missions,
     progression,

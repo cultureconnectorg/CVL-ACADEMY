@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Book, Trophy, MediaVideo, Coins, Lock, CheckCircle, PlaySolid, ArrowRight } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
 import BackButton from "@/components/BackButton";
+import CommercialPurchaseCard from "@/components/CommercialPurchaseCard";
 
 const STADE_EMOJI = {
   graine: "🌱", pousse: "🌿", racine: "🌳",
@@ -14,6 +15,15 @@ export default function FormationDetail() {
   const { code } = useParams();
   const { t } = useI18n();
   const [f, setF] = useState(null);
+  const [commercialState, setCommercialState] = useState({
+    resolved: false,
+    required: false,
+    active: true,
+  });
+
+  const handleCommercialAccess = useCallback(({ required, active }) => {
+    setCommercialState({ resolved: true, required, active });
+  }, []);
 
   const STATUS_META = {
     available:              { label: t("formation_detail_p.status_available"),             color: "#E05A33", bg: "#FFF3EC" },
@@ -24,6 +34,7 @@ export default function FormationDetail() {
   };
 
   useEffect(() => {
+    setCommercialState({ resolved: false, required: false, active: true });
     api.get(`/formations/${code}`).then(r => setF(r.data));
   }, [code]);
 
@@ -32,6 +43,9 @@ export default function FormationDetail() {
   const validatedCount = (f.modules || []).filter(m => m.status === "validated").length;
   const pct = f.modules && f.modules.length
     ? Math.round((validatedCount / f.modules.length) * 100) : 0;
+  const commercialLocked = commercialState.resolved
+    && commercialState.required
+    && !commercialState.active;
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="formation-detail">
@@ -44,6 +58,18 @@ export default function FormationDetail() {
           <div>
             <div className="font-semibold text-[--cvln-ink]">{t("formation_detail_p.locked_title")}</div>
             <div className="text-sm text-[--cvln-ink-2] mt-1">{f.lock_reason}</div>
+          </div>
+        </div>
+      )}
+
+      {commercialLocked && (
+        <div className="mb-6 p-4 rounded-2xl bg-[#FFF3EC] border border-[--cvln-orange]/30 flex gap-3 items-start" data-testid="commercial-lock-banner">
+          <Lock className="text-[--cvln-orange] flex-shrink-0 mt-0.5" width={22} height={22} />
+          <div>
+            <div className="font-semibold text-[--cvln-ink]">Accès commercial requis</div>
+            <div className="text-sm text-[--cvln-ink-2] mt-1">
+              Active ton entitlement Academy avant d’entrer dans les modules.
+            </div>
           </div>
         </div>
       )}
@@ -82,21 +108,27 @@ export default function FormationDetail() {
           )}
         </div>
 
-        <div className="cvln-card p-6 space-y-3">
-          <Row icon={<Book width={16} height={16} />} label={t("duration")} value={`${f.duration_h}h`} />
-          <Row icon={<Coins width={16} height={16} />} label={t("cc_credits")} value={`${f.cc} CC`} />
-          <Row icon={<Trophy width={16} height={16} />} label={t("formation_detail_p.badge_label")} value={f.badge_name} />
-          <Row icon={<MediaVideo width={16} height={16} />} label={t("formation_detail_p.stades_label")} value={
-            <span>{STADE_EMOJI[f.stades[0]]} → {STADE_EMOJI[f.stades[f.stades.length - 1]]}</span>
-          } />
-          <div className="pt-3 border-t border-black/5 text-xs">
-            <div className="text-[--cvln-ink-2] font-semibold uppercase tracking-wider">{t("prerequisites")}</div>
-            <div className="mt-1">{f.prerequisites}</div>
+        <div className="space-y-4">
+          <div className="cvln-card p-6 space-y-3">
+            <Row icon={<Book width={16} height={16} />} label={t("duration")} value={`${f.duration_h}h`} />
+            <Row icon={<Coins width={16} height={16} />} label={t("cc_credits")} value={`${f.cc} CC`} />
+            <Row icon={<Trophy width={16} height={16} />} label={t("formation_detail_p.badge_label")} value={f.badge_name} />
+            <Row icon={<MediaVideo width={16} height={16} />} label={t("formation_detail_p.stades_label")} value={
+              <span>{STADE_EMOJI[f.stades[0]]} → {STADE_EMOJI[f.stades[f.stades.length - 1]]}</span>
+            } />
+            <div className="pt-3 border-t border-black/5 text-xs">
+              <div className="text-[--cvln-ink-2] font-semibold uppercase tracking-wider">{t("prerequisites")}</div>
+              <div className="mt-1">{f.prerequisites}</div>
+            </div>
+            <div className="text-xs">
+              <div className="text-[--cvln-ink-2] font-semibold uppercase tracking-wider">{t("debouches")}</div>
+              <div className="mt-1">{f.debouches}</div>
+            </div>
           </div>
-          <div className="text-xs">
-            <div className="text-[--cvln-ink-2] font-semibold uppercase tracking-wider">{t("debouches")}</div>
-            <div className="mt-1">{f.debouches}</div>
-          </div>
+          <CommercialPurchaseCard
+            economyCode={code}
+            onAccessState={handleCommercialAccess}
+          />
         </div>
       </div>
 
@@ -111,7 +143,7 @@ export default function FormationDetail() {
           {(f.modules || []).map((m, i) => {
             const status = m.status || "available";
             const meta = STATUS_META[status] || STATUS_META.available;
-            const locked = f.is_unlocked === false || m.is_unlocked === false;
+            const locked = commercialLocked || f.is_unlocked === false || m.is_unlocked === false;
             return (
               <div
                 key={m.code}
