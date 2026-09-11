@@ -3,8 +3,8 @@
 Each sub-router owns one bounded concern (auth, onboarding, formations,
 learning journey, quiz, badges, missions, progression, mentor, FMS import,
 FMS lineage, skills, certification, templates, assistants, wallet,
-integrations, economy, commercial). This module just mounts them all under the
-single `/api` prefix used by the app.
+integrations, economy, commercial, billing). This module just mounts them all
+under the single `/api` prefix used by the app.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from . import (
     assistants,
     auth,
     badges,
+    billing,
     certification,
     commercial,
     economy,
@@ -71,11 +72,12 @@ router.include_router(
     ],
 )
 
-# Commercial transactions themselves require the legal bundle too.
-router.include_router(
-    commercial.router,
-    dependencies=[Depends(require_legal_acceptance)],
-)
+# Commercial and billing transactions require the current legal bundle.
+for module in (commercial, billing):
+    router.include_router(
+        module.router,
+        dependencies=[Depends(require_legal_acceptance)],
+    )
 
 # Remaining journey surfaces are fail-closed server-side: a user cannot start
 # onboarding, quizzes, missions, progression, AI mentoring, certification or
