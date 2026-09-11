@@ -35,8 +35,12 @@ def _now() -> str:
 class WalletTransaction(BaseModel):
     """Append-only Academy mini-wallet history entry.
 
-    ``wallet_accounts`` is a cached read model; transaction history remains the
-    auditable source used to explain each Academy-side balance movement.
+    ``effect_key`` identifies the Academy-side business effect that produced
+    the entry (for example ``badge:{badge_code}``).  When supplied, it is used
+    to make retries idempotent per learner.
+
+    ``wallet_accounts`` is only a cached read model; transaction history is the
+    auditable source used to explain and rebuild Academy-side balances.
     """
 
     id: str = Field(default_factory=_uid)
@@ -44,6 +48,7 @@ class WalletTransaction(BaseModel):
     type: TransactionType
     amount: float
     currency: Literal["jcc", "token", "eur"] = "jcc"
+    effect_key: Optional[str] = None
     ref: Optional[str] = None  # badge_code / certification_code / mission_code
     description: str = ""
     created_at: str = Field(default_factory=_now)
