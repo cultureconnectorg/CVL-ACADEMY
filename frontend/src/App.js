@@ -1,4 +1,4 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "@/App.css";
 import "@/index.css";
@@ -7,6 +7,8 @@ import { AuthProvider, useAuth } from "@/lib/auth.jsx";
 import { I18nProvider } from "@/lib/i18n.jsx";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
+import LegalFooter from "@/components/LegalFooter";
+import CookieConsent from "@/components/CookieConsent";
 import { RouteTransition } from "@/lib/RouteTransition";
 
 const Landing = lazy(() => import("@/pages/Landing"));
@@ -22,6 +24,7 @@ const Roadmap = lazy(() => import("@/pages/Roadmap"));
 const Wallet = lazy(() => import("@/pages/Wallet"));
 const Skills = lazy(() => import("@/pages/Skills"));
 const Certifications = lazy(() => import("@/pages/Certifications"));
+const LegalHub = lazy(() => import("@/pages/LegalHub"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
@@ -44,6 +47,8 @@ function Protected({ children, roles }) {
 }
 
 function App() {
+  const [cookieManagerToken, setCookieManagerToken] = useState(0);
+
   return (
     <I18nProvider>
       <AuthProvider>
@@ -52,6 +57,7 @@ function App() {
             <RouteTransition>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/legal/:slug" element={<LegalHub />} />
                 <Route path="/onboarding" element={<Onboarding />} />
                 <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
                 <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
@@ -80,6 +86,8 @@ function App() {
               </Routes>
             </RouteTransition>
           </Suspense>
+          <LegalFooter onManageCookies={() => setCookieManagerToken((n) => n + 1)} />
+          <CookieConsent manageToken={cookieManagerToken} />
         </BrowserRouter>
         <Toaster position="top-right" richColors />
       </AuthProvider>
