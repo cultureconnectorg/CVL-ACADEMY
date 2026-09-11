@@ -19,6 +19,8 @@ const PROTECTED_PATHS = [
   "/certifications",
   "/trainer", // also role-gated (TRAINER_ROLES) — unauthenticated fails the earlier !user check first
   "/jury", // also role-gated (JURY_ROLES)
+  "/partner", // role-gated external stakeholder portal
+  "/institution", // role-gated external stakeholder portal
   "/admin", // also role-gated (ADMIN_ROLES)
 ];
 
