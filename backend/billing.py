@@ -1,11 +1,8 @@
 """CVLN Academy billing document core.
 
-Billing is deliberately separate from payment. CVLN Wallet proves value movement;
-this module owns invoice/credit-note lifecycle and traceability. Legal invoice
-issuance remains fail-closed until an issuer/tax profile is explicitly configured.
-
-Architecture references are recorded in docs/BILLING_OPEN_SOURCE_RESEARCH_2026-09.md.
-No AGPL/source-available implementation is copied here.
+Billing is separate from payment. CVLN Wallet proves value movement; this module
+owns invoice/credit-note lifecycle and traceability. Economy 3D remains pricing
+authority. Legal issuance is fail-closed until issuer and tax policy are explicit.
 """
 
 from __future__ import annotations
@@ -34,35 +31,54 @@ DOCUMENT_CREDITED = "CREDITED"
 
 
 def billing_idempotency_key(order_id: str, document_type: str = "INVOICE") -> str:
-    """Stable key: one invoice intent per order/document type."""
     material = f"cvln-academy:{document_type}:{order_id}".encode("utf-8")
     return hashlib.sha256(material).hexdigest()
 
 
 def issuer_profile() -> Dict[str, Any]:
-    """Return only explicit deployment configuration; never infer legal data."""
+    """Return explicit deployment configuration only; never infer legal data."""
     return {
         "legal_name": os.environ.get("ACADEMY_BILLING_LEGAL_NAME", "").strip(),
         "country": os.environ.get("ACADEMY_BILLING_COUNTRY", "").strip().upper(),
-        "registration_id": os.environ.get("ACADEMY_BILLING_REGISTRATION_ID", "").strip(),
+        "registration_id": os.environ.get(
+            "ACADEMY_BILLING_REGISTRATION_ID", ""
+        ).strip(),
+        "registration_scheme": os.environ.get(
+            "ACADEMY_BILLING_REGISTRATION_SCHEME", "0002"
+        ).strip(),
         "vat_id": os.environ.get("ACADEMY_BILLING_VAT_ID", "").strip(),
-        "invoice_series": os.environ.get("ACADEMY_BILLING_INVOICE_SERIES", "").strip(),
-        "einvoice_profile": os.environ.get("ACADEMY_BILLING_EINVOICE_PROFILE", "").strip(),
+        "address_line1": os.environ.get(
+            "ACADEMY_BILLING_ADDRESS_LINE1", ""
+        ).strip(),
+        "city": os.environ.get("ACADEMY_BILLING_CITY", "").strip(),
+        "postal_code": os.environ.get("ACADEMY_BILLING_POSTAL_CODE", "").strip(),
+        "invoice_series": os.environ.get(
+            "ACADEMY_BILLING_INVOICE_SERIES", ""
+        ).strip(),
+        "einvoice_profile": os.environ.get(
+            "ACADEMY_BILLING_EINVOICE_PROFILE", "FACTUR-X_EN16931"
+        ).strip(),
     }
 
 
 def issuer_ready_for_legal_issuance() -> bool:
     profile = issuer_profile()
-    # VAT ID is intentionally not universally mandatory here: tax treatment is a
-    # separate explicit policy. The minimum legal issuer identity must exist.
     return all(
         profile[field]
-        for field in ("legal_name", "country", "registration_id", "invoice_series")
+        for field in (
+            "legal_name",
+            "country",
+            "registration_id",
+            "address_line1",
+            "city",
+            "postal_code",
+            "invoice_series",
+        )
     )
 
 
 def build_invoice_intent(order: Dict[str, Any]) -> Dict[str, Any]:
-    """Create an immutable, non-legal invoice intent from a confirmed paid order."""
+    """Create immutable billing intent from a confirmed paid order."""
     if order.get("status") != "PAID":
         raise OrderNotPaid("Invoice intent requires a PAID commercial order")
     order_id = str(order.get("order_id") or "").strip()
@@ -97,19 +113,18 @@ def build_invoice_intent(order: Dict[str, Any]) -> Dict[str, Any]:
         "legal_issuance_ready": issuer_ready_for_legal_issuance(),
         "einvoice_format": None,
         "einvoice_validation": "NOT_RUN",
+        "artifact": None,
         "issued_at": None,
         "credited_by": None,
     }
 
 
 def assert_legal_issuance_ready(document: Dict[str, Any]) -> None:
-    """Fail closed before numbering/generating a legal invoice."""
     if document.get("status") != DOCUMENT_INTENT:
         raise BillingPolicyError("Only an invoice intent can be issued")
     if not issuer_ready_for_legal_issuance():
         raise BillingNotReady("Billing issuer profile is incomplete")
     if not document.get("payment_attempt_id"):
         raise BillingNotReady("Payment evidence is missing")
-    # Tax/VAT is deliberately not guessed. A later tax policy adapter must set an
-    # explicit validated tax treatment before this function is extended to issue.
-    raise BillingNotReady("Tax/e-invoicing policy adapter is not configured")
+    if not document.get("pricing_snapshot"):
+        raise BillingNotReady("Pricing evidence is missing")
