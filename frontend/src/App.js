@@ -42,7 +42,7 @@ function useReglementStatus(enabled) {
   useEffect(() => {
     let cancelled = false;
     if (!enabled) {
-      setState({ loading: false, signed: false });
+      setState({ loading: false, signed: true });
       return undefined;
     }
     setState((s) => ({ ...s, loading: true }));
@@ -68,20 +68,22 @@ function AuthOnly({ children }) {
 
 function BeforeOnboarding({ children }) {
   const { user, loading } = useAuth();
-  const regulation = useReglementStatus(Boolean(user));
+  const learnerMustSign = user?.role === "student";
+  const regulation = useReglementStatus(Boolean(user) && learnerMustSign);
   if (loading || regulation.loading) return null;
   if (!user) return <Navigate to="/" replace />;
-  if (!regulation.signed) return <Navigate to="/reglement" replace />;
+  if (learnerMustSign && !regulation.signed) return <Navigate to="/reglement" replace />;
   if (user.onboarding_completed) return <Navigate to="/dashboard" replace />;
   return children;
 }
 
 function Protected({ children, roles }) {
   const { user, loading } = useAuth();
-  const regulation = useReglementStatus(Boolean(user));
+  const learnerMustSign = user?.role === "student";
+  const regulation = useReglementStatus(Boolean(user) && learnerMustSign);
   if (loading || regulation.loading) return null;
   if (!user) return <Navigate to="/" replace />;
-  if (!regulation.signed) return <Navigate to="/reglement" replace />;
+  if (learnerMustSign && !regulation.signed) return <Navigate to="/reglement" replace />;
   if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <Layout>{children}</Layout>;
