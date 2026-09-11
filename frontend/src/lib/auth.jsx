@@ -41,18 +41,6 @@ export function AuthProvider({ children }) {
     return data.user;
   };
 
-  const startFrekLogin = useCallback(async (returnTo = "/") => {
-    const { data } = await api.post("/auth/frek/start", { return_to: returnTo });
-    window.location.assign(data.authorization_url);
-  }, []);
-
-  const completeFrekLogin = useCallback(async (code, state) => {
-    const { data } = await api.post("/auth/frek/callback", { code, state });
-    setSession(data);
-    setUser(data.user);
-    return data.user;
-  }, []);
-
   const logout = () => {
     api.post("/auth/logout").catch(() => {});
     clearSession();
@@ -60,19 +48,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthCtx.Provider
-      value={{
-        user,
-        loading,
-        login,
-        register,
-        startFrekLogin,
-        completeFrekLogin,
-        logout,
-        refreshMe,
-        setUser,
-      }}
-    >
+    <AuthCtx.Provider value={{ user, loading, login, register, logout, refreshMe, setUser }}>
       {children}
     </AuthCtx.Provider>
   );
