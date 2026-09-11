@@ -4,7 +4,8 @@ const { mockAuthenticatedSession } = require("./fixtures/auth-fixture");
 // ACA-0023 — exact client-side return context. A real browser POP must
 // restore document scroll, named spatial rail position and the last
 // stable focused Academy control for that history entry. A fresh
-// PUSH/deep-link remains fresh.
+// PUSH/deep-link remains fresh. Rail assertions always use the browser-achieved
+// position because scrollLeft is clamped to the element's real maximum.
 test.use({ viewport: { width: 1280, height: 400 } });
 
 test.describe("scroll, rail and focus restoration (ACA-0023)", () => {
