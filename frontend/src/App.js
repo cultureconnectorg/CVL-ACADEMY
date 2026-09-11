@@ -29,8 +29,11 @@ const Certifications = lazy(() => import("@/pages/Certifications"));
 const LegalHub = lazy(() => import("@/pages/LegalHub"));
 const LegalAcceptance = lazy(() => import("@/pages/LegalAcceptance"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
+const StakeholderAccessPanel = lazy(() => import("@/pages/admin/StakeholderAccessPanel"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
+const StakeholderPortal = lazy(() => import("@/pages/stakeholder/StakeholderPortal"));
+const StakeholderClaim = lazy(() => import("@/pages/stakeholder/StakeholderClaim"));
 
 const ADMIN_ROLES = ["admin", "super_admin", "founder"];
 const TRAINER_ROLES = ["trainer", ...ADMIN_ROLES];
@@ -53,10 +56,13 @@ function LegalGuard({ children }) {
       return undefined;
     }
     setState("checking");
-    api.get("/legal/requirements")
+    api
+      .get("/legal/requirements")
       .then(({ data }) => alive && setState(data.accepted ? "accepted" : "required"))
       .catch(() => alive && setState("required"));
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [userId, loading]);
 
   if (loading || state === "checking") return null;
@@ -65,13 +71,21 @@ function LegalGuard({ children }) {
   return children;
 }
 
+function Authenticated({ children, roles, withLayout = true }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/" replace />;
+  if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
+  const content = withLayout ? <Layout>{children}</Layout> : children;
+  return <LegalGuard>{content}</LegalGuard>;
+}
+
 function Protected({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
   if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
-  return <LegalGuard><Layout>{children}</Layout></LegalGuard>;
+  return <Authenticated roles={roles}>{children}</Authenticated>;
 }
 
 function App() {
@@ -89,6 +103,30 @@ function App() {
                   <Route path="/legal/accept" element={<LegalAcceptance />} />
                   <Route path="/legal/:slug" element={<LegalHub />} />
                   <Route path="/onboarding" element={<LegalGuard><Onboarding /></LegalGuard>} />
+                  <Route
+                    path="/stakeholder/claim/:code"
+                    element={
+                      <Authenticated withLayout={false}>
+                        <StakeholderClaim />
+                      </Authenticated>
+                    }
+                  />
+                  <Route
+                    path="/partner"
+                    element={
+                      <Authenticated>
+                        <StakeholderPortal expectedType="partner" />
+                      </Authenticated>
+                    }
+                  />
+                  <Route
+                    path="/institution"
+                    element={
+                      <Authenticated>
+                        <StakeholderPortal expectedType="institution" />
+                      </Authenticated>
+                    }
+                  />
                   <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
                   <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
                   <Route path="/formations" element={<Protected><Formations /></Protected>} />
@@ -111,6 +149,16 @@ function App() {
                   <Route
                     path="/admin"
                     element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
+                  />
+                  <Route
+                    path="/admin/stakeholders"
+                    element={
+                      <Protected roles={ADMIN_ROLES}>
+                        <div className="px-6 md:px-12 py-10 max-w-4xl">
+                          <StakeholderAccessPanel />
+                        </div>
+                      </Protected>
+                    }
                   />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
