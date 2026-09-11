@@ -56,8 +56,27 @@ test.describe("quiz context (W3-B)", () => {
     await gotoQuizReadyModule(page);
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
+
+    const submitResponsePromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        response.url().includes("/api/formations/FMS-01/modules/FMS-01-M01/quiz/submit") &&
+        response.status() === 200,
+    );
+    const moduleReloadPromise = page.waitForResponse(
+      (response) =>
+        response.request().method() === "GET" &&
+        response.url().includes("/api/modules/FMS-01/FMS-01-M01") &&
+        response.status() === 200,
+    );
+
     await page.getByTestId("quiz-submit").click();
-    await expect(page.getByTestId("quiz-result")).toBeVisible();
+    const submitResponse = await submitResponsePromise;
+    const submitBody = await submitResponse.json();
+    expect(submitBody.passed).toBe(true);
+
+    await moduleReloadPromise;
+    await expect(page.getByTestId("phase-toggle-mini_mission")).toBeEnabled();
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
