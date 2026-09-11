@@ -112,7 +112,7 @@ export default function Layout({ children }) {
                 data-testid={`lang-${l.code}`}
                 onClick={() => setLang(l.code)}
                 className={`text-xs px-2 py-1 rounded-full font-semibold transition
-                  ${lang === l.code ? "bg-[--cvln-orange] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`
+                  ${lang === l.code ? "bg-[--cvln-orange] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
               >
                 {l.label}
               </button>
