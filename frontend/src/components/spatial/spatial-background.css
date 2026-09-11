@@ -59,7 +59,7 @@
 }
 
 .spatial-background__world {
-  background-image: url("/spatial/cvln-academy-spatial-world.svg");
+  background-image: var(--spatial-world-image);
   background-size: cover;
   background-position: center;
   opacity: 0.62;
