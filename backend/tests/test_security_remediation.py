@@ -32,7 +32,14 @@ async def _remediation(remediation_db):
     )
 
 
-async def _authorize(remediation_db, remediation_id: str, *, decision="ALLOW", action="SECURITY_AUTONOMOUS_FIX", bound_id=None):
+async def _authorize(
+    remediation_db,
+    remediation_id: str,
+    *,
+    decision="ALLOW",
+    action="SECURITY_AUTONOMOUS_FIX",
+    bound_id=None,
+):
     decision_id = "AUTHDEC-1"
     await remediation_db.authority_decisions.insert_one(
         {
