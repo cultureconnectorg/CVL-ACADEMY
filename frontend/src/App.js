@@ -14,6 +14,7 @@ import SpatialWorldFrame from "@/components/spatial/SpatialWorldFrame.jsx";
 import { RouteTransition } from "@/lib/RouteTransition";
 
 const Landing = lazy(() => import("@/pages/Landing"));
+const Pricing = lazy(() => import("@/pages/Pricing"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Formations = lazy(() => import("@/pages/Formations"));
@@ -86,6 +87,7 @@ function App() {
               <RouteTransition>
                 <Routes>
                   <Route path="/" element={<Landing />} />
+                  <Route path="/pricing" element={<Pricing />} />
                   <Route path="/legal/accept" element={<LegalAcceptance />} />
                   <Route path="/legal/:slug" element={<LegalHub />} />
                   <Route path="/onboarding" element={<LegalGuard><Onboarding /></LegalGuard>} />
@@ -100,18 +102,9 @@ function App() {
                   <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
                   <Route path="/skills" element={<Protected><Skills /></Protected>} />
                   <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
-                  <Route
-                    path="/trainer"
-                    element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
-                  />
-                  <Route
-                    path="/jury"
-                    element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
-                  />
-                  <Route
-                    path="/admin"
-                    element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
-                  />
+                  <Route path="/trainer" element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>} />
+                  <Route path="/jury" element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>} />
+                  <Route path="/admin" element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </RouteTransition>
