@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, Erase, PenTablet, ShieldCheck } from "iconoir-react";
+import { CheckCircle } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { toast } from "sonner";
@@ -154,7 +154,7 @@ export default function ReglementSignature() {
 
           <aside className="lg:sticky lg:top-6 cvln-card p-6 md:p-7">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#FFF3EC] flex items-center justify-center text-[--cvln-orange]"><ShieldCheck /></div>
+              <div className="w-10 h-10 rounded-full bg-[#FFF3EC] flex items-center justify-center text-[--cvln-orange] font-black">✓</div>
               <div>
                 <div className="font-display font-bold text-xl">Signature obligatoire</div>
                 <div className="text-xs text-[--cvln-ink-2]">{user.display_name} · {user.frek_id}</div>
@@ -175,9 +175,7 @@ export default function ReglementSignature() {
             <div className="mt-6">
               <div className="flex items-center justify-between gap-3 mb-2">
                 <div className="text-xs mono uppercase tracking-wider font-bold">Signe avec ton doigt ou ta souris</div>
-                <button type="button" onClick={clearSignature} className="text-xs flex items-center gap-1 text-[--cvln-ink-2] hover:text-[--cvln-ink]">
-                  <Erase width={14} height={14} /> Effacer
-                </button>
+                <button type="button" onClick={clearSignature} className="text-xs text-[--cvln-ink-2] hover:text-[--cvln-ink]">Effacer</button>
               </div>
               <canvas
                 ref={canvasRef}
@@ -193,7 +191,7 @@ export default function ReglementSignature() {
                 style={{ touchAction: "none" }}
                 aria-label="Zone de signature manuscrite"
               />
-              <div className="mt-2 text-xs text-[--cvln-ink-2] flex items-center gap-1"><PenTablet width={14} height={14} /> Signature manuscrite numérique enregistrée avec la version du règlement.</div>
+              <div className="mt-2 text-xs text-[--cvln-ink-2]">Signature manuscrite numérique enregistrée avec la version du règlement.</div>
             </div>
 
             <button
