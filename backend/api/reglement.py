@@ -24,11 +24,16 @@ class SignatureInput(BaseModel):
     content_hash: str
 
 
+def _record_id(user_id: str) -> str:
+    """Deterministic id: one immutable acceptance per user and regulation version."""
+    return f"{user_id}:{REGLEMENT_VERSION}"
+
+
 @router.get("/status")
 async def status(current: User = Depends(get_current_user)):
     record = await db.reglement_signatures.find_one(
-        {"user_id": current.id, "version": REGLEMENT_VERSION},
-        {"_id": 0, "signature_png": 0},
+        {"_id": _record_id(current.id)},
+        {"signature_png": 0},
     )
     return {
         "signed": bool(record),
@@ -49,9 +54,21 @@ async def sign(inp: SignatureInput, current: User = Depends(get_current_user)):
     if inp.signer_name.strip().casefold() != current.display_name.strip().casefold():
         raise HTTPException(status_code=400, detail="Le nom doit correspondre au compte connecté")
 
+    record_id = _record_id(current.id)
+    existing = await db.reglement_signatures.find_one(
+        {"_id": record_id}, {"signature_png": 0}
+    )
+    if existing:
+        return {
+            "signed": True,
+            "version": REGLEMENT_VERSION,
+            "signed_at": existing["signed_at"],
+        }
+
     signature_hash = hashlib.sha256(inp.signature_png.encode("utf-8")).hexdigest()
     signed_at = utc_now_iso()
     record = {
+        "_id": record_id,
         "user_id": current.id,
         "frek_id": current.frek_id,
         "signer_name": current.display_name,
@@ -63,8 +80,16 @@ async def sign(inp: SignatureInput, current: User = Depends(get_current_user)):
         "capture_method": "web_signature_pad",
     }
     await db.reglement_signatures.update_one(
-        {"user_id": current.id, "version": REGLEMENT_VERSION},
+        {"_id": record_id},
         {"$setOnInsert": record},
         upsert=True,
     )
-    return {"signed": True, "version": REGLEMENT_VERSION, "signed_at": signed_at}
+
+    persisted = await db.reglement_signatures.find_one(
+        {"_id": record_id}, {"signature_png": 0}
+    )
+    return {
+        "signed": True,
+        "version": REGLEMENT_VERSION,
+        "signed_at": persisted["signed_at"] if persisted else signed_at,
+    }
