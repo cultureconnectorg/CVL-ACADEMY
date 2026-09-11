@@ -79,16 +79,26 @@ def evaluate_runtime_row(
     }
 
 
-async def _explicit_gate_state(db: Any, codes: list[str]) -> dict[str, set[str]]:
-    if not codes:
+async def _explicit_gate_state(
+    db: Any, rows: list[dict[str, Any]]
+) -> dict[str, set[str]]:
+    """Only evidence created against the current Excel row hash can satisfy a gate."""
+    if not rows:
         return {}
+    current_hash = {row["code"]: row["source_hash"] for row in rows}
+    codes = list(current_hash)
     docs = await db.academy_economy_gate_state.find(
         {"code": {"$in": codes}, "satisfied": True}, {"_id": 0}
     ).to_list(10000)
     result: dict[str, set[str]] = {code: set() for code in codes}
     for doc in docs:
-        if doc.get("evidence_ref"):
-            result.setdefault(doc["code"], set()).add(doc["gate"])
+        code = doc.get("code")
+        if (
+            code in current_hash
+            and doc.get("source_hash") == current_hash[code]
+            and doc.get("evidence_ref")
+        ):
+            result[code].add(doc["gate"])
     return result
 
 
@@ -101,12 +111,12 @@ async def runtime_decisions(
     rows = await db.academy_economy_master.find(
         {"code": {"$in": codes}}, {"_id": 0}
     ).to_list(max(len(codes), 1))
-    gates = await _explicit_gate_state(db, codes)
+    gates = await _explicit_gate_state(db, rows)
     canonicalized = canonicalized_codes or set()
     result: dict[str, dict[str, Any]] = {}
     for row in rows:
         satisfied = set(gates.get(row["code"], set()))
-        if row["code"] in canonicalized:
+        if row["code"] in canonicalized and "CANONICALIZED" in required_gates(row):
             satisfied.add("CANONICALIZED")
         result[row["code"]] = {**row, "runtime": evaluate_runtime_row(row, satisfied_gates=satisfied)}
     return result
@@ -146,8 +156,9 @@ async def set_gate_state(
 async def sync_economy_runtime_links(db: Any) -> dict[str, int]:
     """Attach an executable runtime handler/test to every one of the 812 rows."""
     rows = load_economy_rows()
+    linked = 0
     for row in rows:
-        await db.academy_requirement_registry.update_one(
+        result = await db.academy_requirement_registry.update_one(
             {"requirement_id": f"ECONOMY_3D:{row['code']}"},
             {"$set": {
                 "runtime_handler": "services.economy_runtime.evaluate_runtime_row",
@@ -155,10 +166,15 @@ async def sync_economy_runtime_links(db: Any) -> dict[str, int]:
                     "api.formations.list_formations",
                     "api.formations.get_formation",
                     "payments.service.create_checkout",
-                    "api.master_registry.economy_runtime",
+                    "api.economy_runtime",
                 ],
                 "runtime_test_ref": "backend/tests/test_economy_runtime_wiring.py",
             }},
             upsert=False,
         )
-    return {"rows_linked": len(rows)}
+        linked += int(getattr(result, "matched_count", 0) or 0)
+    if linked != len(rows):
+        raise ValueError(
+            f"Economy 3D runtime registry incomplete: linked {linked}/{len(rows)} rows"
+        )
+    return {"rows_linked": linked}
