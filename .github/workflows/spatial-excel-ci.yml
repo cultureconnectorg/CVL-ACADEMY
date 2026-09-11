@@ -103,7 +103,7 @@ jobs:
           if [ ${#files[@]} -eq 0 ]; then
             echo "No backend Python files changed by Spatial branch; pre-existing import-order debt is not attributed to this delta."
           else
-            isort --check-only "${files[@]}"
+            isort --profile black --check-only --diff "${files[@]}"
           fi
       - name: Flake8 changed backend files
         shell: bash

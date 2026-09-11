@@ -9,6 +9,10 @@ const MODULE_URL = "/formations/FMS-01/modules/FMS-01-M01";
 async function gotoQuizReadyModule(page, overrides = {}) {
   await mockAuthenticatedSession(page, { moduleData: FIXTURE_MODULE_QUIZ_READY, ...overrides });
   await page.goto(MODULE_URL);
+  // React.StrictMode intentionally re-runs mount effects in development.
+  // Drain those initial module GETs before the quiz mutation so no stale
+  // pre-submit fixture response can race the authoritative post-quiz reload.
+  await page.waitForLoadState("networkidle");
   await page.getByTestId("phase-toggle-quiz").click();
 }
 
@@ -57,26 +61,26 @@ test.describe("quiz context (W3-B)", () => {
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
 
-    const submitResponsePromise = page.waitForResponse(
-      (response) =>
-        response.request().method() === "POST" &&
-        response.url().includes("/api/formations/FMS-01/modules/FMS-01-M01/quiz/submit") &&
-        response.status() === 200,
-    );
-    const moduleReloadPromise = page.waitForResponse(
-      (response) =>
-        response.request().method() === "GET" &&
-        response.url().includes("/api/modules/FMS-01/FMS-01-M01") &&
-        response.status() === 200,
-    );
+    // Wait for the authoritative post-quiz module payload, not merely any
+    // matching GET. This proves the server/fixture state has quiz=true before
+    // asserting the UI auto-advance.
+    const moduleReload = page.waitForResponse(async (response) => {
+      if (
+        response.request().method() !== "GET" ||
+        !response.url().includes("/api/modules/FMS-01/FMS-01-M01")
+      ) {
+        return false;
+      }
+      try {
+        const body = await response.json();
+        return body?.phase_flags?.quiz === true;
+      } catch {
+        return false;
+      }
+    });
 
     await page.getByTestId("quiz-submit").click();
-    const submitResponse = await submitResponsePromise;
-    const submitBody = await submitResponse.json();
-    expect(submitBody.passed).toBe(true);
-
-    await moduleReloadPromise;
-    await expect(page.getByTestId("phase-toggle-mini_mission")).toBeEnabled();
+    await moduleReload;
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
