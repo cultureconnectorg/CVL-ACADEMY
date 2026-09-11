@@ -37,8 +37,7 @@ def test_economy_3d_manifest_has_exactly_812_unique_lines():
 
 def test_economy_3d_source_identity_is_frozen():
     assert (
-        MANIFEST["source_workbook"]
-        == "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx"
+        MANIFEST["source_workbook"] == "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx"
     )
     assert MANIFEST["source_sheet"] == "Mapping_812"
     assert MANIFEST["source_range"] == "A1:Y813"
@@ -56,14 +55,8 @@ def test_each_economy_3d_line_is_traceable_and_policy_consistent(index, record):
     """812 distinct tests: one test for one canonical Mapping_812 row."""
 
     validate_record(record, index)
-    assert (
-        record_by_requirement_id(record["requirement_id"])["code"]
-        == record["code"]
-    )
-    assert (
-        record_by_code(record["code"])["requirement_id"]
-        == record["requirement_id"]
-    )
+    assert record_by_requirement_id(record["requirement_id"])["code"] == record["code"]
+    assert record_by_code(record["code"])["requirement_id"] == record["requirement_id"]
     assert commercial_class(record) in {
         "PUBLIC_MARKET",
         "CROSS_ECOSYSTEM_PROGRAM",
