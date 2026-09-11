@@ -1,0 +1,177 @@
+.spatial-background {
+  --spatial-x: 0px;
+  --spatial-y: 0px;
+  --spatial-scroll: 0px;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background: #eef4f2;
+}
+
+.spatial-background__base,
+.spatial-background__world,
+.spatial-background__aurora,
+.spatial-background__orbit,
+.spatial-background__mist,
+.spatial-background__readability {
+  position: absolute;
+  inset: -4%;
+  will-change: transform, opacity;
+}
+
+.spatial-background__base {
+  inset: 0;
+  background:
+    radial-gradient(circle at 72% 24%, rgba(255, 147, 71, 0.25), transparent 28%),
+    radial-gradient(circle at 24% 24%, rgba(94, 182, 166, 0.22), transparent 34%),
+    linear-gradient(145deg, #eef5f1 0%, #f8efe8 50%, #e6f1ee 100%);
+}
+
+.spatial-background__world {
+  background-image: url("/spatial/cvln-academy-spatial-world.svg");
+  background-size: cover;
+  background-position: center;
+  opacity: 0.62;
+  transform:
+    translate3d(calc(var(--spatial-x) * -0.55), calc((var(--spatial-y) * -0.4) + (var(--spatial-scroll) * -0.015)), 0)
+    scale(1.07);
+}
+
+.spatial-background__aurora {
+  border-radius: 50%;
+  filter: blur(50px);
+  mix-blend-mode: screen;
+  opacity: 0.35;
+}
+
+.spatial-background__aurora--one {
+  width: 44vw;
+  height: 44vw;
+  left: 56%;
+  top: 4%;
+  background: radial-gradient(circle, rgba(255, 125, 34, 0.42) 0%, rgba(255, 125, 34, 0.04) 60%, transparent 76%);
+  animation: spatial-breathe 11s ease-in-out infinite alternate;
+}
+
+.spatial-background__aurora--two {
+  width: 36vw;
+  height: 36vw;
+  left: -6%;
+  top: 36%;
+  background: radial-gradient(circle, rgba(48, 145, 125, 0.3) 0%, rgba(48, 145, 125, 0.03) 62%, transparent 80%);
+  animation: spatial-drift 16s ease-in-out infinite alternate;
+}
+
+.spatial-background__orbit {
+  inset: auto;
+  border: 1px solid rgba(255, 131, 42, 0.24);
+  border-radius: 999px;
+  transform-origin: center;
+}
+
+.spatial-background__orbit--one {
+  width: 44vw;
+  height: 16vw;
+  right: 3vw;
+  top: 17vh;
+  transform: rotate(-14deg) translate3d(calc(var(--spatial-x) * 0.25), calc(var(--spatial-y) * 0.18), 0);
+  animation: spatial-orbit-pulse 8s ease-in-out infinite;
+}
+
+.spatial-background__orbit--two {
+  width: 28vw;
+  height: 9vw;
+  right: 13vw;
+  top: 23vh;
+  transform: rotate(21deg) translate3d(calc(var(--spatial-x) * 0.18), calc(var(--spatial-y) * 0.12), 0);
+  opacity: 0.52;
+  animation: spatial-orbit-pulse 10s 1.2s ease-in-out infinite;
+}
+
+.spatial-background__mist {
+  inset: auto -10% -18% -10%;
+  height: 48%;
+  background:
+    radial-gradient(ellipse at 35% 50%, rgba(255, 255, 255, 0.88), transparent 56%),
+    radial-gradient(ellipse at 76% 58%, rgba(255, 244, 235, 0.74), transparent 58%);
+  filter: blur(28px);
+  transform: translate3d(calc(var(--spatial-x) * 0.12), calc(var(--spatial-y) * 0.08), 0);
+  animation: spatial-mist 18s ease-in-out infinite alternate;
+}
+
+.spatial-background__readability {
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255,255,255,0.84) 0%, rgba(255,255,255,0.62) 43%, rgba(255,255,255,0.35) 68%, rgba(255,255,255,0.55) 100%),
+    linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.1) 46%, rgba(255,255,255,0.52) 100%);
+}
+
+@keyframes spatial-breathe {
+  0% { transform: translate3d(-2%, -1%, 0) scale(0.94); opacity: 0.24; }
+  100% { transform: translate3d(3%, 2%, 0) scale(1.08); opacity: 0.44; }
+}
+
+@keyframes spatial-drift {
+  0% { transform: translate3d(-2%, 0, 0) scale(0.96); }
+  100% { transform: translate3d(8%, -5%, 0) scale(1.06); }
+}
+
+@keyframes spatial-orbit-pulse {
+  0%, 100% { opacity: 0.28; filter: drop-shadow(0 0 0 rgba(255, 132, 43, 0)); }
+  50% { opacity: 0.62; filter: drop-shadow(0 0 12px rgba(255, 132, 43, 0.18)); }
+}
+
+@keyframes spatial-mist {
+  0% { transform: translate3d(-2%, 0, 0) scaleX(1); opacity: 0.72; }
+  100% { transform: translate3d(4%, -3%, 0) scaleX(1.08); opacity: 0.9; }
+}
+
+@media (max-width: 768px) {
+  .spatial-background__world {
+    opacity: 0.46;
+    background-position: 61% center;
+    transform: scale(1.12);
+  }
+
+  .spatial-background__orbit--one {
+    width: 76vw;
+    height: 28vw;
+    right: -19vw;
+    top: 16vh;
+  }
+
+  .spatial-background__orbit--two {
+    width: 52vw;
+    height: 16vw;
+    right: 0;
+    top: 23vh;
+  }
+
+  .spatial-background__aurora--one {
+    width: 88vw;
+    height: 88vw;
+  }
+
+  .spatial-background__aurora--two {
+    width: 72vw;
+    height: 72vw;
+  }
+
+  .spatial-background__readability {
+    background: linear-gradient(180deg, rgba(255,255,255,0.76) 0%, rgba(255,255,255,0.58) 58%, rgba(255,255,255,0.82) 100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spatial-background__world,
+  .spatial-background__aurora,
+  .spatial-background__orbit,
+  .spatial-background__mist {
+    animation: none !important;
+    transform: none !important;
+    will-change: auto;
+  }
+}
