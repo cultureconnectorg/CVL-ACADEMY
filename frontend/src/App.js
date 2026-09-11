@@ -1,10 +1,11 @@
-import { Suspense, lazy, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "@/App.css";
 import "@/index.css";
 
 import { AuthProvider, useAuth } from "@/lib/auth.jsx";
 import { I18nProvider } from "@/lib/i18n.jsx";
+import { api } from "@/lib/api";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
 import LegalFooter from "@/components/LegalFooter";
@@ -25,6 +26,7 @@ const Wallet = lazy(() => import("@/pages/Wallet"));
 const Skills = lazy(() => import("@/pages/Skills"));
 const Certifications = lazy(() => import("@/pages/Certifications"));
 const LegalHub = lazy(() => import("@/pages/LegalHub"));
+const LegalAcceptance = lazy(() => import("@/pages/LegalAcceptance"));
 const AdminDashboard = lazy(() => import("@/pages/admin/AdminDashboard"));
 const TrainerDashboard = lazy(() => import("@/pages/trainer/TrainerDashboard"));
 const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
@@ -37,13 +39,37 @@ function PageFallback() {
   return <div className="p-10 text-[--cvln-ink-2]">…</div>;
 }
 
+function LegalGuard({ children }) {
+  const { user, loading } = useAuth();
+  const [state, setState] = useState("checking");
+
+  useEffect(() => {
+    let alive = true;
+    if (loading) return undefined;
+    if (!user) {
+      setState("anonymous");
+      return undefined;
+    }
+    setState("checking");
+    api.get("/legal/requirements")
+      .then(({ data }) => alive && setState(data.accepted ? "accepted" : "required"))
+      .catch(() => alive && setState("required"));
+    return () => { alive = false; };
+  }, [user, loading]);
+
+  if (loading || state === "checking") return null;
+  if (!user || state === "anonymous") return <Navigate to="/" replace />;
+  if (state === "required") return <Navigate to="/legal/accept" replace />;
+  return children;
+}
+
 function Protected({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
   if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
-  return <Layout>{children}</Layout>;
+  return <LegalGuard><Layout>{children}</Layout></LegalGuard>;
 }
 
 function App() {
@@ -57,8 +83,9 @@ function App() {
             <RouteTransition>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/legal/accept" element={<LegalAcceptance />} />
                 <Route path="/legal/:slug" element={<LegalHub />} />
-                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/onboarding" element={<LegalGuard><Onboarding /></LegalGuard>} />
                 <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
                 <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
                 <Route path="/formations" element={<Protected><Formations /></Protected>} />
