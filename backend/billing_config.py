@@ -46,7 +46,9 @@ def billing_production_status() -> Dict[str, Any]:
         if not str(profile.get(field) or "").strip()
     ]
 
-    missing_tax = [name for name in TAX_ENV_VARS if not os.environ.get(name, "").strip()]
+    missing_tax = [
+        name for name in TAX_ENV_VARS if not os.environ.get(name, "").strip()
+    ]
     tax_error = None
     tax_ready = False
     if not missing_tax:
