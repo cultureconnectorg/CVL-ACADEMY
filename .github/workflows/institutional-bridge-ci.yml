@@ -38,6 +38,12 @@ jobs:
           cache: pip
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
+      - name: Capture Black diff
+        run: black --diff api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py > ../black.diff || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: institutional-bridge-black-diff
+          path: black.diff
       - run: black --check api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
       - run: isort --profile black --check-only api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
       - run: flake8 api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
