@@ -5,10 +5,9 @@ from __future__ import annotations
 
 from typing import Dict, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
-
 from auth import get_current_user_optional, require_role
 from db import db
+from fastapi import APIRouter, Depends, HTTPException
 from lx import (
     compute_status,
     is_formation_unlocked,
