@@ -19,7 +19,7 @@ from services.economy_importer import import_economy_master, load_economy_rows
 from services.protocol_master_runtime import (
     EXPECTED_ROWS as EXPECTED_PROTOCOL_ROWS,
     import_protocol_master_runtime,
-    load_protocol_master_runtime,
+    load_protocol_controls,
 )
 from services.requirement_registry import sync_master_requirements
 
@@ -29,7 +29,7 @@ def validate_master_sources() -> dict[str, Any]:
     catalogue = load_catalogue_rows()
     economy = load_economy_rows()
     cartography = load_cartography_2d()
-    protocols = load_protocol_master_runtime()
+    protocols = load_protocol_controls()
 
     catalogue_codes = {row["code"] for row in catalogue}
     economy_codes = {row["code"] for row in economy}
