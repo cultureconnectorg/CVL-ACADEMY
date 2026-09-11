@@ -6,6 +6,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from auth import get_current_user
+from db import db
 from models import User
 from payments import (
     CheckoutRequest,
@@ -15,18 +16,22 @@ from payments import (
     OfferNotFoundError,
     PaymentRecord,
     ProviderNotConfiguredError,
-    create_checkout,
     handle_stripe_webhook,
     list_payments_for_user,
 )
+from services.economy_checkout import create_economy_guarded_checkout
 
 router = APIRouter(prefix="/payments", tags=["payments"])
 
 
 @router.post("/checkout", response_model=CheckoutSession)
-async def start_checkout(body: CheckoutRequest, current: User = Depends(get_current_user)):
+async def start_checkout(
+    body: CheckoutRequest,
+    current: User = Depends(get_current_user),
+):
     try:
-        return await create_checkout(
+        return await create_economy_guarded_checkout(
+            db=db,
             user_id=current.id,
             offer_id=body.offer_id,
             economy_code=body.economy_code,
