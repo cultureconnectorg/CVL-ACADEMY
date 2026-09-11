@@ -30,6 +30,7 @@ from . import (
     progression,
     quizzes,
     skills,
+    stakeholders,
     templates,
     wallet,
 )
@@ -54,6 +55,7 @@ for module in (
     templates,
     assistants,
     integrations,
+    stakeholders,
 ):
     router.include_router(module.router)
 
