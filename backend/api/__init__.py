@@ -16,6 +16,7 @@ from . import (
     auth,
     badges,
     billing,
+    billing_views,
     certification,
     commercial,
     economy,
@@ -72,8 +73,8 @@ router.include_router(
     ],
 )
 
-# Commercial and billing transactions require the current legal bundle.
-for module in (commercial, billing):
+# Commercial and billing transactions/read models require the current legal bundle.
+for module in (commercial, billing, billing_views):
     router.include_router(
         module.router,
         dependencies=[Depends(require_legal_acceptance)],
