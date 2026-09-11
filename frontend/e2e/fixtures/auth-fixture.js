@@ -85,12 +85,6 @@ const FIXTURE_LEARNING_PATH = {
   },
 };
 
-// ModuleJourney.js fixture (W3-A/B). One module with a realistic mixed
-// state so all four JourneyHierarchy roles are exercised at once:
-//   hook       -> done AND the default open phase -> CURRENT (revisit case)
-//   objectives -> done, not open                  -> ACQUIRED
-//   course     -> not done, reachable (prev done)  -> NEXT (the frontier)
-//   workshop/deliverable/quiz/mini_mission         -> LOCKED (prev not done)
 const FIXTURE_MODULE = {
   formation: { code: "FMS-01", name: "Fixture Formation One", pole_color: "#D9631E", pole_name: "FMS" },
   module: {
@@ -130,10 +124,6 @@ const FIXTURE_MODULE = {
   progress: { course_progress_pct: 0 },
 };
 
-// W3-B variant: deliverable done, quiz the reachable frontier, mini_mission
-// still locked until the quiz is passed — a separate module object (not a
-// mutation of FIXTURE_MODULE above) so W3-A's existing role-derivation
-// tests keep asserting against the exact state they were written for.
 const FIXTURE_MODULE_QUIZ_READY = {
   ...FIXTURE_MODULE,
   phase_flags: {
@@ -170,11 +160,6 @@ const FIXTURE_QUIZ_RESULT_PASSED = {
   signal_emitted: "FMS-01-M01-QUIZ",
 };
 
-// FormationDetail.js fixture (reachable via ModuleJourney's BackButton,
-// e.g. mentor-presence.spec.js's "navigating out of a module" test). Kept
-// minimal — `modules: []` is valid (every access is `(f.modules || [])`)
-// and `stades` must be non-empty since STADE_EMOJI[f.stades[0]] is read
-// unconditionally once `f` loads.
 const FIXTURE_FORMATION_DETAIL = {
   code: "FMS-01",
   name: "Fixture Formation One",
@@ -196,7 +181,10 @@ const FIXTURE_FORMATION_DETAIL = {
 /**
  * Installs the fixture for one Playwright `page`: a fake but internally
  * consistent authenticated session, entirely intercepted at the network
- * layer. Call before the first `page.goto(...)` of a protected route.
+ * layer. Protected-route tests represent a learner who has already accepted
+ * the current legal bundle; legal-acceptance behavior itself is tested
+ * separately. This keeps the production LegalGuard active in E2E instead of
+ * bypassing it.
  *
  * @param {import('@playwright/test').Page} page
  * @param {{ user?, poles?, learningPath? }} overrides
@@ -207,9 +195,6 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   const learningPath = overrides.learningPath || FIXTURE_LEARNING_PATH;
   const moduleData = overrides.moduleData || FIXTURE_MODULE;
 
-  // Runs before any app script on every subsequent navigation in this
-  // page — avoids the goto-then-evaluate race where AuthProvider's mount
-  // effect could run before the token exists.
   await page.addInitScript(
     ([token, refresh]) => {
       window.localStorage.setItem("cvln_token", token);
@@ -218,13 +203,21 @@ async function mockAuthenticatedSession(page, overrides = {}) {
     ["e2e-fixture-token", "e2e-fixture-refresh-token"]
   );
 
-  // Broad safety net first — Playwright tries the LAST-registered
-  // matching route first, so specific mocks registered after this one
-  // correctly take precedence over it.
   await page.route("**/api/**", (route) => route.fulfill({ status: 200, body: "{}" }));
 
   await page.route("**/api/auth/me", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) })
+  );
+  // Protected-route fixtures explicitly model a learner whose current legal
+  // bundle is already accepted. Without this route, the generic `{}` fallback
+  // is interpreted by LegalGuard as `accepted === false`, redirecting every
+  // authenticated journey to /legal/accept and masking the feature under test.
+  await page.route("**/api/legal/requirements", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ accepted: true, bundle_version: "e2e-current", documents: [] }),
+    })
   );
   await page.route("**/api/poles", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(poles) })
@@ -236,26 +229,13 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       body: JSON.stringify(learningPath),
     })
   );
-  // Dashboard.js (reachable via the RETURN_POSITION test's "navigate away
-  // and back" step) calls .length/.slice on these — they must be arrays,
-  // not the generic `{}` fallback above, or that navigation would throw.
   await page.route("**/api/missions", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
   await page.route("**/api/badges/mine", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
-  // GET /api/modules/:fc/:mc only — the exact 2-segment shape ModuleJourney
-  // fetches on load. Deliberately does NOT match the 3+-segment mutating
-  // endpoints (…/phase, …/deliverable, …/mini-mission/commit), which stay
-  // on the generic `{}` catch-all above unless a later tranche needs them.
-  // Stateful within this one browser context only (reset per test, never
-  // persisted): after a passing quiz/submit, the module-GET route below
-  // starts reporting phase_flags.quiz = true, exactly as a real backend
-  // would post-submit — ModuleJourney.js's own submitQuiz() reloads via
-  // GET after a pass, and that reload needs to reflect it for the
-  // mini_mission context to become reachable. Not FAKE_PRODUCTION_DATA:
-  // this is in-memory only, discarded when the test ends.
+
   let quizJustPassed = false;
   await page.route("**/api/modules/*/*", (route) => {
     if (route.request().method() !== "GET") return route.fallback();
@@ -264,8 +244,7 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       : moduleData;
     return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(body) });
   });
-  // W3-B: quiz fetch/submit + mentor chat, only reached once a spec
-  // actually drives those flows (module-journey-context.spec.js).
+
   const quiz = overrides.quiz || FIXTURE_QUIZ;
   const quizResult = overrides.quizResult || FIXTURE_QUIZ_RESULT_PASSED;
   await page.route("**/api/formations/*/modules/*/quiz", (route) =>
