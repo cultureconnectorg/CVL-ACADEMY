@@ -90,3 +90,9 @@ async def ensure_indexes() -> None:
         [("canonical_formation_code", 1), ("canonical_module_code", 1)]
     )
     await db.module_lineage.create_index("status")
+
+    # CVLN CareOps — universal service desk / maintenance loop.
+    await db.careops_tickets.create_index("ticket_id", unique=True)
+    await db.careops_tickets.create_index([("user_id", 1), ("created_at", -1)])
+    await db.careops_tickets.create_index([("status", 1), ("priority", 1)])
+    await db.careops_tickets.create_index([("product", 1), ("fingerprint", 1)])
