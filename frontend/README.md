@@ -1,16 +1,18 @@
 # CVLN Academy — Frontend
 
-Frontend React de CVLN Academy. Cette application porte l’expérience apprenant, le Spatial Learning, les surfaces de formation/progression, les espaces de rôle et le Legal Center.
+Application React de CVLN Academy. Ce dossier porte l’expérience web de la plateforme : navigation, parcours apprenant, progression, Spatial Learning et surfaces utilisateur.
+
+Pour la présentation générale du produit, l’architecture globale et les règles de preuve, consulter le [`README` racine](../README.md).
 
 ## Stack
 
 - React 19
 - Create React App via `craco`
-- Tailwind CSS + composants shadcn/ui
 - React Router
-- Jest / React Testing Library
-- Playwright pour les parcours E2E
-- PWA : manifest + service worker
+- Tailwind CSS + shadcn/ui
+- Jest + React Testing Library
+- Playwright
+- PWA : manifest et service worker
 
 ## Installation
 
@@ -19,21 +21,38 @@ yarn install
 cp .env.example .env
 ```
 
-Configurer notamment :
+Configurer l’URL du backend pour l’environnement local :
 
 ```env
 REACT_APP_BACKEND_URL=http://localhost:8000
 ```
 
-Puis :
+Puis démarrer l’application :
 
 ```bash
 yarn start
 ```
 
-L’application de développement utilise par défaut le port 3000.
+Le serveur de développement utilise par défaut le port `3000`.
 
-## Commandes de vérification
+## Structure
+
+```text
+frontend/
+├── src/
+│   ├── pages/            Pages et surfaces produit
+│   ├── components/       Composants applicatifs et UI
+│   └── lib/              Primitives métier et expérience frontend
+│       └── spatial/      Primitives Spatial Learning
+├── e2e/                  Scénarios Playwright
+└── playwright.config.js  Configuration E2E
+```
+
+`src/lib/` regroupe notamment les primitives liées à l’authentification, l’API, l’i18n, le lifecycle et l’expérience Spatial. `src/lib/spatial/` contient les primitives spécialisées telles que l’attention, la cadence, la topologie, la physique, l’haptique, l’audio et le frame pacing lorsque celles-ci sont utilisées par l’application.
+
+## Développement
+
+Avant de proposer une modification frontend, exécuter les contrôles pertinents :
 
 ```bash
 # lint
@@ -45,46 +64,31 @@ CI=true yarn test --watchAll=false
 # build production
 CI=true yarn build
 
-# E2E Playwright
+# E2E
 npx playwright test
 ```
 
-En CI, Chromium est installé par Playwright. Dans un environnement local/sandbox disposant déjà d’un exécutable Chromium, `PLAYWRIGHT_CHROMIUM_PATH` peut être utilisé pour fournir explicitement son chemin.
+Un test local réussi ne remplace pas le résultat de la CI du commit correspondant.
 
-## Architecture utile
+## Playwright
 
-- `src/pages/` : surfaces produit et parcours
-- `src/components/` : composants applicatifs et UI
-- `src/lib/` : primitives d’expérience, auth, i18n, API, lifecycle et Spatial Learning
-- `src/lib/spatial/` : attention, cadence, physique, topologie, haptique, audio et frame pacing
-- `e2e/` : preuves runtime Playwright
-- `playwright.config.js` : configuration E2E
+Les scénarios E2E et leurs limites de preuve sont documentés dans [`e2e/README.md`](e2e/README.md).
 
-## Spatial Learning
+En CI, Chromium est installé pour Playwright. Dans un environnement local disposant déjà d’un Chromium compatible, `PLAYWRIGHT_CHROMIUM_PATH` peut être utilisé lorsque la configuration du projet le prévoit.
 
-Le frontend conserve le contexte spatial entre certaines navigations : profondeur/scroll, focus et contexte de parcours. La roadmap expose la progression réelle et peut rendre les étapes futures comme horizon sans simuler un déblocage.
+## Principes frontend
 
-La traçabilité des 137 exigences du classeur Spatial est vérifiée depuis la racine du dépôt par :
+Le frontend doit préserver les règles produit définies par CVLN Academy sans simuler un état métier qui n’existe pas réellement. Une fixture, un mock ou une représentation visuelle ne constitue pas à elle seule une preuve de persistance backend ou d’intégration externe.
 
-```bash
-node --test scripts/spatial-requirements.test.mjs
-```
+Pour Spatial Learning, les changements doivent préserver la continuité du parcours, l’accessibilité, la navigation et les états de progression réellement disponibles.
 
-## Legal Center
+## Documentation associée
 
-Le frontend contient les surfaces publiques de documentation juridique et un gate d’acceptation pour les utilisateurs authentifiés lorsque le bundle courant n’a pas encore été accepté. Le flux prend en charge la signature au doigt/souris et transmet l’acceptation au backend pour conservation de la preuve.
+- [`../docs/DEVELOPER_GUIDE.md`](../docs/DEVELOPER_GUIDE.md) — guide développeur global
+- [`../docs/ACADEMY_SPATIAL_END_TO_END_ARCHITECTURE.md`](../docs/ACADEMY_SPATIAL_END_TO_END_ARCHITECTURE.md) — architecture Spatial
+- [`../docs/I18N_AUDIT_REPORT.md`](../docs/I18N_AUDIT_REPORT.md) — couverture multilingue observée
+- [`e2e/README.md`](e2e/README.md) — validation runtime Playwright
 
-Les principales surfaces associées se trouvent dans :
+## Règle de preuve
 
-- `src/pages/LegalHub.jsx`
-- `src/pages/LegalAcceptance.jsx`
-- `src/components/LegalFooter.jsx`
-- `src/components/CookieConsent.jsx`
-
-## E2E
-
-Consulter [`e2e/README.md`](e2e/README.md) pour le périmètre exact des scénarios Playwright et les limites de ce qu’ils prouvent.
-
-## Documentation générale
-
-La documentation canonique du projet commence dans [`../README.md`](../README.md) et [`../docs/DEVELOPER_GUIDE.md`](../docs/DEVELOPER_GUIDE.md).
+**Current != Target.** Une spécification, une maquette, une fixture ou un document d’audit ne doit pas être présenté comme une fonctionnalité frontend livrée sans preuve correspondante dans le code et, lorsque nécessaire, dans le runtime.
