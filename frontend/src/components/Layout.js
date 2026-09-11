@@ -3,7 +3,7 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
   Fingerprint, LogOut, Leaf, Language, Wallet as WalletIcon,
-  Sparks, ShieldCheck, ShieldSearch, PeopleTag, Settings, Buildings,
+  Sparks, ShieldCheck, ShieldSearch, PeopleTag, Settings, Building,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
@@ -28,7 +28,7 @@ const STAFF_NAV = [
   { to: "/trainer", key: "trainer_space", Icon: PeopleTag, roles: ["trainer", "admin", "super_admin", "founder"] },
   { to: "/jury", key: "jury_space", Icon: ShieldSearch, roles: ["jury", "admin", "super_admin", "founder"] },
   { to: "/admin", key: "admin_cms", Icon: Settings, roles: ["admin", "super_admin", "founder"] },
-  { to: "/admin/stakeholders", label: "Accès partenaires", Icon: Buildings, roles: ["admin", "super_admin", "founder"] },
+  { to: "/admin/stakeholders", label: "Accès partenaires", Icon: Building, roles: ["admin", "super_admin", "founder"] },
 ];
 
 export default function Layout({ children }) {
@@ -50,7 +50,7 @@ export default function Layout({ children }) {
   const stakeholderNav = stakeholder ? [{
     to: stakeholder.stakeholder_type === "institution" ? "/institution" : "/partner",
     label: stakeholder.stakeholder_type === "institution" ? "Espace institution" : "Espace partenaire",
-    Icon: Buildings,
+    Icon: Building,
   }] : [];
 
   const NAV = [
