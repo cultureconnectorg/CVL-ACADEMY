@@ -31,9 +31,22 @@ export default function Roadmap() {
 
   useEffect(() => {
     const rail = railRef.current;
-    restoreElementDepth("/roadmap", "stage-rail", rail);
-    return () => captureElementDepth("/roadmap", "stage-rail", rail);
+    const restore = () => restoreElementDepth("/roadmap", "stage-rail", rail);
+    const firstFrame = window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(restore);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      // Keep the unmount capture as a final safety net. The primary snapshot
+      // is written on every native rail scroll below, before refs can detach.
+      captureElementDepth("/roadmap", "stage-rail", rail);
+    };
   }, []);
+
+  const rememberRailDepth = (event) => {
+    captureElementDepth("/roadmap", "stage-rail", event.currentTarget);
+  };
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="roadmap-page">
@@ -45,7 +58,12 @@ export default function Roadmap() {
         {t("roadmap_p.hero_p")}
       </p>
 
-      <div ref={railRef} className="mt-12 flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory" data-testid="roadmap-scroll">
+      <div
+        ref={railRef}
+        onScroll={rememberRailDepth}
+        className="mt-12 flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory"
+        data-testid="roadmap-scroll"
+      >
         {STAGES.map((s, i) => {
           const active = i === currentIdx;
           const done = i < currentIdx;
