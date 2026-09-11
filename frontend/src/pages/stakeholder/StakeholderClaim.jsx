@@ -60,7 +60,7 @@ export default function StakeholderClaim() {
                 <strong>Organisation :</strong> {invite.org_name}
               </div>
               <div className="mt-1">
-                <strong>Type d'accès :</strong> {invite.stakeholder_type}
+                <strong>Type d’accès :</strong> {invite.stakeholder_type}
               </div>
               {invite.email && (
                 <div className="mt-1">
