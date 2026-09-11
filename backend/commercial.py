@@ -42,19 +42,25 @@ def resolve_offer(economy_code: str, offer_kind: str = "path") -> Dict[str, Any]
     if classification == "BUNDLED_BRIDGE":
         raise EligibilityRequired(f"{economy_code} requires bridge eligibility")
     if classification != "PUBLIC_MARKET":
-        raise CommercialPolicyError(f"Unsupported Economy 3D commercial class: {classification}")
+        raise CommercialPolicyError(
+            f"Unsupported Economy 3D commercial class: {classification}"
+        )
 
     if offer_kind != "path":
         # The canonical phrase is "€990 path / subscription". The workbook
         # proves the path price but does not, in this projection, encode which
         # subscription plan/rate applies to this item. Human Authority: refuse
         # to invent a subscription amount.
-        raise QuoteRequired("Subscription offer requires a concrete canonical plan mapping")
+        raise QuoteRequired(
+            "Subscription offer requires a concrete canonical plan mapping"
+        )
 
     price_label = str(record["prix_public_v1"])
     match = re.match(r"^€([0-9]+(?:\.[0-9]+)?)\s+path\b", price_label)
     if not match:
-        raise CommercialPolicyError(f"No exact path amount in Economy 3D: {price_label}")
+        raise CommercialPolicyError(
+            f"No exact path amount in Economy 3D: {price_label}"
+        )
     amount_eur = float(match.group(1))
     return {
         "economy_code": record["code"],
@@ -86,7 +92,9 @@ def entitlement_filter(user_id: str, economy_code: str) -> Dict[str, Any]:
 
 
 def commercial_entitlements_enforced() -> bool:
-    return os.environ.get("ACADEMY_COMMERCIAL_ENTITLEMENTS_ENFORCED", "false").lower() in {
+    return os.environ.get(
+        "ACADEMY_COMMERCIAL_ENTITLEMENTS_ENFORCED", "false"
+    ).lower() in {
         "1",
         "true",
         "yes",
