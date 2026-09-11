@@ -1,0 +1,42 @@
+name: Billing Frontend CI
+
+on:
+  push:
+    branches:
+      - feat/billing-invoicing-core-20260911
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  billing-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - name: Install frontend
+        run: yarn install --frozen-lockfile
+      - name: Production build
+        env:
+          CI: "false"
+          REACT_APP_BACKEND_URL: http://127.0.0.1:4174
+        run: yarn build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Billing reconnect issuance E2E
+        env:
+          CI: "true"
+        run: npx playwright test e2e/billing-invoice.spec.js --project=chromium
+      - name: Commercial purchase regression
+        env:
+          CI: "true"
+        run: npx playwright test e2e/commercial-purchase.spec.js --project=chromium

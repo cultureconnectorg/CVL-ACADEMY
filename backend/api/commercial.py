@@ -10,6 +10,7 @@ from pydantic import BaseModel
 from pymongo import ReturnDocument
 
 from auth import get_current_user
+from billing import build_invoice_intent
 from commercial import (
     CommercialPolicyError,
     EligibilityRequired,
@@ -227,7 +228,18 @@ async def pay_order_with_wallet(
             }
         },
     )
-    return await db.commercial_orders.find_one({"order_id": order_id}, {"_id": 0})
+    paid_order = await db.commercial_orders.find_one({"order_id": order_id}, {"_id": 0})
+    if paid_order is None:
+        raise HTTPException(status_code=500, detail="PAID_ORDER_PERSISTENCE_ERROR")
+    billing_document = build_invoice_intent(paid_order)
+    billing_document["created_at"] = paid_at
+    billing_document["updated_at"] = paid_at
+    await db.billing_documents.update_one(
+        {"idempotency_key": billing_document["idempotency_key"]},
+        {"$setOnInsert": billing_document},
+        upsert=True,
+    )
+    return paid_order
 
 
 @router.get("/entitlements/mine")
