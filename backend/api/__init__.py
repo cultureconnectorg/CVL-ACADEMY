@@ -3,7 +3,7 @@
 Each sub-router owns one bounded concern (auth, onboarding, formations,
 learning journey, quiz, badges, missions, progression, mentor, FMS import,
 FMS lineage, skills, certification, templates, assistants, wallet,
-integrations). This module just mounts them all under the single `/api`
+integrations, CareOps). This module just mounts them all under the single `/api`
 prefix used by the app.
 """
 
@@ -15,6 +15,7 @@ from . import (
     assistants,
     auth,
     badges,
+    careops,
     certification,
     fms,
     fms_lineage,
@@ -41,9 +42,9 @@ router = APIRouter(prefix="/api")
 for module in (health, auth, legal):
     router.include_router(module.router)
 
-# Informational/admin/integration surfaces stay reachable under their existing
-# auth rules so legal documents, catalogue metadata and operational integrations
-# are not accidentally coupled to a learner consent state.
+# Informational/admin/integration/support surfaces stay reachable under their existing
+# auth rules. CareOps must remain reachable even when a learner cannot enter the journey:
+# a blocked user still needs to be able to ask for help or file a complaint.
 for module in (
     orgs,
     formations,
@@ -54,6 +55,7 @@ for module in (
     templates,
     assistants,
     integrations,
+    careops,
 ):
     router.include_router(module.router)
 
