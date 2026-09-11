@@ -12,7 +12,7 @@ on:
       - '.github/workflows/academy-mini-wallet-ci.yml'
   push:
     branches:
-      - 'fix/academy-mini-wallet-scope'
+      - 'reconcile/pr41-academy-mini-wallet-20260912'
     paths:
       - 'backend/wallet/**'
       - 'backend/api/wallet.py'
@@ -28,6 +28,9 @@ jobs:
     defaults:
       run:
         working-directory: backend
+    env:
+      MONGO_URL: mongodb://127.0.0.1:27017
+      DB_NAME: cvln_academy_test
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
