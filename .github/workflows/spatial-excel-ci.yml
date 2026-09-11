@@ -72,6 +72,7 @@ jobs:
     env:
       MONGO_URL: mongodb://127.0.0.1:27017
       DB_NAME: cvln_academy_ci
+      JWT_SECRET: cvln-academy-ci-only-not-production
     steps:
       - uses: actions/checkout@v4
         with:
