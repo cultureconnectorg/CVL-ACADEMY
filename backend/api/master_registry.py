@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from auth import require_role
 from db import db
 from models import User
+from services.cartography_2d_runtime import SHEET_ROW_COUNTS
 from services.economy_importer import evaluate_sale_policy
 from services.requirement_registry import promote_verified
 
@@ -59,6 +60,58 @@ async def get_sale_policy(
     if not row:
         raise HTTPException(status_code=404, detail="economy row not found")
     return {"code": code, **evaluate_sale_policy(row, set(gates))}
+
+
+@router.get("/cartography-2d/summary")
+async def cartography_2d_summary(current: User = Admin):
+    manifest = await db.academy_cartography_2d_manifest.find_one(
+        {"kind": "CARTOGRAPHY_2D_WORKBOOK"}, {"_id": 0}
+    )
+    runtime_rows = await db.academy_cartography_2d_rows.count_documents({})
+    proof_rows = await db.academy_requirement_registry.count_documents(
+        {"family": "CARTOGRAPHY_2D"}
+    )
+    return {
+        "expected_rows": sum(SHEET_ROW_COUNTS.values()),
+        "expected_sheets": len(SHEET_ROW_COUNTS),
+        "runtime_rows": runtime_rows,
+        "proof_rows": proof_rows,
+        "sheet_row_counts": SHEET_ROW_COUNTS,
+        "manifest": manifest,
+    }
+
+
+@router.get("/cartography-2d/sheets")
+async def cartography_2d_sheets(current: User = Admin):
+    return [
+        {"sheet": sheet, "expected_rows": count}
+        for sheet, count in SHEET_ROW_COUNTS.items()
+    ]
+
+
+@router.get("/cartography-2d/sheet/{sheet}")
+async def cartography_2d_sheet(
+    sheet: str,
+    limit: int = Query(default=100, ge=1, le=2000),
+    current: User = Admin,
+):
+    if sheet not in SHEET_ROW_COUNTS:
+        raise HTTPException(status_code=404, detail="unknown cartography 2D sheet")
+    return await db.academy_cartography_2d_rows.find(
+        {"sheet": sheet}, {"_id": 0}
+    ).sort("excel_row", 1).limit(limit).to_list(limit)
+
+
+@router.get("/cartography-2d/sheet/{sheet}/row/{excel_row}")
+async def cartography_2d_row(sheet: str, excel_row: int, current: User = Admin):
+    if sheet not in SHEET_ROW_COUNTS:
+        raise HTTPException(status_code=404, detail="unknown cartography 2D sheet")
+    row = await db.academy_cartography_2d_rows.find_one(
+        {"sheet": sheet, "excel_row": excel_row}, {"_id": 0}
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="cartography 2D row not found")
+    return row
 
 
 @router.get("/requirements")
