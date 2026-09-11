@@ -1,6 +1,8 @@
 # CVLN Academy — E2E Playwright
 
-Ce dossier contient les scénarios Playwright utilisés pour vérifier les comportements frontend observables de CVLN Academy, notamment la navigation, les guards, l’accessibilité de base et le Spatial Learning.
+Ce dossier contient les scénarios Playwright destinés à vérifier les comportements frontend observables de CVLN Academy dans un navigateur.
+
+Le rôle de cette suite est de tester des parcours et interactions runtime. Elle ne remplace ni les tests unitaires, ni les tests backend, ni une validation d’intégration réelle lorsque les dépendances sont simulées.
 
 ## Exécution
 
@@ -10,44 +12,73 @@ Depuis `frontend/` :
 npx playwright test
 ```
 
-`playwright.config.js` démarre le serveur CRA/craco sur `127.0.0.1:4173` pour les tests.
+Pour exécuter un fichier précis :
 
-### Chromium
+```bash
+npx playwright test e2e/<spec>.spec.js
+```
 
-- **GitHub Actions** : la CI installe Chromium avec `npx playwright install --with-deps chromium` puis Playwright utilise ce navigateur.
-- **Local / sandbox** : si un Chromium préinstallé doit être utilisé, fournir son chemin avec `PLAYWRIGHT_CHROMIUM_PATH`.
+Pour le mode interactif lorsque l’environnement le permet :
 
-Il n’existe donc plus de dépendance documentaire à un chemin Chromium local codé en dur.
+```bash
+npx playwright test --ui
+```
 
-## Périmètre couvert
+La configuration utilisée par la suite se trouve dans [`../playwright.config.js`](../playwright.config.js).
 
-La suite contient notamment :
+## Navigateur
 
-- `routing.spec.js` — routes canoniques, deep links et fallback ;
-- `auth-guards.spec.js` — protection des routes authentifiées ;
-- `reduced-motion.spec.js` — respect de `prefers-reduced-motion` ;
-- `keyboard-focus.spec.js` — visibilité du focus clavier ;
-- `landing-spatial.spec.js` — comportement de la landing Spatial ;
-- `formations-discovery.spec.js` — découverte des formations ;
-- `mentor-presence.spec.js` — présence contextuelle du mentor ;
-- `module-journey-hierarchy.spec.js` — hiérarchie du parcours module ;
-- `module-journey-navigation.spec.js` — navigation dans le parcours ;
-- `module-journey-context.spec.js` — entrée/retour et contexte ;
-- `roadmap-progression.spec.js` — progression, horizon et restauration de la position roadmap ;
-- `route-transition.spec.js` — transitions entre routes.
+GitHub Actions installe Chromium pour les scénarios Playwright. Pour un environnement local ou sandbox disposant déjà d’un navigateur compatible, suivre la configuration définie dans `playwright.config.js` et utiliser `PLAYWRIGHT_CHROMIUM_PATH` lorsqu’elle est prise en charge.
 
-Les scénarios authentifiés peuvent utiliser les fixtures du dossier `fixtures/` pour simuler de façon déterministe l’état frontend nécessaire. Cela ne doit pas être présenté comme une preuve d’intégration réelle avec MongoDB ou avec un backend externe lorsque le scénario n’en démarre pas un.
+Éviter toute dépendance à un chemin local propre à une machine dans les scénarios versionnés.
 
-## CI Spatial
+## Organisation des scénarios
 
-Le workflow `.github/workflows/spatial-excel-ci.yml` exécute la suite Playwright en plus de :
+Les spécifications du dossier couvrent les comportements runtime de la plateforme selon les fonctionnalités présentes dans le code, notamment :
 
-- la traçabilité des 137 exigences Spatial ;
-- ESLint ;
-- les tests unitaires frontend ;
-- le build production ;
-- les régressions backend prévues par le workflow.
+- routage et deep links ;
+- protection des routes authentifiées ;
+- navigation clavier et focus ;
+- préférences de réduction des animations ;
+- découverte des formations ;
+- parcours et navigation des modules ;
+- contexte et continuité Spatial Learning ;
+- progression et roadmap ;
+- transitions de navigation ;
+- autres parcours ajoutés au produit avec leur évolution.
+
+Le contenu exact de `e2e/` constitue la référence pour la liste courante des scénarios ; ce README n’a pas vocation à recopier durablement chaque nom de fichier.
+
+## Fixtures et mocks
+
+Les fixtures permettent de rendre certains scénarios déterministes. Lorsqu’un test utilise une fixture, un mock réseau ou un état frontend simulé, son résultat prouve uniquement le comportement exercé dans ces conditions.
+
+Il ne faut pas conclure à partir d’un scénario simulé que :
+
+- MongoDB a réellement persisté les données ;
+- le backend réel a été traversé ;
+- une API ou un service CVLN externe est opérationnel ;
+- une intégration tierce fonctionne en production.
+
+Ces affirmations nécessitent des preuves d’intégration adaptées.
+
+## CI
+
+La suite Playwright participe aux contrôles GitHub Actions du dépôt. Le résultat de la CI du commit concerné est la référence pour savoir si la suite a réellement réussi dans l’environnement d’intégration.
+
+Une définition de workflow présente dans le dépôt n’est pas, à elle seule, une preuve de réussite.
+
+## Ajouter ou modifier un scénario
+
+Un scénario E2E doit :
+
+1. vérifier un comportement utilisateur observable ;
+2. rester déterministe autant que possible ;
+3. expliciter ou rendre identifiable toute dépendance simulée ;
+4. éviter de masquer un défaut produit par une fixture trop permissive ;
+5. échouer lorsque le comportement attendu est réellement cassé ;
+6. rester cohérent avec les règles d’accessibilité et de navigation de CVLN Academy.
 
 ## Règle de preuve
 
-Un test Playwright prouve uniquement le comportement réellement exercé par son scénario et ses fixtures. Les documents de conception, audits et matrices de cible restent distincts du runtime. Ne pas marquer une intégration backend, une persistance réelle ou une dépendance externe comme « vérifiée E2E » si le scénario les simule ou ne les démarre pas.
+**Evidence First / Current != Target.** Playwright prouve uniquement ce que le scénario exécute réellement. Les spécifications, audits, matrices Excel, mocks et fixtures restent distincts d’une preuve de fonctionnement bout en bout avec les systèmes réels.
