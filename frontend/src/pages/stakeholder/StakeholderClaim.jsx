@@ -48,7 +48,7 @@ export default function StakeholderClaim() {
           <>
             <div className="mt-5 rounded-xl bg-[--cvln-bg-warm] p-4 text-sm">
               <div><strong>Organisation :</strong> {invite.org_name}</div>
-              <div className="mt-1"><strong>Type d'accès :</strong> {invite.stakeholder_type}</div>
+              <div className="mt-1"><strong>Type d&apos;accès :</strong> {invite.stakeholder_type}</div>
               {invite.email && <div className="mt-1"><strong>Compte attendu :</strong> {invite.email}</div>}
             </div>
             <button className="btn-primary mt-5" onClick={claim} disabled={busy}>
