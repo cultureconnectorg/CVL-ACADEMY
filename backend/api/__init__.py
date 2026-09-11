@@ -3,7 +3,7 @@
 Each sub-router owns one bounded concern (auth, onboarding, formations,
 learning journey, quiz, badges, missions, progression, mentor, FMS import,
 FMS lineage, skills, certification, templates, assistants, wallet,
-integrations, stakeholders). This module just mounts them all under the
+integrations, stakeholders, economy). This module just mounts them all under the
 single `/api` prefix used by the app.
 """
 
@@ -16,6 +16,7 @@ from . import (
     auth,
     badges,
     certification,
+    economy,
     fms,
     fms_lineage,
     formations,
@@ -52,6 +53,7 @@ for module in (
     templates,
     assistants,
     integrations,
+    economy,
 ):
     router.include_router(module.router)
 
