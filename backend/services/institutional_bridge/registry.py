@@ -86,7 +86,7 @@ _DEFINITIONS: Tuple[ConnectorDefinition, ...] = (
         connection_mode="OFFICIAL_API",
         capabilities=("INVOICE_PREPARE", "DOCUMENT_EXPORT"),
         credential_env_vars=("CHORUS_PRO_CLIENT_ID", "CHORUS_PRO_CLIENT_SECRET"),
-        notes="Credentials can be detected, but live writes remain disabled until a verified target adapter is implemented.",
+        notes="Credentials may be detected; live writes stay disabled until a verified adapter exists.",
     ),
     ConnectorDefinition(
         code="demarche_numerique",
@@ -115,14 +115,14 @@ _DEFINITIONS: Tuple[ConnectorDefinition, ...] = (
         name="CTM / FSE+ Martinique",
         connection_mode="MANUAL",
         capabilities=("APPLICATION_PREPARE", "DOCUMENT_EXPORT", "REPORTING"),
-        notes="Canonical preparation/reporting only; programme-specific submission remains outside the runtime adapter.",
+        notes="Canonical preparation/reporting only; programme-specific submission stays external.",
     ),
     ConnectorDefinition(
         code="agora",
         name="AGORA",
         connection_mode="UNAVAILABLE",
         capabilities=(),
-        notes="No direct CVLN write/read capability is claimed. Financeur-side interoperability may be added by contract.",
+        notes="No direct CVLN capability is claimed. Financeur-side interoperability requires a contract.",
     ),
 )
 
