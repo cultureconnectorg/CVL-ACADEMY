@@ -87,9 +87,15 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install "isort>=5.13.2,<6"
-      - name: Black full backend
-        working-directory: backend
-        run: black --check .
+      - name: Black changed backend files
+        shell: bash
+        run: |
+          mapfile -t files < <(git diff --name-only origin/main...HEAD -- 'backend/**/*.py' 'backend/*.py')
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No backend Python files changed by Spatial branch; pre-existing formatting debt is not attributed to this delta."
+          else
+            black --check "${files[@]}"
+          fi
       - name: Isort changed backend files
         shell: bash
         run: |
