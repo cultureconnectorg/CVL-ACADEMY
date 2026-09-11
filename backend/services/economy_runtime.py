@@ -75,13 +75,15 @@ def evaluate_runtime_row(
     offer_id: str | None = None,
 ) -> dict[str, Any]:
     satisfied = set(satisfied_gates)
+    declared_gates = required_gates(row)
+    missing_gates = [gate for gate in declared_gates if gate not in satisfied]
     sale = evaluate_sale_policy(row, satisfied)
     reasons: list[str] = []
     if row.get("economic_status") == "DECIDED_HOLD":
         sale = {
             "allowed": False,
             "reason": "DECIDED_HOLD",
-            "required_gates": required_gates(row),
+            "required_gates": declared_gates,
         }
     if not sale.get("allowed"):
         reasons.append(str(sale.get("reason")))
@@ -94,9 +96,9 @@ def evaluate_runtime_row(
         "public_discovery_allowed": public_discovery_allowed(row),
         "sale_allowed": bool(sale.get("allowed")) and not reasons,
         "sale_reason": sale.get("reason"),
-        "required_gates": required_gates(row),
+        "required_gates": declared_gates,
         "satisfied_gates": sorted(satisfied),
-        "missing_gates": sale.get("missing_gates", []),
+        "missing_gates": missing_gates,
         "packaging_v1": row.get("packaging_v1"),
         "allowed_offer_ids": sorted(compatible),
         "offer_compatible": offer_id is None or offer_id in compatible,
