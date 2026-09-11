@@ -25,6 +25,8 @@ class OrderNotPaid(BillingPolicyError):
 
 
 DOCUMENT_INTENT = "INVOICE_INTENT"
+DOCUMENT_ISSUING = "ISSUING"
+DOCUMENT_ISSUANCE_FAILED = "ISSUANCE_FAILED"
 DOCUMENT_ISSUED = "ISSUED"
 DOCUMENT_VOID = "VOID"
 DOCUMENT_CREDITED = "CREDITED"
@@ -110,18 +112,20 @@ def build_invoice_intent(order: Dict[str, Any]) -> Dict[str, Any]:
         "wallet_response": order.get("wallet_response"),
         "paid_at": order.get("paid_at"),
         "issuer_profile_snapshot": issuer_profile(),
+        "buyer_profile_snapshot": None,
         "legal_issuance_ready": issuer_ready_for_legal_issuance(),
         "einvoice_format": None,
         "einvoice_validation": "NOT_RUN",
         "artifact": None,
         "issued_at": None,
         "credited_by": None,
+        "issuance_error": None,
     }
 
 
 def assert_legal_issuance_ready(document: Dict[str, Any]) -> None:
-    if document.get("status") != DOCUMENT_INTENT:
-        raise BillingPolicyError("Only an invoice intent can be issued")
+    if document.get("status") not in {DOCUMENT_INTENT, DOCUMENT_ISSUANCE_FAILED}:
+        raise BillingPolicyError("Invoice is not in an issuable state")
     if not issuer_ready_for_legal_issuance():
         raise BillingNotReady("Billing issuer profile is incomplete")
     if not document.get("payment_attempt_id"):
