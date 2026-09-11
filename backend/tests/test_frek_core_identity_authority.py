@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from unittest.mock import AsyncMock
-
 import pytest
 
 import services.frek_core as frek_module
@@ -12,42 +10,110 @@ from services.frek_core import (
 )
 
 
+def _configure_remote(monkeypatch):
+    monkeypatch.setattr(frek_module, "FREK_CORE_IDENTITY_AUTHORITY", "frekcore")
+    monkeypatch.setattr(frek_module, "FREK_CORE_BASE_URL", "https://frekcore.test")
+    monkeypatch.setattr(frek_module, "FREK_CORE_CLIENT_ID", "cvln-academy")
+    monkeypatch.setattr(frek_module, "FREK_CORE_CLIENT_SECRET", "test-secret")
+
+
 @pytest.mark.asyncio
-async def test_frekcore_authority_requires_remote_url(monkeypatch):
+async def test_frekcore_authority_requires_client_configuration(monkeypatch):
     monkeypatch.setattr(frek_module, "FREK_CORE_IDENTITY_AUTHORITY", "frekcore")
     monkeypatch.setattr(frek_module, "FREK_CORE_BASE_URL", "")
-
-    client = FrekCoreClient()
+    monkeypatch.setattr(frek_module, "FREK_CORE_CLIENT_ID", "")
+    monkeypatch.setattr(frek_module, "FREK_CORE_CLIENT_SECRET", "")
 
     with pytest.raises(FrekCoreConfigurationError):
-        await client.mint_frek_id()
+        await FrekCoreClient().mint_frek_id("maya@example.test")
+
+
+@pytest.mark.asyncio
+async def test_frekcore_authority_requires_email(monkeypatch):
+    _configure_remote(monkeypatch)
+
+    with pytest.raises(FrekCoreConfigurationError):
+        await FrekCoreClient().mint_frek_id()
+
+
+@pytest.mark.asyncio
+async def test_frekcore_uses_existing_v1_token_and_identity_emit_contract(monkeypatch):
+    _configure_remote(monkeypatch)
+    calls = []
+
+    class FakeResponse:
+        def __init__(self, body):
+            self.body = body
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return self.body
+
+    class FakeHttpClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+        async def post(self, url, json=None, headers=None):
+            calls.append((url, json, headers))
+            if url.endswith("/api/v1/auth/token"):
+                return FakeResponse({"access_token": "client-token"})
+            if url.endswith("/api/v1/identity/emit"):
+                return FakeResponse(
+                    {"frek_id": "FREK-4242", "created": True, "stage": "GENESIS"}
+                )
+            raise AssertionError(f"Unexpected URL: {url}")
+
+    monkeypatch.setattr(frek_module.httpx, "AsyncClient", FakeHttpClient)
+
+    result = await FrekCoreClient().mint_frek_id(
+        "Maya@Example.Test", metadata={"application": "cvln_academy"}
+    )
+
+    assert result == "FREK-4242"
+    assert calls[0] == (
+        "https://frekcore.test/api/v1/auth/token",
+        {
+            "client_id": "cvln-academy",
+            "client_secret": "test-secret",
+            "grant_type": "client_credentials",
+        },
+        None,
+    )
+    assert calls[1][0] == "https://frekcore.test/api/v1/identity/emit"
+    assert calls[1][1]["email"] == "maya@example.test"
+    assert calls[1][1]["source"] == "cvln_academy"
+    assert calls[1][2] == {"Authorization": "Bearer client-token"}
 
 
 @pytest.mark.asyncio
 async def test_frekcore_authority_never_falls_back_when_remote_fails(monkeypatch):
-    monkeypatch.setattr(frek_module, "FREK_CORE_IDENTITY_AUTHORITY", "frekcore")
-    monkeypatch.setattr(frek_module, "FREK_CORE_BASE_URL", "https://frekcore.test")
+    _configure_remote(monkeypatch)
 
-    client = FrekCoreClient()
-    remote_post = AsyncMock(return_value=None)
-    monkeypatch.setattr(client, "_remote_post", remote_post)
+    class FailingHttpClient:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+        async def post(self, *args, **kwargs):
+            raise frek_module.httpx.ConnectError("offline")
+
+    monkeypatch.setattr(frek_module.httpx, "AsyncClient", FailingHttpClient)
 
     with pytest.raises(FrekCoreUnavailableError):
-        await client.mint_frek_id()
-
-    remote_post.assert_awaited_once_with("/mint", {})
-
-
-@pytest.mark.asyncio
-async def test_frekcore_authority_returns_remote_identity(monkeypatch):
-    monkeypatch.setattr(frek_module, "FREK_CORE_IDENTITY_AUTHORITY", "frekcore")
-    monkeypatch.setattr(frek_module, "FREK_CORE_BASE_URL", "https://frekcore.test")
-
-    client = FrekCoreClient()
-    remote_post = AsyncMock(return_value={"frek_id": "FREK-4242"})
-    monkeypatch.setattr(client, "_remote_post", remote_post)
-
-    assert await client.mint_frek_id() == "FREK-4242"
+        await FrekCoreClient().mint_frek_id("maya@example.test")
 
 
 @pytest.mark.asyncio
@@ -64,12 +130,7 @@ async def test_local_dev_authority_mints_only_from_local_counter(monkeypatch):
 
     monkeypatch.setattr(frek_module, "db", FakeDb())
 
-    client = FrekCoreClient()
-    remote_post = AsyncMock(return_value={"frek_id": "FREK-REMOTE"})
-    monkeypatch.setattr(client, "_remote_post", remote_post)
-
-    assert await client.mint_frek_id() == "FREK-042"
-    remote_post.assert_not_awaited()
+    assert await FrekCoreClient().mint_frek_id("maya@example.test") == "FREK-042"
 
 
 def test_invalid_identity_authority_is_rejected(monkeypatch):
