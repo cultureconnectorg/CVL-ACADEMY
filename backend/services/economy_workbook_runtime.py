@@ -59,8 +59,17 @@ OFFER_PHASE = {
 
 
 def _sha(value: Any) -> str:
-    raw = json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    raw = json.dumps(
+        value,
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
+
+
+def _source_file_sha(sheet: str) -> str:
+    return hashlib.sha256((RAW / f"{sheet}.csv").read_bytes()).hexdigest()
 
 
 def load_economy_workbook_rows() -> dict[str, list[dict[str, Any]]]:
@@ -69,8 +78,7 @@ def load_economy_workbook_rows() -> dict[str, list[dict[str, Any]]]:
         path = RAW / f"{sheet}.csv"
         if not path.exists():
             raise ValueError(f"Economy workbook source missing: {path.name}")
-        file_bytes = path.read_bytes()
-        file_sha = hashlib.sha256(file_bytes).hexdigest()
+        file_sha = _source_file_sha(sheet)
         rows: list[dict[str, Any]] = []
         with path.open("r", encoding="utf-8-sig", newline="") as handle:
             for csv_row, values in enumerate(csv.reader(handle), start=1):
@@ -134,7 +142,11 @@ async def import_economy_workbook_runtime(db: Any) -> dict[str, Any]:
         },
         upsert=True,
     )
-    return {"sheets": len(SHEETS), "runtime_rows": total, "sheet_rows": counts}
+    return {
+        "sheets": len(SHEETS),
+        "runtime_rows": total,
+        "sheet_rows": counts,
+    }
 
 
 def load_unit_economics() -> dict[str, dict[str, Any]]:
@@ -142,11 +154,16 @@ def load_unit_economics() -> dict[str, dict[str, Any]]:
     with path.open("r", encoding="utf-8-sig", newline="") as handle:
         raw_rows = list(csv.reader(handle))
     header_index = next(
-        index for index, row in enumerate(raw_rows) if row and row[0].strip() == "Produit"
+        index
+        for index, row in enumerate(raw_rows)
+        if row and row[0].strip() == "Produit"
     )
     header = [cell.strip() for cell in raw_rows[header_index]]
     result: dict[str, dict[str, Any]] = {}
-    for excel_row, values in enumerate(raw_rows[header_index + 1 :], start=header_index + 2):
+    for excel_row, values in enumerate(
+        raw_rows[header_index + 1 :],
+        start=header_index + 2,
+    ):
         if not values or not any(str(value).strip() for value in values):
             continue
         padded = values + [""] * (len(header) - len(values))
@@ -168,7 +185,9 @@ def load_unit_economics() -> dict[str, dict[str, Any]]:
             },
         }
     if len(result) != 18:
-        raise ValueError(f"Unit_Economics must contain 18 products, got {len(result)}")
+        raise ValueError(
+            f"Unit_Economics must contain 18 products, got {len(result)}"
+        )
     return result
 
 
@@ -218,17 +237,33 @@ def evaluate_offer_unit_economics(offer: Any) -> dict[str, Any]:
 async def evaluate_offer_phase(db: Any, offer_id: str) -> dict[str, Any]:
     phase = OFFER_PHASE.get(offer_id)
     if phase is None:
-        return {"allowed": True, "reason": "PHASE_1_OR_NOT_PHASE_GATED", "phase": None}
+        return {
+            "allowed": True,
+            "reason": "PHASE_1_OR_NOT_PHASE_GATED",
+            "phase": None,
+        }
+    current_source_sha = _source_file_sha("Roadmap_Monetisation")
     state = await db.academy_economy_phase_state.find_one(
         {"phase": phase},
         {"_id": 0},
     )
-    allowed = bool(state and state.get("active") and state.get("evidence_ref"))
+    evidence_is_current = bool(
+        state
+        and state.get("source_file_sha256") == current_source_sha
+    )
+    allowed = bool(
+        state
+        and state.get("active")
+        and state.get("evidence_ref")
+        and evidence_is_current
+    )
     return {
         "allowed": allowed,
         "reason": "PHASE_ACTIVE" if allowed else "PHASE_NOT_ACTIVATED",
         "phase": phase,
         "evidence_ref": (state or {}).get("evidence_ref"),
+        "source_file_sha256": current_source_sha,
+        "evidence_source_current": evidence_is_current,
     }
 
 
@@ -241,14 +276,19 @@ async def set_phase_state(
     actor_id: str,
 ) -> dict[str, Any]:
     if phase not in {"PHASE_2", "PHASE_3"}:
-        raise ValueError("Only PHASE_2 and PHASE_3 require explicit activation state")
+        raise ValueError(
+            "Only PHASE_2 and PHASE_3 require explicit activation state"
+        )
     if active and not evidence_ref.strip():
-        raise ValueError("evidence_ref is required to activate an economy roadmap phase")
+        raise ValueError(
+            "evidence_ref is required to activate an economy roadmap phase"
+        )
     doc = {
         "phase": phase,
         "active": active,
         "evidence_ref": evidence_ref.strip(),
         "actor_id": actor_id,
+        "source_file_sha256": _source_file_sha("Roadmap_Monetisation"),
     }
     await db.academy_economy_phase_state.update_one(
         {"phase": phase},
