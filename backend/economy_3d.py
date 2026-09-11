@@ -19,7 +19,9 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-DATA_PATH = Path(__file__).parent / "data" / "economy_3d_traceability_v1.json.gz.b64"
+DATA_PATH = (
+    Path(__file__).parent / "data" / "economy_3d_traceability_v1.json.gz.b64"
+)
 EXPECTED_RECORD_COUNT = 812
 EXPECTED_WORKBOOK_SHA256 = (
     "be41260e722ac3daa1974ef52fb0f48f8c31536a8be420469b139755bb9c6bc0"
@@ -48,11 +50,15 @@ class Economy3DError(RuntimeError):
 @lru_cache(maxsize=1)
 def load_manifest() -> Dict[str, Any]:
     encoded = DATA_PATH.read_text(encoding="utf-8").strip()
+    normalized = encoded.rstrip("=")
+    normalized += "=" * (-len(normalized) % 4)
     try:
-        payload = gzip.decompress(base64.b64decode(encoded, validate=True))
+        payload = gzip.decompress(base64.b64decode(normalized, validate=True))
         manifest = json.loads(payload.decode("utf-8"))
     except Exception as exc:  # pragma: no cover - defensive corruption guard
-        raise Economy3DError("Economy 3D traceability snapshot is unreadable") from exc
+        raise Economy3DError(
+            "Economy 3D traceability snapshot is unreadable"
+        ) from exc
     validate_manifest(manifest)
     return manifest
 
@@ -101,7 +107,8 @@ def validate_record(record: Dict[str, Any], index: int) -> None:
     expected_row = index + 1
     if record.get("requirement_id") != expected_id:
         raise Economy3DError(
-            f"record {index}: expected {expected_id}, got {record.get('requirement_id')!r}"
+            f"record {index}: expected {expected_id}, "
+            f"got {record.get('requirement_id')!r}"
         )
     if record.get("source_row") != expected_row:
         raise Economy3DError(
@@ -217,7 +224,10 @@ def validate_record(record: Dict[str, Any], index: int) -> None:
 def validate_manifest(manifest: Dict[str, Any]) -> None:
     if manifest.get("schema_version") != "1.0.0":
         raise Economy3DError("unsupported Economy 3D traceability schema")
-    if manifest.get("source_workbook") != "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx":
+    if (
+        manifest.get("source_workbook")
+        != "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx"
+    ):
         raise Economy3DError("unexpected source workbook")
     if manifest.get("source_sheet") != "Mapping_812":
         raise Economy3DError("unexpected source sheet")
