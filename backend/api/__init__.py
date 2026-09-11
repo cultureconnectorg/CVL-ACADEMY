@@ -1,10 +1,7 @@
 """CVLN Academy API — one router per domain, aggregated here.
 
-Each sub-router owns one bounded concern (auth, onboarding, formations,
-learning journey, quiz, badges, missions, progression, mentor, FMS import,
-FMS lineage, skills, certification, templates, assistants, wallet,
-integrations). This module just mounts them all under the single `/api`
-prefix used by the app.
+Each sub-router owns one bounded concern. This module mounts them all under the
+single `/api` prefix used by the app.
 """
 
 from __future__ import annotations
@@ -16,6 +13,7 @@ from . import (
     auth,
     badges,
     certification,
+    economy,
     fms,
     fms_lineage,
     formations,
@@ -42,8 +40,8 @@ for module in (health, auth, legal):
     router.include_router(module.router)
 
 # Informational/admin/integration surfaces stay reachable under their existing
-# auth rules so legal documents, catalogue metadata and operational integrations
-# are not accidentally coupled to a learner consent state.
+# auth rules. Economy exposes public offer pricing while its traceability routes
+# enforce staff auth inside the economy router itself.
 for module in (
     orgs,
     formations,
@@ -54,12 +52,11 @@ for module in (
     templates,
     assistants,
     integrations,
+    economy,
 ):
     router.include_router(module.router)
 
-# Journey surfaces are fail-closed server-side: a user cannot start onboarding,
-# learning, quizzes, missions, progression, AI mentoring, certification or wallet
-# activity by bypassing the React app while the current legal bundle is unsigned.
+# Journey surfaces are fail-closed server-side.
 for module in (
     onboarding,
     learning,

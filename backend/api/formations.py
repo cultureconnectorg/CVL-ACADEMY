@@ -16,6 +16,7 @@ from lx import (
     phase_completion_flags,
 )
 from models import ADMIN_ROLES, STAFF_ROLES, ContentStatusInput, User
+from pricing_catalog import formation_commercialization
 
 router = APIRouter(tags=["formations"])
 
@@ -31,8 +32,6 @@ async def list_formations(
     skip: int = 0,
     current: Optional[User] = Depends(get_current_user_optional),
 ):
-    # Staff sees drafts/archived too (for the Admin CMS); everyone else
-    # only ever sees the published catalogue.
     content_filter = (
         {}
         if (current and current.role in STAFF_ROLES)
@@ -44,7 +43,6 @@ async def list_formations(
         .limit(limit)
         .to_list(limit)
     )
-    # Return summary shape (no modules for the list)
     return [
         {
             "code": d["code"],
@@ -73,6 +71,7 @@ async def list_formations(
             "reconciliation_flags": d.get("reconciliation_flags", []),
             "modules_count": len(d.get("modules", [])),
             "content_status": d.get("content_status", "published"),
+            "commercialization": formation_commercialization(d),
         }
         for d in docs
     ]
@@ -90,7 +89,8 @@ async def get_formation(
     ):
         raise HTTPException(status_code=404, detail="Formation introuvable")
 
-    # If no user (unauth preview), return base structure with modules locked=False
+    doc["commercialization"] = formation_commercialization(doc)
+
     if not current:
         for m in doc.get("modules", []):
             m["is_unlocked"] = True
@@ -100,7 +100,6 @@ async def get_formation(
         doc["lock_reason"] = ""
         return doc
 
-    # User is authenticated → compute lock/status per module
     progress_docs = await db.progress.find({"user_id": current.id}, {"_id": 0}).to_list(
         1000
     )

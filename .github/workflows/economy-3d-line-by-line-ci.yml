@@ -1,0 +1,84 @@
+name: Economy 3D Line-by-Line CI
+
+on:
+  push:
+    branches:
+      - main
+      - audit/economy-3d-line-by-line-2026-09-11
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: economy-3d-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  economy-812-traceability:
+    name: 812 Economy 3D source lines
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend test dependencies
+        working-directory: backend
+        run: pip install -r requirements.txt
+      - name: Run one pytest case per Economy 3D source line
+        working-directory: backend
+        run: pytest -q tests/test_economy_3d_traceability.py -n 0
+
+  economy-backend-quality:
+    name: Economy backend lint types
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend quality tooling
+        working-directory: backend
+        run: |
+          pip install -r requirements.txt
+          pip install "isort>=5.13.2,<6"
+      - name: Black Economy files
+        working-directory: backend
+        run: black --check --diff economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
+      - name: Isort Economy files
+        working-directory: backend
+        run: isort --profile black --check-only --diff economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
+      - name: Flake8 Economy files
+        working-directory: backend
+        run: flake8 --config=.flake8 economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
+      - name: Mypy Economy runtime
+        working-directory: backend
+        run: mypy --ignore-missing-imports economy_3d.py api/economy.py
+
+  economy-regression:
+    name: Existing backend regression
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URL: mongodb://127.0.0.1:27017
+      DB_NAME: cvln_academy_ci
+      JWT_SECRET: cvln-academy-ci-only-not-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend
+        working-directory: backend
+        run: pip install -r requirements.txt
+      - name: Run existing backend unit/integration suite
+        working-directory: backend
+        run: pytest tests/ -n 0 --ignore=tests/backend_test.py
