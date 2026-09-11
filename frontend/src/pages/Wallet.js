@@ -30,7 +30,7 @@ export default function Wallet() {
     try {
       const { data } = await api.get(`/wallet/pass/${provider}`);
       toast.info(data.note || t("wallet_p.pass_ready"));
-      console.log(`${provider} wallet pass payload`, data.payload);
+      console.log(`${provider} Academy mini-wallet pass payload`, data.payload);
     } catch {
       toast.error(t("wallet_p.pass_unavailable"));
     }
@@ -42,7 +42,7 @@ export default function Wallet() {
 
   return (
     <div className="px-6 md:px-12 py-10 max-w-5xl" data-testid="wallet-page">
-      <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">CVLN Wallet</div>
+      <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">CVLN Academy · Mini-wallet</div>
       <h1 className="font-display font-black text-4xl tracking-tighter mt-2">{t("wallet_p.title")}</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mt-8">
@@ -92,7 +92,7 @@ export default function Wallet() {
                   <div className="text-xs text-[--cvln-ink-2]">{tx.description}</div>
                 </div>
                 <div className="text-sm font-bold text-[--cvln-orange] whitespace-nowrap">
-                  +{tx.amount} {tx.currency.toUpperCase()}
+                  {tx.amount >= 0 ? "+" : ""}{tx.amount} {tx.currency.toUpperCase()}
                 </div>
               </div>
             ))}
