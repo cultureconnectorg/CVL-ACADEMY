@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import hashlib
-import json
 import re
 import uuid
-from typing import Dict, List
+from typing import Dict
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -33,14 +32,42 @@ class LegalAcceptanceInput(BaseModel):
     signer_name: str = Field(min_length=1, max_length=120)
 
 
+async def _legal_state(user_id: str) -> dict:
+    doc = await db.users.find_one(
+        {"id": user_id},
+        {"_id": 0, "legal_bundle_version": 1, "legal_accepted_at": 1, "legal_acceptance_id": 1},
+    )
+    doc = doc or {}
+    accepted = doc.get("legal_bundle_version") == LEGAL_BUNDLE_VERSION
+    return {
+        "accepted": accepted,
+        "accepted_at": doc.get("legal_accepted_at") if accepted else None,
+        "acceptance_id": doc.get("legal_acceptance_id") if accepted else None,
+    }
+
+
+async def require_legal_acceptance(current: User = Depends(get_current_user)) -> User:
+    """Fail closed when the learner has not signed the current legal bundle."""
+    state = await _legal_state(current.id)
+    if not state["accepted"]:
+        raise HTTPException(
+            status_code=428,
+            detail={
+                "code": "LEGAL_ACCEPTANCE_REQUIRED",
+                "message": "Le bundle juridique Academy doit être accepté avant de continuer.",
+                "bundle_version": LEGAL_BUNDLE_VERSION,
+            },
+        )
+    return current
+
+
 @router.get("/requirements")
 async def legal_requirements(current: User = Depends(get_current_user)):
-    current_version = current.legal_bundle_version == LEGAL_BUNDLE_VERSION
+    state = await _legal_state(current.id)
     return {
         "bundle_version": LEGAL_BUNDLE_VERSION,
         "documents": PUBLIC_LEGAL_DOCUMENTS,
-        "accepted": current_version,
-        "accepted_at": current.legal_accepted_at if current_version else None,
+        **state,
     }
 
 
@@ -69,9 +96,8 @@ async def accept_legal_bundle(
     user_agent = (request.headers.get("user-agent") or "")[:500]
     client_host = request.client.host if request.client else "unknown"
 
-    # We avoid storing the raw IP by default. The fingerprint preserves evidence
-    # that request metadata participated in the acceptance record while limiting
-    # unnecessary personal-data retention.
+    # Raw IP is intentionally not retained here. It participates in a one-way
+    # evidence fingerprint together with the signed bundle and request metadata.
     evidence_fingerprint = hashlib.sha256(
         "|".join(
             [current.id, LEGAL_BUNDLE_VERSION, accepted_at, user_agent, client_host, signature_sha256]
