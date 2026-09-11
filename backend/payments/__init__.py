@@ -1,13 +1,10 @@
-"""ACA-0026 — real payment/funding runtime. See `models.py`,
-`provider.py`, `service.py` module docstrings for the `NO_FAKE_PAID_
-STATE` discipline this package enforces on top of `commerce/`'s
-existing DECIDED_V1 catalogue."""
-
+"""ACA-0026 — real payment/funding runtime."""
 from __future__ import annotations
 
 from .models import CheckoutRequest, CheckoutSession, PaymentRecord, PaymentStatus
 from .provider import is_provider_configured
 from .service import (
+    EconomyPolicyBlockedError,
     InvalidWebhookSignatureError,
     OfferNotFoundError,
     ProviderNotConfiguredError,
@@ -22,6 +19,7 @@ __all__ = [
     "PaymentRecord",
     "PaymentStatus",
     "is_provider_configured",
+    "EconomyPolicyBlockedError",
     "InvalidWebhookSignatureError",
     "OfferNotFoundError",
     "ProviderNotConfiguredError",
