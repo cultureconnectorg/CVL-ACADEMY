@@ -34,7 +34,7 @@ def classify_message(message: str) -> Classification:
         return Classification("claim", "P1", "claims", True)
     if _contains(message, ("paiement", "facture", "invoice", "prélev", "prelev", "stripe")):
         return Classification("payment", "P2", "billing", True)
-    if _contains(message, ("connexion", "login", "accès", "acces", "mot de passe", "ne s'ouvre")):
+    if _contains(message, ("connexion", "connecter", "login", "accès", "acces", "mot de passe", "ne s'ouvre")):
         return Classification("access", "P2", "support")
     if _contains(message, ("bug", "erreur", "error", "cassé", "casse", "indisponible", "ne fonctionne", "500", "timeout")):
         return Classification("maintenance", "P2", "maintenance")
