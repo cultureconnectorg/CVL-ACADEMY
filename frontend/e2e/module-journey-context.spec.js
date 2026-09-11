@@ -9,6 +9,10 @@ const MODULE_URL = "/formations/FMS-01/modules/FMS-01-M01";
 async function gotoQuizReadyModule(page, overrides = {}) {
   await mockAuthenticatedSession(page, { moduleData: FIXTURE_MODULE_QUIZ_READY, ...overrides });
   await page.goto(MODULE_URL);
+  // React.StrictMode intentionally re-runs mount effects in development.
+  // Drain those initial module GETs before the quiz mutation so no stale
+  // pre-submit fixture response can race the authoritative post-quiz reload.
+  await page.waitForLoadState("networkidle");
   await page.getByTestId("phase-toggle-quiz").click();
 }
 
@@ -57,10 +61,9 @@ test.describe("quiz context (W3-B)", () => {
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
 
-    // React dev mode can have more than one module GET in flight. Wait for
-    // the specific post-quiz payload that proves quiz=true instead of any
-    // matching GET, otherwise a stale pre-submit response can satisfy the
-    // synchronization point and make this assertion flaky.
+    // Wait for the authoritative post-quiz module payload, not merely any
+    // matching GET. This proves the server/fixture state has quiz=true before
+    // asserting the UI auto-advance.
     const moduleReload = page.waitForResponse(async (response) => {
       if (
         response.request().method() !== "GET" ||
