@@ -108,7 +108,10 @@ async def test_frekcore_authority_never_falls_back_when_remote_fails(monkeypatch
             return None
 
         async def post(self, *args, **kwargs):
-            raise frek_module.httpx.ConnectError("offline")
+            request = frek_module.httpx.Request(
+                "POST", "https://frekcore.test/api/v1/auth/token"
+            )
+            raise frek_module.httpx.ConnectError("offline", request=request)
 
     monkeypatch.setattr(frek_module.httpx, "AsyncClient", FailingHttpClient)
 
