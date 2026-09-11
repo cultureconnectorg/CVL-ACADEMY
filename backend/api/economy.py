@@ -34,7 +34,9 @@ async def get_offer(offer_id: str):
     try:
         return offer_by_id(offer_id)
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Offre économique introuvable") from exc
+        raise HTTPException(
+            status_code=404, detail="Offre économique introuvable"
+        ) from exc
 
 
 @router.get("/3d/health")
@@ -96,5 +98,7 @@ async def get_economy_3d(
     try:
         record = record_by_code(code)
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Economy 3D code introuvable") from exc
+        raise HTTPException(
+            status_code=404, detail="Economy 3D code introuvable"
+        ) from exc
     return {**record, "commercial_class": commercial_class(record)}
