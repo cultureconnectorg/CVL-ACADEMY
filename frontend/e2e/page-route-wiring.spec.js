@@ -75,24 +75,29 @@ test.describe("authenticated page route wiring", () => {
     await expect(page.getByTestId("onboarding-page")).toBeVisible();
   });
 
-  test("/trainer resolves for trainer role", async ({ page }) => {
+  test("/trainer resolves for trainer role with an organisation", async ({ page }) => {
     await prepareStudent(page, {
-      user: { ...FIXTURE_USER, role: "trainer", org_id: null },
+      user: { ...FIXTURE_USER, role: "trainer", org_id: "org-fixture-1" },
     });
+    await jsonRoute(page, "**/api/orgs/org-fixture-1/cohorts", []);
     await page.goto("/trainer");
     await expect(page).toHaveURL(/\/trainer$/);
     await expect(page.getByTestId("trainer-dashboard-page")).toBeVisible();
+    await expect(page.getByTestId("cohorts-panel")).toBeVisible();
+    await expect(page.getByTestId("create-cohort-form")).toBeVisible();
   });
 
-  test("/jury resolves for jury role", async ({ page }) => {
-    await prepareStudent(page, {
-      user: { ...FIXTURE_USER, role: "jury" },
+  for (const role of ["jury", "corrector"]) {
+    test(`/jury resolves for ${role} role`, async ({ page }) => {
+      await prepareStudent(page, {
+        user: { ...FIXTURE_USER, role },
+      });
+      await jsonRoute(page, "**/api/certifications/attempts/pending", []);
+      await page.goto("/jury");
+      await expect(page).toHaveURL(/\/jury$/);
+      await expect(page.getByTestId("jury-dashboard-page")).toBeVisible();
     });
-    await jsonRoute(page, "**/api/certifications/attempts/pending", []);
-    await page.goto("/jury");
-    await expect(page).toHaveURL(/\/jury$/);
-    await expect(page.getByTestId("jury-dashboard-page")).toBeVisible();
-  });
+  }
 
   test("/admin resolves for admin role and its panels receive array contracts", async ({ page }) => {
     await prepareStudent(page, {
