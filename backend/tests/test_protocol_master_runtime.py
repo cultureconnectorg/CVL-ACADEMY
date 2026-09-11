@@ -27,7 +27,7 @@ def test_entire_protocol_workbook_is_projected_line_by_line():
     rows = load_protocol_workbook_rows()
     assert len(rows) == EXPECTED_WORKBOOK_ROWS == 328
     assert len({row["row_id"] for row in rows}) == 328
-    assert Counter(row["sheet"] for row in rows) == Counter(EXPECTED_SHEET_ROWS)
+    assert dict(Counter(row["sheet"] for row in rows)) == EXPECTED_SHEET_ROWS
     assert all(len(row["source"]["workbook_sha256"]) == 64 for row in rows)
     assert {row["excel_row"] for row in rows if row["sheet"] == "Dashboard"} == {1, *range(3, 26)}
 
@@ -37,7 +37,7 @@ def test_protocol_master_is_exactly_227_controls_rows_3_through_229():
     assert len(controls) == EXPECTED_ROWS == 227
     assert [c["excel_row"] for c in controls] == list(range(3, 230))
     assert len({c["control_id"] for c in controls}) == 227
-    assert Counter(c["domain"] for c in controls) == Counter(EXPECTED_DOMAINS)
+    assert dict(Counter(c["domain"] for c in controls)) == EXPECTED_DOMAINS
 
 
 def test_every_control_line_has_runtime_handler_and_source_identity():
