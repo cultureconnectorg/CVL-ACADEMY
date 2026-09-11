@@ -1,26 +1,13 @@
-"""Fail-fast synchronization of the Academy Excel-derived runtime masters.
-
-This module is deliberately an orchestrator, not a new source of truth. The
-individual importers own parsing/provenance semantics. We validate every source
-before the first database write so a malformed workbook projection cannot leave
-a half-refreshed runtime.
-"""
+"""Fail-fast synchronization of the Academy Excel-derived runtime masters."""
 from __future__ import annotations
 
 from typing import Any
 
 from services.catalogue_importer import import_catalogue_master, load_catalogue_rows
-from services.cartography_2d_runtime import (
-    SHEET_ROW_COUNTS,
-    import_cartography_2d_runtime,
-    load_cartography_2d,
-)
+from services.cartography_2d_runtime import SHEET_ROW_COUNTS, import_cartography_2d_runtime, load_cartography_2d
 from services.economy_importer import import_economy_master, load_economy_rows
-from services.protocol_master_runtime import (
-    EXPECTED_ROWS as EXPECTED_PROTOCOL_ROWS,
-    import_protocol_master_runtime,
-    load_protocol_controls,
-)
+from services.economy_runtime import sync_economy_runtime_links
+from services.protocol_master_runtime import EXPECTED_ROWS as EXPECTED_PROTOCOL_ROWS, import_protocol_master_runtime, load_protocol_controls
 from services.requirement_registry import sync_master_requirements
 
 
@@ -45,13 +32,11 @@ def validate_master_sources() -> dict[str, Any]:
     cartography_counts = {sheet: len(rows) for sheet, rows in cartography.items()}
     if cartography_counts != SHEET_ROW_COUNTS:
         raise ValueError(
-            f"cartography 2D row-count drift: expected={SHEET_ROW_COUNTS} "
-            f"actual={cartography_counts}"
+            f"cartography 2D row-count drift: expected={SHEET_ROW_COUNTS} actual={cartography_counts}"
         )
     if len(protocols) != EXPECTED_PROTOCOL_ROWS:
         raise ValueError(
-            f"protocol master row-count drift: expected={EXPECTED_PROTOCOL_ROWS} "
-            f"actual={len(protocols)}"
+            f"protocol master row-count drift: expected={EXPECTED_PROTOCOL_ROWS} actual={len(protocols)}"
         )
 
     return {
@@ -66,7 +51,7 @@ def validate_master_sources() -> dict[str, Any]:
 
 
 async def sync_all_masters(db: Any) -> dict[str, Any]:
-    """Validate first, then idempotently refresh all currently coded masters."""
+    """Validate first, then idempotently refresh all coded masters and bindings."""
     validation = validate_master_sources()
 
     catalogue = await import_catalogue_master(db)
@@ -74,12 +59,14 @@ async def sync_all_masters(db: Any) -> dict[str, Any]:
     cartography = await import_cartography_2d_runtime(db)
     protocols = await import_protocol_master_runtime(db)
     requirements = await sync_master_requirements(db)
+    economy_runtime = await sync_economy_runtime_links(db)
 
     return {
         "validation": validation,
         "imports": {
             "catalogue": catalogue,
             "economy": economy,
+            "economy_runtime": economy_runtime,
             "cartography_2d": cartography,
             "protocol_master": protocols,
             "requirements": requirements,
