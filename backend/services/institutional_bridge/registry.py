@@ -12,7 +12,13 @@ import os
 from dataclasses import dataclass
 from typing import Dict, Iterable, Tuple
 
-from .models import Capability, ConnectorDescriptor, FundingCase, PreparedEnvelope
+from .models import (
+    Capability,
+    ConnectionMode,
+    ConnectorDescriptor,
+    FundingCase,
+    PreparedEnvelope,
+)
 
 
 class UnknownConnector(ValueError):
@@ -27,16 +33,19 @@ class UnsupportedCapability(ValueError):
 class ConnectorDefinition:
     code: str
     name: str
-    connection_mode: str
+    connection_mode: ConnectionMode
     capabilities: Tuple[Capability, ...]
     notes: str
     credential_env_vars: Tuple[str, ...] = ()
     live_write_implemented: bool = False
 
     def configured(self) -> bool:
-        if not self.credential_env_vars:
-            return self.connection_mode not in {"UNAVAILABLE"}
-        return all(bool(os.environ.get(name)) for name in self.credential_env_vars)
+        """Report a real machine-readable configuration, never portal readiness."""
+        if self.connection_mode in {"UNAVAILABLE", "PORTAL_ASSISTED", "MANUAL"}:
+            return False
+        if self.credential_env_vars:
+            return all(bool(os.environ.get(name)) for name in self.credential_env_vars)
+        return self.connection_mode in {"STANDARD_FILE", "OPEN_DATA"}
 
     def describe(self) -> ConnectorDescriptor:
         return ConnectorDescriptor(
