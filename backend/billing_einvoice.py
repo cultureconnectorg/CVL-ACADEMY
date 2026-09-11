@@ -21,7 +21,6 @@ from reportlab.pdfgen import canvas
 
 from billing import BillingNotReady, BillingPolicyError, issuer_profile
 
-
 MONEY = Decimal("0.01")
 
 
