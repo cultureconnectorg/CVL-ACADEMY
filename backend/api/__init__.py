@@ -41,33 +41,36 @@ router = APIRouter(prefix="/api")
 for module in (health, auth, legal):
     router.include_router(module.router)
 
-# The learner cannot even bootstrap onboarding options or submit onboarding
-# until the current legal bundle has been signed server-side.
-router.include_router(
-    onboarding.router,
-    dependencies=[Depends(require_legal_acceptance)],
-)
-
-# Existing domain routers keep their own authentication/authorization rules.
-# The frontend Protected gate also prevents learner navigation until acceptance;
-# backend expansion of the dependency to additional mutating routes can happen
-# incrementally without breaking service-to-service integrations.
+# Informational/admin/integration surfaces stay reachable under their existing
+# auth rules so legal documents, catalogue metadata and operational integrations
+# are not accidentally coupled to a learner consent state.
 for module in (
     orgs,
     formations,
-    learning,
-    quizzes,
     badges,
-    missions,
-    progression,
-    mentor,
     fms,
     fms_lineage,
     skills,
-    certification,
     templates,
     assistants,
-    wallet,
     integrations,
 ):
     router.include_router(module.router)
+
+# Journey surfaces are fail-closed server-side: a user cannot start onboarding,
+# learning, quizzes, missions, progression, AI mentoring, certification or wallet
+# activity by bypassing the React app while the current legal bundle is unsigned.
+for module in (
+    onboarding,
+    learning,
+    quizzes,
+    missions,
+    progression,
+    mentor,
+    certification,
+    wallet,
+):
+    router.include_router(
+        module.router,
+        dependencies=[Depends(require_legal_acceptance)],
+    )
