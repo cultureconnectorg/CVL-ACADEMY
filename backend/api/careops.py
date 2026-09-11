@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from auth import get_current_user
 from models import User
 from services.careops import create_ticket, list_user_tickets
+from services.laurentia_careops import handle_with_laurentia
 
 router = APIRouter(prefix="/careops", tags=["careops"])
 
@@ -16,6 +17,10 @@ class CareOpsIntake(BaseModel):
     message: str = Field(min_length=2, max_length=4000)
     product: str = Field(default="academy", min_length=2, max_length=64)
     channel: str = Field(default="academy", min_length=2, max_length=64)
+
+
+class LaurentiaCareOpsInput(CareOpsIntake):
+    session_id: str = Field(min_length=1, max_length=128)
 
 
 @router.post("/intake")
@@ -32,6 +37,23 @@ async def intake(inp: CareOpsIntake, current: User = Depends(get_current_user)):
         "founder_required": False,
         "next_action": ticket["queue"],
     }
+
+
+@router.post("/laurentia")
+async def laurentia(
+    inp: LaurentiaCareOpsInput,
+    current: User = Depends(get_current_user),
+):
+    result = await handle_with_laurentia(
+        user=current,
+        session_id=inp.session_id,
+        message=inp.message,
+        product=inp.product,
+        channel=inp.channel,
+    )
+    result["handled_by"] = "laurentia"
+    result["founder_required"] = False
+    return result
 
 
 @router.get("/tickets")
