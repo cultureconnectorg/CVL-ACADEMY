@@ -1,17 +1,15 @@
 """FrekID auth — JWT access tokens + rotating refresh tokens + bcrypt.
 
-The `frek_id` field is a stable, unique cultural identifier assigned at
-registration. This module is designed to be extended: `_generate_frek_id`
-and `frek_core` integration should later delegate to the external
-FrekCore service.
+The ``frek_id`` field is a stable, unique cultural identifier assigned at
+registration. Academy delegates identity issuance to the FrekCore integration
+boundary; in sovereign mode, FrekCore is the only authority allowed to issue
+that identifier.
 
 Token scheme:
 - Access token: short-lived JWT (JWT_EXPIRE_MINUTES), sent as a Bearer
   header on every request, verified statelessly.
 - Refresh token: opaque random string, stored server-side hashed
-  (db.refresh_tokens) so it can be revoked; rotates on every use (the old
-  one is revoked the moment a new pair is issued) — a stolen refresh
-  token found reused after rotation is a strong signal of theft.
+  (db.refresh_tokens) so it can be revoked; rotates on every use.
 """
 
 from __future__ import annotations
@@ -29,7 +27,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from db import db, utc_now_iso
 from models import Role, User, UserPublic
-from services.frek_core import frek_core
+from services.frek_core import (
+    FrekCoreConfigurationError,
+    FrekCoreUnavailableError,
+    frek_core,
+)
 
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
@@ -57,7 +59,6 @@ def _hash_opaque_token(raw: str) -> str:
     return hashlib.sha256(raw.encode()).hexdigest()
 
 
-# ============ ACCESS TOKENS (JWT) ============
 def make_token(user_id: str) -> str:
     payload = {
         "sub": user_id,
@@ -77,7 +78,6 @@ def decode_token(token: str) -> Optional[str]:
     return p.get("sub")
 
 
-# ============ REFRESH TOKENS (opaque, rotating, revocable) ============
 async def issue_refresh_token(user_id: str) -> str:
     raw = secrets.token_urlsafe(48)
     await db.refresh_tokens.insert_one(
@@ -95,13 +95,7 @@ async def issue_refresh_token(user_id: str) -> str:
 
 
 async def rotate_refresh_token(raw_token: str) -> tuple[str, str, str]:
-    """Validate + revoke the given refresh token and issue a fresh pair.
-
-    Returns (new_access_token, new_refresh_token, user_id). Raises
-    HTTPException(401) if the token is missing, expired, or already revoked
-    (revoked-but-presented again is treated as a signal to fail closed, not
-    silently re-issue).
-    """
+    """Validate + revoke the given refresh token and issue a fresh pair."""
     token_hash = _hash_opaque_token(raw_token)
     doc = await db.refresh_tokens.find_one({"token_hash": token_hash})
     if not doc or doc.get("revoked"):
@@ -127,7 +121,6 @@ async def revoke_all_refresh_tokens(user_id: str) -> None:
     )
 
 
-# ============ PASSWORD RESET / EMAIL VERIFICATION (opaque, single-use) ============
 async def issue_password_reset_token(user_id: str) -> str:
     raw = secrets.token_urlsafe(32)
     await db.password_resets.insert_one(
@@ -146,7 +139,6 @@ async def issue_password_reset_token(user_id: str) -> str:
 
 
 async def consume_password_reset_token(raw_token: str) -> str:
-    """Returns the user_id and marks the token used, or raises 400."""
     token_hash = _hash_opaque_token(raw_token)
     doc = await db.password_resets.find_one({"token_hash": token_hash})
     if not doc or doc.get("used"):
@@ -194,12 +186,26 @@ async def consume_email_verification_token(raw_token: str) -> str:
     return doc["user_id"]
 
 
-async def next_frek_id() -> str:
-    """Delegates to FrekCore integration layer. Falls back to local sequential."""
-    return await frek_core.mint_frek_id()
+async def next_frek_id(
+    email: Optional[str] = None,
+    *,
+    metadata: Optional[dict[str, Any]] = None,
+) -> str:
+    """Resolve/issue the ecosystem identity through the configured FREKCORE boundary."""
+    try:
+        return await frek_core.mint_frek_id(email=email, metadata=metadata)
+    except FrekCoreConfigurationError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Service d'identité FREKCORE mal configuré",
+        ) from exc
+    except FrekCoreUnavailableError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Service d'identité FREKCORE temporairement indisponible",
+        ) from exc
 
 
-# ============ REQUEST DEPENDENCIES ============
 async def get_current_user(
     creds: Optional[HTTPAuthorizationCredentials] = Depends(bearer),
 ) -> User:
@@ -227,10 +233,6 @@ async def get_current_user_optional(
 
 
 def require_role(*roles: Role) -> Callable[[User], Coroutine[Any, Any, User]]:
-    """FastAPI dependency factory: `current = Depends(require_role("admin", "super_admin"))`.
-
-    Raises 403 if the authenticated user's role isn't in `roles`.
-    """
     allowed: Sequence[Role] = roles
 
     async def _dep(current: User = Depends(get_current_user)) -> User:
