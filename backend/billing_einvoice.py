@@ -12,7 +12,7 @@ import hashlib
 import io
 import os
 from datetime import datetime, timezone
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Tuple
 
 from facturx import generate_from_binary, generate_xml, xml_check_xsd
