@@ -56,7 +56,19 @@ test.describe("quiz context (W3-B)", () => {
     await gotoQuizReadyModule(page);
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
+
+    // Auto-advance is driven by ModuleJourney.submitQuiz() only after its
+    // post-submit module reload has completed. `quiz-result` renders earlier,
+    // immediately after the submit response, so using it as the synchronization
+    // point races the actual state transition on a busy CI runner. Wait for the
+    // real reload instead of hiding the race behind a larger timeout.
+    const moduleReload = page.waitForResponse(
+      (response) =>
+        response.request().method() === "GET" &&
+        response.url().includes("/api/modules/FMS-01/FMS-01-M01")
+    );
     await page.getByTestId("quiz-submit").click();
+    await moduleReload;
     await expect(page.getByTestId("quiz-result")).toBeVisible();
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
