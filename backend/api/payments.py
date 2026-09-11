@@ -29,6 +29,7 @@ async def start_checkout(body: CheckoutRequest, current: User = Depends(get_curr
         return await create_checkout(
             user_id=current.id,
             offer_id=body.offer_id,
+            economy_code=body.economy_code,
             formation_code=body.formation_code,
             success_url=body.success_url,
             cancel_url=body.cancel_url,
@@ -36,8 +37,6 @@ async def start_checkout(body: CheckoutRequest, current: User = Depends(get_curr
     except OfferNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except EconomyPolicyBlockedError as exc:
-        # 409: the requested commercial action conflicts with the canonical
-        # Economy 3D state/gates; this is not an authentication failure.
         raise HTTPException(status_code=409, detail=str(exc)) from exc
     except ProviderNotConfiguredError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
