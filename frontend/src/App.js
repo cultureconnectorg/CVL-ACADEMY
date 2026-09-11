@@ -1,15 +1,17 @@
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "@/App.css";
 import "@/index.css";
 
 import { AuthProvider, useAuth } from "@/lib/auth.jsx";
 import { I18nProvider } from "@/lib/i18n.jsx";
+import { api } from "@/lib/api";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
 import { RouteTransition } from "@/lib/RouteTransition";
 
 const Landing = lazy(() => import("@/pages/Landing"));
+const ReglementSignature = lazy(() => import("@/pages/ReglementSignature"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Formations = lazy(() => import("@/pages/Formations"));
@@ -34,10 +36,52 @@ function PageFallback() {
   return <div className="p-10 text-[--cvln-ink-2]">…</div>;
 }
 
-function Protected({ children, roles }) {
+function useReglementStatus(enabled) {
+  const [state, setState] = useState({ loading: enabled, signed: false });
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!enabled) {
+      setState({ loading: false, signed: false });
+      return undefined;
+    }
+    setState((s) => ({ ...s, loading: true }));
+    api.get("/reglement/status")
+      .then(({ data }) => {
+        if (!cancelled) setState({ loading: false, signed: Boolean(data.signed) });
+      })
+      .catch(() => {
+        if (!cancelled) setState({ loading: false, signed: false });
+      });
+    return () => { cancelled = true; };
+  }, [enabled]);
+
+  return state;
+}
+
+function AuthOnly({ children }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
+  return children;
+}
+
+function BeforeOnboarding({ children }) {
+  const { user, loading } = useAuth();
+  const regulation = useReglementStatus(Boolean(user));
+  if (loading || regulation.loading) return null;
+  if (!user) return <Navigate to="/" replace />;
+  if (!regulation.signed) return <Navigate to="/reglement" replace />;
+  if (user.onboarding_completed) return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
+function Protected({ children, roles }) {
+  const { user, loading } = useAuth();
+  const regulation = useReglementStatus(Boolean(user));
+  if (loading || regulation.loading) return null;
+  if (!user) return <Navigate to="/" replace />;
+  if (!regulation.signed) return <Navigate to="/reglement" replace />;
   if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
   return <Layout>{children}</Layout>;
@@ -52,7 +96,8 @@ function App() {
             <RouteTransition>
               <Routes>
                 <Route path="/" element={<Landing />} />
-                <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/reglement" element={<AuthOnly><ReglementSignature /></AuthOnly>} />
+                <Route path="/onboarding" element={<BeforeOnboarding><Onboarding /></BeforeOnboarding>} />
                 <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
                 <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
                 <Route path="/formations" element={<Protected><Formations /></Protected>} />
