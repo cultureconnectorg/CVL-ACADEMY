@@ -7,9 +7,9 @@ import "./spatial-background.css";
 /**
  * CVLN Academy world layer.
  *
- * Visuals follow the existing Spatial topology. This component never defines
- * navigation or product state; it only consumes a pathname and translates the
- * already-authoritative topology node into camera/environment variables.
+ * Visuals follow the existing Spatial topology. This component never owns
+ * navigation, auth, learning state, or route transitions. It consumes the
+ * authoritative pathname and translates it into cinematic camera variables.
  */
 export default function SpatialBackground({ pathname = "/" }) {
   const rootRef = useRef(null);
@@ -29,6 +29,10 @@ export default function SpatialBackground({ pathname = "/" }) {
     root.style.setProperty("--scene-scale", String(scene.scale));
     root.style.setProperty("--scene-light", String(scene.light));
     root.style.setProperty("--scene-depth", String(scene.depth));
+    root.style.setProperty("--scene-focus-x", `${scene.focusX}%`);
+    root.style.setProperty("--scene-focus-y", `${scene.focusY}%`);
+    root.style.setProperty("--scene-warmth", String(scene.warmth));
+    root.style.setProperty("--scene-vignette", String(scene.vignette));
 
     if (!motionEnabled) return undefined;
 
@@ -53,8 +57,8 @@ export default function SpatialBackground({ pathname = "/" }) {
     const onPointerMove = (event) => {
       const nx = event.clientX / Math.max(window.innerWidth, 1) - 0.5;
       const ny = event.clientY / Math.max(window.innerHeight, 1) - 0.5;
-      targetX = nx * 20;
-      targetY = ny * 14;
+      targetX = nx * 24;
+      targetY = ny * 16;
     };
 
     const onScroll = () => {
@@ -88,20 +92,26 @@ export default function SpatialBackground({ pathname = "/" }) {
       <div className="spatial-background__layer spatial-background__layer--far">
         <div className="spatial-background__base" />
         <div className="spatial-background__world" />
+        <div className="spatial-background__stars" />
       </div>
 
       <div className="spatial-background__layer spatial-background__layer--mid">
+        <div className="spatial-background__sunset-glow" />
         <div className="spatial-background__aurora spatial-background__aurora--one" />
         <div className="spatial-background__aurora spatial-background__aurora--two" />
         <div className="spatial-background__orbit spatial-background__orbit--one" />
         <div className="spatial-background__orbit spatial-background__orbit--two" />
+        <div className="spatial-background__energy-rail" />
       </div>
 
       <div className="spatial-background__layer spatial-background__layer--near">
         <div className="spatial-background__mist" />
+        <div className="spatial-background__foreground" />
       </div>
 
       <div className="spatial-background__readability" />
+      <div className="spatial-background__vignette" />
+      <div className="spatial-background__grain" />
     </div>
   );
 }
