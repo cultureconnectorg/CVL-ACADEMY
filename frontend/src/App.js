@@ -42,11 +42,12 @@ function PageFallback() {
 function LegalGuard({ children }) {
   const { user, loading } = useAuth();
   const [state, setState] = useState("checking");
+  const userId = user?.id;
 
   useEffect(() => {
     let alive = true;
     if (loading) return undefined;
-    if (!user) {
+    if (!userId) {
       setState("anonymous");
       return undefined;
     }
@@ -55,7 +56,7 @@ function LegalGuard({ children }) {
       .then(({ data }) => alive && setState(data.accepted ? "accepted" : "required"))
       .catch(() => alive && setState("required"));
     return () => { alive = false; };
-  }, [user, loading]);
+  }, [userId, loading]);
 
   if (loading || state === "checking") return null;
   if (!user || state === "anonymous") return <Navigate to="/" replace />;
