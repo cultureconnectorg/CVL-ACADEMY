@@ -1,0 +1,37 @@
+name: Commercial Frontend CI
+
+on:
+  push:
+    branches:
+      - feat/academy-wallet-commercial-runtime-20260911
+  pull_request:
+    branches:
+      - audit/economy-3d-line-by-line-2026-09-11
+      - main
+
+jobs:
+  commercial-frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - name: Install frontend
+        run: yarn install --frozen-lockfile
+      - name: Production build
+        env:
+          CI: "false"
+          REACT_APP_BACKEND_URL: http://127.0.0.1:4174
+        run: yarn build
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Commercial purchase E2E
+        env:
+          CI: "true"
+        run: npx playwright test e2e/commercial-purchase.spec.js --project=chromium
