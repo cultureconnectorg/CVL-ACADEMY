@@ -12,7 +12,7 @@ import LegalFooter from "@/components/LegalFooter";
 import CookieConsent from "@/components/CookieConsent";
 import { RouteTransition } from "@/lib/RouteTransition";
 
-const Landing = lazy(() => import("@/pages/Landing"));
+const Landing = lazy(() => import("@/pages/LandingSpatial"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Formations = lazy(() => import("@/pages/Formations"));
