@@ -1,9 +1,9 @@
 """Governance escalation protocol (GOV-13).
 
 Escalations are evidence-bearing governance records linked to an existing canonical
-case, incident or risk. This module does not create parallel case/incident/risk stores.
-Acknowledgement requires an explicit ALLOW decision from the canonical Authority
-Policy Engine bound to the exact escalation.
+case, incident, risk or legal matter. This module does not create parallel domain
+stores. Acknowledgement requires an explicit ALLOW decision from the canonical
+Authority Policy Engine bound to the exact escalation.
 """
 
 from __future__ import annotations
@@ -19,6 +19,7 @@ SOURCE_COLLECTIONS = {
     "PROFESSIONAL_CASE": "professional_cases",
     "INCIDENT": "incidents",
     "RISK": "risks",
+    "LEGAL_MATTER": "legal_matters",
 }
 SEVERITIES = {"LOW", "MEDIUM", "HIGH", "CRITICAL"}
 STATES = {"OPEN", "ACKNOWLEDGED", "RESOLVED", "CANCELLED"}
