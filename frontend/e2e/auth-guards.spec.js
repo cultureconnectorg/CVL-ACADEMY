@@ -1,10 +1,7 @@
 const { test, expect } = require("@playwright/test");
 
-// Every `<Protected>`-wrapped path in src/App.js. An unauthenticated
-// visitor deep-linking any of these must land back on "/" — this is the
-// exact behavior `Protected` implements (`if (!user) return <Navigate
-// to="/" replace />`), and this suite proves it holds for each route
-// individually rather than trusting the shared wrapper by inspection alone.
+// Every authenticated/protected path in src/App.js. An unauthenticated
+// visitor deep-linking any of these must land back on "/".
 const PROTECTED_PATHS = [
   "/dashboard",
   "/roadmap",
@@ -17,9 +14,13 @@ const PROTECTED_PATHS = [
   "/wallet",
   "/skills",
   "/certifications",
-  "/trainer", // also role-gated (TRAINER_ROLES) — unauthenticated fails the earlier !user check first
-  "/jury", // also role-gated (JURY_ROLES)
-  "/admin", // also role-gated (ADMIN_ROLES)
+  "/trainer",
+  "/jury",
+  "/admin",
+  "/admin/stakeholders",
+  "/partner",
+  "/institution",
+  "/stakeholder/claim/example-code",
 ];
 
 test.describe("auth guards (W1-E)", () => {
