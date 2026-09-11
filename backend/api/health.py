@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from fastapi import APIRouter
-
 from services.agent_factory import agent_factory
 from services.frek_core import frek_core
 
