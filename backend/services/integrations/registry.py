@@ -5,6 +5,10 @@ FrekCore and CVLN Agent Factory already had their own richer clients
 behavior, not just a gate) before this pass; they're included in
 `all_integrations()` for one unified status view without being redefined
 here as generic clients.
+
+CVLN Wallet is the group's financial core. Academy integrates with Wallet,
+not directly with external PSPs, so payment rails remain centralized and
+provider-agnostic at group level.
 """
 
 from __future__ import annotations
@@ -15,6 +19,7 @@ from services.agent_factory import agent_factory
 from services.frek_core import frek_core
 
 from .base import EcosystemIntegration
+from .cvln_wallet import cvln_wallet
 
 intelligence_os = EcosystemIntegration("CVLN Intelligence OS", "CVLN_INTELLIGENCE_OS")
 brain = EcosystemIntegration("CVLN Brain", "CVLN_BRAIN")
@@ -46,6 +51,7 @@ def all_integrations() -> List[Dict[str, Any]]:
     docs/INTEGRATIONS_REPORT.md both read from, so the report can never
     drift from what's actually wired."""
     rows = [g.describe() for g in _GENERIC]
+    rows.append(cvln_wallet.describe())
     rows.append(
         {
             "name": "FrekCore",
