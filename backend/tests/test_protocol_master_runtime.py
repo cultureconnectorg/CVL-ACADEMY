@@ -1,4 +1,6 @@
 from copy import deepcopy
+import importlib.util
+from pathlib import Path
 
 import pytest
 
@@ -8,6 +10,7 @@ from services.protocol_master_runtime import (
     EXPECTED_SHEET_ROWS,
     EXPECTED_WORKBOOK_ROWS,
     INTEGRATION_ADAPTERS,
+    ROOT,
     evaluate_protocol_control,
     load_protocol_controls,
     load_protocol_workbook_rows,
@@ -123,6 +126,14 @@ def test_every_declared_integration_has_a_runtime_adapter():
     assert all(INTEGRATION_ADAPTERS[name] for name in declared)
 
 
+def test_every_runtime_adapter_resolves_to_real_repo_boundary():
+    for adapter in set(INTEGRATION_ADAPTERS.values()):
+        if adapter.startswith(".github/"):
+            assert (Path(ROOT) / adapter).is_file(), adapter
+            continue
+        assert importlib.util.find_spec(adapter) is not None, adapter
+
+
 @pytest.mark.parametrize("control", CONTROLS, ids=CONTROL_IDS)
 def test_each_of_227_behaviors_accepts_only_its_complete_contract(control):
     decision = evaluate_protocol_control(control, _valid_context(control))
@@ -189,9 +200,7 @@ def test_reg_04_requires_explicit_legal_assurance_level():
 
 
 def test_context_mode_cvln_ios_escalates_only_when_systemic():
-    control = next(
-        row for row in CONTROLS if row["cvln_ios"] == "CONTEXT"
-    )
+    control = next(row for row in CONTROLS if row["cvln_ios"] == "CONTEXT")
     context = _valid_context(control)
     assert evaluate_protocol_control(control, context)["allowed"] is True
     context["systemic"] = True
