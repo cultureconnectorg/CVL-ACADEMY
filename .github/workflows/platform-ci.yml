@@ -64,7 +64,7 @@ jobs:
           fi
       - name: Black changed files
         if: steps.changed.outputs.has_files == 'true'
-        run: xargs black --diff --check < /tmp/backend-python-files.txt
+        run: xargs black --check < /tmp/backend-python-files.txt
       - name: Isort changed files
         if: steps.changed.outputs.has_files == 'true'
         run: xargs isort --check-only --profile black --src-path backend < /tmp/backend-python-files.txt
