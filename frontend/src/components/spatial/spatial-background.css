@@ -11,6 +11,16 @@
   background: #eef4f2;
 }
 
+.spatial-background__layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.spatial-background__layer--far { z-index: 0; }
+.spatial-background__layer--mid { z-index: 1; }
+.spatial-background__layer--near { z-index: 2; }
+
 .spatial-background__base,
 .spatial-background__world,
 .spatial-background__aurora,
@@ -104,9 +114,24 @@
 
 .spatial-background__readability {
   inset: 0;
+  z-index: 3;
   background:
     linear-gradient(90deg, rgba(255,255,255,0.84) 0%, rgba(255,255,255,0.62) 43%, rgba(255,255,255,0.35) 68%, rgba(255,255,255,0.55) 100%),
     linear-gradient(180deg, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0.1) 46%, rgba(255,255,255,0.52) 100%);
+}
+
+/* Spatial OFF is intentionally a static fallback, not a hidden environment. */
+.spatial-background[data-spatial-engine="off"] .spatial-background__world,
+.spatial-background[data-spatial-engine="off"] .spatial-background__aurora,
+.spatial-background[data-spatial-engine="off"] .spatial-background__orbit,
+.spatial-background[data-spatial-engine="off"] .spatial-background__mist,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__world,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__aurora,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__orbit,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__mist {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto;
 }
 
 @keyframes spatial-breathe {
