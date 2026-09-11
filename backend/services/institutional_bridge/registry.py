@@ -126,14 +126,18 @@ _DEFINITIONS: Tuple[ConnectorDefinition, ...] = (
     ),
 )
 
-connector_registry: Dict[str, ConnectorDefinition] = {item.code: item for item in _DEFINITIONS}
+connector_registry: Dict[str, ConnectorDefinition] = {
+    item.code: item for item in _DEFINITIONS
+}
 
 
 def describe_connectors() -> Iterable[ConnectorDescriptor]:
     return [connector.describe() for connector in _DEFINITIONS]
 
 
-def require_capability(connector_code: str, capability: Capability) -> ConnectorDefinition:
+def require_capability(
+    connector_code: str, capability: Capability
+) -> ConnectorDefinition:
     connector = connector_registry.get(connector_code)
     if connector is None:
         raise UnknownConnector(connector_code)
