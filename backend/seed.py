@@ -7,6 +7,7 @@ from seed_data import BADGES, FORMATIONS, MISSIONS, POLES
 from services.catalogue_importer import import_catalogue_master
 from services.cartography_2d_runtime import import_cartography_2d_runtime
 from services.economy_importer import import_economy_master
+from services.economy_runtime import sync_economy_runtime_links
 from services.protocol_master_runtime import import_protocol_master_runtime
 from services.requirement_registry import sync_master_requirements
 
@@ -37,6 +38,8 @@ async def seed_if_empty() -> None:
     await import_catalogue_master(db)
     await import_economy_master(db)
     await sync_master_requirements(db)
+    # Bind every Economy 3D requirement row to the runtime surfaces that enforce it.
+    await sync_economy_runtime_links(db)
 
     # Complete Cartographie 2D workbook projection: 11 sheets / 1,884 rows.
     await import_cartography_2d_runtime(db)
