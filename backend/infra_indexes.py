@@ -60,6 +60,13 @@ async def ensure_indexes() -> None:
     await db.organisations.create_index("slug", unique=True)
     await db.cohorts.create_index("org_id")
 
+    # Institutional Bridge — additive to existing organisations.
+    await db.institution_profiles.create_index("org_id", unique=True)
+    await db.funding_cases.create_index([("org_id", 1), ("created_at", -1)])
+    await db.funding_cases.create_index("beneficiary_user_id")
+    await db.funding_cases.create_index("formation_code")
+    await db.funding_cases.create_index("status")
+
     # Catalogue
     await db.formations.create_index("code", unique=True)
     await db.formations.create_index("content_status")
