@@ -1,0 +1,70 @@
+name: Economy 3D Pricing CI
+
+on:
+  push:
+    branches:
+      - main
+      - feat/economy-3d-pricing-runtime
+  pull_request:
+    paths:
+      - "backend/economy_3d.py"
+      - "backend/pricing_catalog.py"
+      - "backend/api/economy.py"
+      - "backend/api/formations.py"
+      - "backend/data/economy_3d_classes_v1.txt"
+      - "backend/tests/test_economy_3d_traceability.py"
+      - "backend/tests/test_pricing_catalog.py"
+      - "frontend/src/App.js"
+      - "frontend/src/pages/Pricing.js"
+      - ".github/workflows/economy-3d-line-by-line-ci.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: economy-3d-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  economy-backend:
+    runs-on: ubuntu-latest
+    env:
+      MONGO_URL: mongodb://127.0.0.1:27017
+      DB_NAME: cvln_academy_ci
+      JWT_SECRET: cvln-academy-ci-only-not-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend
+        working-directory: backend
+        run: pip install -r requirements.txt
+      - name: Economy traceability and pricing tests
+        working-directory: backend
+        run: pytest -q tests/test_economy_3d_traceability.py tests/test_pricing_catalog.py -n 0
+      - name: Economy formatting
+        working-directory: backend
+        run: black --check --diff economy_3d.py pricing_catalog.py api/economy.py api/formations.py tests/test_economy_3d_traceability.py tests/test_pricing_catalog.py
+      - name: Economy lint
+        working-directory: backend
+        run: flake8 --config=.flake8 economy_3d.py pricing_catalog.py api/economy.py api/formations.py tests/test_economy_3d_traceability.py tests/test_pricing_catalog.py
+
+  frontend-pricing-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - name: Install frontend
+        run: yarn install --frozen-lockfile
+      - name: Build frontend
+        run: yarn build

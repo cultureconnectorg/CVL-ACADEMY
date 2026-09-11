@@ -16,6 +16,7 @@ from lx import (
     phase_completion_flags,
 )
 from models import ADMIN_ROLES, STAFF_ROLES, ContentStatusInput, User
+from pricing_catalog import formation_commercialization
 
 router = APIRouter(tags=["formations"])
 
@@ -73,6 +74,7 @@ async def list_formations(
             "reconciliation_flags": d.get("reconciliation_flags", []),
             "modules_count": len(d.get("modules", [])),
             "content_status": d.get("content_status", "published"),
+            "commercialization": formation_commercialization(d),
         }
         for d in docs
     ]
@@ -89,6 +91,8 @@ async def get_formation(
         current and current.role in STAFF_ROLES
     ):
         raise HTTPException(status_code=404, detail="Formation introuvable")
+
+    doc["commercialization"] = formation_commercialization(doc)
 
     # If no user (unauth preview), return base structure with modules locked=False
     if not current:
