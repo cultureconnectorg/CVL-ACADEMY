@@ -40,6 +40,8 @@ jobs:
           cache-dependency-path: backend/requirements.txt
       - name: Install backend dependencies
         run: pip install -r requirements.txt
+      - name: Black mini-wallet delta
+        run: black --diff --check wallet api/wallet.py badges_engine.py infra_indexes.py tests/test_academy_wallet.py
       - name: Compile wallet modules
         run: python -m compileall wallet api/wallet.py badges_engine.py infra_indexes.py
       - name: Run Academy mini-wallet tests
