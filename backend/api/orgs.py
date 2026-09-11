@@ -1,4 +1,4 @@
-"""Organisations, cohorts and invitations — admin-managed.
+"""Organisations, cohorts and invitations — role-scoped management.
 
 Lets CVLN onboard an institutional partner (org) with its own cohorts
 (e.g. one per intake/pole/territory) and invite members into a specific
@@ -62,8 +62,14 @@ async def list_cohorts(org_id: str, current: User = Depends(get_current_user)):
 
 @router.post("/orgs/{org_id}/cohorts", response_model=Cohort)
 async def create_cohort(
-    org_id: str, inp: CohortInput, current: User = Depends(require_role(*ADMIN_ROLES))
+    org_id: str, inp: CohortInput, current: User = Depends(get_current_user)
 ):
+    # The trainer dashboard exposes cohort creation. Trainers may create cohorts
+    # only inside their own organisation; platform admins retain cross-org access.
+    if current.role not in ADMIN_ROLES:
+        if current.role != "trainer" or current.org_id != org_id:
+            raise HTTPException(status_code=403, detail="Accès refusé à cette organisation")
+
     org = await db.organisations.find_one({"id": org_id}, {"_id": 0})
     if not org:
         raise HTTPException(status_code=404, detail="Organisation introuvable")
