@@ -1,12 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
   Fingerprint, LogOut, Leaf, Language, Wallet as WalletIcon,
-  Sparks, ShieldCheck, ShieldSearch, PeopleTag, Settings,
+  Sparks, ShieldCheck, ShieldSearch, PeopleTag, Settings, Buildings,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
+import { api } from "@/lib/api";
 import MentorPanel from "@/components/MentorPanel";
 import { isPedagogicalContext } from "@/lib/mentorPresence";
 import { captureRouteDepth, restoreRouteDepth } from "@/lib/depthMemory";
@@ -24,9 +25,10 @@ const STUDENT_NAV = [
 ];
 
 const STAFF_NAV = [
-  { to: "/trainer", key: "trainer_space", Icon: PeopleTag,   roles: ["trainer", "admin", "super_admin", "founder"] },
-  { to: "/jury",    key: "jury_space",    Icon: ShieldSearch, roles: ["jury", "admin", "super_admin", "founder"] },
-  { to: "/admin",   key: "admin_cms",     Icon: Settings,    roles: ["admin", "super_admin", "founder"] },
+  { to: "/trainer", key: "trainer_space", Icon: PeopleTag, roles: ["trainer", "admin", "super_admin", "founder"] },
+  { to: "/jury", key: "jury_space", Icon: ShieldSearch, roles: ["jury", "admin", "super_admin", "founder"] },
+  { to: "/admin", key: "admin_cms", Icon: Settings, roles: ["admin", "super_admin", "founder"] },
+  { to: "/admin/stakeholders", label: "Accès partenaires", Icon: Buildings, roles: ["admin", "super_admin", "founder"] },
 ];
 
 export default function Layout({ children }) {
@@ -34,17 +36,30 @@ export default function Layout({ children }) {
   const { t, lang, setLang } = useI18n();
   const nav = useNavigate();
   const location = useLocation();
-  const NAV = [...STUDENT_NAV, ...STAFF_NAV.filter((item) => item.roles.includes(user?.role))];
-  // MENTOR = CONTEXTUAL_PRESENCE (W3-C): the FAB/panel only mounts where a
-  // pedagogical context justifies it — never a permanent floating chatbot
-  // on every screen. See mentorPresence.js for the exact, deliberately
-  // conservative scope.
+  const [stakeholder, setStakeholder] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    if (!user?.id) return undefined;
+    api.get("/stakeholders/me")
+      .then((r) => alive && setStakeholder(r.data.membership))
+      .catch(() => alive && setStakeholder(null));
+    return () => { alive = false; };
+  }, [user?.id, user?.org_id]);
+
+  const stakeholderNav = stakeholder ? [{
+    to: stakeholder.stakeholder_type === "institution" ? "/institution" : "/partner",
+    label: stakeholder.stakeholder_type === "institution" ? "Espace institution" : "Espace partenaire",
+    Icon: Buildings,
+  }] : [];
+
+  const NAV = [
+    ...stakeholderNav,
+    ...STUDENT_NAV,
+    ...STAFF_NAV.filter((item) => item.roles.includes(user?.role)),
+  ];
   const mentorAvailable = isPedagogicalContext(location.pathname);
 
-  // Spatial Learning DEPTH_MEMORY / RETURN_EXACT_CONTEXT.
-  // The cleanup captures the route being left; the next mounted route restores
-  // its own native window scroll and the last focused control. This is UI-only
-  // session state and never writes progression/domain data.
   useEffect(() => {
     restoreRouteDepth(location.pathname);
     return () => captureRouteDepth(location.pathname);
@@ -52,7 +67,6 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen flex" data-testid="app-layout">
-      {/* Sidebar */}
       <aside
         className="hidden md:flex flex-col w-64 shrink-0 px-6 py-8 border-r border-black/5 bg-white sticky top-0 h-screen"
         data-testid="sidebar"
@@ -67,10 +81,10 @@ export default function Layout({ children }) {
         </div>
 
         <nav className="flex flex-col gap-1" data-testid="sidebar-nav">
-          {NAV.map(({ to, key, Icon }) => (
+          {NAV.map(({ to, key, label, Icon }) => (
             <NavLink
               key={to} to={to}
-              data-testid={`nav-${key}`}
+              data-testid={`nav-${key || to.replaceAll("/", "-").replace(/^-/, "")}`}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition
                  ${isActive
@@ -79,19 +93,17 @@ export default function Layout({ children }) {
               }
             >
               <Icon width={18} height={18} />
-              {t(key)}
+              {label || t(key)}
             </NavLink>
           ))}
         </nav>
 
         <div className="mt-auto pt-6 border-t border-black/5 flex flex-col gap-3">
-          {/* FREK-ID card */}
           <div className="rounded-2xl bg-[--cvln-bg-warm] p-4">
             <div className="text-[11px] uppercase tracking-[0.2em] text-[--cvln-ink-2] font-semibold">FREK-ID</div>
             <div className="mono text-lg mt-1 font-semibold" data-testid="frek-id-badge">{user?.frek_id}</div>
             <div className="text-sm text-[--cvln-ink-2] truncate">{user?.display_name}</div>
           </div>
-          {/* Lang toggle */}
           <div className="flex items-center gap-1 px-1" data-testid="lang-toggle">
             <Language width={14} height={14} className="text-[--cvln-ink-2]" />
             {LANGS.map((l) => (
@@ -100,7 +112,7 @@ export default function Layout({ children }) {
                 data-testid={`lang-${l.code}`}
                 onClick={() => setLang(l.code)}
                 className={`text-xs px-2 py-1 rounded-full font-semibold transition
-                  ${lang === l.code ? "bg-[--cvln-orange] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`}
+                  ${lang === l.code ? "bg-[--cvln-orange] text-white" : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"}`
               >
                 {l.label}
               </button>
@@ -116,9 +128,7 @@ export default function Layout({ children }) {
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 min-w-0">
-        {/* Mobile header */}
         <div className="md:hidden flex items-center justify-between px-5 py-4 border-b border-black/5 bg-white sticky top-0 z-30">
           <div className="font-display font-black tracking-tight">
             CVLN <span className="text-[--cvln-orange]">Academy</span>
