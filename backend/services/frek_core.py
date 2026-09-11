@@ -20,7 +20,6 @@ import os
 from typing import Any, Dict, Optional
 
 import httpx
-
 from db import db, utc_now_iso
 
 FREK_CORE_BASE_URL = os.environ.get("FREK_CORE_BASE_URL", "").rstrip("/")
