@@ -29,9 +29,9 @@ FREK_CORE_CLIENT_SECRET = os.environ.get("FREK_CORE_CLIENT_SECRET", "").strip()
 # Retained for existing best-effort signal/proof mirrors until those contracts
 # are reconciled separately. It is NOT used for FREK-ID issuance.
 FREK_CORE_API_KEY = os.environ.get("FREK_CORE_API_KEY")
-FREK_CORE_IDENTITY_AUTHORITY = os.environ.get(
-    "FREK_CORE_IDENTITY_AUTHORITY", "local_dev"
-).strip().lower()
+FREK_CORE_IDENTITY_AUTHORITY = (
+    os.environ.get("FREK_CORE_IDENTITY_AUTHORITY", "local_dev").strip().lower()
+)
 
 VALID_IDENTITY_AUTHORITIES = {"local_dev", "frekcore"}
 
