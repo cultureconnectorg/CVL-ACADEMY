@@ -213,9 +213,7 @@ class FrekCoreClient:
                 "ts": utc_now_iso(),
             }
         )
-        await db.users.update_one(
-            {"id": user_id}, {"$inc": {f"signals.{signal}": 1}}
-        )
+        await db.users.update_one({"id": user_id}, {"$inc": {f"signals.{signal}": 1}})
         await self._remote_post(
             "/signal", {"user_id": user_id, "signal": signal, "meta": meta or {}}
         )
