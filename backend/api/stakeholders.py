@@ -63,7 +63,9 @@ async def _membership_for(user: User) -> dict:
         {"user_id": user.id}, {"_id": 0}
     )
     if not membership:
-        raise HTTPException(status_code=403, detail="Aucun accès partenaire/institution")
+        raise HTTPException(
+            status_code=403, detail="Aucun accès partenaire/institution"
+        )
     if membership.get("org_id") != user.org_id:
         raise HTTPException(status_code=403, detail="Contexte organisation invalide")
     return membership
@@ -95,17 +97,13 @@ async def create_stakeholder_invitation(
 
 @router.get("/invitations/{code}")
 async def preview_stakeholder_invitation(code: str):
-    invitation = await db.stakeholder_invitations.find_one(
-        {"code": code}, {"_id": 0}
-    )
+    invitation = await db.stakeholder_invitations.find_one({"code": code}, {"_id": 0})
     if not invitation or invitation.get("used_by"):
         raise HTTPException(status_code=404, detail="Invitation introuvable")
     if _parse_expiry(invitation["expires_at"]) < _now():
         raise HTTPException(status_code=410, detail="Invitation expirée")
 
-    org = await db.organisations.find_one(
-        {"id": invitation["org_id"]}, {"_id": 0}
-    )
+    org = await db.organisations.find_one({"id": invitation["org_id"]}, {"_id": 0})
     return {
         "stakeholder_type": invitation["stakeholder_type"],
         "org_name": org.get("name") if org else None,
@@ -118,9 +116,7 @@ async def preview_stakeholder_invitation(code: str):
 async def claim_stakeholder_invitation(
     code: str, current: User = Depends(get_current_user)
 ):
-    invitation = await db.stakeholder_invitations.find_one(
-        {"code": code}, {"_id": 0}
-    )
+    invitation = await db.stakeholder_invitations.find_one({"code": code}, {"_id": 0})
     if not invitation or invitation.get("used_by"):
         raise HTTPException(status_code=404, detail="Invitation introuvable")
     if _parse_expiry(invitation["expires_at"]) < _now():
@@ -169,9 +165,7 @@ async def claim_stakeholder_invitation(
 @router.get("/me")
 async def stakeholder_me(current: User = Depends(get_current_user)):
     membership = await _membership_for(current)
-    org = await db.organisations.find_one(
-        {"id": membership["org_id"]}, {"_id": 0}
-    )
+    org = await db.organisations.find_one({"id": membership["org_id"]}, {"_id": 0})
     return {"membership": membership, "organisation": org}
 
 
