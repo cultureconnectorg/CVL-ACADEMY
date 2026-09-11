@@ -18,9 +18,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Iterable, List
 
-DATA_PATH = (
-    Path(__file__).parent / "data" / "economy_3d_traceability_v1.json.gz.b64"
-)
+DATA_PATH = Path(__file__).parent / "data" / "economy_3d_traceability_v1.json.gz.b64"
 EXPECTED_RECORD_COUNT = 812
 EXPECTED_WORKBOOK_SHA256 = (
     "be41260e722ac3daa1974ef52fb0f48f8c31536a8be420469b139755bb9c6bc0"
