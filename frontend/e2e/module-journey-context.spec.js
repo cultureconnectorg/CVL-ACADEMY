@@ -57,15 +57,25 @@ test.describe("quiz context (W3-B)", () => {
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
 
-    // Auto-advance is driven by ModuleJourney.submitQuiz() only after its
-    // post-submit module reload has completed. Synchronize on that reload,
-    // then assert the actual destination state instead of a transient quiz
-    // result that is unmounted by the successful auto-advance.
-    const moduleReload = page.waitForResponse(
-      (response) =>
-        response.request().method() === "GET" &&
-        response.url().includes("/api/modules/FMS-01/FMS-01-M01")
-    );
+    // React dev mode can have more than one module GET in flight. Wait for
+    // the specific post-quiz payload that proves quiz=true instead of any
+    // matching GET, otherwise a stale pre-submit response can satisfy the
+    // synchronization point and make this assertion flaky.
+    const moduleReload = page.waitForResponse(async (response) => {
+      if (
+        response.request().method() !== "GET" ||
+        !response.url().includes("/api/modules/FMS-01/FMS-01-M01")
+      ) {
+        return false;
+      }
+      try {
+        const body = await response.json();
+        return body?.phase_flags?.quiz === true;
+      } catch {
+        return false;
+      }
+    });
+
     await page.getByTestId("quiz-submit").click();
     await moduleReload;
 
