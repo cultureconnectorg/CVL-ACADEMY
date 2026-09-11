@@ -112,6 +112,20 @@ def _effective_qualification(
     return Qualification(**payload)
 
 
+async def _latest_qualification_doc(
+    user_id: str,
+    qualification_code: str,
+) -> dict[str, Any] | None:
+    docs = await db.qualifications.find(
+        {
+            "user_id": user_id,
+            "qualification_code": qualification_code,
+        },
+        {"_id": 0},
+    ).sort("issued_at", -1).limit(1).to_list(1)
+    return docs[0] if docs else None
+
+
 async def maybe_issue_qualification(
     user_id: str,
     certification_code: str,
@@ -120,21 +134,14 @@ async def maybe_issue_qualification(
     definitions = await _definitions_for_certification(certification_code)
     issued: List[Qualification] = []
     for definition in definitions:
-        existing = await db.qualifications.find_one(
-            {
-                "user_id": user_id,
-                "qualification_code": definition.code,
-            },
-            {"_id": 0},
-        )
+        existing = await _latest_qualification_doc(user_id, definition.code)
         if existing:
             effective = _effective_qualification(existing, definition)
-            # An expired qualification is not silently renewed by a read. A new
-            # passing certification attempt is the concrete requalification event.
+            # A valid qualification stays idempotent. An expired qualification
+            # remains historical; a new passing attempt appends requalification.
             if _is_not_expired(effective.expires_at):
                 issued.append(effective)
                 continue
-            await db.qualifications.delete_one({"id": effective.id})
 
         if not await _has_all_required_skills(
             user_id,
@@ -186,13 +193,7 @@ async def list_user_qualifications(user_id: str) -> List[Qualification]:
 
 
 async def is_qualified(user_id: str, qualification_code: str) -> bool:
-    doc = await db.qualifications.find_one(
-        {
-            "user_id": user_id,
-            "qualification_code": qualification_code,
-        },
-        {"_id": 0},
-    )
+    doc = await _latest_qualification_doc(user_id, qualification_code)
     if not doc:
         return False
     definition = await get_definition(qualification_code)
@@ -212,9 +213,14 @@ async def has_any_of(
             "qualification_code": {"$in": qualification_codes},
         },
         {"_id": 0},
-    ).to_list(500)
+    ).sort("issued_at", -1).to_list(500)
+    seen: set[str] = set()
     for doc in docs:
-        definition = await get_definition(doc["qualification_code"])
+        code = doc["qualification_code"]
+        if code in seen:
+            continue
+        seen.add(code)
+        definition = await get_definition(code)
         effective = _effective_qualification(doc, definition)
         if _is_not_expired(effective.expires_at):
             return True
