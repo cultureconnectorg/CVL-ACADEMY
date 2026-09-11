@@ -63,7 +63,9 @@ async def _membership_for(user: User) -> dict:
         {"user_id": user.id}, {"_id": 0}
     )
     if not membership:
-        raise HTTPException(status_code=403, detail="Aucun accès partenaire/institution")
+        raise HTTPException(
+            status_code=403, detail="Aucun accès partenaire/institution"
+        )
     if membership.get("org_id") != user.org_id:
         raise HTTPException(status_code=403, detail="Contexte organisation invalide")
     return membership
@@ -120,9 +122,13 @@ async def claim_stakeholder_invitation(
     if _parse_expiry(invitation["expires_at"]) < _now():
         raise HTTPException(status_code=410, detail="Invitation expirée")
     if invitation.get("email") and invitation["email"] != current.email.lower():
-        raise HTTPException(status_code=403, detail="Invitation réservée à une autre adresse")
+        raise HTTPException(
+            status_code=403, detail="Invitation réservée à une autre adresse"
+        )
 
-    existing = await db.stakeholder_memberships.find_one({"user_id": current.id}, {"_id": 0})
+    existing = await db.stakeholder_memberships.find_one(
+        {"user_id": current.id}, {"_id": 0}
+    )
     if existing:
         if (
             existing.get("org_id") == invitation["org_id"]
@@ -169,8 +175,12 @@ async def stakeholder_overview(current: User = Depends(get_current_user)):
     org_id = membership["org_id"]
 
     cohorts = await db.cohorts.find({"org_id": org_id}, {"_id": 0}).to_list(500)
-    learner_count = await db.users.count_documents({"org_id": org_id, "role": "student"})
-    trainer_count = await db.users.count_documents({"org_id": org_id, "role": "trainer"})
+    learner_count = await db.users.count_documents(
+        {"org_id": org_id, "role": "student"}
+    )
+    trainer_count = await db.users.count_documents(
+        {"org_id": org_id, "role": "trainer"}
+    )
 
     cohort_rows = []
     for cohort in cohorts:
