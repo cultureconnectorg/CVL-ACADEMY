@@ -135,6 +135,7 @@ function OrgsPanel() {
   const [slug, setSlug] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("student");
+  const [inviteOrgId, setInviteOrgId] = useState("");
   const [lastCode, setLastCode] = useState(null);
 
   const loadOrgs = () => api.get("/orgs").then((r) => setOrgs(r.data));
@@ -159,7 +160,11 @@ function OrgsPanel() {
   const createInvite = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await api.post("/invitations", { email: inviteEmail || undefined, role: inviteRole });
+      const { data } = await api.post("/invitations", {
+        email: inviteEmail || undefined,
+        role: inviteRole,
+        org_id: inviteOrgId || undefined,
+      });
       setLastCode(data.code);
       toast.success(t("admin_p.invite_created"));
       setInviteEmail("");
@@ -196,6 +201,12 @@ function OrgsPanel() {
         <select className={inputCls} value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
           {["student", "trainer", "corrector", "jury", "admin"].map((r) => (
             <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+        <select className={inputCls} value={inviteOrgId} onChange={(e) => setInviteOrgId(e.target.value)}>
+          <option value="">Organisation (optionnel)</option>
+          {orgs.map((org) => (
+            <option key={org.id} value={org.id}>{org.name}</option>
           ))}
         </select>
         <button type="submit" className="btn-outline">{t("trainer_p.generate_invite")}</button>
