@@ -10,7 +10,9 @@ describe("SpatialBackground integration contract", () => {
     delete process.env[envKey];
   });
 
-  test("keeps a static safe fallback when Spatial flags are off", () => {
+  test("keeps a static safe fallback when Spatial flags are explicitly off", () => {
+    process.env[engineKey] = "false";
+    process.env[envKey] = "false";
     const html = renderToStaticMarkup(<SpatialBackground />);
     expect(html).toContain('data-testid="spatial-background"');
     expect(html).toContain('data-spatial-engine="off"');
@@ -18,7 +20,13 @@ describe("SpatialBackground integration contract", () => {
     expect(html).toContain('aria-hidden="true"');
   });
 
-  test("uses the existing Spatial flags to enable the living environment", () => {
+  test("uses the approved production defaults to enable the living environment", () => {
+    const html = renderToStaticMarkup(<SpatialBackground />);
+    expect(html).toContain('data-spatial-engine="on"');
+    expect(html).toContain('data-spatial-motion="full"');
+  });
+
+  test("explicit true deployment overrides also keep the living environment on", () => {
     process.env[engineKey] = "true";
     process.env[envKey] = "true";
     const html = renderToStaticMarkup(<SpatialBackground />);
