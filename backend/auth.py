@@ -1,9 +1,9 @@
 """FrekID auth — JWT access tokens + rotating refresh tokens + bcrypt.
 
-The `frek_id` field is a stable, unique cultural identifier assigned at
-registration. This module is designed to be extended: `_generate_frek_id`
-and `frek_core` integration should later delegate to the external
-FrekCore service.
+The ``frek_id`` field is a stable, unique cultural identifier assigned at
+registration. Academy delegates identity minting to the FrekCore integration
+boundary; in sovereign mode, FrekCore is the only authority allowed to mint
+that identifier.
 
 Token scheme:
 - Access token: short-lived JWT (JWT_EXPIRE_MINUTES), sent as a Bearer
@@ -29,7 +29,11 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from db import db, utc_now_iso
 from models import Role, User, UserPublic
-from services.frek_core import frek_core
+from services.frek_core import (
+    FrekCoreConfigurationError,
+    FrekCoreUnavailableError,
+    frek_core,
+)
 
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
@@ -195,8 +199,19 @@ async def consume_email_verification_token(raw_token: str) -> str:
 
 
 async def next_frek_id() -> str:
-    """Delegates to FrekCore integration layer. Falls back to local sequential."""
-    return await frek_core.mint_frek_id()
+    """Mint the ecosystem identity through the configured FrekCore authority."""
+    try:
+        return await frek_core.mint_frek_id()
+    except FrekCoreConfigurationError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Service d'identité FREKCORE mal configuré",
+        ) from exc
+    except FrekCoreUnavailableError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="Service d'identité FREKCORE temporairement indisponible",
+        ) from exc
 
 
 # ============ REQUEST DEPENDENCIES ============
