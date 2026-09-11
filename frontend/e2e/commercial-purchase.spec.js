@@ -24,6 +24,13 @@ const FORMATION = {
 test("Wallet payment activates entitlement and unlocks the module CTA", async ({ page }) => {
   await mockAuthenticatedSession(page, { formationDetail: FORMATION });
 
+  await page.route("**/api/legal/requirements", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ accepted: true }),
+    })
+  );
   await page.route("**/api/commercial/offers/FMS-01**", (route) =>
     route.fulfill({
       status: 200,
