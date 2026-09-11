@@ -51,6 +51,13 @@ def _iso(dt: datetime) -> str:
     return dt.isoformat()
 
 
+def _parse_expiry(value: str) -> datetime:
+    expires_at = datetime.fromisoformat(value)
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+    return expires_at
+
+
 async def _membership_for(user: User) -> dict:
     membership = await db.stakeholder_memberships.find_one(
         {"user_id": user.id}, {"_id": 0}
@@ -91,11 +98,7 @@ async def preview_stakeholder_invitation(code: str):
     invitation = await db.stakeholder_invitations.find_one({"code": code}, {"_id": 0})
     if not invitation or invitation.get("used_by"):
         raise HTTPException(status_code=404, detail="Invitation introuvable")
-
-    expires_at = datetime.fromisoformat(invitation["expires_at"])
-    if expires_at.tzinfo is None:
-        expires_at = expires_at.replace(tzinfo=timezone.utc)
-    if expires_at < _now():
+    if _parse_expiry(invitation["expires_at"]) < _now():
         raise HTTPException(status_code=410, detail="Invitation expirée")
 
     org = await db.organisations.find_one({"id": invitation["org_id"]}, {"_id": 0})
@@ -107,14 +110,57 @@ async def preview_stakeholder_invitation(code: str):
     }
 
 
+@router.post("/invitations/{code}/claim")
+async def claim_stakeholder_invitation(
+    code: str, current: User = Depends(get_current_user)
+):
+    invitation = await db.stakeholder_invitations.find_one({"code": code}, {"_id": 0})
+    if not invitation or invitation.get("used_by"):
+        raise HTTPException(status_code=404, detail="Invitation introuvable")
+    if _parse_expiry(invitation["expires_at"]) < _now():
+        raise HTTPException(status_code=410, detail="Invitation expirée")
+    if invitation.get("email") and invitation["email"] != current.email.lower():
+        raise HTTPException(status_code=403, detail="Invitation réservée à une autre adresse")
+
+    existing = await db.stakeholder_memberships.find_one({"user_id": current.id}, {"_id": 0})
+    if existing:
+        if (
+            existing.get("org_id") == invitation["org_id"]
+            and existing.get("stakeholder_type") == invitation["stakeholder_type"]
+        ):
+            return {"membership": existing, "already_member": True}
+        raise HTTPException(
+            status_code=409,
+            detail="Ce compte possède déjà une adhésion partenaire/institution active",
+        )
+
+    claimed_at = _iso(_now())
+    result = await db.stakeholder_invitations.update_one(
+        {"code": code, "used_by": None},
+        {"$set": {"used_by": current.id, "used_at": claimed_at}},
+    )
+    if result.modified_count != 1:
+        raise HTTPException(status_code=409, detail="Invitation déjà utilisée")
+
+    membership = {
+        "user_id": current.id,
+        "org_id": invitation["org_id"],
+        "stakeholder_type": invitation["stakeholder_type"],
+        "granted_by": invitation["invited_by"],
+        "created_at": claimed_at,
+    }
+    await db.stakeholder_memberships.insert_one(membership.copy())
+    await db.users.update_one(
+        {"id": current.id}, {"$set": {"org_id": invitation["org_id"]}}
+    )
+    return {"membership": membership, "already_member": False}
+
+
 @router.get("/me")
 async def stakeholder_me(current: User = Depends(get_current_user)):
     membership = await _membership_for(current)
     org = await db.organisations.find_one({"id": membership["org_id"]}, {"_id": 0})
-    return {
-        "membership": membership,
-        "organisation": org,
-    }
+    return {"membership": membership, "organisation": org}
 
 
 @router.get("/overview")
@@ -123,18 +169,30 @@ async def stakeholder_overview(current: User = Depends(get_current_user)):
     org_id = membership["org_id"]
 
     cohorts = await db.cohorts.find({"org_id": org_id}, {"_id": 0}).to_list(500)
-    cohort_ids = [c["id"] for c in cohorts]
     learner_count = await db.users.count_documents({"org_id": org_id, "role": "student"})
     trainer_count = await db.users.count_documents({"org_id": org_id, "role": "trainer"})
 
-    progress_pipeline = [
-        {"$match": {"cohort_id": {"$in": cohort_ids}}},
-        {"$group": {"_id": "$cohort_id", "learners": {"$addToSet": "$user_id"}}},
-    ] if cohort_ids else []
-    progress_rows = []
-    if progress_pipeline:
-        progress_rows = await db.module_progress.aggregate(progress_pipeline).to_list(500)
-    active_by_cohort = {row["_id"]: len(row.get("learners", [])) for row in progress_rows}
+    cohort_rows = []
+    for cohort in cohorts:
+        learner_ids = await db.users.distinct(
+            "id", {"org_id": org_id, "cohort_id": cohort["id"], "role": "student"}
+        )
+        active_ids = []
+        if learner_ids:
+            active_ids = await db.module_progress.distinct(
+                "user_id", {"user_id": {"$in": learner_ids}}
+            )
+        cohort_rows.append(
+            {
+                "id": cohort["id"],
+                "name": cohort["name"],
+                "pole": cohort.get("pole"),
+                "starts_at": cohort.get("starts_at"),
+                "ends_at": cohort.get("ends_at"),
+                "learner_count": len(learner_ids),
+                "active_learners": len(active_ids),
+            }
+        )
 
     return {
         "stakeholder_type": membership["stakeholder_type"],
@@ -142,15 +200,5 @@ async def stakeholder_overview(current: User = Depends(get_current_user)):
         "cohort_count": len(cohorts),
         "learner_count": learner_count,
         "trainer_count": trainer_count,
-        "cohorts": [
-            {
-                "id": c["id"],
-                "name": c["name"],
-                "pole": c.get("pole"),
-                "starts_at": c.get("starts_at"),
-                "ends_at": c.get("ends_at"),
-                "active_learners": active_by_cohort.get(c["id"], 0),
-            }
-            for c in cohorts
-        ],
+        "cohorts": cohort_rows,
     }
