@@ -9,9 +9,8 @@ from __future__ import annotations
 
 import uuid
 
-from pymongo.errors import DuplicateKeyError
-
 from db import db, utc_now_iso
+from pymongo.errors import DuplicateKeyError
 from services.frek_core import frek_core
 from wallet import credit as wallet_credit
 
