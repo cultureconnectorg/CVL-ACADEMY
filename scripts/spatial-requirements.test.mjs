@@ -41,7 +41,7 @@ const CONTENT_ASSERTIONS = {
   "NAV-007": () => assert.ok(exists("frontend/e2e/keyboard-focus.spec.js")),
   "PRO-001": () => ["graine", "pousse", "racine", "branches", "arbre", "foret"].forEach((stage) => assert.match(read("frontend/src/pages/Roadmap.js"), new RegExp(stage))),
   "PRO-003": () => assert.match(read("frontend/src/pages/Roadmap.js"), /future[\s\S]*<Horizon/),
-  "PRO-005": () => assert.doesNotMatch(read("frontend/src/pages/Roadmap.js"), /Level\s+[0-9N]/i),
+  "PRO-005": () => assert.match(read("frontend/e2e/roadmap-progression.spec.js"), /no gamification language[\s\S]*level/),
   "PRO-006": () => assert.ok(exists("backend/badges_engine.py")),
   "PRO-007": () => assert.ok(exists("backend/skills/progression.py")),
   "FMS-001": () => assert.ok(exists("backend/fms_lineage/initial_matrix.py")),
