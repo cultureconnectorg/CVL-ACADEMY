@@ -7,9 +7,11 @@ without inventing a financing or subscription rule.
 
 from __future__ import annotations
 
+import os
 import re
 from typing import Any, Dict
 
+from db import db
 from economy_3d import commercial_class, record_by_code
 
 
@@ -81,3 +83,34 @@ def entitlement_filter(user_id: str, economy_code: str) -> Dict[str, Any]:
         "economy_code": economy_code,
         "status": "ACTIVE",
     }
+
+
+def commercial_entitlements_enforced() -> bool:
+    return os.environ.get("ACADEMY_COMMERCIAL_ENTITLEMENTS_ENFORCED", "false").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
+
+async def has_commercial_access(user_id: str, economy_code: str) -> bool:
+    """Return whether a user may cross the commercial gate for a formation.
+
+    Only PUBLIC_MARKET items are payment-gated. Internal/cross-ecosystem/bridge
+    access remains governed by their existing Academy policies until those
+    explicit commercial rules are implemented. The feature flag prevents a
+    partially configured Wallet rollout from locking the existing Academy.
+    """
+    if not commercial_entitlements_enforced():
+        return True
+    try:
+        record = record_by_code(economy_code)
+    except KeyError:
+        return True
+    if commercial_class(record) != "PUBLIC_MARKET":
+        return True
+    entitlement = await db.academy_entitlements.find_one(
+        entitlement_filter(user_id, economy_code), {"_id": 0, "entitlement_id": 1}
+    )
+    return entitlement is not None
