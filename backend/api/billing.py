@@ -212,7 +212,9 @@ async def issue_order_invoice(order_id: str, current: User = Depends(get_current
             {"_id": 0},
         )
     if document is None:
-        raise HTTPException(status_code=500, detail="BILLING_DOCUMENT_PERSISTENCE_ERROR")
+        raise HTTPException(
+            status_code=500, detail="BILLING_DOCUMENT_PERSISTENCE_ERROR"
+        )
     if document.get("status") == DOCUMENT_ISSUED:
         return document
 
