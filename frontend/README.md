@@ -1,70 +1,90 @@
-# Getting Started with Create React App
+# CVLN Academy — Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Frontend React de CVLN Academy. Cette application porte l’expérience apprenant, le Spatial Learning, les surfaces de formation/progression, les espaces de rôle et le Legal Center.
 
-## Available Scripts
+## Stack
 
-In the project directory, you can run:
+- React 19
+- Create React App via `craco`
+- Tailwind CSS + composants shadcn/ui
+- React Router
+- Jest / React Testing Library
+- Playwright pour les parcours E2E
+- PWA : manifest + service worker
 
-### `npm start`
+## Installation
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+```bash
+yarn install
+cp .env.example .env
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Configurer notamment :
 
-### `npm test`
+```env
+REACT_APP_BACKEND_URL=http://localhost:8000
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Puis :
 
-### `npm run build`
+```bash
+yarn start
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+L’application de développement utilise par défaut le port 3000.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## Commandes de vérification
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+# lint
+npx eslint src e2e playwright.config.js
 
-### `npm run eject`
+# tests unitaires
+CI=true yarn test --watchAll=false
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# build production
+CI=true yarn build
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# E2E Playwright
+npx playwright test
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+En CI, Chromium est installé par Playwright. Dans un environnement local/sandbox disposant déjà d’un exécutable Chromium, `PLAYWRIGHT_CHROMIUM_PATH` peut être utilisé pour fournir explicitement son chemin.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Architecture utile
 
-## Learn More
+- `src/pages/` : surfaces produit et parcours
+- `src/components/` : composants applicatifs et UI
+- `src/lib/` : primitives d’expérience, auth, i18n, API, lifecycle et Spatial Learning
+- `src/lib/spatial/` : attention, cadence, physique, topologie, haptique, audio et frame pacing
+- `e2e/` : preuves runtime Playwright
+- `playwright.config.js` : configuration E2E
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Spatial Learning
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Le frontend conserve le contexte spatial entre certaines navigations : profondeur/scroll, focus et contexte de parcours. La roadmap expose la progression réelle et peut rendre les étapes futures comme horizon sans simuler un déblocage.
 
-### Code Splitting
+La traçabilité des 137 exigences du classeur Spatial est vérifiée depuis la racine du dépôt par :
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```bash
+node --test scripts/spatial-requirements.test.mjs
+```
 
-### Analyzing the Bundle Size
+## Legal Center
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+Le frontend contient les surfaces publiques de documentation juridique et un gate d’acceptation pour les utilisateurs authentifiés lorsque le bundle courant n’a pas encore été accepté. Le flux prend en charge la signature au doigt/souris et transmet l’acceptation au backend pour conservation de la preuve.
 
-### Making a Progressive Web App
+Les principales surfaces associées se trouvent dans :
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+- `src/pages/LegalHub.jsx`
+- `src/pages/LegalAcceptance.jsx`
+- `src/components/LegalFooter.jsx`
+- `src/components/CookieConsent.jsx`
 
-### Advanced Configuration
+## E2E
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+Consulter [`e2e/README.md`](e2e/README.md) pour le périmètre exact des scénarios Playwright et les limites de ce qu’ils prouvent.
 
-### Deployment
+## Documentation générale
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+La documentation canonique du projet commence dans [`../README.md`](../README.md) et [`../docs/DEVELOPER_GUIDE.md`](../docs/DEVELOPER_GUIDE.md).
