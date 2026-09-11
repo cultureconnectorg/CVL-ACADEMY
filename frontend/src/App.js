@@ -33,7 +33,7 @@ const JuryDashboard = lazy(() => import("@/pages/jury/JuryDashboard"));
 
 const ADMIN_ROLES = ["admin", "super_admin", "founder"];
 const TRAINER_ROLES = ["trainer", ...ADMIN_ROLES];
-const JURY_ROLES = ["jury", ...ADMIN_ROLES];
+const JURY_ROLES = ["jury", "corrector", ...ADMIN_ROLES];
 
 function PageFallback() {
   return <div className="p-10 text-[--cvln-ink-2]">…</div>;
