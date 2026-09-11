@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
-import { CheckCircle, Erase, Signature } from "iconoir-react";
+import { CheckCircle, Erase, EditPencil } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { toast } from "sonner";
@@ -189,7 +189,7 @@ export default function LegalAcceptance() {
               <div className="mt-6">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
-                    <div className="flex items-center gap-2 text-sm font-semibold"><Signature width={18} /> Signature</div>
+                    <div className="flex items-center gap-2 text-sm font-semibold"><EditPencil width={18} /> Signature</div>
                     <div className="mt-1 text-xs text-[--cvln-ink-2]">Signe avec ton doigt, un stylet, un trackpad ou une souris.</div>
                   </div>
                   <button type="button" onClick={clearSignature} className="btn-outline text-xs" disabled={!hasSignature}>
@@ -221,7 +221,7 @@ export default function LegalAcceptance() {
                 data-testid="legal-accept-submit"
               >
                 <CheckCircle width={18} className="mr-2" />
-                {submitting ? "Enregistrement…" : "Signer et commencer mon parcours"}
+                {submitting ? "Enregistrement…" : "Accepter et signer"}
               </button>
             </>
           )}
