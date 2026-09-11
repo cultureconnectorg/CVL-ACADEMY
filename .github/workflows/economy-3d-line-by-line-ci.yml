@@ -54,7 +54,7 @@ jobs:
         run: black --check --diff economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
       - name: Isort Economy files
         working-directory: backend
-        run: isort --check-only economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
+        run: isort --profile black --check-only --diff economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
       - name: Flake8 Economy files
         working-directory: backend
         run: flake8 --config=.flake8 economy_3d.py api/economy.py tests/test_economy_3d_traceability.py
