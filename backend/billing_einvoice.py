@@ -28,6 +28,24 @@ def _money(value: Any) -> Decimal:
     return Decimal(str(value)).quantize(MONEY, rounding=ROUND_HALF_UP)
 
 
+def _service_delivery_at(document: Dict[str, Any]) -> datetime:
+    """Use the exact Academy access-activation event as digital delivery date.
+
+    The commercial runtime grants the entitlement at the same `paid_at` event;
+    therefore this is system evidence, not an inferred or invented service date.
+    """
+    raw = str(document.get("paid_at") or "").strip()
+    if not raw:
+        raise BillingNotReady("Paid order is missing access delivery timestamp")
+    try:
+        parsed = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise BillingNotReady("Invalid paid_at delivery timestamp") from exc
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed
+
+
 def tax_policy() -> Dict[str, Any]:
     mode = os.environ.get("ACADEMY_BILLING_TAX_MODE", "").strip().upper()
     rate_raw = os.environ.get("ACADEMY_BILLING_TAX_RATE_PERCENT", "").strip()
@@ -102,6 +120,7 @@ def build_en16931_data(
         raise BillingNotReady("Legal invoice number is required before XML generation")
     breakdown = invoice_breakdown(document["amount_eur"])
     policy = tax_policy()
+    delivery_at = _service_delivery_at(document)
     item_name = str(
         document.get("pricing_snapshot", {}).get("economy_code")
         or document.get("economy_code")
@@ -127,6 +146,7 @@ def build_en16931_data(
         "BT-53": buyer["postal_code"],
         "BT-55": str(buyer["country"]).upper(),
         "BT-58": buyer.get("email"),
+        "BT-72": delivery_at,
         "BG-23": [
             {
                 "BT-116": str(breakdown["net"]),
