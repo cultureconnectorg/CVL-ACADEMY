@@ -12,9 +12,6 @@ import os
 from datetime import datetime, timezone
 from typing import Literal
 
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-
 from auth import (
     consume_email_verification_token,
     consume_password_reset_token,
@@ -31,6 +28,7 @@ from auth import (
     verify_password,
 )
 from db import db
+from fastapi import APIRouter, Depends, HTTPException
 from models import (
     AuthResponse,
     ForgotPasswordInput,
@@ -42,6 +40,7 @@ from models import (
     UserPublic,
     VerifyEmailInput,
 )
+from pydantic import BaseModel
 from services.frek_core import frek_core
 from services.notifications import notifications
 
