@@ -53,6 +53,19 @@ async def wallet_status(current: User = Depends(get_current_user)):
     return cvln_wallet.describe()
 
 
+@router.get("/offers/{economy_code}")
+async def get_offer(
+    economy_code: str,
+    offer_kind: str = "path",
+    current: User = Depends(get_current_user),
+):
+    del current
+    try:
+        return resolve_offer(economy_code, offer_kind)
+    except (CommercialPolicyError, KeyError) as exc:
+        raise _policy_http_error(exc) from exc
+
+
 @router.post("/orders")
 async def create_order(inp: OrderCreate, current: User = Depends(get_current_user)):
     try:
@@ -148,7 +161,10 @@ async def pay_order_with_wallet(
     note = f"CVLN Academy {order['economy_code']} order={order_id} attempt={attempt_id}"
     try:
         wallet_result = await cvln_wallet.charge(
-            current.frek_id, float(order["wallet_amount_jcc"]), note
+            current.frek_id,
+            float(order["wallet_amount_jcc"]),
+            note,
+            attempt_id,
         )
     except CVLNWalletNotConfigured as exc:
         await db.commercial_orders.update_one(
