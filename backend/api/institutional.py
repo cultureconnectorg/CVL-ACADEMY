@@ -15,7 +15,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from auth import get_current_user, require_role
 from db import db
-from models import ADMIN_ROLES, User
+from models import ADMIN_ROLES, STAFF_ROLES, User
 from services.institutional_bridge.models import (
     Capability,
     ConnectorDescriptor,
@@ -84,8 +84,11 @@ async def get_institution_profile(
     org_id: str,
     current: User = Depends(get_current_user),
 ):
-    if current.role not in ADMIN_ROLES and current.org_id != org_id:
+    is_admin = current.role in ADMIN_ROLES
+    is_org_staff = current.role in STAFF_ROLES and current.org_id == org_id
+    if not is_admin and not is_org_staff:
         raise HTTPException(status_code=403, detail="Accès refusé à cette organisation")
+
     profile = await db.institution_profiles.find_one({"org_id": org_id}, {"_id": 0})
     if not profile:
         raise HTTPException(status_code=404, detail="Profil institutionnel introuvable")
@@ -101,12 +104,18 @@ async def create_funding_case(
     if not org:
         raise HTTPException(status_code=404, detail="Organisation introuvable")
 
-    formation = await db.formations.find_one({"code": inp.formation_code}, {"_id": 0, "code": 1})
+    formation = await db.formations.find_one(
+        {"code": inp.formation_code},
+        {"_id": 0, "code": 1},
+    )
     if not formation:
         raise HTTPException(status_code=404, detail="Formation introuvable")
 
     if inp.beneficiary_user_id:
-        beneficiary = await db.users.find_one({"id": inp.beneficiary_user_id}, {"_id": 0, "id": 1})
+        beneficiary = await db.users.find_one(
+            {"id": inp.beneficiary_user_id},
+            {"_id": 0, "id": 1},
+        )
         if not beneficiary:
             raise HTTPException(status_code=404, detail="Bénéficiaire introuvable")
 
@@ -121,7 +130,11 @@ async def list_funding_cases(
     current: User = Depends(require_role(*ADMIN_ROLES)),
 ):
     query = {"org_id": org_id} if org_id else {}
-    docs = await db.funding_cases.find(query, {"_id": 0}).sort("created_at", -1).to_list(500)
+    docs = (
+        await db.funding_cases.find(query, {"_id": 0})
+        .sort("created_at", -1)
+        .to_list(500)
+    )
     return [FundingCase(**doc) for doc in docs]
 
 
@@ -136,7 +149,10 @@ async def get_funding_case(
     return FundingCase(**doc)
 
 
-@router.post("/funding-cases/{case_id}/prepare/{connector_code}", response_model=PreparedEnvelope)
+@router.post(
+    "/funding-cases/{case_id}/prepare/{connector_code}",
+    response_model=PreparedEnvelope,
+)
 async def prepare_funding_case(
     case_id: str,
     connector_code: str,
@@ -150,6 +166,9 @@ async def prepare_funding_case(
     try:
         return prepare_case(FundingCase(**doc), connector_code, capability)
     except UnknownConnector as exc:
-        raise HTTPException(status_code=404, detail="Connecteur institutionnel inconnu") from exc
+        raise HTTPException(
+            status_code=404,
+            detail="Connecteur institutionnel inconnu",
+        ) from exc
     except UnsupportedCapability as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
