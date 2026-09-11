@@ -1,19 +1,28 @@
 /**
  * Academy feature flags (W-FUNNEL-1).
  *
- * Uses the repository's existing configuration mechanism — CRA's own
- * `REACT_APP_*` env-var convention (the only mechanism already in use,
- * `frontend/src/lib/api.js`'s `REACT_APP_BACKEND_URL`), never a
- * parallel config framework.
- *
- * Every flag here changes real user-visible experience once consumed —
- * every one of them DEFAULTS TO FALSE. `frontend/.env.example`
- * documents each, commented out, so a fresh clone/deploy is exactly
- * today's production behavior until a flag is deliberately set.
+ * Uses the repository's existing CRA `REACT_APP_*` convention.
+ * Spatial world rendering is now an approved production capability, so the
+ * engine + environment default ON. Every flag remains explicitly overrideable
+ * from the deployment environment (`true`/`1` => on, `false`/`0`/garbage => off).
+ * Experimental capabilities stay opt-in.
  */
+
+const DEFAULTS = Object.freeze({
+  SPATIAL_ENGINE: true,
+  SPATIAL_ROUTE_TRANSITIONS: false,
+  SPATIAL_ENVIRONMENT: true,
+  SPATIAL_AUDIO: false,
+  SPATIAL_HAPTICS: false,
+  SPATIAL_DEBUG: false,
+  LIFECYCLE_RUNTIME: false,
+});
 
 function readFlag(name) {
   const raw = process.env[`REACT_APP_ACADEMY_${name}`];
+  if (raw === undefined || raw === null || raw === "") {
+    return DEFAULTS[name] === true;
+  }
   return raw === "true" || raw === "1";
 }
 
@@ -41,10 +50,7 @@ export const FEATURE_FLAGS = Object.freeze({
   },
 });
 
-/** Test/story-only override — never used by production code, which
- * always reads `process.env` directly via the getters above (so a
- * runtime env change, e.g. between CI environments, is always honored,
- * never cached at import time). */
+/** Test/story-only helper. Production code always reads through the getters. */
 export function readFeatureFlag(name) {
   return readFlag(name);
 }
