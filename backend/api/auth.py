@@ -1,10 +1,9 @@
-"""Auth (FrekID) — register / login / refresh / password reset / email verify.
+"""Auth (FREK-ID) — Academy authentication with FREKCORE identity delegation.
 
-OAuth (Google/Apple/GitHub/Microsoft) and 2FA (TOTP) are exposed as real,
-typed endpoints that report "not configured" until the corresponding
-provider credentials are set — same decoupled-interface pattern used by
-services/frek_core.py and services/agent_factory.py. Wiring a provider is
-then a matter of implementing its callback handler; no caller changes.
+FREKCORE owns the ecosystem FREK-ID. CVLN Academy owns its local account,
+session, pedagogical role, organisation, cohort and progression. Registration
+asks FREKCORE for the FREK-ID in integrated mode; Academy does not reimplement
+FREKCORE authentication or an identity portal here.
 """
 
 from __future__ import annotations
@@ -56,9 +55,7 @@ def _provider_env_configured(provider: str) -> bool:
 
 
 async def _apply_invitation(user_id: str, invite_code: str) -> None:
-    """Consume an org/cohort invitation at signup time (best-effort — an
-    invalid/expired code fails signup with a clear 400 rather than silently
-    dropping the org/cohort assignment)."""
+    """Consume an org/cohort invitation at signup time."""
     inv = await db.invitations.find_one({"code": invite_code}, {"_id": 0})
     if not inv:
         raise HTTPException(status_code=400, detail="Code d'invitation invalide")
@@ -94,20 +91,36 @@ async def _apply_invitation(user_id: str, invite_code: str) -> None:
 
 @router.post("/register", response_model=AuthResponse)
 async def register(inp: RegisterInput):
-    existing = await db.users.find_one({"email": inp.email.lower()}, {"_id": 0})
+    email = inp.email.lower()
+    existing = await db.users.find_one({"email": email}, {"_id": 0})
     if existing:
         raise HTTPException(status_code=400, detail="Email déjà utilisé")
-    frek_id = await next_frek_id()
+
+    # FREKCORE owns the ecosystem identity. Only minimal Academy context is
+    # attached to the emission request; roles/cohorts/progression stay local.
+    frek_id = await next_frek_id(
+        email,
+        metadata={"application": "cvln_academy", "lang": inp.lang},
+    )
+
+    # Defensive local uniqueness: a FREK-ID already projected in Academy may
+    # not be attached to a second local account.
+    existing_frek = await db.users.find_one({"frek_id": frek_id}, {"_id": 0})
+    if existing_frek:
+        raise HTTPException(
+            status_code=409,
+            detail="Ce FREK-ID est déjà lié à un compte CVLN Academy",
+        )
+
     user = User(
         frek_id=frek_id,
-        email=inp.email.lower(),
+        email=email,
         display_name=inp.display_name.strip(),
         password_hash=hash_password(inp.password),
         lang=inp.lang,
-        cc_credits=5,  # welcome CC per Master OS §3 (5 CC on profile creation)
+        cc_credits=5,
     )
-    doc = user.model_dump()
-    await db.users.insert_one(doc)
+    await db.users.insert_one(user.model_dump())
 
     if inp.invite_code:
         await _apply_invitation(user.id, inp.invite_code)
@@ -115,7 +128,6 @@ async def register(inp: RegisterInput):
         if refreshed:
             user = User(**refreshed)
 
-    # Emit FREK-ID creation signal
     await frek_core.emit_signal(user.id, "FREK-TIME", {"reason": "profile_created"})
 
     verify_token = await issue_email_verification_token(user.id)
@@ -164,7 +176,6 @@ async def me(current: User = Depends(get_current_user)):
 @router.post("/forgot-password")
 async def forgot_password(inp: ForgotPasswordInput):
     doc = await db.users.find_one({"email": inp.email.lower()}, {"_id": 0})
-    # Always return 200 — never confirm/deny whether an email is registered.
     if doc:
         token = await issue_password_reset_token(doc["id"])
         await notifications.send_password_reset(
@@ -179,9 +190,7 @@ async def reset_password(inp: ResetPasswordInput):
     await db.users.update_one(
         {"id": user_id}, {"$set": {"password_hash": hash_password(inp.new_password)}}
     )
-    await revoke_all_refresh_tokens(
-        user_id
-    )  # a password reset invalidates existing sessions
+    await revoke_all_refresh_tokens(user_id)
     return {"ok": True}
 
 
@@ -201,7 +210,7 @@ async def verify_email(inp: VerifyEmailInput):
     return {"ok": True}
 
 
-# ============ OAuth — interface ready, provider-gated ============
+# ============ Other OAuth providers — interface ready, provider-gated ============
 @router.get("/oauth/providers")
 async def oauth_providers():
     return [
@@ -220,9 +229,6 @@ async def oauth_start(provider: Literal["google", "apple", "github", "microsoft"
                 f"(définir OAUTH_{provider.upper()}_CLIENT_ID)."
             ),
         )
-    # A configured provider redirects here to its real authorize URL —
-    # left for whoever wires real client secrets, since that also needs a
-    # registered redirect URI per environment.
     raise HTTPException(status_code=501, detail="Flux OAuth non encore implémenté.")
 
 
@@ -233,9 +239,6 @@ class TotpVerifyInput(BaseModel):
 
 @router.post("/2fa/enroll")
 async def enroll_2fa(current: User = Depends(get_current_user)):
-    """Reserved for TOTP enrollment (QR/secret issuance). Not yet enabled —
-    the User model already carries totp_secret/totp_enabled so this can be
-    implemented without a schema migration."""
     raise HTTPException(
         status_code=501, detail="2FA pas encore activé sur ce déploiement."
     )
