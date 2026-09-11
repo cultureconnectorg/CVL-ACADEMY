@@ -38,5 +38,7 @@ async def my_invoices(
     query = {"user_id": current.id, "document_type": "INVOICE"}
     if economy_code:
         query["economy_code"] = economy_code
-    documents = await db.billing_documents.find(query).sort("created_at", -1).to_list(100)
+    documents = (
+        await db.billing_documents.find(query).sort("created_at", -1).to_list(100)
+    )
     return [_public_invoice(document) for document in documents]
