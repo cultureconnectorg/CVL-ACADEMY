@@ -3,6 +3,7 @@ import { CheckCircle, Coins, Lock, Wallet } from "iconoir-react";
 import { Link } from "react-router-dom";
 
 import { api, getToken } from "@/lib/api";
+import BillingInvoicePanel from "@/components/BillingInvoicePanel";
 
 const POLICY_COPY = {
   QUOTE_REQUIRED: "Cette offre passe par un devis B2B/B2G ou entreprise.",
@@ -153,14 +154,17 @@ export default function CommercialPurchaseCard({ economyCode, onAccessState }) {
 
   if (accessActive) {
     return (
-      <div className="cvln-card p-5" data-testid="commercial-access-active">
-        <div className="flex items-center gap-2 font-semibold text-[#15803D]">
-          <CheckCircle width={20} height={20} /> Accès actif
+      <div className="space-y-4">
+        <div className="cvln-card p-5" data-testid="commercial-access-active">
+          <div className="flex items-center gap-2 font-semibold text-[#15803D]">
+            <CheckCircle width={20} height={20} /> Accès actif
+          </div>
+          <p className="text-sm text-[--cvln-ink-2] mt-2">
+            Ton entitlement Academy est actif pour {economyCode}.
+          </p>
+          {message && <p className="text-sm mt-2">{message}</p>}
         </div>
-        <p className="text-sm text-[--cvln-ink-2] mt-2">
-          Ton entitlement Academy est actif pour {economyCode}.
-        </p>
-        {message && <p className="text-sm mt-2">{message}</p>}
+        <BillingInvoicePanel economyCode={economyCode} />
       </div>
     );
   }
