@@ -2,7 +2,6 @@ import pytest
 
 from billing_config import assert_billing_production_ready, billing_production_status
 
-
 ISSUER_ENV = {
     "ACADEMY_BILLING_LEGAL_NAME": "CVLN Academy Test Entity",
     "ACADEMY_BILLING_COUNTRY": "FR",
