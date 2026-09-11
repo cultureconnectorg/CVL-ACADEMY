@@ -1,6 +1,5 @@
 import pytest
 from pymongo.errors import DuplicateKeyError
-
 from wallet import service
 
 
