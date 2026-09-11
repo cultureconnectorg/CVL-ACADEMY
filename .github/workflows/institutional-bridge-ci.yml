@@ -42,15 +42,9 @@ jobs:
           cache-dependency-path: backend/requirements.txt
       - run: pip install -r requirements.txt
       - run: pip install "isort>=5.13.2,<6"
-      - run: black --check api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
-      - name: Capture repository-baseline isort diff
-        run: isort --diff api/__init__.py api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py > ../institutional-isort.diff || true
-      - uses: actions/upload-artifact@v4
-        with:
-          name: institutional-isort-diff
-          path: institutional-isort.diff
+      - run: black --check api/__init__.py api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
       - run: isort --check-only api/__init__.py api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
-      - run: flake8 api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
+      - run: flake8 api/__init__.py api/institutional.py services/institutional_bridge tests/test_institutional_bridge.py
       - run: mypy --ignore-missing-imports api/institutional.py services/institutional_bridge
       - run: pytest tests/test_institutional_bridge.py -q
       - name: Existing backend regression suite
