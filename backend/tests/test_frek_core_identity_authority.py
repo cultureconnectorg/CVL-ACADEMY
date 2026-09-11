@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 import services.frek_core as frek_module
 from services.frek_core import (
     FrekCoreClient,
