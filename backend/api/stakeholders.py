@@ -80,19 +80,17 @@ async def create_stakeholder_invitation(
     if not org:
         raise HTTPException(status_code=404, detail="Organisation introuvable")
 
-    invitation = {
-        "code": secrets.token_urlsafe(18),
-        "org_id": inp.org_id,
-        "stakeholder_type": inp.stakeholder_type,
-        "email": str(inp.email).lower() if inp.email else None,
-        "invited_by": current.id,
-        "expires_at": _iso(_now() + timedelta(days=inp.expires_in_days)),
-        "used_by": None,
-        "used_at": None,
-        "created_at": _iso(_now()),
-    }
-    await db.stakeholder_invitations.insert_one(invitation.copy())
-    return StakeholderInvitation(**invitation)
+    invitation = StakeholderInvitation(
+        code=secrets.token_urlsafe(18),
+        org_id=inp.org_id,
+        stakeholder_type=inp.stakeholder_type,
+        email=str(inp.email).lower() if inp.email else None,
+        invited_by=current.id,
+        expires_at=_iso(_now() + timedelta(days=inp.expires_in_days)),
+        created_at=_iso(_now()),
+    )
+    await db.stakeholder_invitations.insert_one(invitation.model_dump())
+    return invitation
 
 
 @router.get("/invitations/{code}")
