@@ -69,6 +69,9 @@ jobs:
   backend-regression:
     name: Backend lint types tests
     runs-on: ubuntu-latest
+    env:
+      MONGO_URL: mongodb://127.0.0.1:27017
+      DB_NAME: cvln_academy_ci
     steps:
       - uses: actions/checkout@v4
         with:
