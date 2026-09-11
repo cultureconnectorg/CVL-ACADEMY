@@ -48,7 +48,12 @@ class QualificationDefinitionInput(BaseModel):
 
 
 class Qualification(BaseModel):
-    """One issued qualification; issuance facts are append-only."""
+    """One issued qualification; issuance facts are append-only.
+
+    The provenance fields are optional only for compatibility with historical
+    qualification rows created before the provenance schema existed. New
+    runtime issuance always writes all three fields.
+    """
 
     model_config = ConfigDict(extra="ignore")
 
@@ -56,9 +61,9 @@ class Qualification(BaseModel):
     user_id: str
     qualification_code: str
     formation_code: Optional[str] = None
-    source_certification_code: str
-    source_attempt_id: str
-    sha256: str
+    source_certification_code: Optional[str] = None
+    source_attempt_id: Optional[str] = None
+    sha256: Optional[str] = None
     issued_at: str = Field(default_factory=_now)
     expires_at: Optional[str] = None
     validity_class: QualificationValidityClass = "standard"
