@@ -49,14 +49,10 @@ def issuer_profile() -> Dict[str, Any]:
             "ACADEMY_BILLING_REGISTRATION_SCHEME", "0002"
         ).strip(),
         "vat_id": os.environ.get("ACADEMY_BILLING_VAT_ID", "").strip(),
-        "address_line1": os.environ.get(
-            "ACADEMY_BILLING_ADDRESS_LINE1", ""
-        ).strip(),
+        "address_line1": os.environ.get("ACADEMY_BILLING_ADDRESS_LINE1", "").strip(),
         "city": os.environ.get("ACADEMY_BILLING_CITY", "").strip(),
         "postal_code": os.environ.get("ACADEMY_BILLING_POSTAL_CODE", "").strip(),
-        "invoice_series": os.environ.get(
-            "ACADEMY_BILLING_INVOICE_SERIES", ""
-        ).strip(),
+        "invoice_series": os.environ.get("ACADEMY_BILLING_INVOICE_SERIES", "").strip(),
         "einvoice_profile": os.environ.get(
             "ACADEMY_BILLING_EINVOICE_PROFILE", "FACTUR-X_EN16931"
         ).strip(),
