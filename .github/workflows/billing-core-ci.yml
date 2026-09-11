@@ -17,6 +17,7 @@ jobs:
       MONGO_URL: mongodb://127.0.0.1:27017
       DB_NAME: cvln_academy_ci
       JWT_SECRET: cvln-academy-ci-only-not-production
+      ACADEMY_ENV: development
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -31,16 +32,19 @@ jobs:
           pip install "isort>=5.13.2,<6"
       - name: Black billing files
         working-directory: backend
-        run: black --check --diff billing.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py tests/test_billing_core.py tests/test_billing_api.py
+        run: black --check --diff billing.py billing_config.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py server.py tests/test_billing_core.py tests/test_billing_api.py tests/test_billing_production_config.py
       - name: Isort billing files
         working-directory: backend
-        run: isort --profile black --check-only --diff billing.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py tests/test_billing_core.py tests/test_billing_api.py
+        run: isort --profile black --check-only --diff billing.py billing_config.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py server.py tests/test_billing_core.py tests/test_billing_api.py tests/test_billing_production_config.py
       - name: Flake8 billing files
         working-directory: backend
-        run: flake8 --config=.flake8 billing.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py tests/test_billing_core.py tests/test_billing_api.py
+        run: flake8 --config=.flake8 billing.py billing_config.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py server.py tests/test_billing_core.py tests/test_billing_api.py tests/test_billing_production_config.py
       - name: Mypy billing runtime
         working-directory: backend
-        run: mypy --ignore-missing-imports billing.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py
+        run: mypy --ignore-missing-imports billing.py billing_config.py billing_einvoice.py api/billing.py api/billing_views.py api/commercial.py server.py
+      - name: Production legal readiness gate
+        working-directory: backend
+        run: pytest -q tests/test_billing_production_config.py -n 0
       - name: Billing and Factur-X invariants
         working-directory: backend
         run: pytest -q tests/test_billing_core.py tests/test_billing_api.py -n 0
