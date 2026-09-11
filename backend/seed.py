@@ -1,9 +1,12 @@
-"""Idempotent seed for CVLN Academy formations, badges and missions."""
+"""Idempotent seed for CVLN Academy formations, badges, missions and masters."""
 
 from __future__ import annotations
 
 from db import db
 from seed_data import BADGES, FORMATIONS, MISSIONS, POLES
+from services.catalogue_importer import import_catalogue_master
+from services.economy_importer import import_economy_master
+from services.requirement_registry import sync_master_requirements
 
 
 def _pole_lookup():
@@ -35,6 +38,13 @@ async def seed_if_empty() -> None:
     await db.formations.update_many(
         {"content_status": {"$exists": False}}, {"$set": {"content_status": "published"}}
     )
+
+    # Master truth imports are separate from the public formations collection.
+    # This is intentional: a CANDIDATE in the 2D master is runtime-ingested for
+    # traceability but is not silently promoted/published.
+    await import_catalogue_master(db)
+    await import_economy_master(db)
+    await sync_master_requirements(db)
 
     # Badges
     if await db.badges.count_documents({}) == 0:
