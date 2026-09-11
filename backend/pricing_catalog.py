@@ -307,7 +307,7 @@ def formation_commercialization(formation: Dict[str, Any]) -> Dict[str, Any]:
             pass
 
     contexts = {str(v).upper() for v in formation.get("contexts", [])}
-    base = {
+    base: Dict[str, Any] = {
         "mapping_status": "NEEDS_CANONICAL_MAPPING",
         "mapping_source": "formation.contexts fallback",
         "economic_class": None,
