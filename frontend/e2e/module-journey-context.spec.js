@@ -56,8 +56,28 @@ test.describe("quiz context (W3-B)", () => {
     await gotoQuizReadyModule(page);
     await page.getByTestId("phase-quiz-open").click();
     await page.getByTestId("quiz-q-1-a").click();
+
+    // ModuleJourney advances only after the post-submit module reload reports
+    // the server-owned quiz flag as true. Match that evidence-bearing response,
+    // not merely the next GET to the same URL (which can be an earlier pending
+    // render/load under React/CI timing).
+    const quizPassedReload = page.waitForResponse(async (response) => {
+      if (
+        response.request().method() !== "GET" ||
+        !response.url().includes("/api/modules/FMS-01/FMS-01-M01")
+      ) {
+        return false;
+      }
+      try {
+        const body = await response.json();
+        return body?.phase_flags?.quiz === true;
+      } catch {
+        return false;
+      }
+    });
+
     await page.getByTestId("quiz-submit").click();
-    await expect(page.getByTestId("quiz-result")).toBeVisible();
+    await quizPassedReload;
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
