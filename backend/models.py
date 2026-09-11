@@ -121,13 +121,22 @@ class FormationCartography(BaseModel):
 
 # ---------------- USERS (FREK-ID) ----------------
 Role = Literal[
-    "student", "trainer", "corrector", "jury", "admin", "super_admin", "founder"
+    "student",
+    "trainer",
+    "corrector",
+    "jury",
+    "partner",
+    "institution",
+    "admin",
+    "super_admin",
+    "founder",
 ]
 
 # Roles with elevated / staff-level access — used by permission checks that
-# should accept "any staff role" rather than one specific role.
+# should accept "any internal staff role" rather than external stakeholders.
 STAFF_ROLES: tuple = ("trainer", "corrector", "jury", "admin", "super_admin", "founder")
 ADMIN_ROLES: tuple = ("admin", "super_admin", "founder")
+EXTERNAL_STAKEHOLDER_ROLES: tuple = ("partner", "institution")
 
 
 class OAuthAccount(BaseModel):
