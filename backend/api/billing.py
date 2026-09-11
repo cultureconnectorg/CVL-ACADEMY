@@ -142,9 +142,12 @@ async def ensure_invoice_intent(
         {"$setOnInsert": document},
         upsert=True,
     )
-    return await db.billing_documents.find_one(
+    stored = await db.billing_documents.find_one(
         {"idempotency_key": document["idempotency_key"]}, {"_id": 0}
     )
+    if stored is None:
+        raise HTTPException(status_code=500, detail="BILLING_INTENT_PERSISTENCE_ERROR")
+    return stored
 
 
 async def _reserve_invoice_number(document: dict) -> dict:
@@ -168,6 +171,8 @@ async def _reserve_invoice_number(document: dict) -> dict:
         upsert=True,
         return_document=ReturnDocument.AFTER,
     )
+    if sequence is None:
+        raise BillingPolicyError("Invoice sequence allocation failed")
     number = f"{issuer['invoice_series']}-{year}-{int(sequence['value']):06d}"
     reserved = await db.billing_documents.find_one_and_update(
         {
@@ -186,9 +191,12 @@ async def _reserve_invoice_number(document: dict) -> dict:
     )
     if reserved:
         return reserved
-    return await db.billing_documents.find_one(
+    fallback = await db.billing_documents.find_one(
         {"billing_document_id": document["billing_document_id"]}, {"_id": 0}
     )
+    if fallback is None:
+        raise BillingPolicyError("Billing document vanished during number reservation")
+    return fallback
 
 
 @router.post("/orders/{order_id}/issue")
@@ -203,6 +211,8 @@ async def issue_order_invoice(order_id: str, current: User = Depends(get_current
             {"order_id": order_id, "user_id": current.id, "document_type": "INVOICE"},
             {"_id": 0},
         )
+    if document is None:
+        raise HTTPException(status_code=500, detail="BILLING_DOCUMENT_PERSISTENCE_ERROR")
     if document.get("status") == DOCUMENT_ISSUED:
         return document
 
@@ -260,9 +270,12 @@ async def issue_order_invoice(order_id: str, current: User = Depends(get_current
             }
         },
     )
-    return await db.billing_documents.find_one(
+    issued = await db.billing_documents.find_one(
         {"billing_document_id": document["billing_document_id"]}, {"_id": 0}
     )
+    if issued is None:
+        raise HTTPException(status_code=500, detail="ISSUED_INVOICE_PERSISTENCE_ERROR")
+    return issued
 
 
 @router.get("/orders/{order_id}/invoice")
