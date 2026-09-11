@@ -13,6 +13,7 @@ import CookieConsent from "@/components/CookieConsent";
 import { RouteTransition } from "@/lib/RouteTransition";
 
 const Landing = lazy(() => import("@/pages/Landing"));
+const Invite = lazy(() => import("@/pages/Invite"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const Formations = lazy(() => import("@/pages/Formations"));
@@ -78,6 +79,15 @@ function Protected({ children, roles }) {
   return <LegalGuard><Layout>{children}</Layout></LegalGuard>;
 }
 
+function DashboardEntry() {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <Navigate to="/" replace />;
+  if (user.role === "partner") return <Navigate to="/partner" replace />;
+  if (user.role === "institution") return <Navigate to="/institution" replace />;
+  return <Protected><Dashboard /></Protected>;
+}
+
 function App() {
   const [cookieManagerToken, setCookieManagerToken] = useState(0);
 
@@ -89,10 +99,11 @@ function App() {
             <RouteTransition>
               <Routes>
                 <Route path="/" element={<Landing />} />
+                <Route path="/invite/:code" element={<Invite />} />
                 <Route path="/legal/accept" element={<LegalAcceptance />} />
                 <Route path="/legal/:slug" element={<LegalHub />} />
                 <Route path="/onboarding" element={<LegalGuard><Onboarding /></LegalGuard>} />
-                <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+                <Route path="/dashboard" element={<DashboardEntry />} />
                 <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
                 <Route path="/formations" element={<Protected><Formations /></Protected>} />
                 <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
