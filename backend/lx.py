@@ -165,7 +165,7 @@ def enrich_module(mod: Dict) -> Dict:
                 "title": "Ce que tu sauras faire à la fin",
                 "items": [
                     f"Comprendre en profondeur : {mod['name']}",
-                    f"Maîtriser les gestes clés du stade {STADE_LABEL.get(mod.get('stade', 'graine'), 'graine')}",
+                    f"Maîtriser les gestes clés du stade {STADE_LABEL.get(mod.get('stade','graine'), 'graine')}",
                     f"Produire de façon autonome : {mod.get('deliverable', '')}",
                     f"Émettre un signal {mod.get('frek_signal', 'FREK-WORK').split(' ')[0]} archivé dans ton FREK-ID",
                 ],
