@@ -12,17 +12,33 @@ from services.economy_importer import evaluate_sale_policy, load_economy_rows
 
 PACKAGE_OFFERS: dict[str, set[str]] = {
     "INCLUDED_PRO + ELIGIBLE_PATH": {
-        "academy-access", "academy-pro", "academy-career", "parcours-metier",
-        "b2b-team", "b2b-growth", "b2b-enterprise", "b2g-pilot",
-        "b2g-territory", "b2g-large",
+        "academy-access",
+        "academy-pro",
+        "academy-career",
+        "parcours-metier",
+        "b2b-team",
+        "b2b-growth",
+        "b2b-enterprise",
+        "b2g-pilot",
+        "b2g-territory",
+        "b2g-large",
     },
     "BUNDLED_BRIDGE": {
-        "academy-career", "b2b-team", "b2b-growth", "b2b-enterprise",
-        "b2g-pilot", "b2g-territory", "b2g-large",
+        "academy-career",
+        "b2b-team",
+        "b2b-growth",
+        "b2b-enterprise",
+        "b2g-pilot",
+        "b2g-territory",
+        "b2g-large",
     },
     "CROSS_CVLN_PROGRAM": {
-        "b2b-team", "b2b-growth", "b2b-enterprise", "b2g-pilot",
-        "b2g-territory", "b2g-large",
+        "b2b-team",
+        "b2b-growth",
+        "b2b-enterprise",
+        "b2g-pilot",
+        "b2g-territory",
+        "b2g-large",
     },
     "INTERNAL_QUALIFICATION": set(),
     "RESTRICTED_INTERNAL": set(),
@@ -32,15 +48,24 @@ PACKAGE_OFFERS: dict[str, set[str]] = {
 
 
 def required_gates(row: dict[str, Any]) -> list[str]:
-    return [part.strip() for part in str(row.get("activation_gate") or "").split("+") if part.strip()]
+    gate_expression = str(row.get("activation_gate") or "")
+    return [
+        part.strip()
+        for part in gate_expression.split("+")
+        if part.strip()
+    ]
 
 
 def public_discovery_allowed(row: dict[str, Any]) -> bool:
-    return row.get("public") == "OUI" and row.get("economic_status") != "DECIDED_HOLD"
+    return (
+        row.get("public") == "OUI"
+        and row.get("economic_status") != "DECIDED_HOLD"
+    )
 
 
 def allowed_offer_ids(row: dict[str, Any]) -> set[str]:
-    return set(PACKAGE_OFFERS.get(str(row.get("packaging_v1") or ""), set()))
+    packaging = str(row.get("packaging_v1") or "")
+    return set(PACKAGE_OFFERS.get(packaging, set()))
 
 
 def evaluate_runtime_row(
@@ -53,7 +78,11 @@ def evaluate_runtime_row(
     sale = evaluate_sale_policy(row, satisfied)
     reasons: list[str] = []
     if row.get("economic_status") == "DECIDED_HOLD":
-        sale = {"allowed": False, "reason": "DECIDED_HOLD", "required_gates": required_gates(row)}
+        sale = {
+            "allowed": False,
+            "reason": "DECIDED_HOLD",
+            "required_gates": required_gates(row),
+        }
     if not sale.get("allowed"):
         reasons.append(str(sale.get("reason")))
     compatible = allowed_offer_ids(row)
@@ -80,15 +109,17 @@ def evaluate_runtime_row(
 
 
 async def _explicit_gate_state(
-    db: Any, rows: list[dict[str, Any]]
+    db: Any,
+    rows: list[dict[str, Any]],
 ) -> dict[str, set[str]]:
-    """Only evidence created against the current Excel row hash can satisfy a gate."""
+    """Only current-source evidence can satisfy an activation gate."""
     if not rows:
         return {}
     current_hash = {row["code"]: row["source_hash"] for row in rows}
     codes = list(current_hash)
     docs = await db.academy_economy_gate_state.find(
-        {"code": {"$in": codes}, "satisfied": True}, {"_id": 0}
+        {"code": {"$in": codes}, "satisfied": True},
+        {"_id": 0},
     ).to_list(10000)
     result: dict[str, set[str]] = {code: set() for code in codes}
     for doc in docs:
@@ -109,16 +140,26 @@ async def runtime_decisions(
     canonicalized_codes: set[str] | None = None,
 ) -> dict[str, dict[str, Any]]:
     rows = await db.academy_economy_master.find(
-        {"code": {"$in": codes}}, {"_id": 0}
+        {"code": {"$in": codes}},
+        {"_id": 0},
     ).to_list(max(len(codes), 1))
     gates = await _explicit_gate_state(db, rows)
     canonicalized = canonicalized_codes or set()
     result: dict[str, dict[str, Any]] = {}
     for row in rows:
         satisfied = set(gates.get(row["code"], set()))
-        if row["code"] in canonicalized and "CANONICALIZED" in required_gates(row):
+        if (
+            row["code"] in canonicalized
+            and "CANONICALIZED" in required_gates(row)
+        ):
             satisfied.add("CANONICALIZED")
-        result[row["code"]] = {**row, "runtime": evaluate_runtime_row(row, satisfied_gates=satisfied)}
+        result[row["code"]] = {
+            **row,
+            "runtime": evaluate_runtime_row(
+                row,
+                satisfied_gates=satisfied,
+            ),
+        }
     return result
 
 
@@ -131,13 +172,20 @@ async def set_gate_state(
     evidence_ref: str,
     actor_id: str,
 ) -> dict[str, Any]:
-    row = await db.academy_economy_master.find_one({"code": code}, {"_id": 0})
+    row = await db.academy_economy_master.find_one(
+        {"code": code},
+        {"_id": 0},
+    )
     if not row:
         raise LookupError(f"economy row not found: {code}")
     if gate not in required_gates(row):
-        raise ValueError(f"gate {gate} is not declared by Economy 3D row {code}")
+        raise ValueError(
+            f"gate {gate} is not declared by Economy 3D row {code}"
+        )
     if satisfied and not evidence_ref.strip():
-        raise ValueError("evidence_ref is required to satisfy an economy activation gate")
+        raise ValueError(
+            "evidence_ref is required to satisfy an economy activation gate"
+        )
     doc = {
         "code": code,
         "gate": gate,
@@ -147,34 +195,46 @@ async def set_gate_state(
         "source_hash": row["source_hash"],
     }
     await db.academy_economy_gate_state.update_one(
-        {"code": code, "gate": gate}, {"$set": doc}, upsert=True
+        {"code": code, "gate": gate},
+        {"$set": doc},
+        upsert=True,
     )
-    await db.academy_economy_gate_state.create_index([("code", 1), ("gate", 1)], unique=True)
+    await db.academy_economy_gate_state.create_index(
+        [("code", 1), ("gate", 1)],
+        unique=True,
+    )
     return doc
 
 
 async def sync_economy_runtime_links(db: Any) -> dict[str, int]:
-    """Attach an executable runtime handler/test to every one of the 812 rows."""
+    """Attach an executable handler/test to every one of the 812 rows."""
     rows = load_economy_rows()
     linked = 0
     for row in rows:
         result = await db.academy_requirement_registry.update_one(
             {"requirement_id": f"ECONOMY_3D:{row['code']}"},
-            {"$set": {
-                "runtime_handler": "services.economy_runtime.evaluate_runtime_row",
-                "runtime_surface": [
-                    "api.formations.list_formations",
-                    "api.formations.get_formation",
-                    "payments.service.create_checkout",
-                    "api.economy_runtime",
-                ],
-                "runtime_test_ref": "backend/tests/test_economy_runtime_wiring.py",
-            }},
+            {
+                "$set": {
+                    "runtime_handler": (
+                        "services.economy_runtime.evaluate_runtime_row"
+                    ),
+                    "runtime_surface": [
+                        "api.formations.list_formations",
+                        "api.formations.get_formation",
+                        "payments.service.create_checkout",
+                        "api.economy_runtime",
+                    ],
+                    "runtime_test_ref": (
+                        "backend/tests/test_economy_runtime_wiring.py"
+                    ),
+                }
+            },
             upsert=False,
         )
         linked += int(getattr(result, "matched_count", 0) or 0)
     if linked != len(rows):
         raise ValueError(
-            f"Economy 3D runtime registry incomplete: linked {linked}/{len(rows)} rows"
+            "Economy 3D runtime registry incomplete: "
+            f"linked {linked}/{len(rows)} rows"
         )
     return {"rows_linked": linked}
