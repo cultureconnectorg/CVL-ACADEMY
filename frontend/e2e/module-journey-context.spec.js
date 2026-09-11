@@ -58,10 +58,9 @@ test.describe("quiz context (W3-B)", () => {
     await page.getByTestId("quiz-q-1-a").click();
 
     // Auto-advance is driven by ModuleJourney.submitQuiz() only after its
-    // post-submit module reload has completed. `quiz-result` renders earlier,
-    // immediately after the submit response, so using it as the synchronization
-    // point races the actual state transition on a busy CI runner. Wait for the
-    // real reload instead of hiding the race behind a larger timeout.
+    // post-submit module reload has completed. Synchronize on that reload,
+    // then assert the actual destination state instead of a transient quiz
+    // result that is unmounted by the successful auto-advance.
     const moduleReload = page.waitForResponse(
       (response) =>
         response.request().method() === "GET" &&
@@ -69,7 +68,6 @@ test.describe("quiz context (W3-B)", () => {
     );
     await page.getByTestId("quiz-submit").click();
     await moduleReload;
-    await expect(page.getByTestId("quiz-result")).toBeVisible();
 
     const missionWrapper = page.getByTestId("mini-mission-commit").locator("..");
     await expect(missionWrapper).toHaveAttribute("data-context-state", "context");
