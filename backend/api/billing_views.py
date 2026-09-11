@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 
 from auth import get_current_user
+from billing_config import billing_production_status
 from db import db
 from models import User
 
@@ -28,6 +29,12 @@ def _public_invoice(document: dict) -> dict:
             "schematron_validation": artifact.get("schematron_validation"),
         }
     return clean
+
+
+@router.get("/production-readiness")
+async def production_readiness(current: User = Depends(get_current_user)):
+    del current
+    return billing_production_status()
 
 
 @router.get("/invoices/mine")
