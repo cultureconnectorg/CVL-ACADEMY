@@ -1,4 +1,9 @@
-from pricing_catalog import economic_rules, formation_commercialization, offer_by_id, offers
+from pricing_catalog import (
+    economic_rules,
+    formation_commercialization,
+    offer_by_id,
+    offers,
+)
 
 
 def test_decided_v1_prices_match_workbook():
