@@ -11,11 +11,11 @@ from pymongo import ReturnDocument
 
 from auth import get_current_user
 from billing import (
-    BillingNotReady,
-    BillingPolicyError,
     DOCUMENT_ISSUANCE_FAILED,
     DOCUMENT_ISSUED,
     DOCUMENT_ISSUING,
+    BillingNotReady,
+    BillingPolicyError,
     OrderNotPaid,
     assert_legal_issuance_ready,
     build_invoice_intent,
