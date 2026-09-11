@@ -9,13 +9,11 @@
  * SPATIAL_LEARNING_W0_AUDIT.md §3, "already there, never wired up") so
  * this wave adds no new library.
  *
- * **Nothing here is mounted on any page.** `VISIBLE_SPATIAL_LEARNING =
- * NOT_AUTHORIZED` per the mission's own authorization state — these
- * exist so a later, separately-approved wave has correct, tested
- * primitives to compose rather than inventing motion ad hoc per screen.
- * All eight consult `useReducedMotion()` and collapse to their `motionDuration`
- * floor (1ms) rather than skip state changes outright, so reduced-motion
- * users still reach the same end state MOT-029 requires.
+ * Primitives are runtime-capable and only acquire product meaning when a
+ * caller wires them to real state. Every primitive consults
+ * `useReducedMotion()` and collapses to its `motionDuration` floor (1ms)
+ * rather than skip state changes outright, so reduced-motion users still
+ * reach the same semantic end state MOT-029 requires.
  */
 
 import { motion } from "framer-motion";
@@ -154,13 +152,14 @@ export function Confirm({ triggerKey, children, className }) {
  * FORBIDDEN: false unlock/availability — this primitive only renders
  * what the caller passes it; it must never imply a locked module is
  * reachable. */
-export function Horizon({ visible, children, className }) {
+export function Horizon({ visible, children, className, ...props }) {
   const duration = useDur("horizon");
   return (
     <motion.div
       className={className}
       animate={{ opacity: visible ? 0.65 : 0 }}
       transition={{ duration, ease: MOTION_EASING.standard }}
+      {...props}
     >
       {children}
     </motion.div>

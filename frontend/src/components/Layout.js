@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   HomeAlt, Compass, GraduationCap, Bookmark, Medal1st,
@@ -8,6 +9,7 @@ import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import MentorPanel from "@/components/MentorPanel";
 import { isPedagogicalContext } from "@/lib/mentorPresence";
+import { captureRouteDepth, restoreRouteDepth } from "@/lib/depthMemory";
 
 const STUDENT_NAV = [
   { to: "/dashboard",       key: "dashboard",       Icon: HomeAlt },
@@ -38,6 +40,15 @@ export default function Layout({ children }) {
   // on every screen. See mentorPresence.js for the exact, deliberately
   // conservative scope.
   const mentorAvailable = isPedagogicalContext(location.pathname);
+
+  // Spatial Learning DEPTH_MEMORY / RETURN_EXACT_CONTEXT.
+  // The cleanup captures the route being left; the next mounted route restores
+  // its own native window scroll and the last focused control. This is UI-only
+  // session state and never writes progression/domain data.
+  useEffect(() => {
+    restoreRouteDepth(location.pathname);
+    return () => captureRouteDepth(location.pathname);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen flex" data-testid="app-layout">

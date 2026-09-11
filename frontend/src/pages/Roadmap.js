@@ -1,6 +1,9 @@
+import { useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { FocusFieldItem } from "@/lib/CvlnFocusField";
+import { Horizon } from "@/lib/motion-primitives";
+import { captureElementDepth, restoreElementDepth } from "@/lib/depthMemory";
 
 const STAGE_CODES = ["graine", "pousse", "racine", "branches", "arbre", "foret"];
 const STAGE_EMOJI = { graine: "🌱", pousse: "🌿", racine: "🌳", branches: "🌲", arbre: "🦅", foret: "🌳🌳" };
@@ -13,6 +16,7 @@ const STAGE_SIGNAL = {
 export default function Roadmap() {
   const { user } = useAuth();
   const { t } = useI18n();
+  const railRef = useRef(null);
   const currentIdx = STAGE_CODES.indexOf(user?.stade);
 
   const STAGES = STAGE_CODES.map((code) => ({
@@ -25,6 +29,27 @@ export default function Roadmap() {
   // environmental transformation, never a level/XP readout.
   const currentStageCode = STAGE_CODES[currentIdx];
 
+  useEffect(() => {
+    const rail = railRef.current;
+    let secondFrame = null;
+    const restore = () => restoreElementDepth("/roadmap", "stage-rail", rail);
+    const firstFrame = window.requestAnimationFrame(() => {
+      secondFrame = window.requestAnimationFrame(restore);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
+      // Do not write here: once unmount/layout removal begins the detached
+      // element may report scrollLeft=0 and overwrite the exact live snapshot.
+      // Native onScroll is the authoritative capture point below.
+    };
+  }, []);
+
+  const rememberRailDepth = (event) => {
+    captureElementDepth("/roadmap", "stage-rail", event.currentTarget);
+  };
+
   return (
     <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="roadmap-page">
       <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">{t("roadmap")}</div>
@@ -35,11 +60,17 @@ export default function Roadmap() {
         {t("roadmap_p.hero_p")}
       </p>
 
-      <div className="mt-12 flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory" data-testid="roadmap-scroll">
+      <div
+        ref={railRef}
+        onScroll={rememberRailDepth}
+        className="mt-12 flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory"
+        data-testid="roadmap-scroll"
+      >
         {STAGES.map((s, i) => {
           const active = i === currentIdx;
           const done = i < currentIdx;
-          return (
+          const future = i > currentIdx;
+          const stage = (
             <FocusFieldItem
               key={s.code}
               id={s.code}
@@ -58,9 +89,22 @@ export default function Roadmap() {
                 <div className="mono text-xs text-[--cvln-orange] font-semibold">{s.signal}</div>
                 {done && <div className="text-xs mt-2 text-[--cvln-forest] font-bold">✓ {t("roadmap_p.crossed")}</div>}
                 {active && <div className="text-xs mt-2 text-[--cvln-orange] font-bold">{t("roadmap_p.you_are_here")}</div>}
+                {future && (
+                  <div className="text-xs mt-2 text-[--cvln-ink-2] font-semibold" data-testid={`horizon-label-${s.code}`}>
+                    Horizon
+                  </div>
+                )}
               </div>
             </FocusFieldItem>
           );
+
+          // PROGRESSIVE_HORIZON: future stages stay perceptible but visibly
+          // distant; they are never promoted to an unlocked/interactive state.
+          return future ? (
+            <Horizon key={s.code} visible className="snap-start" data-testid={`horizon-${s.code}`}>
+              {stage}
+            </Horizon>
+          ) : stage;
         })}
       </div>
     </div>
