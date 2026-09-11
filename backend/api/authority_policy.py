@@ -1,4 +1,4 @@
-"""Authority Policy Engine API (XCP-001)."""
+"""Authority Policy Engine API (XCP-001 + Protocol Master GOV-02)."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 from auth import get_current_user, require_role
 from models import User
-from services import authority_policy
+from services import authority_policy, authority_policy_protocol
 
 router = APIRouter(prefix="/authority", tags=["authority"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
@@ -41,9 +41,26 @@ class AuthorityEvaluation(BaseModel):
     request_id: Optional[str] = Field(default=None, max_length=240)
 
 
+class AuthorityProtocolEvaluation(BaseModel):
+    action: str = Field(min_length=2, max_length=160)
+    authority_context: str = Field(min_length=1, max_length=240)
+    policy_version_id: str = Field(min_length=1, max_length=240)
+    evidence_ref: str = Field(min_length=1, max_length=500)
+    control_version_ref: str = Field(min_length=1, max_length=500)
+    frek_proof_ref: str = Field(min_length=1, max_length=500)
+    production_gate_evidence_ref: str = Field(min_length=1, max_length=500)
+    expert_review_ref: str = Field(min_length=1, max_length=500)
+    cvln_ios_ref: str = Field(min_length=1, max_length=500)
+    integration_refs: Dict[str, str] = Field(min_length=1)
+    policy_context: Dict[str, Any] = Field(default_factory=dict)
+    request_id: Optional[str] = Field(default=None, max_length=240)
+
+
 def _translate(exc: Exception):
     if isinstance(exc, LookupError):
         raise HTTPException(status_code=404, detail=str(exc)) from exc
+    if isinstance(exc, PermissionError):
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
     raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
@@ -51,14 +68,21 @@ def _translate(exc: Exception):
 async def register_policy(payload: PolicyVersionCreate, current: User = Admin):
     try:
         body = payload.model_dump()
-        body["rules"] = [rule.model_dump(exclude_none=True) for rule in payload.rules]
-        return await authority_policy.register_policy_version(actor_id=current.id, **body)
+        body["rules"] = [
+            rule.model_dump(exclude_none=True) for rule in payload.rules
+        ]
+        return await authority_policy.register_policy_version(
+            actor_id=current.id, **body
+        )
     except ValueError as exc:
         _translate(exc)
 
 
 @router.post("/evaluate")
-async def evaluate(payload: AuthorityEvaluation, current: User = Depends(get_current_user)):
+async def evaluate(
+    payload: AuthorityEvaluation,
+    current: User = Depends(get_current_user),
+):
     try:
         return await authority_policy.evaluate_authority(
             actor_id=current.id,
@@ -69,6 +93,22 @@ async def evaluate(payload: AuthorityEvaluation, current: User = Depends(get_cur
             request_id=payload.request_id,
         )
     except (LookupError, ValueError) as exc:
+        _translate(exc)
+
+
+@router.post("/protocol/evaluate")
+async def evaluate_protocol(
+    payload: AuthorityProtocolEvaluation,
+    current: User = Depends(get_current_user),
+):
+    """Execute exact Protocol Master GOV-02 before authority evaluation."""
+    try:
+        return await authority_policy_protocol.execute_authority_policy_protocol(
+            actor_id=current.id,
+            actor_role=current.role,
+            **payload.model_dump(),
+        )
+    except (LookupError, ValueError, PermissionError) as exc:
         _translate(exc)
 
 
