@@ -1,0 +1,9 @@
+# CVLN Academy — optional NVIDIA CUDA 13 accelerator profile
+# Base web runtime stays CPU-portable; install this file only on NVIDIA GPU hosts.
+-r requirements.txt
+
+# Stable RAPIDS release available on 2026-09-12.
+cudf-cu13==26.8.1
+
+# CUDA 13 Python runtime packages no longer require a -cu13 suffix.
+nvidia-cuda-runtime>=13.0,<14

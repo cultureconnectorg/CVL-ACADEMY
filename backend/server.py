@@ -22,6 +22,7 @@ from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
+from services.nvidia_runtime import nvidia_dynamo
 from template_engine import seed_default_definitions
 
 # Side-effect registration only: adds the optional Apps SDK widget/resource to
@@ -67,11 +68,15 @@ async def lifespan(app: FastAPI):
         app.state.startup_error = f"{type(exc).__name__}: {exc}"
         logger.exception("Startup initialization failed: %s", exc)
 
-    async with academy_mcp.session_manager.run(), private_academy_mcp.session_manager.run():
+    async with (
+        academy_mcp.session_manager.run(),
+        private_academy_mcp.session_manager.run(),
+    ):
         try:
             yield
         finally:
             app.state.startup_ready = False
+            await nvidia_dynamo.aclose()
             client.close()
 
 
