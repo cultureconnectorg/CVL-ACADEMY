@@ -1,19 +1,18 @@
 """NVIDIA accelerated-compute boundary for CVLN Academy.
 
-The Academy web runtime must stay portable: CPU-only Render/CI deployments remain
-valid, while CUDA/cuDF-capable workers can accelerate large tabular operations and
-Dynamo can serve the LLM inference plane. Jetson is treated as an explicit edge
-profile, never inferred from a configuration flag alone.
+The Academy web runtime remains CPU-portable. CUDA/cuDF is an optional execution
+plane for large tabular workloads, Dynamo is a separately operated LLM inference
+plane, and Jetson is an explicit edge profile.
 
-This module deliberately separates four states that are often confused:
+Operational vocabulary is strict:
+- configured: operator supplied configuration;
+- detected: runtime evidence proves hardware/software exists;
+- selected: Academy is configured to route work there;
+- active: both requested and detected for the relevant runtime;
+- required: failure must fail closed instead of falling back.
 
-- configured: an operator supplied configuration;
-- detected: the runtime can prove the hardware/software exists;
-- active: Academy selected the component for a request;
-- required: failure to use acceleration must fail closed instead of falling back.
-
-That distinction prevents "installed/configured" from being reported as
-"operational" without runtime evidence.
+This prevents an installed package or environment variable from being reported as
+an operational accelerator without evidence.
 """
 
 from __future__ import annotations
@@ -47,7 +46,7 @@ class DynamoConfigurationError(NvidiaAccelerationError):
 
 
 class DynamoUnavailableError(NvidiaAccelerationError):
-    """Raised when the configured Dynamo inference endpoint cannot serve a request."""
+    """Raised when the configured Dynamo endpoint cannot serve a request."""
 
 
 def _truthy(value: Optional[str]) -> bool:
@@ -78,12 +77,20 @@ def _read_text(path: Path) -> str:
 
 
 def _sanitized_url(value: Optional[str]) -> Optional[str]:
+    """Return scheme + host + optional port, never userinfo/path/query/fragment."""
     if not value:
         return None
-    parsed = urlparse(value)
-    if not parsed.scheme or not parsed.netloc:
+    try:
+        parsed = urlparse(value)
+        host = parsed.hostname
+        port = parsed.port
+    except ValueError:
         return None
-    return f"{parsed.scheme}://{parsed.netloc}"
+    if not parsed.scheme or not host:
+        return None
+    host_display = f"[{host}]" if ":" in host else host
+    netloc = f"{host_display}:{port}" if port else host_display
+    return f"{parsed.scheme}://{netloc}"
 
 
 def _nvidia_smi_status() -> Dict[str, Any]:
@@ -96,14 +103,13 @@ def _nvidia_smi_status() -> Dict[str, Any]:
             "reason": "nvidia-smi-not-found",
         }
 
-    command = [
-        executable,
-        "--query-gpu=name,driver_version,memory.total",
-        "--format=csv,noheader,nounits",
-    ]
     try:
         completed = subprocess.run(
-            command,
+            [
+                executable,
+                "--query-gpu=name,driver_version,memory.total",
+                "--format=csv,noheader,nounits",
+            ],
             check=True,
             capture_output=True,
             text=True,
@@ -153,17 +159,15 @@ def _cudf_status() -> Dict[str, Any]:
             "importable": False,
             "reason": "cudf-not-installed",
         }
-
     try:
         import cudf  # type: ignore
-    except Exception as exc:  # noqa: BLE001 - runtime probe must not crash CPU hosts
+    except Exception as exc:  # noqa: BLE001 - optional accelerator probe
         return {
             "installed": True,
             "version": None,
             "importable": False,
             "reason": f"cudf-import-failed:{type(exc).__name__}",
         }
-
     return {
         "installed": True,
         "version": getattr(cudf, "__version__", None),
@@ -177,7 +181,6 @@ def _jetson_status() -> Dict[str, Any]:
     nv_tegra_release = _read_text(Path("/etc/nv_tegra_release"))
     device_model = _read_text(Path("/proc/device-tree/model"))
     detected = bool(nv_tegra_release) or "jetson" in device_model.lower()
-
     return {
         "requested": requested,
         "detected": detected,
@@ -199,9 +202,8 @@ def _jetson_status() -> Dict[str, Any]:
 def cuda_runtime_status() -> Dict[str, Any]:
     """Return runtime evidence for CUDA-capable NVIDIA hardware."""
     smi = _nvidia_smi_status()
-    required = _truthy(os.environ.get("NVIDIA_ACCELERATION_REQUIRED"))
     return {
-        "required": required,
+        "required": _truthy(os.environ.get("NVIDIA_ACCELERATION_REQUIRED")),
         "detected": smi["detected"],
         "driver_version": smi["driver_version"],
         "gpu_count": len(smi["gpus"]),
@@ -219,8 +221,6 @@ def accelerated_runtime_status() -> Dict[str, Any]:
     threshold = _safe_int(
         os.environ.get("NVIDIA_CUDF_MIN_ROWS"), DEFAULT_CUDF_MIN_ROWS
     )
-
-    cudf_ready = bool(cuda["detected"] and cudf["importable"])
     return {
         "schema_version": "1.0.0",
         "host": {
@@ -231,7 +231,7 @@ def accelerated_runtime_status() -> Dict[str, Any]:
         "cuda": cuda,
         "cudf": {
             **cudf,
-            "ready": cudf_ready,
+            "ready": bool(cuda["detected"] and cudf["importable"]),
             "min_rows": threshold,
         },
         "dynamo": dynamo,
@@ -240,7 +240,7 @@ def accelerated_runtime_status() -> Dict[str, Any]:
 
 
 def public_accelerator_status() -> Dict[str, Any]:
-    """Coarse status safe for unauthenticated health surfaces."""
+    """Coarse status safe for an unauthenticated health surface."""
     status = accelerated_runtime_status()
     return {
         "cuda_detected": status["cuda"]["detected"],
@@ -259,12 +259,11 @@ def accelerated_group_count(
     min_rows: Optional[int] = None,
     require_gpu: bool = False,
 ) -> Tuple[Dict[str, int], str, Optional[str]]:
-    """Count values using cuDF when it is beneficial and proven available.
+    """Count values with cuDF only when its runtime is proven and worthwhile.
 
     Returns ``(counts, engine, fallback_reason)``. Small workloads intentionally
-    stay on CPU because GPU transfer/initialization overhead can be slower than a
-    Python Counter. When ``require_gpu`` is true, an unavailable or failing GPU
-    path raises instead of silently degrading.
+    remain CPU-bound because GPU transfer/initialization overhead can dominate.
+    ``require_gpu=True`` turns unavailable acceleration into an explicit failure.
     """
     materialized = list(records)
     threshold = (
@@ -291,9 +290,11 @@ def accelerated_group_count(
 
         frame = cudf.DataFrame(materialized)
         series = frame[key].fillna("").astype(str).value_counts()
-        result = {str(index): int(value) for index, value in series.to_pandas().items()}
+        result = {
+            str(index): int(value) for index, value in series.to_pandas().items()
+        }
         return result, "cudf", None
-    except Exception as exc:  # noqa: BLE001 - optional accelerator must be resilient
+    except Exception as exc:  # noqa: BLE001 - optional accelerator must degrade safely
         reason = f"cudf-execution-failed:{type(exc).__name__}"
         logger.exception("cuDF execution failed; falling back to CPU")
         if require_gpu:
@@ -348,7 +349,7 @@ class DynamoClient:
         message: str,
         history: List[Dict[str, str]],
     ) -> str:
-        """Execute one chat completion against Dynamo's OpenAI-compatible frontend."""
+        """Execute a completion against Dynamo's OpenAI-compatible frontend."""
         messages: List[Dict[str, str]] = [{"role": "system", "content": system_prompt}]
         messages.extend(
             {"role": item["role"], "content": item["content"]}
@@ -361,17 +362,17 @@ class DynamoClient:
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"
 
-        payload = {
-            "model": self.model,
-            "messages": messages,
-            "max_tokens": 1024,
-        }
-
         started = time.perf_counter()
         try:
             async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
                 response = await client.post(
-                    self._endpoint(), headers=headers, json=payload
+                    self._endpoint(),
+                    headers=headers,
+                    json={
+                        "model": self.model,
+                        "messages": messages,
+                        "max_tokens": 1024,
+                    },
                 )
                 response.raise_for_status()
                 data = response.json()
@@ -385,11 +386,12 @@ class DynamoClient:
             content = data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
             raise DynamoUnavailableError("Dynamo returned an invalid chat response") from exc
-
         if not isinstance(content, str) or not content.strip():
             raise DynamoUnavailableError("Dynamo returned an empty chat response")
 
-        logger.info("Dynamo chat completed session=%s elapsed_ms=%.1f", session_id, elapsed_ms)
+        logger.info(
+            "Dynamo chat completed session=%s elapsed_ms=%.1f", session_id, elapsed_ms
+        )
         return content.strip()
 
 
