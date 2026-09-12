@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional
 
 from mcp.server import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
+from mcp.types import ToolAnnotations
 
 from db import db
 from expert_directory import (
@@ -35,6 +36,14 @@ academy_mcp = MCPServer(
         "eligibility, certifications or user state from missing results. Planned experts "
         "describe target capabilities only and must not be presented as implemented."
     ),
+)
+
+
+READ_ONLY = ToolAnnotations(
+    read_only_hint=True,
+    idempotent_hint=True,
+    destructive_hint=False,
+    open_world_hint=False,
 )
 
 
@@ -70,7 +79,20 @@ def _public_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-@academy_mcp.tool()
+async def _get_published_formation(code: str) -> Dict[str, Any]:
+    """Shared catalogue lookup used by both MCP tools and resources."""
+    normalized = code.strip()
+    doc = await db.formations.find_one(
+        {"code": normalized, "content_status": "published"}, {"_id": 0}
+    )
+    if not doc:
+        return {"found": False, "code": normalized}
+
+    doc["commercialization"] = formation_commercialization(doc)
+    return {"found": True, "formation": doc}
+
+
+@academy_mcp.tool(annotations=READ_ONLY)
 async def academy_capabilities() -> Dict[str, Any]:
     """Describe what the CVLN Academy MCP endpoint currently exposes."""
     active_experts = directory_list_experts(status="active")
@@ -98,14 +120,14 @@ async def academy_capabilities() -> Dict[str, Any]:
     }
 
 
-@academy_mcp.tool()
+@academy_mcp.tool(annotations=READ_ONLY)
 async def list_experts(status: Optional[str] = None) -> Dict[str, Any]:
     """List CVLN Academy experts and whether each capability is active or planned."""
     items = directory_list_experts(status=status)
     return {"count": len(items), "items": items}
 
 
-@academy_mcp.tool()
+@academy_mcp.tool(annotations=READ_ONLY)
 async def get_expert(expert_id: str) -> Dict[str, Any]:
     """Return one Expert Directory entry by stable expert id."""
     expert = directory_get_expert(expert_id)
@@ -114,7 +136,7 @@ async def get_expert(expert_id: str) -> Dict[str, Any]:
     return {"found": True, "expert": expert}
 
 
-@academy_mcp.tool()
+@academy_mcp.tool(annotations=READ_ONLY)
 async def route_expert(intent: str, limit: int = 3) -> Dict[str, Any]:
     """Route a user intent to the most relevant Academy experts transparently."""
     matches = directory_route_experts(intent, limit=limit)
@@ -130,7 +152,7 @@ async def route_expert(intent: str, limit: int = 3) -> Dict[str, Any]:
     }
 
 
-@academy_mcp.tool()
+@academy_mcp.tool(annotations=READ_ONLY)
 async def list_poles(limit: int = 50) -> Dict[str, Any]:
     """List Academy training poles available in the public catalogue."""
     safe_limit = _clean_limit(limit)
@@ -138,7 +160,7 @@ async def list_poles(limit: int = 50) -> Dict[str, Any]:
     return {"count": len(poles), "items": poles}
 
 
-@academy_mcp.tool()
+@academy_mcp.tool(annotations=READ_ONLY)
 async def search_formations(
     query: Optional[str] = None,
     pole: Optional[str] = None,
@@ -184,18 +206,10 @@ async def search_formations(
     return {"count": len(items), "items": items}
 
 
-@academy_mcp.tool()
+@academy_mcp.tool(annotations=READ_ONLY)
 async def get_formation(code: str) -> Dict[str, Any]:
     """Return one published formation, including modules and commercialisation."""
-    normalized = code.strip()
-    doc = await db.formations.find_one(
-        {"code": normalized, "content_status": "published"}, {"_id": 0}
-    )
-    if not doc:
-        return {"found": False, "code": normalized}
-
-    doc["commercialization"] = formation_commercialization(doc)
-    return {"found": True, "formation": doc}
+    return await _get_published_formation(code)
 
 
 @academy_mcp.resource("academy://about")
@@ -216,16 +230,14 @@ def academy_about() -> str:
 @academy_mcp.resource("academy://experts")
 def experts_resource() -> str:
     """Read the complete public Expert Directory as JSON."""
-    return json.dumps(
-        {"count": len(directory_list_experts()), "items": directory_list_experts()},
-        ensure_ascii=False,
-    )
+    items = directory_list_experts()
+    return json.dumps({"count": len(items), "items": items}, ensure_ascii=False)
 
 
 @academy_mcp.resource("academy://formations/{code}")
 async def formation_resource(code: str) -> str:
     """Read one published formation as a JSON MCP resource."""
-    result = await get_formation(code)
+    result = await _get_published_formation(code)
     return json.dumps(result, ensure_ascii=False, default=str)
 
 
