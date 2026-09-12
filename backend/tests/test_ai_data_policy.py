@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pytest
+
+from services.agent_factory import AgentFactoryClient
 from services.ai_data_policy import (
     OUTBOUND_HISTORY_LIMIT,
     policy_status,
@@ -85,3 +88,36 @@ def test_policy_status_exposes_no_secret(monkeypatch):
     assert status["session_ids_pseudonymised"] is True
     assert status["production_key_ready"] is True
     assert "super-secret-pseudonym-key" not in str(status)
+
+
+@pytest.mark.asyncio
+async def test_mentor_does_not_inject_name_or_frek_id(monkeypatch):
+    client = AgentFactoryClient()
+    captured = {}
+
+    async def fake_chat_reply(system_prompt, session_id, message, history):
+        captured.update(
+            {
+                "system_prompt": system_prompt,
+                "session_id": session_id,
+                "message": message,
+                "history": history,
+            }
+        )
+        return "ok"
+
+    monkeypatch.setattr(client, "chat_reply", fake_chat_reply)
+
+    result = await client.mentor_reply(
+        user_frek_id="FREK-AAAA-9999",
+        display_name="Maya Example",
+        session_id="mentor-session",
+        message="Aide-moi",
+        history=[],
+        lang="fr",
+    )
+
+    assert result == "ok"
+    assert "Maya Example" not in captured["system_prompt"]
+    assert "FREK-AAAA-9999" not in captured["system_prompt"]
+    assert "Langue préférée: fr" in captured["system_prompt"]
