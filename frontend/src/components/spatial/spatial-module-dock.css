@@ -113,7 +113,7 @@
   height: 3px;
   border-radius: 999px;
   background: rgba(0,0,0,.12);
-  transition: width 200ms ease, opacity 200ms ease, background 200ms ease;
+  transition: width 200ms ease, opacity 200ms ease, background 200ms ease, box-shadow 200ms ease;
 }
 
 .spatial-module-dock__dot[data-role="acquired"] {
@@ -124,9 +124,16 @@
   background: rgba(224,90,51,.38);
 }
 
+.spatial-module-dock__dot[data-predicted="true"] {
+  width: 22px;
+  background: rgba(224,90,51,.58);
+  box-shadow: 0 0 0 1px rgba(224,90,51,.22), 0 0 12px rgba(224,90,51,.18);
+}
+
 .spatial-module-dock__dot[data-current="true"] {
   width: 28px;
   background: var(--cvln-orange);
+  box-shadow: none;
 }
 
 /* Phase-aware world response. The module phase bridge writes only perceptual
