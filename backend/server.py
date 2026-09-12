@@ -91,8 +91,9 @@ app.add_middleware(
 app.include_router(mcp_oauth_router)
 app.include_router(router)
 
+# Mount the more-specific OAuth-protected path first. Starlette Mount routes are
+# prefix-based, so mounting /mcp first would swallow /mcp/private.
+app.mount("/mcp/private", private_mcp_http_app)
+
 # Existing public Streamable HTTP MCP endpoint: anonymous and read-only.
 app.mount("/mcp", mcp_http_app)
-
-# OAuth-protected MCP endpoint: connected-user data and scoped write actions.
-app.mount("/mcp/private", private_mcp_http_app)
