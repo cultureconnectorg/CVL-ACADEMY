@@ -1,0 +1,75 @@
+name: Institutional Bridge CI
+
+on:
+  pull_request:
+    paths:
+      - "backend/api/institutional.py"
+      - "backend/api/__init__.py"
+      - "backend/services/institutional_bridge/**"
+      - "backend/tests/test_institutional_bridge.py"
+      - "backend/infra_indexes.py"
+      - "frontend/src/pages/admin/AdminDashboard.js"
+      - "frontend/src/pages/admin/InstitutionalBridgePanel.js"
+      - ".github/workflows/institutional-bridge-ci.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/api/institutional.py"
+      - "backend/api/__init__.py"
+      - "backend/services/institutional_bridge/**"
+      - "backend/tests/test_institutional_bridge.py"
+      - "backend/infra_indexes.py"
+      - "frontend/src/pages/admin/AdminDashboard.js"
+      - "frontend/src/pages/admin/InstitutionalBridgePanel.js"
+      - ".github/workflows/institutional-bridge-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      MONGO_URL: mongodb://127.0.0.1:27017
+      DB_NAME: cvln_academy_ci
+      JWT_SECRET: cvln-academy-ci-only-not-production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - run: pip install -r requirements.txt
+      - name: Black
+        run: black --check --diff api/__init__.py api/institutional.py infra_indexes.py services/institutional_bridge tests/test_institutional_bridge.py
+      - name: Isort
+        run: isort --check-only --diff api/__init__.py api/institutional.py infra_indexes.py services/institutional_bridge tests/test_institutional_bridge.py
+      - name: Flake8
+        run: flake8 --config=.flake8 api/__init__.py api/institutional.py infra_indexes.py services/institutional_bridge tests/test_institutional_bridge.py
+      - name: Mypy
+        run: mypy --ignore-missing-imports api/institutional.py services/institutional_bridge
+      - name: Institutional tests
+        run: pytest -q tests/test_institutional_bridge.py -n 0
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: "true"
+      REACT_APP_BACKEND_URL: http://localhost:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+      - run: yarn install --frozen-lockfile
+      - run: yarn build
