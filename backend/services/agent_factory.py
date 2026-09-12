@@ -207,7 +207,9 @@ class AgentFactoryClient:
             logger.error(
                 "Assistant Anthropic API error (session_ref=%s): %s", session_ref, exc
             )
-            return "Assistant CVLN rencontre un souci technique. Réessaie dans un instant."
+            return (
+                "Assistant CVLN rencontre un souci technique. Réessaie dans un instant."
+            )
         except anthropic.APIConnectionError as exc:
             logger.error(
                 "Assistant Anthropic connection error (session_ref=%s): %s",
@@ -242,7 +244,9 @@ class AgentFactoryClient:
                 )
             except (httpx.HTTPError, RuntimeError, ValueError) as exc:
                 logger.error(
-                    "CVLN Agent Factory unavailable session_ref=%s: %s", session_ref, exc
+                    "CVLN Agent Factory unavailable session_ref=%s: %s",
+                    session_ref,
+                    exc,
                 )
                 if AI_STRICT:
                     return (
