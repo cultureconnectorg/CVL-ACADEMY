@@ -19,6 +19,7 @@ from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
+from services.nvidia_runtime import nvidia_dynamo
 from template_engine import seed_default_definitions
 
 logging.basicConfig(
@@ -68,6 +69,7 @@ async def lifespan(app: FastAPI):
             yield
         finally:
             app.state.startup_ready = False
+            await nvidia_dynamo.aclose()
             client.close()
 
 
