@@ -72,13 +72,17 @@ jobs:
       - name: Run NVIDIA runtime contract tests
         working-directory: backend
         run: pytest -q tests/test_nvidia_runtime.py
-      - name: Prove accelerator routes are reachable from the aggregate router
+      - name: Prove accelerator routes are reachable from the final FastAPI application
         working-directory: backend
         run: |
           python - <<'PY'
-          from api import router
+          from server import app
 
-          paths = {route.path for route in router.routes}
+          paths = {
+              route.path
+              for route in app.routes
+              if getattr(route, "path", None)
+          }
           required = {
               "/api/accelerators/status",
               "/api/accelerators/diagnostics",
@@ -87,8 +91,8 @@ jobs:
           }
           missing = required - paths
           if missing:
-              raise SystemExit(f"Accelerated routes not wired: {sorted(missing)}")
-          print("Accelerated routes wired:", sorted(required))
+              raise SystemExit(f"Accelerated app routes not wired: {sorted(missing)}")
+          print("Accelerated app routes wired:", sorted(required))
           PY
       - name: Prove CPU runtime never claims a GPU by configuration alone
         working-directory: backend
