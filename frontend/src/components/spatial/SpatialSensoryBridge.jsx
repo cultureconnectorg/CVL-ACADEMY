@@ -5,6 +5,10 @@ import { createSpatialAudio } from "@/lib/spatial/audio";
 import { createHaptics } from "@/lib/spatial/haptics";
 import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
 import {
+  SPATIAL_INTERACTION_EVENT,
+  SPATIAL_INTERACTION_TYPES,
+} from "@/lib/spatial/spatialInteractionEvents";
+import {
   SPATIAL_SIGNAL_EVENT,
   SPATIAL_SIGNAL_TYPES,
 } from "@/lib/spatial/spatialLearningSignals";
@@ -31,6 +35,13 @@ function feedbackForSignal(type) {
   return null;
 }
 
+function feedbackForInteraction(type) {
+  if (type === SPATIAL_INTERACTION_TYPES.NAV_MOVE) return { audio: "NAV_MOVE" };
+  if (type === SPATIAL_INTERACTION_TYPES.SNAP) return { audio: "FOCUS_LOCK", haptic: "SNAP" };
+  if (type === SPATIAL_INTERACTION_TYPES.BLOCKED) return { audio: "BLOCKED", haptic: "BLOCKED" };
+  return null;
+}
+
 /**
  * Optional sensory projection of already-confirmed Spatial events.
  *
@@ -49,7 +60,8 @@ export default function SpatialSensoryBridge() {
   useEffect(() => {
     if (typeof window === "undefined") return undefined;
 
-    const audio = createSpatialAudio();
+    let cadenceState = "STOPPED";
+    const audio = createSpatialAudio({ getCadenceState: () => cadenceState });
     const haptics = createHaptics({
       isEnabled: () => optedInRef.current && FEATURE_FLAGS.SPATIAL_HAPTICS,
     });
@@ -77,6 +89,10 @@ export default function SpatialSensoryBridge() {
         : { audio: "CONTEXT_CLOSE", haptic: "SNAP" },
     );
     const onSignal = (event) => fire(feedbackForSignal(event?.detail?.type));
+    const onInteraction = (event) => {
+      cadenceState = event?.detail?.cadenceState || "STOPPED";
+      fire(feedbackForInteraction(event?.detail?.type));
+    };
     const onVisibility = () => {
       if (document.visibilityState !== "visible") audio.setEnabled(false);
       else audio.setEnabled(optedInRef.current && FEATURE_FLAGS.SPATIAL_AUDIO);
@@ -86,6 +102,7 @@ export default function SpatialSensoryBridge() {
     window.addEventListener(SPATIAL_CAMERA_EVENT, onCamera);
     window.addEventListener(SPATIAL_CONTEXT_EVENT, onContext);
     window.addEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
+    window.addEventListener(SPATIAL_INTERACTION_EVENT, onInteraction);
     document.addEventListener("visibilitychange", onVisibility);
 
     return () => {
@@ -94,6 +111,7 @@ export default function SpatialSensoryBridge() {
       window.removeEventListener(SPATIAL_CAMERA_EVENT, onCamera);
       window.removeEventListener(SPATIAL_CONTEXT_EVENT, onContext);
       window.removeEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
+      window.removeEventListener(SPATIAL_INTERACTION_EVENT, onInteraction);
       document.removeEventListener("visibilitychange", onVisibility);
       audioRef.current = null;
       hapticsRef.current = null;
