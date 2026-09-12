@@ -6,6 +6,7 @@ import { makeRailPhysics } from "@/lib/spatial/physics";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { directSpatialExperience } from "@/lib/spatial/spatialDirector";
 import { environmentForStade } from "@/lib/spatial/environmentState";
+import { detectSpatialQuality, spatialQualityProfile } from "@/lib/spatial/devicePerformancePolicy";
 import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
 import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import "./spatial-background.css";
@@ -21,6 +22,8 @@ export default function SpatialBackground({ pathname = "/", stade }) {
   const [contextActive, setContextActive] = useState(false);
   const reduced = useReducedMotion();
   const spatialEnabled = FEATURE_FLAGS.SPATIAL_ENGINE && FEATURE_FLAGS.SPATIAL_ENVIRONMENT;
+  const quality = useMemo(() => detectSpatialQuality(), []);
+  const qualityProfile = useMemo(() => spatialQualityProfile(quality), [quality]);
   const { node, scene } = sceneForPathname(pathname);
   const environment = useMemo(() => environmentForStade(stade), [stade]);
   const director = useMemo(
@@ -115,6 +118,10 @@ export default function SpatialBackground({ pathname = "/", stade }) {
   useEffect(() => {
     const root = rootRef.current;
     if (!root || typeof window === "undefined") return undefined;
+    const contextMotionScale = contextActive ? 0.35 : 1;
+    const contextAtmosphereScale = contextActive ? 0.76 : 1;
+    const contextBreathScale = contextActive ? 0.25 : 1;
+
     root.style.setProperty("--scene-x", `${scene.x}vw`);
     root.style.setProperty("--scene-y", `${scene.y}vh`);
     root.style.setProperty("--scene-scale", String(scene.scale));
@@ -124,10 +131,19 @@ export default function SpatialBackground({ pathname = "/", stade }) {
     root.style.setProperty("--scene-focus-y", `${scene.focusY}%`);
     root.style.setProperty("--scene-warmth", String(scene.warmth));
     root.style.setProperty("--scene-vignette", String(scene.vignette));
-    root.style.setProperty("--spatial-motion-intensity", String(contextActive ? director.motionIntensity * 0.35 : director.motionIntensity));
+    root.style.setProperty(
+      "--spatial-motion-intensity",
+      String(director.motionIntensity * contextMotionScale * qualityProfile.motionScale)
+    );
     root.style.setProperty("--spatial-focus-strength", String(contextActive ? Math.min(1, director.focusStrength + 0.08) : director.focusStrength));
-    root.style.setProperty("--spatial-atmosphere-opacity", String(contextActive ? director.atmosphereOpacity * 0.76 : director.atmosphereOpacity));
-    root.style.setProperty("--spatial-world-breath", String(contextActive ? director.worldBreath * 0.25 : director.worldBreath));
+    root.style.setProperty(
+      "--spatial-atmosphere-opacity",
+      String(director.atmosphereOpacity * contextAtmosphereScale * qualityProfile.atmosphereScale)
+    );
+    root.style.setProperty(
+      "--spatial-world-breath",
+      String(director.worldBreath * contextBreathScale * qualityProfile.breathScale)
+    );
     root.style.setProperty("--spatial-stage-density", String(environment.density));
     root.style.setProperty("--spatial-stage-growth", String(environment.growth));
     root.style.setProperty("--spatial-stage-glow", String(environment.glow));
@@ -151,10 +167,10 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       root.style.setProperty("--spatial-y", `${position.toFixed(3)}px`);
     });
 
-    const contextMultiplier = contextActive ? 0.35 : 1;
+    const pointerMultiplier = contextMotionScale * qualityProfile.pointerScale;
     const onPointerMove = (event) => {
-      const x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * director.pointerRangeX * contextMultiplier;
-      const y = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * director.pointerRangeY * contextMultiplier;
+      const x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * director.pointerRangeX * pointerMultiplier;
+      const y = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * director.pointerRangeY * pointerMultiplier;
       xPhysics.setTarget(x);
       yPhysics.setTarget(y);
     };
@@ -177,7 +193,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       document.documentElement.removeEventListener("mouseleave", onPointerLeave);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [motionEnabled, scene, director, environment, cameraPhase, contextActive]);
+  }, [motionEnabled, scene, director, environment, cameraPhase, contextActive, qualityProfile]);
 
   return (
     <div
@@ -195,6 +211,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       data-spatial-learning-state={director.learningState}
       data-spatial-signal={director.signalType || "NONE"}
       data-spatial-stade={environment.stade}
+      data-spatial-quality={quality}
       data-spatial-engine={spatialEnabled ? "on" : "off"}
       data-spatial-motion={motionEnabled ? "full" : reduced ? "reduced" : "static"}
     >
