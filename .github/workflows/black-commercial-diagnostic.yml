@@ -1,0 +1,25 @@
+name: Black Commercial Diagnostic
+
+on:
+  push:
+    branches:
+      - reconcile/pr54-commercial-billing-current-main-20260912
+
+permissions:
+  contents: read
+
+jobs:
+  black-diff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install "black==26.5.1"
+      - name: Exact Black diff
+        run: |
+          black --check --diff \
+            backend/server.py \
+            backend/services/integrations/cvln_wallet.py \
+            backend/tests/test_commercial_wallet_runtime.py
