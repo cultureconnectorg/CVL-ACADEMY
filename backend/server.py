@@ -9,6 +9,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+# Side-effect registration only: adds the optional Apps SDK widget/resource to
+# the existing vendor-neutral public MCP server.
+import apps_sdk  # noqa: E402,F401
 from api import router
 from api.mcp_oauth import router as mcp_oauth_router
 from billing_config import assert_billing_production_ready
@@ -24,10 +27,6 @@ from services.integrations.subscribers import (
 )
 from services.nvidia_runtime import nvidia_dynamo
 from template_engine import seed_default_definitions
-
-# Side-effect registration only: adds the optional Apps SDK widget/resource to
-# the existing vendor-neutral public MCP server.
-import apps_sdk  # noqa: E402,F401
 
 logging.basicConfig(
     level=logging.INFO,
