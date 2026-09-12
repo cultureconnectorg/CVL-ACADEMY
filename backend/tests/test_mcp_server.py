@@ -169,7 +169,8 @@ def test_expert_registry_has_stable_ids_and_statuses():
     assert len(ids) == len(set(ids))
     assert {expert["status"] for expert in experts}.issubset({"active", "planned"})
     assert get_expert("formation")["status"] == "active"
-    assert get_expert("funding")["status"] == "planned"
+    assert get_expert("funding")["status"] == "active"
+    assert get_expert("funding")["access"] == "private_oauth"
     assert get_expert("does-not-exist") is None
 
 

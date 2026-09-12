@@ -10,16 +10,23 @@ from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from api import router
+from api.mcp_oauth import router as mcp_oauth_router
 from billing_config import assert_billing_production_ready
 from db import client, db  # noqa
 from fms_lineage import seed_initial_matrix
 from infra_indexes import ensure_indexes
+from mcp_indexes import ensure_mcp_indexes
+from mcp_private import private_academy_mcp, private_mcp_http_app
 from mcp_server import academy_mcp, mcp_http_app
 from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
 from template_engine import seed_default_definitions
+
+# Side-effect registration only: adds the optional Apps SDK widget/resource to
+# the existing vendor-neutral public MCP server.
+import apps_sdk  # noqa: E402,F401
 
 logging.basicConfig(
     level=logging.INFO,
@@ -30,12 +37,10 @@ logger = logging.getLogger("cvln")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Own Academy startup/shutdown and the mounted MCP session manager."""
+    """Own Academy startup/shutdown and both MCP session managers."""
     app.state.startup_ready = False
     app.state.startup_error = None
 
-    # This gate intentionally runs outside the seed try/except. Production must
-    # not accept paid Academy orders if legal invoice issuance is not configured.
     billing_status = assert_billing_production_ready()
     logger.info(
         "billing production readiness: required=%s ready=%s environment=%s",
@@ -47,6 +52,7 @@ async def lifespan(app: FastAPI):
     register_integration_subscribers()
     try:
         await ensure_indexes()
+        await ensure_mcp_indexes()
         await seed_if_empty()
         await seed_default_definitions()
         inserted, skipped = await seed_initial_matrix()
@@ -61,9 +67,7 @@ async def lifespan(app: FastAPI):
         app.state.startup_error = f"{type(exc).__name__}: {exc}"
         logger.exception("Startup initialization failed: %s", exc)
 
-    # Mounted ASGI sub-app lifespans are not started by Starlette/FastAPI.
-    # MCP requires its session manager to be entered by the host application.
-    async with academy_mcp.session_manager.run():
+    async with academy_mcp.session_manager.run(), private_academy_mcp.session_manager.run():
         try:
             yield
         finally:
@@ -71,7 +75,7 @@ async def lifespan(app: FastAPI):
             client.close()
 
 
-app = FastAPI(title="CVLN Academy OS", version="0.1", lifespan=lifespan)
+app = FastAPI(title="CVLN Academy OS", version="0.2", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -79,11 +83,17 @@ app.add_middleware(
     allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["Mcp-Session-Id"],
+    expose_headers=["Mcp-Session-Id", "WWW-Authenticate"],
 )
 
+# OAuth discovery/endpoints live at root because MCP clients discover them via
+# standardized /.well-known and /oauth URLs.
+app.include_router(mcp_oauth_router)
 app.include_router(router)
 
-# Public Streamable HTTP MCP endpoint. Business data remains read-only here;
-# authenticated/private Academy operations stay behind the REST API.
+# Mount the more-specific OAuth-protected path first. Starlette Mount routes are
+# prefix-based, so mounting /mcp first would swallow /mcp/private.
+app.mount("/mcp/private", private_mcp_http_app)
+
+# Existing public Streamable HTTP MCP endpoint: anonymous and read-only.
 app.mount("/mcp", mcp_http_app)
