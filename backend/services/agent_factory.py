@@ -1,28 +1,16 @@
 """CVLN Agent Factory integration layer.
 
-CVLN Agent Factory is a SEPARATE system that owns agents, orchestration & automation
-for the CVLN ecosystem. This module is the sole boundary CVLN Academy uses to talk to it.
+CVLN Agent Factory is the CVLN-owned orchestration and AI gateway for the ecosystem.
+CVLN Academy talks to providers only through the transports declared here.
 
-The Academy currently supports two proven local inference transports:
-- ``anthropic``: direct asynchronous Anthropic SDK fallback;
+Supported transports:
+- ``agent_factory``: CVLN Agent Factory ``POST /api/cognitive/chat`` using a service token;
+- ``anthropic``: direct asynchronous Anthropic fallback;
 - ``dynamo``: NVIDIA Dynamo OpenAI-compatible inference frontend.
 
-``CVLN_AGENT_FACTORY_URL`` remains a configuration marker only until the remote
-Agent Factory API contract is implemented and verified. We deliberately expose
-that distinction instead of reporting a configured URL as an active transport.
-
-All provider traffic is passed through ``services.ai_data_policy`` first. Canonical
-CVLN identity is never intentionally injected into model prompts, session ids are
-pseudonymised for provider-facing logging, and obvious identifiers/secrets are
-redacted before outbound inference.
-
-Public methods:
-    chat_reply(system_prompt, session_id, message, history) -> str
-    mentor_reply(user, session_id, message, history) -> str
-    list_available_agents() -> List[Dict]
-    is_remote_enabled() -> bool  # legacy: configured marker
-    remote_status() -> Dict
-    inference_status() -> Dict
+All outbound traffic is passed through ``services.ai_data_policy`` first. Canonical
+CVLN identity is never intentionally injected into model prompts, provider-facing
+session ids are pseudonymised, and obvious identifiers/secrets are redacted.
 """
 
 from __future__ import annotations
@@ -32,6 +20,7 @@ import os
 from typing import Any, Dict, List, Literal, Optional, cast
 
 import anthropic
+import httpx
 from anthropic.types import MessageParam
 
 from services.ai_data_policy import (
@@ -50,8 +39,14 @@ logger = logging.getLogger("cvln.agent_factory")
 ANTHROPIC_API_KEY = os.environ.get("ANTHROPIC_API_KEY")
 LOCAL_MENTOR_MODEL = "claude-sonnet-5"
 
-CVLN_AGENT_FACTORY_URL = os.environ.get("CVLN_AGENT_FACTORY_URL")
+CVLN_AGENT_FACTORY_URL = (os.environ.get("CVLN_AGENT_FACTORY_URL") or "").rstrip("/")
 AGENT_FACTORY_API_KEY = os.environ.get("CVLN_AGENT_FACTORY_API_KEY")
+AGENT_FACTORY_CHAT_PATH = os.environ.get(
+    "CVLN_AGENT_FACTORY_CHAT_PATH", "/api/cognitive/chat"
+)
+AGENT_FACTORY_TIMEOUT_SECONDS = float(
+    os.environ.get("CVLN_AGENT_FACTORY_TIMEOUT_SECONDS", "20")
+)
 
 AI_TRANSPORT = os.environ.get("ACADEMY_AI_TRANSPORT", "anthropic").strip().lower()
 AI_STRICT = os.environ.get("ACADEMY_AI_STRICT", "false").strip().lower() in {
@@ -95,19 +90,21 @@ class AgentFactoryClient:
             self._client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
     def is_remote_enabled(self) -> bool:
-        """Legacy compatibility marker: remote URL configured, not proven active."""
-        return bool(CVLN_AGENT_FACTORY_URL)
+        return bool(CVLN_AGENT_FACTORY_URL and AGENT_FACTORY_API_KEY)
 
     def remote_status(self) -> Dict[str, Any]:
-        """Separate configuration from execution so health data cannot overclaim."""
+        configured = self.is_remote_enabled()
         return {
-            "configured": bool(CVLN_AGENT_FACTORY_URL),
-            "active": False,
-            "contract_implemented": False,
+            "configured": configured,
+            "active": AI_TRANSPORT == "agent_factory" and configured,
+            "contract_implemented": True,
+            "endpoint": AGENT_FACTORY_CHAT_PATH,
+            "auth": "service-bearer-token",
+            "runtime_verified": False,
             "reason": (
-                "remote-agent-factory-contract-not-implemented"
-                if CVLN_AGENT_FACTORY_URL
-                else "remote-agent-factory-not-configured"
+                "configured-runtime-not-probed"
+                if configured
+                else "remote-agent-factory-not-fully-configured"
             ),
         }
 
@@ -122,11 +119,12 @@ class AgentFactoryClient:
         }
 
     async def list_available_agents(self) -> List[Dict[str, Any]]:
-        selected_model = (
-            nvidia_dynamo.model
-            if AI_TRANSPORT == "dynamo" and nvidia_dynamo.model
-            else LOCAL_MENTOR_MODEL
-        )
+        if AI_TRANSPORT == "agent_factory":
+            selected_model = "cvln-agent-factory-routed"
+        elif AI_TRANSPORT == "dynamo" and nvidia_dynamo.model:
+            selected_model = nvidia_dynamo.model
+        else:
+            selected_model = LOCAL_MENTOR_MODEL
         return [
             {
                 "code": "mentor-cvln",
@@ -137,6 +135,45 @@ class AgentFactoryClient:
                 "status": "active",
             }
         ]
+
+    async def _agent_factory_chat_reply(
+        self,
+        system_prompt: str,
+        session_ref: str,
+        message: str,
+        history: List[Dict[str, str]],
+    ) -> str:
+        if not self.is_remote_enabled():
+            raise RuntimeError("CVLN Agent Factory URL/service token not configured")
+
+        history_block = "\n".join(
+            f"{item['role']}: {item['content']}"
+            for item in history
+            if item.get("role") in ("user", "assistant") and item.get("content")
+        )
+        routed_prompt = (
+            "[CVLN ACADEMY CONTEXT]\n"
+            f"{system_prompt}\n\n"
+            "[RECENT CONVERSATION]\n"
+            f"{history_block or '(none)'}\n\n"
+            "[CURRENT USER MESSAGE]\n"
+            f"{message}"
+        )
+        headers = {"Authorization": f"Bearer {AGENT_FACTORY_API_KEY}"}
+        payload = {
+            "message": routed_prompt,
+            "conversation_id": session_ref,
+            "disable_knowledge_search": False,
+        }
+        url = f"{CVLN_AGENT_FACTORY_URL}{AGENT_FACTORY_CHAT_PATH}"
+        async with httpx.AsyncClient(timeout=AGENT_FACTORY_TIMEOUT_SECONDS) as client:
+            response = await client.post(url, json=payload, headers=headers)
+            response.raise_for_status()
+        body = response.json()
+        reply = body.get("reply")
+        if not isinstance(reply, str) or not reply.strip():
+            raise RuntimeError("CVLN Agent Factory returned no textual reply")
+        return reply.strip()
 
     async def _anthropic_chat_reply(
         self,
@@ -170,9 +207,7 @@ class AgentFactoryClient:
             logger.error(
                 "Assistant Anthropic API error (session_ref=%s): %s", session_ref, exc
             )
-            return (
-                "Assistant CVLN rencontre un souci technique. Réessaie dans un instant."
-            )
+            return "Assistant CVLN rencontre un souci technique. Réessaie dans un instant."
         except anthropic.APIConnectionError as exc:
             logger.error(
                 "Assistant Anthropic connection error (session_ref=%s): %s",
@@ -194,11 +229,30 @@ class AgentFactoryClient:
         message: str,
         history: List[Dict[str, str]],
     ) -> str:
-        """Generic assistant transport with explicit provider-neutral privacy policy."""
+        """Generic assistant transport with the provider-neutral CVLN privacy boundary."""
         safe_system_prompt, safe_message, safe_history = prepare_outbound_conversation(
             system_prompt, message, history
         )
         session_ref = pseudonymise_session(session_id)
+
+        if AI_TRANSPORT == "agent_factory":
+            try:
+                return await self._agent_factory_chat_reply(
+                    safe_system_prompt, session_ref, safe_message, safe_history
+                )
+            except (httpx.HTTPError, RuntimeError, ValueError) as exc:
+                logger.error(
+                    "CVLN Agent Factory unavailable session_ref=%s: %s", session_ref, exc
+                )
+                if AI_STRICT:
+                    return (
+                        "Assistant CVLN rencontre un souci avec CVLN Agent Factory. "
+                        "Réessaie dans un instant."
+                    )
+                logger.warning("Falling back from CVLN Agent Factory to Anthropic")
+                return await self._anthropic_chat_reply(
+                    safe_system_prompt, session_ref, safe_message, safe_history
+                )
 
         if AI_TRANSPORT == "dynamo":
             try:
@@ -241,7 +295,6 @@ class AgentFactoryClient:
         lang: str = "fr",
     ) -> str:
         """Mentor persona without exporting canonical Academy identity."""
-        # Keep parameters for API compatibility, but identity stays inside CVLN.
         del user_frek_id, display_name
         sys_prompt = CVLN_MENTOR_SYSTEM_PROMPT + f"\nLangue préférée: {lang}."
         return await self.chat_reply(sys_prompt, session_id, message, history)
