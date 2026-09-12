@@ -70,9 +70,10 @@ const ATTENTION_SETTLE_EPSILON = 0.01;
  * Values within ATTENTION_SETTLE_EPSILON of the focal plane are
  * canonicalized to zero. Physics engines intentionally stop inside a
  * small tolerance; without this projection epsilon, a visually settled
- * PRIMARY target could retain a meaningless 0.001–0.004px blur. Snapping
- * only the final perceptual projection keeps continuous motion intact
- * while making the settled state deterministic.
+ * PRIMARY target could retain a meaningless 0.001–0.004px blur. PRIMARY
+ * is also guaranteed blur-free for the whole tier so semantic primary
+ * attention and the visual focal plane cannot disagree while physics is
+ * finishing its final sub-pixel settle.
  *
  * `mobile` narrows perspective strength (weaker rotateY/Z) — same
  * H0.10 rule, now an explicit parameter instead of a `window.
@@ -82,11 +83,12 @@ export function computeDepthStyle(distance, { mobile = false } = {}) {
   const d = Math.abs(distance) < ATTENTION_SETTLE_EPSILON ? 0 : distance;
   const absD = Math.abs(d);
   const w = attentionWeight(d);
+  const tier = attentionTier(d, w);
   const z = (-96 + 152 * w) * (mobile ? 0.5 : 1);
   const scale = 0.79 + 0.21 * w;
   const opacity = 0.22 + 0.78 * w;
   const saturate = 0.4 + 0.6 * w;
-  const blur = Math.max(0, (1 - w) * 1.3); // far <=~1.3px, active 0 — H0.10 §2 calibration
+  const blur = tier === ATTENTION_TIERS.PRIMARY ? 0 : Math.max(0, (1 - w) * 1.3);
   const contrast = 0.72 + 0.28 * w;
   const translateY = 16 - 26 * w;
   const dir = d === 0 ? 0 : d > 0 ? 1 : -1;
@@ -99,7 +101,6 @@ export function computeDepthStyle(distance, { mobile = false } = {}) {
   // convention (positive = away from a left-sited light, by default).
   const brightness = Math.max(0.85, Math.min(1.05, 0.93 + 0.09 * w - translateX * 0.0006));
   const zIndex = Math.round(w * 100);
-  const tier = attentionTier(d, w);
   return {
     weight: w,
     tier,
