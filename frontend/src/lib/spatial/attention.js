@@ -91,7 +91,10 @@ export function computeDepthStyle(distance, { mobile = false } = {}) {
   const translateY = 16 - 26 * w;
   const dir = d === 0 ? 0 : d > 0 ? 1 : -1;
   const translateX = d * Math.min(absD, 3) * 13;
-  let rotateY = dir * (1 - w) * -5.5;
+  // Avoid IEEE-754 negative zero when the settled direction is exactly 0.
+  // `-0` is visually identical to `0` but fails Object.is contracts and can
+  // create non-canonical serialized transform values.
+  let rotateY = dir === 0 ? 0 : dir * (1 - w) * -5.5;
   if (mobile) rotateY *= 0.3;
   // light-direction bias: a real, directional (not just distance-based)
   // brightness cue toward wherever the world's own light source sits —
