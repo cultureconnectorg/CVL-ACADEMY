@@ -139,7 +139,12 @@ export default function Roadmap() {
               data-attention-tier={depth.tier}
               data-spatial-predicted={predicted ? "true" : "false"}
               data-domain-stage-state={active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN"}
+              // Compatibility contract for the original W3-D/Excel proof:
+              // this describes the backend-authoritative domain anchor only.
+              // Live perceptual focus is independently exposed by data-attention-tier.
+              data-focus-role={active ? "target" : "secondary"}
               className="snap-start min-w-[280px] max-w-[280px] outline-none focus-visible:ring-2 focus-visible:ring-[--cvln-orange] rounded-3xl"
+              style={active ? { transform: "translateZ(0)" } : undefined}
             >
               {future ? (
                 <Horizon visible distance={horizonDistance} className="h-full" data-testid={`horizon-${s.code}`}>
