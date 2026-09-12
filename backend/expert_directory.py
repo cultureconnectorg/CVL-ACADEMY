@@ -37,7 +37,10 @@ EXPERTS: List[Dict[str, Any]] = [
         "domains": ["financement", "afdas", "france-travail", "cpf", "aides"],
         "tools": [],
         "status": "planned",
-        "guardrail": "Ne jamais inventer une éligibilité ou un financement absent d'une source vérifiée.",
+        "guardrail": (
+            "Ne jamais inventer une éligibilité ou un financement absent "
+            "d'une source vérifiée."
+        ),
     },
     {
         "id": "career",

@@ -81,7 +81,10 @@ async def academy_capabilities() -> Dict[str, Any]:
         "distribution": {
             "primary": "MCP-capable assistants",
             "compatible_targets": ["ChatGPT", "Claude", "Gemini", "other MCP clients"],
-            "note": "Client availability depends on each provider's connector/app review and configuration.",
+            "note": (
+                "Client availability depends on each provider's connector/app review "
+                "and configuration."
+            ),
         },
         "domains": [
             "expert_directory",
