@@ -9,7 +9,6 @@ import {
   Fingerprint,
   LogOut,
   Leaf,
-  Language,
   Wallet as WalletIcon,
   Sparks,
   ShieldCheck,
@@ -19,7 +18,7 @@ import {
   Building,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
-import { useI18n, LANGS } from "@/lib/i18n.jsx";
+import { useI18n } from "@/lib/i18n.jsx";
 import { api } from "@/lib/api";
 import MentorPanel from "@/components/MentorPanel";
 import { isPedagogicalContext } from "@/lib/mentorPresence";
@@ -38,35 +37,15 @@ const STUDENT_NAV = [
 ];
 
 const STAFF_NAV = [
-  {
-    to: "/trainer",
-    key: "trainer_space",
-    Icon: PeopleTag,
-    roles: ["trainer", "admin", "super_admin", "founder"],
-  },
-  {
-    to: "/jury",
-    key: "jury_space",
-    Icon: ShieldSearch,
-    roles: ["jury", "corrector", "admin", "super_admin", "founder"],
-  },
-  {
-    to: "/admin",
-    key: "admin_cms",
-    Icon: Settings,
-    roles: ["admin", "super_admin", "founder"],
-  },
-  {
-    to: "/admin/stakeholders",
-    label: "Accès partenaires",
-    Icon: Building,
-    roles: ["admin", "super_admin", "founder"],
-  },
+  { to: "/trainer", key: "trainer_space", Icon: PeopleTag, roles: ["trainer", "admin", "super_admin", "founder"] },
+  { to: "/jury", key: "jury_space", Icon: ShieldSearch, roles: ["jury", "corrector", "admin", "super_admin", "founder"] },
+  { to: "/admin", key: "admin_cms", Icon: Settings, roles: ["admin", "super_admin", "founder"] },
+  { to: "/admin/stakeholders", label: "Accès partenaires", Icon: Building, roles: ["admin", "super_admin", "founder"] },
 ];
 
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
-  const { t, lang, setLang } = useI18n();
+  const { t } = useI18n();
   const nav = useNavigate();
   const location = useLocation();
   const [stakeholder, setStakeholder] = useState(null);
@@ -88,21 +67,16 @@ export default function Layout({ children }) {
   }, [user?.id, user?.org_id]);
 
   const stakeholderNav = stakeholder
-    ? [
-        {
-          to: stakeholder.stakeholder_type === "institution" ? "/institution" : "/partner",
-          label:
-            stakeholder.stakeholder_type === "institution"
-              ? "Espace institution"
-              : "Espace partenaire",
-          Icon: Building,
-        },
-      ]
+    ? [{
+        to: stakeholder.stakeholder_type === "institution" ? "/institution" : "/partner",
+        label: stakeholder.stakeholder_type === "institution" ? "Institution" : "Partenaire",
+        Icon: Building,
+      }]
     : [];
 
   const navItems = [
-    ...stakeholderNav,
     ...STUDENT_NAV,
+    ...stakeholderNav,
     ...STAFF_NAV.filter((item) => item.roles.includes(user?.role)),
   ];
 
@@ -114,21 +88,19 @@ export default function Layout({ children }) {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex" data-testid="app-layout">
-      <aside
-        className="hidden md:flex flex-col w-64 shrink-0 px-6 py-8 border-r border-black/5 bg-white sticky top-0 h-screen"
-        data-testid="sidebar"
-      >
-        <div className="flex items-center gap-2 mb-10">
-          <div className="w-9 h-9 rounded-full bg-[--cvln-orange] flex items-center justify-center">
-            <Leaf className="text-white" width={18} height={18} />
+    <div className="cvln-app-shell" data-testid="app-layout">
+      <header className="cvln-app-topbar" data-testid="sidebar">
+        <NavLink to="/dashboard" className="cvln-wordmark shrink-0" aria-label="CVLN Academy">
+          <div className="cvln-wordmark-mark" aria-hidden="true">
+            <Leaf width={17} height={17} />
           </div>
-          <div className="font-display font-black text-[19px] tracking-tight leading-none">
-            CVLN <span className="text-[--cvln-orange]">Academy</span>
+          <div className="hidden sm:block">
+            <div className="font-display font-black tracking-[0.1em] text-base leading-none">CVLN</div>
+            <div className="text-[8px] tracking-[0.22em] text-white/50 mt-1">ACADEMY</div>
           </div>
-        </div>
+        </NavLink>
 
-        <nav className="flex flex-col gap-1" data-testid="sidebar-nav">
+        <nav data-testid="sidebar-nav" aria-label="Navigation principale">
           {navItems.map(({ to, key, label, Icon }) => {
             const testId = key || to.replace(/^\//, "").replace(/\//g, "-");
             return (
@@ -136,70 +108,35 @@ export default function Layout({ children }) {
                 key={to}
                 to={to}
                 data-testid={`nav-${testId}`}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition ${
-                    isActive
-                      ? "bg-[--cvln-forest] text-white"
-                      : "text-[--cvln-ink-2] hover:bg-[--cvln-bg-warm] hover:text-[--cvln-ink]"
-                  }`
-                }
+                data-active={location.pathname === to || location.pathname.startsWith(`${to}/`) ? "true" : "false"}
               >
-                <Icon width={18} height={18} />
-                {label || t(key)}
+                <Icon width={16} height={16} />
+                <span>{label || t(key)}</span>
               </NavLink>
             );
           })}
         </nav>
 
-        <div className="mt-auto pt-6 border-t border-black/5 flex flex-col gap-3">
-          <div className="rounded-2xl bg-[--cvln-bg-warm] p-4">
-            <div className="text-[11px] uppercase tracking-[0.2em] text-[--cvln-ink-2] font-semibold">
-              FREK-ID
-            </div>
-            <div className="mono text-lg mt-1 font-semibold" data-testid="frek-id-badge">
-              {user?.frek_id}
-            </div>
-            <div className="text-sm text-[--cvln-ink-2] truncate">{user?.display_name}</div>
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="hidden xl:block text-right mr-1">
+            <div className="text-[9px] uppercase tracking-[.2em] text-white/40">{user?.frek_id}</div>
+            <div className="text-xs text-white/75 max-w-[130px] truncate">{user?.display_name}</div>
           </div>
-
-          <div className="flex items-center gap-1 px-1" data-testid="lang-toggle">
-            <Language width={14} height={14} className="text-[--cvln-ink-2]" />
-            {LANGS.map((language) => (
-              <button
-                key={language.code}
-                data-testid={`lang-${language.code}`}
-                onClick={() => setLang(language.code)}
-                className={`text-xs px-2 py-1 rounded-full font-semibold transition ${
-                  lang === language.code
-                    ? "bg-[--cvln-orange] text-white"
-                    : "text-[--cvln-ink-2] hover:text-[--cvln-ink]"
-                }`}
-              >
-                {language.label}
-              </button>
-            ))}
-          </div>
-
           <button
             data-testid="logout-btn"
             onClick={() => {
               logout();
               nav("/");
             }}
-            className="flex items-center gap-2 text-sm text-[--cvln-ink-2] hover:text-[--cvln-orange] transition px-3 py-2"
+            className="w-10 h-10 rounded-full border border-white/10 bg-white/5 inline-flex items-center justify-center text-white/60 hover:text-white hover:bg-white/10 transition"
+            aria-label={t("logout")}
           >
-            <LogOut width={16} height={16} /> {t("logout")}
+            <LogOut width={16} height={16} />
           </button>
         </div>
-      </aside>
+      </header>
 
-      <main className="flex-1 min-w-0">
-        <div className="md:hidden flex items-center justify-between px-5 py-4 border-b border-black/5 bg-white sticky top-0 z-30">
-          <div className="font-display font-black tracking-tight">
-            CVLN <span className="text-[--cvln-orange]">Academy</span>
-          </div>
-          <div className="mono text-sm text-[--cvln-ink-2]">{user?.frek_id}</div>
-        </div>
+      <main className="cvln-app-main">
         <div className="fade-in">{children}</div>
       </main>
 

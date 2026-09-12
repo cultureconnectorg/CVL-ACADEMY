@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import "@/App.css";
 import "@/index.css";
+import "@/cvln-cinematic.css";
 
 import { AuthProvider, useAuth } from "@/lib/auth.jsx";
 import { I18nProvider } from "@/lib/i18n.jsx";
