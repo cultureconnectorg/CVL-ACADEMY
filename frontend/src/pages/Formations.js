@@ -5,6 +5,9 @@ import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
 import { FocusFieldItem, useFocusField } from "@/lib/CvlnFocusField";
 
+// NO_GENERIC_SCALE_HOVER: Spatial depth is driven by explicit focus/selection,
+// never hover. Hover remains limited to local non-spatial affordances such as
+// borders or the arrow nudge; it must not move a formation card in depth.
 export default function Formations() {
   const { t } = useI18n();
   const [path, setPath] = useState(null);
