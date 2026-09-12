@@ -37,7 +37,7 @@ function feedbackForSignal(type) {
 
 function feedbackForInteraction(type) {
   if (type === SPATIAL_INTERACTION_TYPES.NAV_MOVE) return { audio: "NAV_MOVE" };
-  if (type === SPATIAL_INTERACTION_TYPES.SNAP) return { audio: "FOCUS_LOCK", haptic: "SNAP" };
+  if (type === SPATIAL_INTERACTION_TYPES.SNAP) return { haptic: "SNAP" };
   if (type === SPATIAL_INTERACTION_TYPES.BLOCKED) return { audio: "BLOCKED", haptic: "BLOCKED" };
   return null;
 }
