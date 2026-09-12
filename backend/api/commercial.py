@@ -22,7 +22,7 @@ from commercial import (
 )
 from db import db, utc_now_iso
 from models import User
-from services.cvln_wallet import (
+from services.integrations.cvln_wallet import (
     CVLNWalletAmbiguousResult,
     CVLNWalletNotConfigured,
     cvln_wallet,
