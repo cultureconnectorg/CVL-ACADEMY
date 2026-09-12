@@ -22,9 +22,10 @@ from typing import Any, Callable, Coroutine, Optional, Sequence
 
 import bcrypt
 import jwt
-from db import db, utc_now_iso
 from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
+from db import db, utc_now_iso
 from models import Role, User, UserPublic
 from services.frek_core import (
     FrekCoreConfigurationError,
