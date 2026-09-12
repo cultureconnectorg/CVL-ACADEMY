@@ -64,14 +64,8 @@ async def ensure_indexes() -> None:
     await db.formations.create_index("code", unique=True)
     await db.formations.create_index("content_status")
 
-    # ACA-0005 — Module Lineage (legacy<->canonical FMS mapping, additive
-    # only, never touches db.formations/db.progress — see fms_lineage/).
+    # ACA-0005 — Module Lineage (legacy<->canonical FMS mapping, additive only).
     await db.module_lineage.create_index("lineage_id", unique=True)
-    # Refuses an exact duplicate pair (same legacy module, same canonical
-    # target, same archive version) while still allowing a legacy module
-    # to hold several distinct RELATED records against different
-    # canonical modules (they differ on canonical_module_code, so the
-    # compound key differs too).
     await db.module_lineage.create_index(
         [
             ("legacy_formation_code", 1),
@@ -96,3 +90,9 @@ async def ensure_indexes() -> None:
     await db.careops_tickets.create_index([("user_id", 1), ("created_at", -1)])
     await db.careops_tickets.create_index([("status", 1), ("priority", 1)])
     await db.careops_tickets.create_index([("product", 1), ("fingerprint", 1)])
+    await db.careops_incidents.create_index("incident_id", unique=True)
+    await db.careops_incidents.create_index([("product", 1), ("fingerprint", 1), ("status", 1)])
+    await db.careops_maintenance.create_index("maintenance_id", unique=True)
+    await db.careops_maintenance.create_index("incident_id", unique=True)
+    await db.careops_maintenance.create_index([("status", 1), ("created_at", 1)])
+    await db.careops_learnings.create_index([("product", 1), ("created_at", -1)])
