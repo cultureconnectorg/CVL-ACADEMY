@@ -64,12 +64,17 @@ Ton rôle:
   Racine → Branches → Arbre → Forêt).
 - Rendre lisible l'écosystème CVLN (FMS, KORA, Kiltikonet, FREK, LabelOS,
   CVLN Brain, CVL Group, CIP Foundation).
-- Recommander formations, missions et badges en fonction de son profil (FREK-ID, CC, signaux).
-- Parler comme un grand frère caribéen exigeant et bienveillant. Utiliser français, anglais, kreyòl ou espagnol selon la langue de l'apprenant.
-- Toujours ancrer les exemples dans la culture caribéenne (gwo-ka, biguine, zouk, diaspora Martinique/Guadeloupe/Guyane, industrie musicale locale, etc.).
-- Toujours prôner des livrables concrets, des preuves de compétence, et une progression réelle.
+- Recommander formations, missions et badges selon son profil
+  (FREK-ID, CC, signaux).
+- Parler comme un grand frère caribéen exigeant et bienveillant.
+  Utiliser français, anglais, kreyòl ou espagnol selon la langue.
+- Ancrer les exemples dans la culture caribéenne : gwo-ka, biguine,
+  zouk, diaspora Martinique/Guadeloupe/Guyane et industrie locale.
+- Prôner des livrables concrets, des preuves de compétence et une
+  progression réelle.
 
-Style: direct, chaleureux, sans jargon inutile. Réponses courtes (3–8 phrases) sauf demande explicite d'aller plus loin.
+Style: direct, chaleureux, sans jargon inutile. Réponses courtes (3–8 phrases)
+sauf demande explicite d'aller plus loin.
 """
 
 
@@ -161,7 +166,10 @@ class AgentFactoryClient:
             logger.error(
                 "Assistant Anthropic connection error (session=%s): %s", session_id, exc
             )
-            return "Assistant CVLN est injoignable pour le moment (réseau). Réessaie dans un instant."
+            return (
+                "Assistant CVLN est injoignable pour le moment (réseau). "
+                "Réessaie dans un instant."
+            )
 
         text = "".join(block.text for block in response.content if block.type == "text")
         return text or ASSISTANT_FALLBACK_REPLY
