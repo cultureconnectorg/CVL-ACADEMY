@@ -1,19 +1,55 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { makeRailPhysics } from "@/lib/spatial/physics";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
+import { directSpatialExperience } from "@/lib/spatial/spatialDirector";
+import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import "./spatial-background.css";
 import "./spatial-living-world.css";
 
 /** Living CVLN Academy world. Navigation/auth/business state stay outside this layer. */
 export default function SpatialBackground({ pathname = "/" }) {
   const rootRef = useRef(null);
+  const signalTimerRef = useRef(null);
+  const [activeSignal, setActiveSignal] = useState(null);
   const reduced = useReducedMotion();
   const spatialEnabled = FEATURE_FLAGS.SPATIAL_ENGINE && FEATURE_FLAGS.SPATIAL_ENVIRONMENT;
-  const motionEnabled = spatialEnabled && !reduced;
   const { node, scene } = sceneForPathname(pathname);
+  const director = useMemo(
+    () => directSpatialExperience({ node, scene, reducedMotion: reduced, signal: activeSignal }),
+    [node, scene, reduced, activeSignal]
+  );
+  const motionEnabled = spatialEnabled && !reduced;
   const publicUrl = process.env.PUBLIC_URL || "";
   const worldImage = `url("${publicUrl}/spatial/cvln-academy-spatial-world.svg")`;
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onSpatialSignal = (event) => {
+      const trusted = spatialSignalProfile(event?.detail?.type);
+      if (!trusted) return;
+      if (signalTimerRef.current) window.clearTimeout(signalTimerRef.current);
+      setActiveSignal({ type: trusted.type, receivedAt: Date.now() });
+      signalTimerRef.current = window.setTimeout(() => {
+        setActiveSignal(null);
+        signalTimerRef.current = null;
+      }, trusted.ttlMs);
+    };
+    window.addEventListener(SPATIAL_SIGNAL_EVENT, onSpatialSignal);
+    return () => {
+      window.removeEventListener(SPATIAL_SIGNAL_EVENT, onSpatialSignal);
+      if (signalTimerRef.current) window.clearTimeout(signalTimerRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    setActiveSignal(null);
+    if (typeof window !== "undefined" && signalTimerRef.current) {
+      window.clearTimeout(signalTimerRef.current);
+      signalTimerRef.current = null;
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const root = rootRef.current;
@@ -27,39 +63,70 @@ export default function SpatialBackground({ pathname = "/" }) {
     root.style.setProperty("--scene-focus-y", `${scene.focusY}%`);
     root.style.setProperty("--scene-warmth", String(scene.warmth));
     root.style.setProperty("--scene-vignette", String(scene.vignette));
-    if (!motionEnabled) return undefined;
+    root.style.setProperty("--spatial-motion-intensity", String(director.motionIntensity));
+    root.style.setProperty("--spatial-focus-strength", String(director.focusStrength));
+    root.style.setProperty("--spatial-atmosphere-opacity", String(director.atmosphereOpacity));
+    root.style.setProperty("--spatial-world-breath", String(director.worldBreath));
 
-    let frame = null;
-    let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
-    let scrollY = window.scrollY || 0;
-    const render = () => {
-      currentX += (targetX - currentX) * 0.045;
-      currentY += (targetY - currentY) * 0.045;
-      root.style.setProperty("--spatial-x", `${currentX.toFixed(3)}px`);
-      root.style.setProperty("--spatial-y", `${currentY.toFixed(3)}px`);
-      root.style.setProperty("--spatial-scroll", `${Math.min(scrollY, 900).toFixed(1)}px`);
-      frame = window.requestAnimationFrame(render);
-    };
+    if (!motionEnabled) {
+      root.style.setProperty("--spatial-x", "0px");
+      root.style.setProperty("--spatial-y", "0px");
+      root.style.setProperty("--spatial-scroll", "0px");
+      return undefined;
+    }
+
+    // Reuse the verified H0.10 retarget-safe spring instead of inventing a
+    // second smoothing engine. Domain signals only retarget perception.
+    const xPhysics = makeRailPhysics((position) => {
+      root.style.setProperty("--spatial-x", `${position.toFixed(3)}px`);
+    });
+    const yPhysics = makeRailPhysics((position) => {
+      root.style.setProperty("--spatial-y", `${position.toFixed(3)}px`);
+    });
+
     const onPointerMove = (event) => {
-      targetX = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * 24;
-      targetY = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * 16;
+      const x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * director.pointerRangeX;
+      const y = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * director.pointerRangeY;
+      xPhysics.setTarget(x);
+      yPhysics.setTarget(y);
     };
-    const onScroll = () => { scrollY = window.scrollY || 0; };
+    const onPointerLeave = () => {
+      xPhysics.setTarget(0);
+      yPhysics.setTarget(0);
+    };
+    const onScroll = () => {
+      root.style.setProperty("--spatial-scroll", `${Math.min(window.scrollY || 0, 900).toFixed(1)}px`);
+    };
+
+    xPhysics.jump(0);
+    yPhysics.jump(0);
+    onScroll();
     window.addEventListener("pointermove", onPointerMove, { passive: true });
+    document.documentElement.addEventListener("mouseleave", onPointerLeave, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true });
-    frame = window.requestAnimationFrame(render);
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
+      document.documentElement.removeEventListener("mouseleave", onPointerLeave);
       window.removeEventListener("scroll", onScroll);
-      if (frame) window.cancelAnimationFrame(frame);
     };
-  }, [motionEnabled, scene]);
+  }, [motionEnabled, scene, director]);
 
   return (
-    <div ref={rootRef} className={`spatial-background spatial-background--${scene.zone}`} aria-hidden="true"
-      style={{ "--spatial-world-image": worldImage }} data-testid="spatial-background"
-      data-spatial-node={node || "NONE"} data-spatial-zone={scene.zone} data-spatial-camera={scene.camera}
-      data-spatial-engine={spatialEnabled ? "on" : "off"} data-spatial-motion={motionEnabled ? "full" : reduced ? "reduced" : "static"}>
+    <div
+      ref={rootRef}
+      className={`spatial-background spatial-background--${scene.zone}`}
+      aria-hidden="true"
+      style={{ "--spatial-world-image": worldImage }}
+      data-testid="spatial-background"
+      data-spatial-node={node || "NONE"}
+      data-spatial-zone={scene.zone}
+      data-spatial-camera={director.camera}
+      data-spatial-intent={director.intent}
+      data-spatial-learning-state={director.learningState}
+      data-spatial-signal={director.signalType || "NONE"}
+      data-spatial-engine={spatialEnabled ? "on" : "off"}
+      data-spatial-motion={motionEnabled ? "full" : reduced ? "reduced" : "static"}
+    >
       <div className="spatial-background__layer spatial-background__layer--far">
         <div className="spatial-background__base" /><div className="spatial-background__world" />
         <div className="spatial-background__clouds spatial-background__clouds--far" /><div className="spatial-background__stars" />
