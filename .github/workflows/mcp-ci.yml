@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "backend/mcp_server.py"
+      - "backend/expert_directory.py"
       - "backend/server.py"
       - "backend/requirements.txt"
       - "backend/tests/test_mcp_server.py"
@@ -12,6 +13,7 @@ on:
     branches: [main]
     paths:
       - "backend/mcp_server.py"
+      - "backend/expert_directory.py"
       - "backend/server.py"
       - "backend/requirements.txt"
       - "backend/tests/test_mcp_server.py"
@@ -37,8 +39,8 @@ jobs:
       - name: Install backend dependencies
         run: python -m pip install -r requirements.txt
       - name: Compile MCP integration
-        run: python -m py_compile mcp_server.py server.py
+        run: python -m py_compile expert_directory.py mcp_server.py server.py
       - name: Run MCP protocol tests
         run: pytest -q tests/test_mcp_server.py
       - name: Lint MCP integration
-        run: flake8 mcp_server.py tests/test_mcp_server.py
+        run: flake8 expert_directory.py mcp_server.py tests/test_mcp_server.py
