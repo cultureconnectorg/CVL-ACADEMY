@@ -8,6 +8,7 @@ import {
 } from "@/lib/spatial/cameraRuntime";
 
 const MODULE_ROUTE = /^\/formations\/([^/]+)\/modules\/([^/?#]+)$/;
+const FORMATION_ROUTE = /^\/formations\/([^/?#]+)$/;
 
 function routeFromHref(href) {
   try {
@@ -18,10 +19,53 @@ function routeFromHref(href) {
   }
 }
 
+function findSharedSource(anchorId, link) {
+  const scope = link?.closest?.("[data-testid]") || document;
+  const local = Array.from(scope.querySelectorAll?.("[data-spatial-shared-source]") || []).find(
+    (node) => node.getAttribute("data-spatial-shared-source") === anchorId,
+  );
+  if (local) return local;
+  return Array.from(document.querySelectorAll("[data-spatial-shared-source]")).find(
+    (node) => node.getAttribute("data-spatial-shared-source") === anchorId,
+  ) || null;
+}
+
+function buildForwardContract(link, destinationRoute) {
+  const moduleMatch = destinationRoute.match(MODULE_ROUTE);
+  if (moduleMatch) {
+    const [, formationCode, moduleCode] = moduleMatch;
+    const anchorId = `module:${formationCode}:${moduleCode}`;
+    return {
+      anchorId,
+      destinationRoute,
+      destinationSelector: '[data-testid="module-journey"] h1',
+      sharedElement: findSharedSource(anchorId, link),
+      sharedSourceSelector: `[data-spatial-shared-source="${anchorId}"]`,
+      sharedDestinationSelector: `[data-spatial-shared-destination="${anchorId}"]`,
+    };
+  }
+
+  const formationMatch = destinationRoute.match(FORMATION_ROUTE);
+  if (formationMatch && window.location.pathname === "/formations") {
+    const [, formationCode] = formationMatch;
+    const anchorId = `formation:${formationCode}`;
+    return {
+      anchorId,
+      destinationRoute,
+      destinationSelector: '[data-testid="formation-detail"] h1',
+      sharedElement: findSharedSource(anchorId, link),
+      sharedSourceSelector: `[data-spatial-shared-source="${anchorId}"]`,
+      sharedDestinationSelector: `[data-spatial-shared-destination="${anchorId}"]`,
+    };
+  }
+
+  return null;
+}
+
 /**
  * Captures only existing navigation. It never prevents navigation or invents a
  * route. Source geometry is recorded before React unmounts it; browser Back or
- * an explicit link to the exact source arms the inverse camera path.
+ * an explicit link to the exact source arms the inverse camera/shared-element path.
  */
 export default function SpatialCameraIntentCapture() {
   const reduced = useReducedMotion();
@@ -51,13 +95,10 @@ export default function SpatialCameraIntentCapture() {
         return;
       }
 
-      const match = destinationRoute.match(MODULE_ROUTE);
-      if (!match) return;
-      const [, formationCode, moduleCode] = match;
+      const forward = buildForwardContract(link, destinationRoute);
+      if (!forward) return;
       beginCameraIntent({
-        anchorId: `module:${formationCode}:${moduleCode}`,
-        destinationRoute,
-        destinationSelector: '[data-testid="module-journey"] h1',
+        ...forward,
         element: link,
         returnRoute: window.location.pathname,
       });
