@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useReducedMotion } from "@/lib/useReducedMotion";
+import { SPATIAL_CONTEXT_EVENT } from "@/lib/ContextFrame";
 import { makeRailPhysics } from "@/lib/spatial/physics";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { directSpatialExperience } from "@/lib/spatial/spatialDirector";
@@ -17,6 +18,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
   const cameraTimerRef = useRef(null);
   const [activeSignal, setActiveSignal] = useState(null);
   const [cameraPhase, setCameraPhase] = useState("IDLE");
+  const [contextActive, setContextActive] = useState(false);
   const reduced = useReducedMotion();
   const spatialEnabled = FEATURE_FLAGS.SPATIAL_ENGINE && FEATURE_FLAGS.SPATIAL_ENVIRONMENT;
   const { node, scene } = sceneForPathname(pathname);
@@ -47,6 +49,13 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       window.removeEventListener(SPATIAL_SIGNAL_EVENT, onSpatialSignal);
       if (signalTimerRef.current) window.clearTimeout(signalTimerRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return undefined;
+    const onContext = (event) => setContextActive(Boolean(event?.detail?.active));
+    window.addEventListener(SPATIAL_CONTEXT_EVENT, onContext);
+    return () => window.removeEventListener(SPATIAL_CONTEXT_EVENT, onContext);
   }, []);
 
   useEffect(() => {
@@ -96,6 +105,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
 
   useEffect(() => {
     setActiveSignal(null);
+    setContextActive(false);
     if (typeof window !== "undefined" && signalTimerRef.current) {
       window.clearTimeout(signalTimerRef.current);
       signalTimerRef.current = null;
@@ -114,10 +124,10 @@ export default function SpatialBackground({ pathname = "/", stade }) {
     root.style.setProperty("--scene-focus-y", `${scene.focusY}%`);
     root.style.setProperty("--scene-warmth", String(scene.warmth));
     root.style.setProperty("--scene-vignette", String(scene.vignette));
-    root.style.setProperty("--spatial-motion-intensity", String(director.motionIntensity));
-    root.style.setProperty("--spatial-focus-strength", String(director.focusStrength));
-    root.style.setProperty("--spatial-atmosphere-opacity", String(director.atmosphereOpacity));
-    root.style.setProperty("--spatial-world-breath", String(director.worldBreath));
+    root.style.setProperty("--spatial-motion-intensity", String(contextActive ? director.motionIntensity * 0.35 : director.motionIntensity));
+    root.style.setProperty("--spatial-focus-strength", String(contextActive ? Math.min(1, director.focusStrength + 0.08) : director.focusStrength));
+    root.style.setProperty("--spatial-atmosphere-opacity", String(contextActive ? director.atmosphereOpacity * 0.76 : director.atmosphereOpacity));
+    root.style.setProperty("--spatial-world-breath", String(contextActive ? director.worldBreath * 0.25 : director.worldBreath));
     root.style.setProperty("--spatial-stage-density", String(environment.density));
     root.style.setProperty("--spatial-stage-growth", String(environment.growth));
     root.style.setProperty("--spatial-stage-glow", String(environment.glow));
@@ -134,8 +144,6 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       return undefined;
     }
 
-    // Reuse the verified H0.10 retarget-safe spring instead of inventing a
-    // second smoothing engine. Domain signals only retarget perception.
     const xPhysics = makeRailPhysics((position) => {
       root.style.setProperty("--spatial-x", `${position.toFixed(3)}px`);
     });
@@ -143,9 +151,10 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       root.style.setProperty("--spatial-y", `${position.toFixed(3)}px`);
     });
 
+    const contextMultiplier = contextActive ? 0.35 : 1;
     const onPointerMove = (event) => {
-      const x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * director.pointerRangeX;
-      const y = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * director.pointerRangeY;
+      const x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * director.pointerRangeX * contextMultiplier;
+      const y = (event.clientY / Math.max(window.innerHeight, 1) - 0.5) * director.pointerRangeY * contextMultiplier;
       xPhysics.setTarget(x);
       yPhysics.setTarget(y);
     };
@@ -168,7 +177,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       document.documentElement.removeEventListener("mouseleave", onPointerLeave);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [motionEnabled, scene, director, environment, cameraPhase]);
+  }, [motionEnabled, scene, director, environment, cameraPhase, contextActive]);
 
   return (
     <div
@@ -181,6 +190,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       data-spatial-zone={scene.zone}
       data-spatial-camera={director.camera}
       data-spatial-camera-phase={cameraPhase}
+      data-spatial-context={contextActive ? "active" : "idle"}
       data-spatial-intent={director.intent}
       data-spatial-learning-state={director.learningState}
       data-spatial-signal={director.signalType || "NONE"}
