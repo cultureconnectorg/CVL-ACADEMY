@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import SpatialBackground from "@/components/spatial/SpatialBackground.jsx";
+import ReturnPositionTracker from "@/components/spatial/ReturnPositionTracker.jsx";
 
 /**
  * Mounts the visual world behind the already-existing application routes.
@@ -10,6 +11,7 @@ export default function SpatialWorldFrame({ children }) {
 
   return (
     <div className="relative min-h-screen overflow-hidden" data-testid="spatial-world-frame">
+      <ReturnPositionTracker />
       <SpatialBackground pathname={location.pathname} />
       <div className="relative z-10 min-h-screen">{children}</div>
     </div>
