@@ -52,9 +52,7 @@ async def economy_3d_health(current: User = Depends(require_role(*STAFF_ROLES)))
     # stays on CPU today; if this projection grows beyond the benchmarked threshold
     # on a qualified GPU worker, the same contract can switch to cuDF without
     # changing the endpoint's business semantics.
-    projected = [
-        {"commercial_class": commercial_class(record)} for record in items
-    ]
+    projected = [{"commercial_class": commercial_class(record)} for record in items]
     observed_counts, engine, fallback_reason = accelerated_group_count(
         projected, "commercial_class"
     )
