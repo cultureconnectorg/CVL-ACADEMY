@@ -46,9 +46,25 @@ test.describe("Spatial contextual module dock", () => {
     expect(reducedTransform).toBe("none");
   });
 
-  test("dock never mounts outside a module route", async ({ page }) => {
+  test("current phase retargets the persistent world instead of swapping environments", async ({ page }) => {
     await mockAuthenticatedSession(page);
+    await page.goto(MODULE_URL);
+    const world = page.getByTestId("spatial-background");
+    await expect(world).toHaveAttribute("data-spatial-module-phase", "hook");
+    const worldNodeBefore = await world.getAttribute("data-spatial-node");
+
+    await page.getByTestId("spatial-module-dock-next").click();
+    await expect(world).toHaveAttribute("data-spatial-module-phase", "objectives");
+    await expect(world).toHaveAttribute("data-spatial-node", worldNodeBefore);
+  });
+
+  test("dock never mounts outside a module route and phase environment is cleared", async ({ page }) => {
+    await mockAuthenticatedSession(page);
+    await page.goto(MODULE_URL);
+    await expect(page.getByTestId("spatial-background")).toHaveAttribute("data-spatial-module-phase", "hook");
+
     await page.goto("/formations");
     await expect(page.getByTestId("spatial-module-dock")).toHaveCount(0);
+    await expect(page.getByTestId("spatial-background")).not.toHaveAttribute("data-spatial-module-phase", /.+/);
   });
 });
