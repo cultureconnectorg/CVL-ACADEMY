@@ -133,23 +133,24 @@ async def finalize_enrollment(
             raise JourneyPolicyError("FUNDING_APPROVAL_REQUIRED")
 
     now = utc_now_iso()
-    enrollment = {
+    insert_fields = {
         "user_id": user_id,
         "formation_code": formation_code,
         "formation_name": formation.get("name"),
-        "status": "ENROLLED",
         "terms_version": CURRENT_TERMS_VERSION,
         "economy_code": economy_code,
         "source_entitlement_id": (entitlement or {}).get("entitlement_id"),
         "funding_dossier_id": funding_dossier_id,
         "funding_connector": (funding or {}).get("connector_code"),
         "enrolled_at": now,
-        "updated_at": now,
         "source": "mcp_journey",
     }
     await db.academy_enrollments.update_one(
         {"user_id": user_id, "formation_code": formation_code},
-        {"$setOnInsert": enrollment, "$set": {"status": "ENROLLED", "updated_at": now}},
+        {
+            "$setOnInsert": insert_fields,
+            "$set": {"status": "ENROLLED", "updated_at": now},
+        },
         upsert=True,
     )
     await db.mcp_enrollment_requests.update_many(
@@ -163,7 +164,7 @@ async def finalize_enrollment(
     stored = await db.academy_enrollments.find_one(
         {"user_id": user_id, "formation_code": formation_code}, {"_id": 0}
     )
-    return stored or enrollment
+    return stored or {**insert_fields, "status": "ENROLLED", "updated_at": now}
 
 
 async def journey_status(
@@ -199,8 +200,8 @@ async def journey_status(
         blockers.append("terms_not_accepted")
     if economy_code and not entitlement:
         blockers.append("payment_or_entitlement_missing")
-    if funding and funding.get("status") not in {"APPROVED", "READY"}:
-        blockers.append("funding_not_ready")
+    if funding and funding.get("status") != "APPROVED":
+        blockers.append("funding_approval_required")
     return {
         "formation": formation,
         "terms": acceptance,
