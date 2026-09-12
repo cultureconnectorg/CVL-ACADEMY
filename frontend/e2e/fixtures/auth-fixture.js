@@ -228,6 +228,11 @@ async function mockAuthenticatedSession(page, overrides = {}) {
     ]
   );
 
+  // Playwright resolves page.route handlers in last-in-first-out order.
+  // Register the broad fallback first, then layer specific contracts above it
+  // so auth/domain fixtures win deterministically.
+  await page.route("**/api/**", (route) => route.fulfill({ status: 200, body: "{}" }));
+
   await page.route("**/api/auth/me", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) })
   );
@@ -291,12 +296,6 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       body: JSON.stringify(formationDetail),
     })
   );
-
-  // Keep this catch-all last so route-specific fixtures above always win.
-  // This makes the fixture deterministic regardless of Playwright route
-  // precedence details and prevents a generic `{}` from shadowing a more
-  // specific endpoint contract.
-  await page.route("**/api/**", (route) => route.fulfill({ status: 200, body: "{}" }));
 
   return { user, poles, learningPath, moduleData, quiz, quizResult, formationDetail };
 }
