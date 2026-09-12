@@ -88,7 +88,12 @@ async def list_incidents(
     limit: int = Query(default=50, ge=1, le=100),
     current: User = Depends(require_role(*ADMIN_ROLES)),
 ):
-    return await db.careops_incidents.find({}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    return (
+        await db.careops_incidents.find({}, {"_id": 0})
+        .sort("created_at", -1)
+        .limit(limit)
+        .to_list(limit)
+    )
 
 
 @router.get("/ops/maintenance")
@@ -96,7 +101,12 @@ async def list_maintenance(
     limit: int = Query(default=50, ge=1, le=100),
     current: User = Depends(require_role(*ADMIN_ROLES)),
 ):
-    return await db.careops_maintenance.find({}, {"_id": 0}).sort("created_at", -1).limit(limit).to_list(limit)
+    return (
+        await db.careops_maintenance.find({}, {"_id": 0})
+        .sort("created_at", -1)
+        .limit(limit)
+        .to_list(limit)
+    )
 
 
 @router.post("/ops/maintenance/{maintenance_id}/result")
@@ -114,4 +124,6 @@ async def maintenance_result(
             evidence=inp.evidence,
         )
     except KeyError as exc:
-        raise HTTPException(status_code=404, detail="Tâche de maintenance introuvable") from exc
+        raise HTTPException(
+            status_code=404, detail="Tâche de maintenance introuvable"
+        ) from exc
