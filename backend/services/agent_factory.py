@@ -204,7 +204,7 @@ class AgentFactoryClient:
             try:
                 return await nvidia_dynamo.chat_reply(
                     system_prompt=safe_system_prompt,
-                    session_id=session_id,
+                    session_id=session_ref,
                     message=safe_message,
                     history=safe_history,
                 )
