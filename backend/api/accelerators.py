@@ -4,12 +4,13 @@ from __future__ import annotations
 
 import time
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
 from auth import require_role
 from models import User
 from services.nvidia_runtime import (
+    NvidiaAccelerationError,
     accelerated_group_count,
     accelerated_runtime_status,
     public_accelerator_status,
@@ -43,21 +44,22 @@ async def accelerator_self_test(
     inp: AcceleratorSelfTestInput,
     current: User = Depends(require_role("admin", "super_admin", "founder")),
 ):
-    """Execute a bounded group-by path and report the engine actually used.
-
-    ``require_gpu=true`` is deliberately fail-closed. It is the runtime proof
-    endpoint operators can use on a GPU host to demonstrate that the request
-    reached cuDF instead of the CPU fallback.
-    """
+    """Execute a bounded group-by path and report the engine actually used."""
     del current
     records = ({"bucket": index % 17, "value": index} for index in range(inp.rows))
     started = time.perf_counter()
-    counts, engine, fallback_reason = accelerated_group_count(
-        records,
-        "bucket",
-        min_rows=0 if inp.require_gpu else None,
-        require_gpu=inp.require_gpu,
-    )
+    try:
+        counts, engine, fallback_reason = accelerated_group_count(
+            records,
+            "bucket",
+            min_rows=0 if inp.require_gpu else None,
+            require_gpu=inp.require_gpu,
+        )
+    except NvidiaAccelerationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={"code": "NVIDIA_ACCELERATOR_UNAVAILABLE", "reason": str(exc)},
+        ) from exc
     elapsed_ms = (time.perf_counter() - started) * 1000
 
     return {
