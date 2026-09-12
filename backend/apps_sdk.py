@@ -32,14 +32,14 @@ async def academy_overview_widget() -> types.CallToolResult:
                 text="CVLN Academy est prêt : catalogue public + actions privées OAuth.",
             )
         ],
-        structured_content=structured,
+        structuredContent=structured,
         _meta={
             "openai/outputTemplate": TEMPLATE_URI,
             "openai/toolInvocation/invoking": "Chargement de CVLN Academy",
             "openai/toolInvocation/invoked": "CVLN Academy prêt",
             "openai/widgetAccessible": True,
         },
-        is_error=False,
+        isError=False,
     )
 
 
@@ -59,7 +59,9 @@ async def academy_overview_template() -> str:
   <style>
     body{
       font-family:system-ui,-apple-system,sans-serif;
-      margin:0;padding:16px;background:transparent;
+      margin:0;
+      padding:16px;
+      background:transparent;
       color:var(--color-text-primary,#111)
     }
     .card{border:1px solid rgba(127,127,127,.25);border-radius:16px;padding:16px}
@@ -76,15 +78,20 @@ async def academy_overview_template() -> str:
     <div id="chips" class="chips"></div>
   </div>
   <script>
-    const payload = window.openai?.toolOutput
-      || window.openai?.toolResult?.structuredContent
-      || {};
+    const payload = window.openai?.toolOutput || window.openai?.toolResult?.structuredContent || {};
     const domains = payload.domains || [];
-    document.getElementById('mode').textContent = payload.mode || 'CVLN Academy';
+    const escapeMap = {
+      '&':'&amp;',
+      '<':'&lt;',
+      '>':'&gt;',
+      '"':'&quot;',
+      "'":'&#39;'
+    };
     const escapeHtml = value => String(value).replace(
       /[&<>"']/g,
-      s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])
+      char => escapeMap[char]
     );
+    document.getElementById('mode').textContent = payload.mode || 'CVLN Academy';
     document.getElementById('chips').innerHTML = domains
       .map(x => `<span class="chip">${escapeHtml(x)}</span>`)
       .join('');
