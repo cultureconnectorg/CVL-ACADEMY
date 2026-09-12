@@ -5,6 +5,7 @@ import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import {
   consumeReturnPositionRestore,
   isRestorablePath,
+  isReturnCapturePath,
   loadReturnPosition,
   returnPositionUserKey,
   saveReturnPosition,
@@ -45,10 +46,7 @@ export default function ReturnPositionTracker() {
     if (!userKey || !isRestorablePath(location.pathname) || typeof window === "undefined") return undefined;
 
     const saved = loadReturnPosition(userKey);
-    if (
-      saved?.pathname === location.pathname &&
-      consumeReturnPositionRestore(userKey)
-    ) {
+    if (saved?.pathname === location.pathname && consumeReturnPositionRestore(userKey)) {
       let first = null;
       let second = null;
       first = window.requestAnimationFrame(() => {
@@ -68,7 +66,7 @@ export default function ReturnPositionTracker() {
   }, [location.pathname, userKey]);
 
   useEffect(() => {
-    if (!userKey || !isRestorablePath(location.pathname) || typeof window === "undefined") return undefined;
+    if (!userKey || !isReturnCapturePath(location.pathname) || typeof window === "undefined") return undefined;
 
     let frame = null;
     const persist = () => {
