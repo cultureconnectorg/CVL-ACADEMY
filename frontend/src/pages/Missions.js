@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
@@ -11,7 +11,7 @@ export default function Missions() {
   const [missions, setMissions] = useState([]);
   const [mine, setMine] = useState([]);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     const catalogue = await api.get("/missions").then(r => r.data);
     setMissions(catalogue);
     if (user) {
@@ -20,9 +20,9 @@ export default function Missions() {
     } else {
       setMine([]);
     }
-  };
+  }, [user]);
 
-  useEffect(() => { load(); }, [user]);
+  useEffect(() => { load(); }, [load]);
 
   const status = (code) => mine.find(x => x.mission_code === code)?.status;
 
