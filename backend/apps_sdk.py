@@ -45,7 +45,7 @@ async def academy_overview_widget() -> types.CallToolResult:
 
 @academy_mcp.resource(
     TEMPLATE_URI,
-    "CVLN Academy Overview",
+    name="CVLN Academy Overview",
     mime_type="text/html+skybridge",
 )
 async def academy_overview_template() -> str:
