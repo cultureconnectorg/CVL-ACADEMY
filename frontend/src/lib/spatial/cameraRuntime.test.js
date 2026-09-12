@@ -1,4 +1,10 @@
-import { consumePendingCameraIntent, readPendingCameraIntent } from "./cameraRuntime";
+import {
+  consumeArmedCameraReturn,
+  consumePendingCameraIntent,
+  readArmedCameraReturn,
+  readPendingCameraIntent,
+  readReturnCameraContract,
+} from "./cameraRuntime";
 
 function memoryStorage(initial = {}) {
   const map = new Map(Object.entries(initial));
@@ -36,5 +42,33 @@ describe("cameraRuntime pending intent", () => {
   test("invalid storage never fabricates an intent", () => {
     const storage = memoryStorage({ "cvln:spatial-camera-intent:v1": "{}" });
     expect(readPendingCameraIntent(storage)).toBeNull();
+  });
+
+  test("return contract is validated separately from pending forward intent", () => {
+    const storage = memoryStorage({
+      "cvln:spatial-camera-return:v1": JSON.stringify({
+        anchorId: "module-M01",
+        sourceRoute: "/formations/FMS-01",
+        destinationRoute: "/formations/FMS-01/modules/M01",
+      }),
+    });
+    expect(readReturnCameraContract(storage)).toMatchObject({ sourceRoute: "/formations/FMS-01" });
+    expect(readPendingCameraIntent(storage)).toBeNull();
+  });
+
+  test("armed return is consumed once and clears the stored return contract", () => {
+    const contract = {
+      anchorId: "module-M01",
+      sourceRoute: "/dashboard",
+      destinationRoute: "/formations/FMS-01/modules/M01",
+    };
+    const storage = memoryStorage({
+      "cvln:spatial-camera-return:v1": JSON.stringify(contract),
+      "cvln:spatial-camera-return-armed:v1": JSON.stringify(contract),
+    });
+    expect(readArmedCameraReturn(storage)).toMatchObject(contract);
+    expect(consumeArmedCameraReturn(storage)).toMatchObject(contract);
+    expect(readArmedCameraReturn(storage)).toBeNull();
+    expect(readReturnCameraContract(storage)).toBeNull();
   });
 });
