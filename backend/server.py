@@ -6,10 +6,12 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+
 from api import router
 from billing_config import assert_billing_production_ready
 from db import client, db  # noqa
-from fastapi import FastAPI
 from fms_lineage import seed_initial_matrix
 from infra_indexes import ensure_indexes
 from mcp_server import academy_mcp, mcp_http_app
@@ -17,7 +19,6 @@ from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
-from starlette.middleware.cors import CORSMiddleware
 from template_engine import seed_default_definitions
 
 logging.basicConfig(
