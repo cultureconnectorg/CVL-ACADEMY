@@ -41,14 +41,40 @@ function waitForElement(selector, timeoutMs = 1800) {
   });
 }
 
-function restoreSourceFocus(target) {
-  if (!target || typeof target.focus !== "function") return;
-  target.focus({ preventScroll: true });
-  if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
-    window.requestAnimationFrame(() => {
-      if (target.isConnected) target.focus({ preventScroll: true });
-    });
+function focusIfUnclaimed(selector, fallbackTarget = null) {
+  if (typeof document === "undefined") return false;
+  const active = document.activeElement;
+  const target = document.querySelector(selector) || fallbackTarget;
+  if (!target || !target.isConnected || typeof target.focus !== "function") return false;
+
+  // Do not steal a deliberate focus choice. Browser history commonly leaves
+  // focus on body/documentElement while React's entering route settles; that
+  // unclaimed state is the only state in which a bounded retry may reassert
+  // the exact source control.
+  if (
+    active &&
+    active !== document.body &&
+    active !== document.documentElement &&
+    active !== target
+  ) {
+    return false;
   }
+  target.focus({ preventScroll: true });
+  return document.activeElement === target;
+}
+
+function restoreSourceFocus(selector, fallbackTarget = null) {
+  if (typeof window === "undefined" || typeof document === "undefined") return;
+
+  const attempt = () => focusIfUnclaimed(selector, fallbackTarget);
+  attempt();
+
+  // Browser Back can restore its own focus after React's first commit. Retry
+  // across the short transition window, but only while focus remains unclaimed.
+  const delays = [0, 60, 180, 360];
+  delays.forEach((delay) => {
+    window.setTimeout(attempt, delay);
+  });
 }
 
 /**
@@ -99,9 +125,8 @@ export default function SpatialCameraBridge() {
         }
 
         // The exact source control is the authoritative focus target for a
-        // browser-back return. Focus it as soon as it exists, before any
-        // optional shared-element lookup can delay completion.
-        restoreSourceFocus(target);
+        // browser-back return. Start restoration as soon as it exists.
+        restoreSourceFocus(selector, target);
 
         const sharedTarget = current.sharedSourceSelector
           ? await waitForElement(current.sharedSourceSelector)
@@ -110,9 +135,9 @@ export default function SpatialCameraBridge() {
         const contract = consumeArmedCameraReturn();
         completeCameraIntent(contract, target, { returning: true, sharedElement: sharedTarget });
 
-        // Reassert after the camera/shared-element completion so a sibling
-        // autofocus effect resolving in the same commit cannot steal focus.
-        restoreSourceFocus(target);
+        // Re-arm the bounded focus restoration after camera/shared-element
+        // completion in case browser history performed its own late reset.
+        restoreSourceFocus(selector, target);
       });
     }
 
