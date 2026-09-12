@@ -46,6 +46,19 @@ describe("attention.js", () => {
     expect(active.ariaHidden).toBe(false);
   });
 
+  test("computeDepthStyle: near-settled physics projects to exact focus", () => {
+    const settledPositive = computeDepthStyle(0.0027);
+    const settledNegative = computeDepthStyle(-0.004);
+    for (const settled of [settledPositive, settledNegative]) {
+      expect(settled.blur).toBe(0);
+      expect(settled.opacity).toBe(1);
+      expect(settled.weight).toBe(1);
+      expect(settled.tier).toBe(ATTENTION_TIERS.PRIMARY);
+      expect(settled.translateX).toBe(0);
+      expect(settled.rotateY).toBe(0);
+    }
+  });
+
   test("computeDepthStyle: mobile narrows perspective (weaker rotateY/Z than desktop)", () => {
     const desktop = computeDepthStyle(2, { mobile: false });
     const mobile = computeDepthStyle(2, { mobile: true });
