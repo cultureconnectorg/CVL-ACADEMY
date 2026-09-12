@@ -206,6 +206,7 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   const poles = overrides.poles || FIXTURE_POLES;
   const learningPath = overrides.learningPath || FIXTURE_LEARNING_PATH;
   const moduleData = overrides.moduleData || FIXTURE_MODULE;
+  const formationDetail = overrides.formationDetail || FIXTURE_FORMATION_DETAIL;
 
   await page.addInitScript(
     ([token, refresh, cookiePreference]) => {
@@ -226,8 +227,6 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       },
     ]
   );
-
-  await page.route("**/api/**", (route) => route.fulfill({ status: 200, body: "{}" }));
 
   await page.route("**/api/auth/me", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) })
@@ -285,7 +284,6 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       body: JSON.stringify({ reply: "Fixture mentor reply." }),
     })
   );
-  const formationDetail = overrides.formationDetail || FIXTURE_FORMATION_DETAIL;
   await page.route("**/api/formations/*", (route) =>
     route.fulfill({
       status: 200,
@@ -293,6 +291,12 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       body: JSON.stringify(formationDetail),
     })
   );
+
+  // Keep this catch-all last so route-specific fixtures above always win.
+  // This makes the fixture deterministic regardless of Playwright route
+  // precedence details and prevents a generic `{}` from shadowing a more
+  // specific endpoint contract.
+  await page.route("**/api/**", (route) => route.fulfill({ status: 200, body: "{}" }));
 
   return { user, poles, learningPath, moduleData, quiz, quizResult, formationDetail };
 }
