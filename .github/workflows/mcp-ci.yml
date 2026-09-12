@@ -1,0 +1,44 @@
+name: MCP CI
+
+on:
+  pull_request:
+    paths:
+      - "backend/mcp_server.py"
+      - "backend/server.py"
+      - "backend/requirements.txt"
+      - "backend/tests/test_mcp_server.py"
+      - ".github/workflows/mcp-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/mcp_server.py"
+      - "backend/server.py"
+      - "backend/requirements.txt"
+      - "backend/tests/test_mcp_server.py"
+      - ".github/workflows/mcp-ci.yml"
+
+jobs:
+  test-mcp:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      MONGO_URL: mongodb://localhost:27017
+      DB_NAME: cvln_academy_test
+      JWT_SECRET: ci-only-secret-ci-only-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install backend dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Compile MCP integration
+        run: python -m py_compile mcp_server.py server.py
+      - name: Run MCP protocol tests
+        run: pytest -q tests/test_mcp_server.py
+      - name: Lint MCP integration
+        run: flake8 mcp_server.py tests/test_mcp_server.py
