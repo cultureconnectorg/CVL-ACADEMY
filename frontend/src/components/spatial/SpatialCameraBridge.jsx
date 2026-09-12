@@ -41,6 +41,16 @@ function waitForElement(selector, timeoutMs = 1800) {
   });
 }
 
+function restoreSourceFocus(target) {
+  if (!target || typeof target.focus !== "function") return;
+  target.focus({ preventScroll: true });
+  if (typeof window !== "undefined" && typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(() => {
+      if (target.isConnected) target.focus({ preventScroll: true });
+    });
+  }
+}
+
 /**
  * Resolves forward and exact-return camera/shared-element anchors after React
  * has mounted the route. Navigation is never delayed; async API rendering gets
@@ -87,13 +97,22 @@ export default function SpatialCameraBridge() {
           cancelCameraIntent();
           return;
         }
+
+        // The exact source control is the authoritative focus target for a
+        // browser-back return. Focus it as soon as it exists, before any
+        // optional shared-element lookup can delay completion.
+        restoreSourceFocus(target);
+
         const sharedTarget = current.sharedSourceSelector
           ? await waitForElement(current.sharedSourceSelector)
           : null;
         if (cancelled) return;
         const contract = consumeArmedCameraReturn();
         completeCameraIntent(contract, target, { returning: true, sharedElement: sharedTarget });
-        if (typeof target.focus === "function") target.focus({ preventScroll: true });
+
+        // Reassert after the camera/shared-element completion so a sibling
+        // autofocus effect resolving in the same commit cannot steal focus.
+        restoreSourceFocus(target);
       });
     }
 
