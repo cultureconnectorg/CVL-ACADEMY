@@ -28,8 +28,11 @@ logger = logging.getLogger("cvln")
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: ARG001
+async def lifespan(app: FastAPI):
     """Own Academy startup/shutdown and the mounted MCP session manager."""
+    app.state.startup_ready = False
+    app.state.startup_error = None
+
     # This gate intentionally runs outside the seed try/except. Production must
     # not accept paid Academy orders if legal invoice issuance is not configured.
     billing_status = assert_billing_production_ready()
@@ -51,9 +54,11 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
             inserted,
             skipped,
         )
-        logger.info("Seed done.")
-    except Exception as e:  # noqa: BLE001
-        logger.exception("Seed failed: %s", e)
+        app.state.startup_ready = True
+        logger.info("Seed done; application ready.")
+    except Exception as exc:  # noqa: BLE001
+        app.state.startup_error = f"{type(exc).__name__}: {exc}"
+        logger.exception("Startup initialization failed: %s", exc)
 
     # Mounted ASGI sub-app lifespans are not started by Starlette/FastAPI.
     # MCP requires its session manager to be entered by the host application.
@@ -61,6 +66,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         try:
             yield
         finally:
+            app.state.startup_ready = False
             client.close()
 
 
