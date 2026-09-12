@@ -1,5 +1,4 @@
 import pytest
-
 from billing_config import assert_billing_production_ready, billing_production_status
 
 ISSUER_ENV = {

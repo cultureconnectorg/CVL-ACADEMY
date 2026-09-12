@@ -2,7 +2,6 @@ import copy
 from datetime import datetime, timezone
 
 import pytest
-
 from billing import (
     BillingNotReady,
     OrderNotPaid,

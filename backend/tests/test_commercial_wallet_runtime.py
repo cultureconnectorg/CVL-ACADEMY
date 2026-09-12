@@ -4,13 +4,12 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
-import pytest
-from fastapi import HTTPException
-from mongomock_motor import AsyncMongoMockClient
-
 import api.commercial as api_commercial
 import commercial as commercial_module
+import pytest
 from api.commercial import OrderCreate
+from fastapi import HTTPException
+from mongomock_motor import AsyncMongoMockClient
 from services.integrations.cvln_wallet import (
     CVLNWalletAmbiguousResult,
     CVLNWalletIntegration,

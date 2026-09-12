@@ -15,11 +15,10 @@ from datetime import datetime, timezone
 from decimal import ROUND_HALF_UP, Decimal
 from typing import Any, Dict, Tuple
 
+from billing import BillingNotReady, BillingPolicyError, issuer_profile
 from facturx import generate_from_binary, generate_xml, xml_check_xsd
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
-
-from billing import BillingNotReady, BillingPolicyError, issuer_profile
 
 MONEY = Decimal("0.01")
 

@@ -1,10 +1,9 @@
 from types import SimpleNamespace
 
-import pytest
-from mongomock_motor import AsyncMongoMockClient
-
 import api.billing as api_billing
+import pytest
 from api.billing import BillingProfileInput
+from mongomock_motor import AsyncMongoMockClient
 
 
 @pytest.fixture
