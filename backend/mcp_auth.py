@@ -20,7 +20,9 @@ from db import db, utc_now_iso
 
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGO = "HS256"
-MCP_OAUTH_ISSUER = os.environ.get("MCP_OAUTH_ISSUER", "http://localhost:8000").rstrip("/")
+MCP_OAUTH_ISSUER = os.environ.get(
+    "MCP_OAUTH_ISSUER", "http://localhost:8000"
+).rstrip("/")
 MCP_PRIVATE_RESOURCE = os.environ.get(
     "MCP_PRIVATE_RESOURCE", f"{MCP_OAUTH_ISSUER}/mcp/private"
 ).rstrip("/")
@@ -57,7 +59,11 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def issue_access_token(user_id: str, client_id: str, scopes: Iterable[str]) -> tuple[str, datetime]:
+def issue_access_token(
+    user_id: str,
+    client_id: str,
+    scopes: Iterable[str],
+) -> tuple[str, datetime]:
     granted = normalize_scopes(scopes)
     expires_at = _now() + timedelta(minutes=MCP_ACCESS_TOKEN_MINUTES)
     payload = {
@@ -73,7 +79,11 @@ def issue_access_token(user_id: str, client_id: str, scopes: Iterable[str]) -> t
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGO), expires_at
 
 
-async def issue_refresh_token(user_id: str, client_id: str, scopes: Iterable[str]) -> str:
+async def issue_refresh_token(
+    user_id: str,
+    client_id: str,
+    scopes: Iterable[str],
+) -> str:
     raw = secrets.token_urlsafe(48)
     await db.mcp_refresh_tokens.insert_one(
         {
@@ -82,14 +92,19 @@ async def issue_refresh_token(user_id: str, client_id: str, scopes: Iterable[str
             "client_id": client_id,
             "scopes": normalize_scopes(scopes),
             "created_at": utc_now_iso(),
-            "expires_at": (_now() + timedelta(days=MCP_REFRESH_TOKEN_DAYS)).isoformat(),
+            "expires_at": (
+                _now() + timedelta(days=MCP_REFRESH_TOKEN_DAYS)
+            ).isoformat(),
             "revoked": False,
         }
     )
     return raw
 
 
-async def rotate_refresh_token(raw: str, client_id: str) -> tuple[str, str, list[str], datetime]:
+async def rotate_refresh_token(
+    raw: str,
+    client_id: str,
+) -> tuple[str, str, list[str], datetime]:
     token_hash = _hash_secret(raw)
     doc = await db.mcp_refresh_tokens.find_one({"token_hash": token_hash})
     if not doc or doc.get("revoked") or doc.get("client_id") != client_id:
@@ -145,5 +160,5 @@ class AcademyMCPTokenVerifier(TokenVerifier):
             expires_at=payload.get("exp"),
             resource=MCP_PRIVATE_RESOURCE,
             subject=user_id,
-            claims={"sub": user_id},
+            claims={"iss": MCP_OAUTH_ISSUER, "sub": user_id},
         )
