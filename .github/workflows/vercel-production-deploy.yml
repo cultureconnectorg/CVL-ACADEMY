@@ -1,0 +1,85 @@
+name: Vercel Production Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: "Reason for this production deployment"
+        required: false
+        default: "Manual verified production deployment"
+
+concurrency:
+  group: vercel-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    name: Verify and deploy frontend to Vercel production
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: yarn
+          cache-dependency-path: frontend/yarn.lock
+
+      - name: Verify required Vercel secrets exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!name:-}" ]; then
+              echo "::error::Missing GitHub Actions secret: ${name}"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+          echo "Required Vercel secrets are present."
+
+      - name: Install frontend dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Frontend lint
+        run: npx eslint src e2e playwright.config.js
+
+      - name: Frontend unit tests
+        run: CI=true yarn test --watchAll=false
+
+      - name: Pull Vercel production configuration
+        run: npx --yes vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build with Vercel production environment
+        run: npx --yes vercel@latest build --prod --token="$VERCEL_TOKEN"
+
+      - name: Deploy prebuilt output to production
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          deployment_url=$(npx --yes vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "url=$deployment_url" >> "$GITHUB_OUTPUT"
+          echo "### Vercel production deployment" >> "$GITHUB_STEP_SUMMARY"
+          echo "Reason: ${{ inputs.reason }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deployment: $deployment_url" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report deployment URL
+        run: echo "Production deployment created at ${{ steps.deploy.outputs.url }}"
