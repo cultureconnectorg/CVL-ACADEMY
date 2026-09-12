@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { makeRailPhysics } from "./physics";
+import { createCadenceTracker, CADENCE_STATES } from "./cadence";
+import { predictNextIndex } from "./attention";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 
 export function clampRailIndex(index, count) {
@@ -50,18 +52,26 @@ function itemSelector(index) {
 
 /**
  * H0.10/H0.6 rail runtime: roving tabindex, rapid-input retargeting,
- * 1:1 pointer drag, nearest-item settle and continuous attention position.
- * It never activates domain actions; callers decide what Enter/Space means.
+ * 1:1 pointer drag, nearest-item settle, continuous attention position and
+ * one-step predictive focus cue during a consistent repeated cadence.
+ *
+ * Prediction is perceptual only. It never focuses, activates, unlocks or
+ * mutates a domain object. Reversal, pointer drag and STOPPED clear it.
  */
 export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   const reduced = useReducedMotion();
   const initial = clampRailIndex(initialIndex, itemCount);
   const [focusedIndex, setFocusedIndex] = useState(initial);
   const [attentionPosition, setAttentionPosition] = useState(initial);
+  const [cadenceState, setCadenceState] = useState(CADENCE_STATES.STOPPED);
+  const [predictedIndex, setPredictedIndex] = useState(-1);
   const dragRef = useRef(null);
   const aliveRef = useRef(true);
   const physicsRef = useRef(null);
   const attentionFrameRef = useRef(null);
+  const cadenceRef = useRef(null);
+
+  if (!cadenceRef.current) cadenceRef.current = createCadenceTracker();
 
   useEffect(() => {
     aliveRef.current = true;
@@ -74,6 +84,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     return () => {
       aliveRef.current = false;
       physicsRef.current = null;
+      cadenceRef.current?.dispose?.();
       if (attentionFrameRef.current && typeof cancelAnimationFrame === "function") {
         cancelAnimationFrame(attentionFrameRef.current);
       }
@@ -83,6 +94,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   useEffect(() => {
     setFocusedIndex((index) => clampRailIndex(index, itemCount));
     setAttentionPosition((position) => Math.max(0, Math.min(Math.max(itemCount - 1, 0), position)));
+    setPredictedIndex((index) => (index >= 0 && index < itemCount ? index : -1));
   }, [itemCount]);
 
   const targetScrollForIndex = useCallback((index) => {
@@ -128,9 +140,6 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
       scheduleAttentionMeasure();
       return;
     }
-    // Pointer drag / depth-memory restoration can move the real DOM scroll
-    // independently of the spring. Synchronize only while the spring is idle,
-    // then retarget from the true visual position instead of snapping from 0.
     if (!physics.running && Math.abs(physics.position - rail.scrollLeft) > 0.5) {
       physics.jump(rail.scrollLeft);
     }
@@ -145,7 +154,24 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
       rail.querySelector(itemSelector(next))?.focus?.({ preventScroll: true });
     }
     if (center) centerIndex(next);
+    return next;
   }, [centerIndex, itemCount, railRef]);
+
+  const clearPrediction = useCallback((state = CADENCE_STATES.STOPPED) => {
+    setCadenceState(state);
+    setPredictedIndex(-1);
+  }, []);
+
+  const trackDirectionalInput = useCallback((dir, nextIndex) => {
+    const tracker = cadenceRef.current;
+    if (!tracker) return;
+    const state = tracker.trackInput(dir, (nextState) => {
+      if (nextState === CADENCE_STATES.STOPPED) clearPrediction(nextState);
+      else setCadenceState(nextState);
+    });
+    setCadenceState(state);
+    setPredictedIndex(predictNextIndex(itemCount, nextIndex, state, dir));
+  }, [clearPrediction, itemCount]);
 
   const itemProps = useCallback((index) => ({
     tabIndex: index === focusedIndex ? 0 : -1,
@@ -154,29 +180,34 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     onKeyDown: (event) => {
       if (event.key === "ArrowRight") {
         event.preventDefault();
-        focusIndex(focusedIndex + 1);
+        const next = focusIndex(focusedIndex + 1);
+        trackDirectionalInput(1, next);
       } else if (event.key === "ArrowLeft") {
         event.preventDefault();
-        focusIndex(focusedIndex - 1);
+        const next = focusIndex(focusedIndex - 1);
+        trackDirectionalInput(-1, next);
       } else if (event.key === "Home") {
         event.preventDefault();
+        clearPrediction(CADENCE_STATES.SINGLE);
         focusIndex(0);
       } else if (event.key === "End") {
         event.preventDefault();
+        clearPrediction(CADENCE_STATES.SINGLE);
         focusIndex(itemCount - 1);
       }
     },
-  }), [focusIndex, focusedIndex, itemCount]);
+  }), [clearPrediction, focusIndex, focusedIndex, itemCount, trackDirectionalInput]);
 
   const onPointerDown = useCallback((event) => {
     if (event.button !== 0 || !railRef.current) return;
+    clearPrediction();
     dragRef.current = {
       pointerId: event.pointerId,
       startX: event.clientX,
       startScroll: railRef.current.scrollLeft,
     };
     railRef.current.setPointerCapture?.(event.pointerId);
-  }, [railRef]);
+  }, [clearPrediction, railRef]);
 
   const onPointerMove = useCallback((event) => {
     const drag = dragRef.current;
@@ -209,11 +240,15 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   return {
     focusedIndex,
     attentionPosition,
+    cadenceState,
+    predictedIndex,
     focusIndex,
     centerIndex,
     itemProps,
     railProps: {
       "data-spatial-rail": "true",
+      "data-spatial-cadence": cadenceState,
+      "data-spatial-predicted-index": predictedIndex,
       onPointerDown,
       onPointerMove,
       onPointerUp: endDrag,
