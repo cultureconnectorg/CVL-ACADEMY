@@ -77,6 +77,24 @@ async def ensure_indexes() -> None:
     await db.formations.create_index("code", unique=True)
     await db.formations.create_index("content_status")
 
+    # Commercial orders / paid entitlements.
+    await db.commercial_orders.create_index("order_id", unique=True)
+    await db.commercial_orders.create_index([("user_id", 1), ("created_at", -1)])
+    await db.commercial_orders.create_index([("status", 1), ("updated_at", -1)])
+    await db.academy_entitlements.create_index(
+        [("user_id", 1), ("economy_code", 1), ("status", 1)]
+    )
+    await db.academy_entitlements.create_index("source_order_id")
+
+    # Billing / Factur-X lifecycle.
+    await db.billing_profiles.create_index("user_id", unique=True)
+    await db.billing_documents.create_index("billing_document_id", unique=True)
+    await db.billing_documents.create_index("idempotency_key", unique=True)
+    await db.billing_documents.create_index(
+        [("order_id", 1), ("document_type", 1)], unique=True
+    )
+    await db.billing_sequences.create_index("sequence_id", unique=True)
+
     # ACA-0005 — Module Lineage (legacy<->canonical FMS mapping, additive
     # only, never touches db.formations/db.progress — see fms_lineage/).
     await db.module_lineage.create_index("lineage_id", unique=True)

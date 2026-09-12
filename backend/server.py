@@ -2,15 +2,14 @@
 
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
 import logging
 import os
-
-from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from api import router
+from billing_config import assert_billing_production_ready
 from db import client, db  # noqa
+from fastapi import FastAPI
 from fms_lineage import seed_initial_matrix
 from infra_indexes import ensure_indexes
 from mcp_server import academy_mcp, mcp_http_app
@@ -18,8 +17,8 @@ from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
+from starlette.middleware.cors import CORSMiddleware
 from template_engine import seed_default_definitions
-
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +30,16 @@ logger = logging.getLogger("cvln")
 @asynccontextmanager
 async def lifespan(app: FastAPI):  # noqa: ARG001
     """Own Academy startup/shutdown and the mounted MCP session manager."""
+    # This gate intentionally runs outside the seed try/except. Production must
+    # not accept paid Academy orders if legal invoice issuance is not configured.
+    billing_status = assert_billing_production_ready()
+    logger.info(
+        "billing production readiness: required=%s ready=%s environment=%s",
+        billing_status["required"],
+        billing_status["ready"],
+        billing_status["environment"],
+    )
+
     register_integration_subscribers()
     try:
         await ensure_indexes()

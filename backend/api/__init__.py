@@ -3,8 +3,9 @@
 Each sub-router owns one bounded concern (auth, onboarding, formations,
 learning journey, quiz, badges, missions, progression, mentor, FMS import,
 FMS lineage, skills, certification, templates, assistants, wallet,
-integrations, stakeholders, economy, institutional bridge, careops). This module just
-mounts them all under the single `/api` prefix used by the app.
+integrations, stakeholders, economy, institutional bridge, careops,
+commercial and billing). This module mounts them under the single `/api`
+prefix used by the app.
 """
 
 from __future__ import annotations
@@ -15,8 +16,11 @@ from . import (
     assistants,
     auth,
     badges,
+    billing,
+    billing_views,
     careops,
     certification,
+    commercial,
     economy,
     fms,
     fms_lineage,
@@ -37,6 +41,7 @@ from . import (
     templates,
     wallet,
 )
+from .commercial_access import require_commercial_learning_access
 from .legal import require_legal_acceptance
 
 router = APIRouter(prefix="/api")
@@ -61,9 +66,22 @@ for module in (
 ):
     router.include_router(module.router)
 
+router.include_router(
+    learning.router,
+    dependencies=[
+        Depends(require_legal_acceptance),
+        Depends(require_commercial_learning_access),
+    ],
+)
+
+for module in (commercial, billing, billing_views):
+    router.include_router(
+        module.router,
+        dependencies=[Depends(require_legal_acceptance)],
+    )
+
 for module in (
     onboarding,
-    learning,
     quizzes,
     missions,
     progression,
