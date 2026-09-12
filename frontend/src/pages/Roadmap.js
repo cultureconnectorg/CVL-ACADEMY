@@ -4,6 +4,7 @@ import { useI18n } from "@/lib/i18n.jsx";
 import { FocusFieldItem } from "@/lib/CvlnFocusField";
 import { Horizon } from "@/lib/motion-primitives";
 import { captureElementDepth, restoreElementDepth } from "@/lib/depthMemory";
+import { useSpatialRail } from "@/lib/spatial/useSpatialRail";
 
 const STAGE_CODES = ["graine", "pousse", "racine", "branches", "arbre", "foret"];
 const STAGE_EMOJI = { graine: "🌱", pousse: "🌿", racine: "🌳", branches: "🌲", arbre: "🦅", foret: "🌳🌳" };
@@ -23,16 +24,21 @@ export default function Roadmap() {
     code, emoji: STAGE_EMOJI[code], cc: STAGE_CC[code],
     desc: t(`roadmap_p.stage_desc_${code}`), signal: STAGE_SIGNAL[code],
   }));
-  // W3-D: progression is felt spatially (the current stage stands
-  // forward, every other stage recedes) rather than through a "Level N"
-  // counter — GRAINE_POUSSE_RACINE_BRANCHES_ARBRE_FORET stays an
-  // environmental transformation, never a level/XP readout.
+  const rail = useSpatialRail({
+    railRef,
+    itemCount: STAGES.length,
+    initialIndex: currentIdx >= 0 ? currentIdx : 0,
+  });
+  // DOMAIN_STATE remains authoritative: the current stage comes only from the
+  // authenticated user. Spatial focus can move as the learner explores the
+  // rail, but that never changes `user.stade` or unlock state.
   const currentStageCode = STAGE_CODES[currentIdx];
+  const spatialFocusCode = STAGE_CODES[rail.focusedIndex] || currentStageCode;
 
   useEffect(() => {
-    const rail = railRef.current;
+    const railElement = railRef.current;
     let secondFrame = null;
-    const restore = () => restoreElementDepth("/roadmap", "stage-rail", rail);
+    const restore = () => restoreElementDepth("/roadmap", "stage-rail", railElement);
     const firstFrame = window.requestAnimationFrame(() => {
       secondFrame = window.requestAnimationFrame(restore);
     });
@@ -62,21 +68,29 @@ export default function Roadmap() {
 
       <div
         ref={railRef}
+        {...rail.railProps}
         onScroll={rememberRailDepth}
         className="mt-12 flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory"
         data-testid="roadmap-scroll"
+        role="listbox"
+        aria-label={t("roadmap")}
       >
         {STAGES.map((s, i) => {
           const active = i === currentIdx;
-          const done = i < currentIdx;
-          const future = i > currentIdx;
+          const done = currentIdx >= 0 && i < currentIdx;
+          const future = currentIdx >= 0 && i > currentIdx;
           const stage = (
             <FocusFieldItem
               key={s.code}
               id={s.code}
-              focusedId={currentStageCode}
+              focusedId={spatialFocusCode}
+              {...rail.itemProps(i)}
+              role="option"
+              aria-selected={i === rail.focusedIndex}
+              aria-current={active ? "step" : undefined}
               data-testid={`stage-${s.code}`}
-              className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col
+              data-spatial-focus-id={`roadmap-stage-${s.code}`}
+              className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-[--cvln-orange]
                 ${active ? "border-2 border-[--cvln-orange]" : ""}`}
             >
               <div className="text-6xl mb-4">{s.emoji}</div>
