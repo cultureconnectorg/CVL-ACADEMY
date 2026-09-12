@@ -91,7 +91,9 @@ async def ensure_indexes() -> None:
     await db.careops_tickets.create_index([("status", 1), ("priority", 1)])
     await db.careops_tickets.create_index([("product", 1), ("fingerprint", 1)])
     await db.careops_incidents.create_index("incident_id", unique=True)
-    await db.careops_incidents.create_index([("product", 1), ("fingerprint", 1), ("status", 1)])
+    await db.careops_incidents.create_index(
+        [("product", 1), ("fingerprint", 1), ("status", 1)]
+    )
     await db.careops_maintenance.create_index("maintenance_id", unique=True)
     await db.careops_maintenance.create_index("incident_id", unique=True)
     await db.careops_maintenance.create_index([("status", 1), ("created_at", 1)])
