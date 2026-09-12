@@ -20,6 +20,7 @@ from fms_lineage import seed_initial_matrix
 from infra_indexes import ensure_indexes
 from mcp_indexes import ensure_mcp_indexes
 from mcp_private import private_academy_mcp, private_mcp_http_app
+import mcp_journey  # noqa: E402,F401
 from mcp_server import academy_mcp, mcp_http_app
 from seed import seed_if_empty
 from services.integrations.subscribers import (
