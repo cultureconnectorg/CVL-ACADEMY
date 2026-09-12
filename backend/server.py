@@ -21,7 +21,6 @@ from services.integrations.subscribers import (
 )
 from template_engine import seed_default_definitions
 
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
