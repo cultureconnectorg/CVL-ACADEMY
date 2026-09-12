@@ -218,9 +218,7 @@ def accelerated_runtime_status() -> Dict[str, Any]:
     cudf = _cudf_status()
     jetson = _jetson_status()
     dynamo = DynamoClient().status()
-    threshold = _safe_int(
-        os.environ.get("NVIDIA_CUDF_MIN_ROWS"), DEFAULT_CUDF_MIN_ROWS
-    )
+    threshold = _safe_int(os.environ.get("NVIDIA_CUDF_MIN_ROWS"), DEFAULT_CUDF_MIN_ROWS)
     return {
         "schema_version": "1.0.0",
         "host": {
@@ -290,9 +288,7 @@ def accelerated_group_count(
 
         frame = cudf.DataFrame(materialized)
         series = frame[key].fillna("").astype(str).value_counts()
-        result = {
-            str(index): int(value) for index, value in series.to_pandas().items()
-        }
+        result = {str(index): int(value) for index, value in series.to_pandas().items()}
         return result, "cudf", None
     except Exception as exc:  # noqa: BLE001 - optional accelerator must degrade safely
         reason = f"cudf-execution-failed:{type(exc).__name__}"
@@ -385,7 +381,9 @@ class DynamoClient:
         try:
             content = data["choices"][0]["message"]["content"]
         except (KeyError, IndexError, TypeError) as exc:
-            raise DynamoUnavailableError("Dynamo returned an invalid chat response") from exc
+            raise DynamoUnavailableError(
+                "Dynamo returned an invalid chat response"
+            ) from exc
         if not isinstance(content, str) or not content.strip():
             raise DynamoUnavailableError("Dynamo returned an empty chat response")
 
