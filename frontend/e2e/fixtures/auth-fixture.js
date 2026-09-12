@@ -193,10 +193,9 @@ const FIXTURE_FORMATION_DETAIL = {
  * Installs the fixture for one Playwright `page`: a fake but internally
  * consistent authenticated session, entirely intercepted at the network
  * layer. Protected-route tests represent a learner who has already accepted
- * the current legal bundle and already made a necessary-only cookie choice;
- * legal/cookie-consent behavior itself is tested separately. This keeps those
- * production guards active without letting unrelated modal UI block a feature
- * test's real pointer path.
+ * the current legal bundle, has active access to the fixture formation, and
+ * already made a necessary-only cookie choice. Commercial purchase tests
+ * explicitly override the entitlement route when they need an unpaid learner.
  *
  * @param {import('@playwright/test').Page} page
  * @param {{ user?, poles?, learningPath? }} overrides
@@ -241,6 +240,15 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       status: 200,
       contentType: "application/json",
       body: JSON.stringify({ accepted: true, bundle_version: "e2e-current", documents: [] }),
+    })
+  );
+  await page.route("**/api/commercial/entitlements/mine", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        { economy_code: "FMS-01", status: "ACTIVE", source_order_id: "e2e-fixture-order" },
+      ]),
     })
   );
   await page.route("**/api/poles", (route) =>
