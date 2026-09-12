@@ -54,7 +54,7 @@ export function useContextEntry() {
 /**
  * Context is a perceptual Z-layer, not another page. It approaches the learner
  * while remaining inside the current route. Reduced motion preserves the same
- * semantic state with a 1ms transition and no meaningful depth travel.
+ * semantic state with no invisible entrance frame and no meaningful depth travel.
  */
 export function ContextFrame({ show, children, className, ...rest }) {
   const reduced = useReducedMotion();
@@ -74,11 +74,12 @@ export function ContextFrame({ show, children, className, ...rest }) {
   const inactiveVisual = reduced
     ? { opacity: 0, y: 0, z: 0, scale: 1 }
     : { opacity: 0, y: 4, z: -18, scale: 0.985 };
+  const initialVisual = reduced && show ? activeVisual : inactiveVisual;
 
   return (
     <motion.div
       className={className}
-      initial={inactiveVisual}
+      initial={initialVisual}
       animate={show ? activeVisual : inactiveVisual}
       transition={{
         duration: show ? enterDuration : exitDuration,
