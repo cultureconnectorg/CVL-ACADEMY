@@ -11,7 +11,9 @@ from typing import Any, Dict, Iterable, Literal
 from db import db, utc_now_iso
 from services.careops_incidents import correlate_ticket
 
-TicketKind = Literal["support", "claim", "payment", "security", "access", "maintenance"]
+TicketKind = Literal[
+    "support", "claim", "payment", "security", "access", "maintenance"
+]
 Priority = Literal["P0", "P1", "P2", "P3"]
 
 
@@ -31,13 +33,42 @@ def _contains(text: str, terms: Iterable[str]) -> bool:
 def classify_message(message: str) -> Classification:
     if _contains(message, ("pirat", "hack", "fraude", "phishing", "compte volé")):
         return Classification("security", "P0", "security", True)
-    if _contains(message, ("réclamation", "reclamation", "conteste", "remboursement", "litige")):
+    if _contains(
+        message,
+        ("réclamation", "reclamation", "conteste", "remboursement", "litige"),
+    ):
         return Classification("claim", "P1", "claims", True)
-    if _contains(message, ("paiement", "facture", "invoice", "prélev", "prelev", "stripe")):
+    if _contains(
+        message, ("paiement", "facture", "invoice", "prélev", "prelev", "stripe")
+    ):
         return Classification("payment", "P2", "billing", True)
-    if _contains(message, ("connexion", "connecter", "login", "accès", "acces", "mot de passe", "ne s'ouvre")):
+    if _contains(
+        message,
+        (
+            "connexion",
+            "connecter",
+            "login",
+            "accès",
+            "acces",
+            "mot de passe",
+            "ne s'ouvre",
+        ),
+    ):
         return Classification("access", "P2", "support")
-    if _contains(message, ("bug", "erreur", "error", "cassé", "casse", "indisponible", "ne fonctionne", "500", "timeout")):
+    if _contains(
+        message,
+        (
+            "bug",
+            "erreur",
+            "error",
+            "cassé",
+            "casse",
+            "indisponible",
+            "ne fonctionne",
+            "500",
+            "timeout",
+        ),
+    ):
         return Classification("maintenance", "P2", "maintenance")
     return Classification("support", "P3", "support")
 
@@ -61,7 +92,13 @@ def _ticket_id() -> str:
     return f"CVLN-{secrets.token_hex(5).upper()}"
 
 
-async def create_ticket(*, user_id: str, message: str, product: str = "academy", channel: str = "academy") -> Dict[str, Any]:
+async def create_ticket(
+    *,
+    user_id: str,
+    message: str,
+    product: str = "academy",
+    channel: str = "academy",
+) -> Dict[str, Any]:
     classification = classify_message(message)
     now = utc_now_iso()
     ticket = {
@@ -83,12 +120,28 @@ async def create_ticket(*, user_id: str, message: str, product: str = "academy",
         "events": [{"type": "ticket.created", "actor": "laurentia", "ts": now}],
     }
     await db.careops_tickets.insert_one(ticket.copy())
-    saved = await db.careops_tickets.find_one({"ticket_id": ticket["ticket_id"]}, {"_id": 0}) or ticket
+    saved = (
+        await db.careops_tickets.find_one(
+            {"ticket_id": ticket["ticket_id"]}, {"_id": 0}
+        )
+        or ticket
+    )
     await correlate_ticket(saved)
-    return await db.careops_tickets.find_one({"ticket_id": ticket["ticket_id"]}, {"_id": 0}) or saved
+    return (
+        await db.careops_tickets.find_one(
+            {"ticket_id": ticket["ticket_id"]}, {"_id": 0}
+        )
+        or saved
+    )
 
 
-async def list_user_tickets(user_id: str, limit: int = 50) -> list[Dict[str, Any]]:
+async def list_user_tickets(
+    user_id: str, limit: int = 50
+) -> list[Dict[str, Any]]:
     limit = max(1, min(limit, 100))
-    cursor = db.careops_tickets.find({"user_id": user_id}, {"_id": 0}).sort("created_at", -1).limit(limit)
+    cursor = (
+        db.careops_tickets.find({"user_id": user_id}, {"_id": 0})
+        .sort("created_at", -1)
+        .limit(limit)
+    )
     return await cursor.to_list(length=limit)
