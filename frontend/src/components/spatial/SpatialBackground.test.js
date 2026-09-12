@@ -33,4 +33,15 @@ describe("SpatialBackground integration contract", () => {
     expect(html).toContain('data-spatial-engine="on"');
     expect(html).toContain('data-spatial-motion="full"');
   });
+
+  test("carries the real learner stade into the same persistent world", () => {
+    const html = renderToStaticMarkup(<SpatialBackground stade="foret" pathname="/dashboard" />);
+    expect(html).toContain('data-spatial-stade="foret"');
+    expect(html).toContain('data-spatial-node="DASHBOARD"');
+  });
+
+  test("fails safe to graine when no learner stade is available", () => {
+    const html = renderToStaticMarkup(<SpatialBackground pathname="/" />);
+    expect(html).toContain('data-spatial-stade="graine"');
+  });
 });
