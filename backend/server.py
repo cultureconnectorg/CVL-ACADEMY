@@ -6,10 +6,12 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+
 from api import router
 from billing_config import assert_billing_production_ready
 from db import client, db  # noqa
-from fastapi import FastAPI
 from fms_lineage import seed_initial_matrix
 from infra_indexes import ensure_indexes
 from mcp_server import academy_mcp, mcp_http_app
@@ -17,7 +19,6 @@ from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
-from starlette.middleware.cors import CORSMiddleware
 from template_engine import seed_default_definitions
 
 logging.basicConfig(
@@ -28,8 +29,11 @@ logger = logging.getLogger("cvln")
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):  # noqa: ARG001
+async def lifespan(app: FastAPI):
     """Own Academy startup/shutdown and the mounted MCP session manager."""
+    app.state.startup_ready = False
+    app.state.startup_error = None
+
     # This gate intentionally runs outside the seed try/except. Production must
     # not accept paid Academy orders if legal invoice issuance is not configured.
     billing_status = assert_billing_production_ready()
@@ -51,9 +55,11 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
             inserted,
             skipped,
         )
-        logger.info("Seed done.")
-    except Exception as e:  # noqa: BLE001
-        logger.exception("Seed failed: %s", e)
+        app.state.startup_ready = True
+        logger.info("Seed done; application ready.")
+    except Exception as exc:  # noqa: BLE001
+        app.state.startup_error = f"{type(exc).__name__}: {exc}"
+        logger.exception("Startup initialization failed: %s", exc)
 
     # Mounted ASGI sub-app lifespans are not started by Starlette/FastAPI.
     # MCP requires its session manager to be entered by the host application.
@@ -61,6 +67,7 @@ async def lifespan(app: FastAPI):  # noqa: ARG001
         try:
             yield
         finally:
+            app.state.startup_ready = False
             client.close()
 
 
