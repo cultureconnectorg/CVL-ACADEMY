@@ -113,9 +113,7 @@ class CVLNWalletIntegration:
             idempotency_key=idempotency_key,
         )
         if idempotency_key and data.get("ok") is not True:
-            raise CVLNWalletAmbiguousResult(
-                "CVLN Wallet returned non-confirmed charge"
-            )
+            raise CVLNWalletAmbiguousResult("CVLN Wallet returned non-confirmed charge")
         return data
 
     async def transfer(
