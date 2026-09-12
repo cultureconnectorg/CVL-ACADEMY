@@ -15,6 +15,7 @@ from billing_config import assert_billing_production_ready
 from db import client, db  # noqa
 from fms_lineage import seed_initial_matrix
 from infra_indexes import ensure_indexes
+from mcp_indexes import ensure_mcp_indexes
 from mcp_private import private_academy_mcp, private_mcp_http_app
 from mcp_server import academy_mcp, mcp_http_app
 from seed import seed_if_empty
@@ -36,8 +37,6 @@ async def lifespan(app: FastAPI):
     app.state.startup_ready = False
     app.state.startup_error = None
 
-    # This gate intentionally runs outside the seed try/except. Production must
-    # not accept paid Academy orders if legal invoice issuance is not configured.
     billing_status = assert_billing_production_ready()
     logger.info(
         "billing production readiness: required=%s ready=%s environment=%s",
@@ -49,6 +48,7 @@ async def lifespan(app: FastAPI):
     register_integration_subscribers()
     try:
         await ensure_indexes()
+        await ensure_mcp_indexes()
         await seed_if_empty()
         await seed_default_definitions()
         inserted, skipped = await seed_initial_matrix()
@@ -63,8 +63,6 @@ async def lifespan(app: FastAPI):
         app.state.startup_error = f"{type(exc).__name__}: {exc}"
         logger.exception("Startup initialization failed: %s", exc)
 
-    # Mounted ASGI sub-app lifespans are not started by Starlette/FastAPI.
-    # Both MCP servers therefore have their session managers owned here.
     async with academy_mcp.session_manager.run(), private_academy_mcp.session_manager.run():
         try:
             yield
@@ -84,13 +82,13 @@ app.add_middleware(
     expose_headers=["Mcp-Session-Id", "WWW-Authenticate"],
 )
 
-# OAuth metadata/endpoints are mounted at root because MCP clients discover
-# them through standardized /.well-known and /oauth URLs.
+# OAuth discovery/endpoints live at root because MCP clients discover them via
+# standardized /.well-known and /oauth URLs.
 app.include_router(mcp_oauth_router)
 app.include_router(router)
 
 # Existing public Streamable HTTP MCP endpoint: anonymous and read-only.
 app.mount("/mcp", mcp_http_app)
 
-# New OAuth-protected MCP endpoint: connected-user data and scoped write actions.
+# OAuth-protected MCP endpoint: connected-user data and scoped write actions.
 app.mount("/mcp/private", private_mcp_http_app)
