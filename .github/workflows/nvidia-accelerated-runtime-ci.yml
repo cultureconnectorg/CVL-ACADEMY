@@ -1,0 +1,119 @@
+name: NVIDIA Accelerated Runtime CI
+
+on:
+  pull_request:
+    paths:
+      - "backend/services/nvidia_runtime.py"
+      - "backend/services/agent_factory.py"
+      - "backend/api/accelerators.py"
+      - "backend/api/health.py"
+      - "backend/api/__init__.py"
+      - "backend/tests/test_nvidia_runtime.py"
+      - "backend/requirements-gpu-cu*.txt"
+      - "backend/.env.example"
+      - "docs/NVIDIA_ACCELERATED_RUNTIME.md"
+      - ".github/workflows/nvidia-accelerated-runtime-ci.yml"
+  push:
+    branches: [main]
+    paths:
+      - "backend/services/nvidia_runtime.py"
+      - "backend/services/agent_factory.py"
+      - "backend/api/accelerators.py"
+      - "backend/api/health.py"
+      - "backend/api/__init__.py"
+      - "backend/tests/test_nvidia_runtime.py"
+      - "backend/requirements-gpu-cu*.txt"
+      - "backend/.env.example"
+      - "docs/NVIDIA_ACCELERATED_RUNTIME.md"
+      - ".github/workflows/nvidia-accelerated-runtime-ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  cpu-contract:
+    name: CPU fallback, routing and security contract
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      MONGO_URL: mongodb://127.0.0.1:27017
+      DB_NAME: cvln_academy_nvidia_ci
+      JWT_SECRET: cvln-academy-nvidia-ci-only-not-production
+      CORS_ORIGINS: http://127.0.0.1:4173
+      ACADEMY_AI_TRANSPORT: anthropic
+      NVIDIA_ACCELERATION_REQUIRED: "false"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements.txt
+      - name: Install CPU-portable backend
+        working-directory: backend
+        run: pip install -r requirements.txt
+      - name: Format and lint NVIDIA delta
+        working-directory: backend
+        run: |
+          black --check services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/health.py tests/test_nvidia_runtime.py
+          isort --check-only --profile black --src-path . services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/health.py tests/test_nvidia_runtime.py
+          flake8 --config=.flake8 services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/health.py tests/test_nvidia_runtime.py
+      - name: Run NVIDIA runtime contract tests
+        working-directory: backend
+        run: pytest -q tests/test_nvidia_runtime.py
+      - name: Prove accelerator routes are reachable from the aggregate router
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          from api import router
+
+          paths = {route.path for route in router.routes}
+          required = {
+              "/api/accelerators/status",
+              "/api/accelerators/diagnostics",
+              "/api/accelerators/self-test",
+          }
+          missing = required - paths
+          if missing:
+              raise SystemExit(f"Accelerator routes not wired: {sorted(missing)}")
+          print("Accelerator routes wired:", sorted(required))
+          PY
+      - name: Prove CPU runtime never claims a GPU by configuration alone
+        working-directory: backend
+        run: |
+          python - <<'PY'
+          from services.nvidia_runtime import public_accelerator_status
+
+          status = public_accelerator_status()
+          print(status)
+          if status["jetson_active"] and not status["jetson_detected"]:
+              raise SystemExit("Jetson active without device evidence")
+          if status["cudf_ready"] and not status["cuda_detected"]:
+              raise SystemExit("cuDF ready without CUDA evidence")
+          PY
+
+  profile-contract:
+    name: GPU dependency profiles stay isolated from web runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate stable accelerator pins and isolation
+        shell: bash
+        run: |
+          grep -q '^cudf-cu13==26\.8\.1$' backend/requirements-gpu-cu13.txt
+          grep -q '^nvidia-cuda-runtime>=13\.0,<14$' backend/requirements-gpu-cu13.txt
+          grep -q '^cudf-cu12==26\.8\.1$' backend/requirements-gpu-cu12.txt
+          grep -q '^nvidia-cuda-runtime-cu12>=12\.6,<13$' backend/requirements-gpu-cu12.txt
+          if grep -Eq '^(cudf|nvidia-cuda-runtime)' backend/requirements.txt; then
+            echo 'GPU packages must not be forced into the CPU web runtime.'
+            exit 1
+          fi
