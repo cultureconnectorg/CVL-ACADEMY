@@ -1,0 +1,6 @@
+# CVLN Academy — optional NVIDIA CUDA 12 compatibility profile
+# Prefer CUDA 13 for new GPU hosts. Keep this profile for existing qualified CUDA 12 fleets.
+-r requirements.txt
+
+cudf-cu12==26.8.1
+nvidia-cuda-runtime-cu12>=12.6,<13
