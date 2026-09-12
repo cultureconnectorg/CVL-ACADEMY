@@ -57,9 +57,15 @@ async def academy_overview_template() -> str:
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>CVLN Academy</title>
   <style>
-    body{font-family:system-ui,-apple-system,sans-serif;margin:0;padding:16px;background:transparent;color:var(--color-text-primary,#111)}
+    body{
+      font-family:system-ui,-apple-system,sans-serif;
+      margin:0;padding:16px;background:transparent;
+      color:var(--color-text-primary,#111)
+    }
     .card{border:1px solid rgba(127,127,127,.25);border-radius:16px;padding:16px}
-    h2{margin:0 0 8px;font-size:18px}.muted{opacity:.7;font-size:13px}.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+    h2{margin:0 0 8px;font-size:18px}
+    .muted{opacity:.7;font-size:13px}
+    .chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
     .chip{border:1px solid rgba(127,127,127,.25);border-radius:999px;padding:5px 9px;font-size:12px}
   </style>
 </head>
@@ -70,10 +76,18 @@ async def academy_overview_template() -> str:
     <div id="chips" class="chips"></div>
   </div>
   <script>
-    const payload = window.openai?.toolOutput || window.openai?.toolResult?.structuredContent || {};
+    const payload = window.openai?.toolOutput
+      || window.openai?.toolResult?.structuredContent
+      || {};
     const domains = payload.domains || [];
     document.getElementById('mode').textContent = payload.mode || 'CVLN Academy';
-    document.getElementById('chips').innerHTML = domains.map(x => `<span class="chip">${String(x).replace(/[&<>"']/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]))}</span>`).join('');
+    const escapeHtml = value => String(value).replace(
+      /[&<>"']/g,
+      s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s])
+    );
+    document.getElementById('chips').innerHTML = domains
+      .map(x => `<span class="chip">${escapeHtml(x)}</span>`)
+      .join('');
   </script>
 </body>
 </html>"""
