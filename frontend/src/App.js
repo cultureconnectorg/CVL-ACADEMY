@@ -13,7 +13,7 @@ import CookieConsent from "@/components/CookieConsent";
 import SpatialWorldFrame from "@/components/spatial/SpatialWorldFrame.jsx";
 import { RouteTransition } from "@/lib/RouteTransition";
 
-const Landing = lazy(() => import("@/pages/Landing"));
+const LandingSpatial = lazy(() => import("@/pages/LandingSpatial"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
 const Onboarding = lazy(() => import("@/pages/Onboarding"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
@@ -100,7 +100,7 @@ function App() {
             <Suspense fallback={<PageFallback />}>
               <RouteTransition>
                 <Routes>
-                  <Route path="/" element={<Landing />} />
+                  <Route path="/" element={<LandingSpatial />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/legal/accept" element={<LegalAcceptance />} />
                   <Route path="/legal/:slug" element={<LegalHub />} />
