@@ -4,6 +4,7 @@ import SpatialBackground from "@/components/spatial/SpatialBackground.jsx";
 import SpatialCameraBridge from "@/components/spatial/SpatialCameraBridge.jsx";
 import SpatialCameraIntentCapture from "@/components/spatial/SpatialCameraIntentCapture.jsx";
 import SpatialFocusManager from "@/components/spatial/SpatialFocusManager.jsx";
+import SpatialModuleDock from "@/components/spatial/SpatialModuleDock.jsx";
 import SpatialRuntimeDiagnostics from "@/components/spatial/SpatialRuntimeDiagnostics.jsx";
 import SpatialSensoryBridge from "@/components/spatial/SpatialSensoryBridge.jsx";
 import SpatialSharedElementLayer from "@/components/spatial/SpatialSharedElementLayer.jsx";
@@ -29,6 +30,7 @@ export default function SpatialWorldFrame({ children }) {
       <SpatialBackground pathname={location.pathname} stade={user?.stade} />
       <SpatialSharedElementLayer />
       <div className="relative z-10 min-h-screen">{children}</div>
+      <SpatialModuleDock />
     </div>
   );
 }
