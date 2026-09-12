@@ -71,10 +71,21 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
 
   const centerIndex = useCallback((index) => {
     const target = targetScrollForIndex(index);
-    if (target === null) return;
-    if (reduced) physicsRef.current?.jump(target);
-    else physicsRef.current?.setTarget(target);
-  }, [reduced, targetScrollForIndex]);
+    const rail = railRef.current;
+    const physics = physicsRef.current;
+    if (target === null || !rail || !physics) return;
+    if (reduced) {
+      physics.jump(target);
+      return;
+    }
+    // Pointer drag / depth-memory restoration can move the real DOM scroll
+    // independently of the spring. Synchronize only while the spring is idle,
+    // then retarget from the true visual position instead of snapping from 0.
+    if (!physics.running && Math.abs(physics.position - rail.scrollLeft) > 0.5) {
+      physics.jump(rail.scrollLeft);
+    }
+    physics.setTarget(target);
+  }, [railRef, reduced, targetScrollForIndex]);
 
   const focusIndex = useCallback((index, { focus = true, center = true } = {}) => {
     const next = clampRailIndex(index, itemCount);
@@ -113,7 +124,6 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
       pointerId: event.pointerId,
       startX: event.clientX,
       startScroll: railRef.current.scrollLeft,
-      moved: false,
     };
     railRef.current.setPointerCapture?.(event.pointerId);
   }, [railRef]);
@@ -123,7 +133,6 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     const rail = railRef.current;
     if (!drag || !rail || drag.pointerId !== event.pointerId) return;
     const delta = event.clientX - drag.startX;
-    if (Math.abs(delta) > 3) drag.moved = true;
     rail.scrollLeft = Math.max(0, drag.startScroll - delta);
   }, [railRef]);
 
