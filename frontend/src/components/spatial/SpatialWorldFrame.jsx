@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth.jsx";
 import SpatialBackground from "@/components/spatial/SpatialBackground.jsx";
 import SpatialCameraBridge from "@/components/spatial/SpatialCameraBridge.jsx";
 import SpatialCameraIntentCapture from "@/components/spatial/SpatialCameraIntentCapture.jsx";
+import SpatialFocusManager from "@/components/spatial/SpatialFocusManager.jsx";
 import ReturnPositionTracker from "@/components/spatial/ReturnPositionTracker.jsx";
 import "./spatial-camera.css";
 
@@ -17,6 +18,7 @@ export default function SpatialWorldFrame({ children }) {
   return (
     <div className="relative min-h-screen overflow-hidden" data-testid="spatial-world-frame">
       <ReturnPositionTracker />
+      <SpatialFocusManager />
       <SpatialCameraIntentCapture />
       <SpatialCameraBridge />
       <SpatialBackground pathname={location.pathname} stade={user?.stade} />
