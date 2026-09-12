@@ -1,4 +1,5 @@
 """Runtime projection and executable gates for the full Economy 3D workbook."""
+
 from __future__ import annotations
 
 import csv
@@ -103,9 +104,7 @@ def load_economy_workbook_rows() -> dict[str, list[dict[str, Any]]]:
             raise ValueError(f"Economy workbook sheet empty: {sheet}")
         workbook[sheet] = rows
     if len(workbook["Mapping_812"]) != 813:
-        raise ValueError(
-            "Mapping_812 source projection must contain header + 812 rows"
-        )
+        raise ValueError("Mapping_812 source projection must contain header + 812 rows")
     return workbook
 
 
@@ -185,9 +184,7 @@ def load_unit_economics() -> dict[str, dict[str, Any]]:
             },
         }
     if len(result) != 18:
-        raise ValueError(
-            f"Unit_Economics must contain 18 products, got {len(result)}"
-        )
+        raise ValueError(f"Unit_Economics must contain 18 products, got {len(result)}")
     return result
 
 
@@ -201,9 +198,7 @@ def evaluate_offer_unit_economics(offer: Any) -> dict[str, Any]:
         }
     source = load_unit_economics()[product]
     computed_margin = offer.price_eur - offer.variable_cost_eur
-    computed_margin_pct = (
-        computed_margin / offer.price_eur if offer.price_eur else 0.0
-    )
+    computed_margin_pct = computed_margin / offer.price_eur if offer.price_eur else 0.0
     drift: list[str] = []
     checks = (
         ("price_eur", offer.price_eur, source["price_eur"]),
@@ -248,8 +243,7 @@ async def evaluate_offer_phase(db: Any, offer_id: str) -> dict[str, Any]:
         {"_id": 0},
     )
     evidence_is_current = bool(
-        state
-        and state.get("source_file_sha256") == current_source_sha
+        state and state.get("source_file_sha256") == current_source_sha
     )
     allowed = bool(
         state
@@ -276,9 +270,7 @@ async def set_phase_state(
     actor_id: str,
 ) -> dict[str, Any]:
     if phase not in {"PHASE_2", "PHASE_3"}:
-        raise ValueError(
-            "Only PHASE_2 and PHASE_3 require explicit activation state"
-        )
+        raise ValueError("Only PHASE_2 and PHASE_3 require explicit activation state")
     if active and not evidence_ref.strip():
         raise ValueError(
             "evidence_ref is required to activate an economy roadmap phase"

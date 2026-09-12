@@ -4,6 +4,7 @@ The current application remains authoritative. Historical #24 contributes only
 source-backed workbook projections, imported idempotently when persisted counts
 drift from their evidence contracts.
 """
+
 from __future__ import annotations
 
 from typing import Any

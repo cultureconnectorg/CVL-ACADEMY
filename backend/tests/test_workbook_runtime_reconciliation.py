@@ -26,7 +26,9 @@ def test_cartography_2d_projects_exact_1884_source_rows():
     workbook = load_cartography_2d()
     assert sum(len(rows) for rows in workbook.values()) == TOTAL_NONEMPTY_ROWS == 1884
     assert len(workbook["Master_Catalogue"]) == 812
-    assert len({row["normalized"]["code"] for row in workbook["Master_Catalogue"]}) == 812
+    assert (
+        len({row["normalized"]["code"] for row in workbook["Master_Catalogue"]}) == 812
+    )
 
 
 def test_protocol_master_projects_227_controls_and_328_workbook_rows():

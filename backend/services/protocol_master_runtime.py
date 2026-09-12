@@ -1,4 +1,5 @@
 """Executable Protocol workbook runtime with 227 row-specific contracts."""
+
 from __future__ import annotations
 
 import base64
@@ -111,7 +112,9 @@ def _manifest() -> dict[str, Any]:
 
 
 def _load_contract_payload() -> dict[str, Any]:
-    encoded = "".join(path.read_text(encoding="utf-8").strip() for path in CONTRACT_PARTS)
+    encoded = "".join(
+        path.read_text(encoding="utf-8").strip() for path in CONTRACT_PARTS
+    )
     try:
         raw = zlib.decompress(base64.b64decode(encoded)).decode("utf-8")
         payload = json.loads(raw)
@@ -165,7 +168,9 @@ def load_protocol_workbook_rows() -> list[dict[str, Any]]:
     manifest = _manifest()
     rows: list[dict[str, Any]] = []
     for sheet, count in EXPECTED_SHEET_ROWS.items():
-        excel_rows = [1] + list(range(3, 26)) if sheet == "Dashboard" else range(1, count + 1)
+        excel_rows = (
+            [1] + list(range(3, 26)) if sheet == "Dashboard" else range(1, count + 1)
+        )
         if len(list(excel_rows)) != count:
             raise ValueError(f"{sheet}: row identity count drift")
         for excel_row in excel_rows:
@@ -361,9 +366,7 @@ async def import_protocol_master_runtime(db: Any) -> dict[str, Any]:
         [("sheet", 1), ("excel_row", 1)], unique=True
     )
     await db.academy_protocol_controls.create_index("control_id", unique=True)
-    await db.academy_protocol_controls.create_index(
-        [("domain", 1), ("excel_row", 1)]
-    )
+    await db.academy_protocol_controls.create_index([("domain", 1), ("excel_row", 1)])
     await db.academy_requirement_registry.create_index("requirement_id", unique=True)
     await db.academy_protocol_manifest.update_one(
         {"kind": "PROTOCOL_MASTER_WORKBOOK"},

@@ -10,6 +10,7 @@ Evidence First:
 - Certification never grants a habilitation.
 - Academy never auto-assigns executive authority.
 """
+
 from __future__ import annotations
 
 import hashlib
@@ -26,7 +27,9 @@ SNAPSHOT_PATH = (
 )
 
 SOURCE_WORKBOOK = "CVLN_Academy_Cartographie_2D_Master(2).xlsx"
-SOURCE_WORKBOOK_SHA256 = "43a0885dff4177249fa83fb1e7754d48c871df150309d931349c381954fa6bf2"
+SOURCE_WORKBOOK_SHA256 = (
+    "43a0885dff4177249fa83fb1e7754d48c871df150309d931349c381954fa6bf2"
+)
 SHEET_ROW_COUNTS = {
     "Master_Catalogue": 812,
     "External_Market": 437,
@@ -168,13 +171,9 @@ def _master_rows() -> list[dict[str, Any]]:
     return rows
 
 
-def _derived_view(
-    sheet: str, master: list[dict[str, Any]]
-) -> list[dict[str, Any]]:
+def _derived_view(sheet: str, master: list[dict[str, Any]]) -> list[dict[str, Any]]:
     dimension = DERIVED_DIMENSIONS[sheet]
-    selected = [
-        row for row in master if row["normalized"]["dimension"] == dimension
-    ]
+    selected = [row for row in master if row["normalized"]["dimension"] == dimension]
     return [
         _runtime_row(
             sheet,
@@ -209,9 +208,7 @@ def _operator_role_rows(
     ]
 
 
-def _static_rows(
-    snapshot: dict[str, Any], sheet: str
-) -> list[dict[str, Any]]:
+def _static_rows(snapshot: dict[str, Any], sheet: str) -> list[dict[str, Any]]:
     block = snapshot[sheet]
     headers = block["headers"]
     mapping = STATIC_MAPPINGS[sheet]
@@ -369,8 +366,6 @@ async def import_cartography_2d_runtime(db: Any) -> dict[str, Any]:
     return {
         "rows": imported,
         "sheets": len(workbook),
-        "sheet_row_counts": {
-            sheet: len(rows) for sheet, rows in workbook.items()
-        },
+        "sheet_row_counts": {sheet: len(rows) for sheet, rows in workbook.items()},
         "source_workbook_sha256": SOURCE_WORKBOOK_SHA256,
     }

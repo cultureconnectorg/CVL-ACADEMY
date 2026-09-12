@@ -4,6 +4,7 @@ Evidence First: the CSV is the source artefact; runtime records retain source
 path, row number and a deterministic content hash. CANDIDATE rows stay
 CANDIDATE and are never promoted to published formations by this importer.
 """
+
 from __future__ import annotations
 
 import csv
@@ -68,7 +69,9 @@ def load_catalogue_rows(path: Path = CATALOGUE_SOURCE) -> list[dict[str, Any]]:
                 "notes": _clean(raw.get("Notes")),
             }
             if not payload["domain"] or not payload["title"]:
-                raise ValueError(f"catalogue master row {row_number}: domain/title required")
+                raise ValueError(
+                    f"catalogue master row {row_number}: domain/title required"
+                )
             payload["source"] = {
                 "kind": "MASTER_CATALOGUE_2D",
                 "path": str(path.relative_to(Path(__file__).resolve().parents[2])),
@@ -84,7 +87,9 @@ def load_catalogue_rows(path: Path = CATALOGUE_SOURCE) -> list[dict[str, Any]]:
     return rows
 
 
-async def import_catalogue_master(db: Any, rows: Iterable[dict[str, Any]] | None = None) -> dict[str, int]:
+async def import_catalogue_master(
+    db: Any, rows: Iterable[dict[str, Any]] | None = None
+) -> dict[str, int]:
     """Idempotently upsert all catalogue rows into the runtime master collection."""
     parsed = list(rows) if rows is not None else load_catalogue_rows()
     if len(parsed) != EXPECTED_MASTER_ROWS:
@@ -103,4 +108,9 @@ async def import_catalogue_master(db: Any, rows: Iterable[dict[str, Any]] | None
 
     await db.academy_catalogue_master.create_index("code", unique=True)
     await db.academy_catalogue_master.create_index([("domain", 1), ("status", 1)])
-    return {"rows": len(parsed), "matched": matched, "modified": modified, "upserted": upserted}
+    return {
+        "rows": len(parsed),
+        "matched": matched,
+        "modified": modified,
+        "upserted": upserted,
+    }
