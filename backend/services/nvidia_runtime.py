@@ -275,9 +275,11 @@ def accelerated_group_count(
         return dict(counts), "python", "below-gpu-threshold"
 
     cuda = cuda_runtime_status()
-    cudf = _cudf_status()
-    if not (cuda["detected"] and cudf["importable"]):
-        reason = cudf.get("reason") or cuda.get("reason") or "gpu-runtime-unavailable"
+    cudf_probe = _cudf_status()
+    if not (cuda["detected"] and cudf_probe["importable"]):
+        reason = (
+            cudf_probe.get("reason") or cuda.get("reason") or "gpu-runtime-unavailable"
+        )
         if require_gpu:
             raise NvidiaAccelerationError(str(reason))
         counts = Counter(str(item.get(key, "")) for item in materialized)
