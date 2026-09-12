@@ -5,10 +5,6 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Response
-from pydantic import BaseModel, Field
-from pymongo import ReturnDocument
-
 from auth import get_current_user
 from billing import (
     DOCUMENT_ISSUANCE_FAILED,
@@ -28,7 +24,10 @@ from billing_einvoice import (
     tax_policy,
 )
 from db import db, utc_now_iso
+from fastapi import APIRouter, Depends, HTTPException, Response
 from models import User
+from pydantic import BaseModel, Field
+from pymongo import ReturnDocument
 
 router = APIRouter(prefix="/billing", tags=["billing"])
 
