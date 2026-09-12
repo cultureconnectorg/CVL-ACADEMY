@@ -7,8 +7,6 @@ ignore the OpenAI metadata and continue using the same server.
 
 from __future__ import annotations
 
-import json
-
 import mcp.types as types
 
 from mcp_server import academy_capabilities, academy_mcp
