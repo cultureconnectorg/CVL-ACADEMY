@@ -42,9 +42,9 @@ function waitForElement(selector, timeoutMs = 1800) {
 }
 
 /**
- * Resolves forward and exact-return camera anchors after React has mounted the
- * route. Navigation is never delayed; async API rendering gets a bounded
- * observation window, then safely falls back to normal routing.
+ * Resolves forward and exact-return camera/shared-element anchors after React
+ * has mounted the route. Navigation is never delayed; async API rendering gets
+ * a bounded observation window, then safely falls back to normal routing.
  */
 export default function SpatialCameraBridge() {
   const location = useLocation();
@@ -61,7 +61,7 @@ export default function SpatialCameraBridge() {
 
     if (pending && pending.destinationRoute === location.pathname) {
       const selector = pending.destinationSelector || anchorSelector(pending.anchorId, "destination");
-      waitForElement(selector).then((target) => {
+      waitForElement(selector).then(async (target) => {
         if (cancelled) return;
         const current = readPendingCameraIntent();
         if (!current || current.destinationRoute !== location.pathname) return;
@@ -69,12 +69,16 @@ export default function SpatialCameraBridge() {
           cancelCameraIntent();
           return;
         }
+        const sharedTarget = current.sharedDestinationSelector
+          ? await waitForElement(current.sharedDestinationSelector)
+          : null;
+        if (cancelled) return;
         const intent = consumePendingCameraIntent();
-        completeCameraIntent(intent, target);
+        completeCameraIntent(intent, target, { sharedElement: sharedTarget });
       });
     } else if (armedReturn && armedReturn.sourceRoute === location.pathname) {
       const selector = armedReturn.sourceSelector || `a[href="${armedReturn.destinationRoute}"]`;
-      waitForElement(selector).then((target) => {
+      waitForElement(selector).then(async (target) => {
         if (cancelled) return;
         const current = readArmedCameraReturn();
         if (!current || current.sourceRoute !== location.pathname) return;
@@ -83,8 +87,12 @@ export default function SpatialCameraBridge() {
           cancelCameraIntent();
           return;
         }
+        const sharedTarget = current.sharedSourceSelector
+          ? await waitForElement(current.sharedSourceSelector)
+          : null;
+        if (cancelled) return;
         const contract = consumeArmedCameraReturn();
-        completeCameraIntent(contract, target, { returning: true });
+        completeCameraIntent(contract, target, { returning: true, sharedElement: sharedTarget });
         if (typeof target.focus === "function") target.focus({ preventScroll: true });
       });
     }
