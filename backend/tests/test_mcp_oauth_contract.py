@@ -9,14 +9,19 @@ from server import app
 
 
 def test_private_mcp_mounts_are_additive():
-    mount_paths = {path for route in app.routes if (path := getattr(route, "path", None))}
+    mount_paths = {
+        path for route in app.routes if (path := getattr(route, "path", None))
+    }
     assert "/mcp" in mount_paths
     assert "/mcp/private" in mount_paths
 
     # FastAPI 0.141 may retain included routers as nested route containers.
     # Resolve the named endpoints through the application router instead of
     # assuming every public endpoint is flattened directly into app.routes.
-    assert str(app.url_path_for("oauth_metadata")) == "/.well-known/oauth-authorization-server"
+    assert (
+        str(app.url_path_for("oauth_metadata"))
+        == "/.well-known/oauth-authorization-server"
+    )
     assert (
         str(app.url_path_for("protected_resource_metadata"))
         == "/.well-known/oauth-protected-resource/mcp/private"
