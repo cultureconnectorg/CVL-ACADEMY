@@ -49,7 +49,10 @@ class LearningCoverageModel(BaseModel):
                 (CompletenessGate.PEDAGOGICAL_DESIGN, self.pedagogical_design),
                 (CompletenessGate.LEARNING_CONTENT, self.learning_content),
                 (CompletenessGate.ASSESSMENT, self.assessment),
-                (CompletenessGate.COMMERCIALIZATION_ACCESS, self.commercialization_access),
+                (
+                    CompletenessGate.COMMERCIALIZATION_ACCESS,
+                    self.commercialization_access,
+                ),
                 (CompletenessGate.RUNTIME, self.runtime),
                 (CompletenessGate.VERIFICATION, self.verification),
             )
