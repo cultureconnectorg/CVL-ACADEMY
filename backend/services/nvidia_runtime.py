@@ -86,7 +86,7 @@ def _sanitized_url(value: Optional[str]) -> Optional[str]:
         port = parsed.port
     except ValueError:
         return None
-    if not parsed.scheme or not host:
+    if parsed.scheme not in {"http", "https"} or not host:
         return None
     host_display = f"[{host}]" if ":" in host else host
     netloc = f"{host_display}:{port}" if port else host_display
@@ -217,7 +217,7 @@ def accelerated_runtime_status() -> Dict[str, Any]:
     cuda = cuda_runtime_status()
     cudf = _cudf_status()
     jetson = _jetson_status()
-    dynamo = DynamoClient().status()
+    dynamo = nvidia_dynamo.status()
     threshold = _safe_int(os.environ.get("NVIDIA_CUDF_MIN_ROWS"), DEFAULT_CUDF_MIN_ROWS)
     return {
         "schema_version": "1.0.0",
@@ -302,7 +302,12 @@ def accelerated_group_count(
 
 
 class DynamoClient:
-    """Thin OpenAI-compatible client for a separately operated NVIDIA Dynamo plane."""
+    """OpenAI-compatible client for a separately operated NVIDIA Dynamo plane.
+
+    One client instance owns one lazily-created ``httpx.AsyncClient`` so hot chat
+    paths reuse HTTP connections/TLS sessions. The FastAPI lifespan closes it.
+    Creating an HTTP client per message would defeat HTTPX connection pooling.
+    """
 
     def __init__(self) -> None:
         self.base_url = os.environ.get("NVIDIA_DYNAMO_BASE_URL", "").rstrip("/")
@@ -315,9 +320,18 @@ class DynamoClient:
             os.environ.get("NVIDIA_DYNAMO_TIMEOUT_SECONDS"),
             DEFAULT_DYNAMO_TIMEOUT_SECONDS,
         )
+        self._client: Optional[httpx.AsyncClient] = None
 
     def is_configured(self) -> bool:
-        return bool(self.base_url and self.model)
+        try:
+            parsed = urlparse(self.base_url)
+        except ValueError:
+            return False
+        return bool(
+            self.model
+            and parsed.scheme in {"http", "https"}
+            and parsed.hostname
+        )
 
     def is_selected(self) -> bool:
         return os.environ.get("ACADEMY_AI_TRANSPORT", "anthropic").lower() == "dynamo"
@@ -330,6 +344,7 @@ class DynamoClient:
             "model": self.model or None,
             "timeout_seconds": self.timeout_seconds,
             "openai_compatible": True,
+            "connection_pool_initialized": self._client is not None,
         }
 
     def _endpoint(self) -> str:
@@ -337,7 +352,35 @@ class DynamoClient:
             raise DynamoConfigurationError(
                 "NVIDIA_DYNAMO_BASE_URL and NVIDIA_DYNAMO_MODEL are required"
             )
+        try:
+            parsed = urlparse(self.base_url)
+        except ValueError as exc:
+            raise DynamoConfigurationError("Invalid NVIDIA_DYNAMO_BASE_URL") from exc
+        if parsed.scheme not in {"http", "https"} or not parsed.hostname:
+            raise DynamoConfigurationError(
+                "NVIDIA_DYNAMO_BASE_URL must be an http(s) endpoint"
+            )
         return f"{self.base_url}/{self.chat_path.lstrip('/')}"
+
+    def _http_client(self) -> httpx.AsyncClient:
+        if self._client is None:
+            self._client = httpx.AsyncClient(
+                timeout=self.timeout_seconds,
+                limits=httpx.Limits(
+                    max_connections=100,
+                    max_keepalive_connections=20,
+                    keepalive_expiry=30.0,
+                ),
+            )
+        return self._client
+
+    async def aclose(self) -> None:
+        """Close the persistent connection pool during application shutdown."""
+        if self._client is None:
+            return
+        client = self._client
+        self._client = None
+        await client.aclose()
 
     async def chat_reply(
         self,
@@ -362,18 +405,17 @@ class DynamoClient:
 
         started = time.perf_counter()
         try:
-            async with httpx.AsyncClient(timeout=self.timeout_seconds) as client:
-                response = await client.post(
-                    self._endpoint(),
-                    headers=headers,
-                    json={
-                        "model": self.model,
-                        "messages": messages,
-                        "max_tokens": 1024,
-                    },
-                )
-                response.raise_for_status()
-                data = response.json()
+            response = await self._http_client().post(
+                self._endpoint(),
+                headers=headers,
+                json={
+                    "model": self.model,
+                    "messages": messages,
+                    "max_tokens": 1024,
+                },
+            )
+            response.raise_for_status()
+            data = response.json()
         except (httpx.HTTPError, ValueError) as exc:
             raise DynamoUnavailableError(
                 f"Dynamo request failed for session {session_id}: {type(exc).__name__}"
