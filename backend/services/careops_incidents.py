@@ -42,12 +42,20 @@ async def correlate_ticket(ticket: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         "fingerprint": ticket["fingerprint"],
         "status": {"$in": list(OPEN_TICKET_STATES)},
     }
-    related = await db.careops_tickets.find(query, {"_id": 0}).sort("created_at", 1).to_list(100)
+    related = (
+        await db.careops_tickets.find(query, {"_id": 0})
+        .sort("created_at", 1)
+        .to_list(100)
+    )
     if len(related) < INCIDENT_THRESHOLD:
         return None
 
     existing = await db.careops_incidents.find_one(
-        {"product": ticket["product"], "fingerprint": ticket["fingerprint"], "status": {"$ne": "resolved"}},
+        {
+            "product": ticket["product"],
+            "fingerprint": ticket["fingerprint"],
+            "status": {"$ne": "resolved"},
+        },
         {"_id": 0},
     )
     now = utc_now_iso()
@@ -65,13 +73,17 @@ async def correlate_ticket(ticket: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             "fingerprint": ticket["fingerprint"],
             "kind": ticket["kind"],
             "action_type": incident_action_type(ticket["kind"]),
-            "priority": "P1" if ticket["priority"] in ("P2", "P3") else ticket["priority"],
+            "priority": (
+                "P1" if ticket["priority"] in ("P2", "P3") else ticket["priority"]
+            ),
             "status": "detected",
             "ticket_count": len(related),
             "created_by": "careops-correlation",
             "created_at": now,
             "updated_at": now,
-            "events": [{"type": "incident.detected", "actor": "careops", "ts": now}],
+            "events": [
+                {"type": "incident.detected", "actor": "careops", "ts": now}
+            ],
         }
         await db.careops_incidents.insert_one(incident.copy())
         await _create_maintenance_task(incident)
@@ -79,11 +91,24 @@ async def correlate_ticket(ticket: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     await db.careops_tickets.update_many(
         {"ticket_id": {"$in": [item["ticket_id"] for item in related]}},
         {
-            "$set": {"incident_id": incident_id, "status": "incident", "updated_at": now},
-            "$push": {"events": {"type": "ticket.correlated", "actor": "careops", "ts": now, "incident_id": incident_id}},
+            "$set": {
+                "incident_id": incident_id,
+                "status": "incident",
+                "updated_at": now,
+            },
+            "$push": {
+                "events": {
+                    "type": "ticket.correlated",
+                    "actor": "careops",
+                    "ts": now,
+                    "incident_id": incident_id,
+                }
+            },
         },
     )
-    return await db.careops_incidents.find_one({"incident_id": incident_id}, {"_id": 0})
+    return await db.careops_incidents.find_one(
+        {"incident_id": incident_id}, {"_id": 0}
+    )
 
 
 async def _create_maintenance_task(incident: Dict[str, Any]) -> Dict[str, Any]:
@@ -92,10 +117,19 @@ async def _create_maintenance_task(incident: Dict[str, Any]) -> Dict[str, Any]:
         "maintenance_id": _maintenance_id(),
         "incident_id": incident["incident_id"],
         "product": incident["product"],
-        "action_type": incident.get("action_type", incident_action_type(incident["kind"])),
+        "action_type": incident.get(
+            "action_type", incident_action_type(incident["kind"])
+        ),
         "status": "queued",
         "automation_mode": "guarded",
-        "diagnostics": ["health", "logs", "recent_release", "dependencies", "database", "permissions"],
+        "diagnostics": [
+            "health",
+            "logs",
+            "recent_release",
+            "dependencies",
+            "database",
+            "permissions",
+        ],
         "verification_required": True,
         "created_at": now,
         "updated_at": now,
@@ -104,7 +138,13 @@ async def _create_maintenance_task(incident: Dict[str, Any]) -> Dict[str, Any]:
     await db.careops_maintenance.insert_one(task.copy())
     await db.careops_incidents.update_one(
         {"incident_id": incident["incident_id"]},
-        {"$set": {"maintenance_id": task["maintenance_id"], "status": "maintenance_queued", "updated_at": now}},
+        {
+            "$set": {
+                "maintenance_id": task["maintenance_id"],
+                "status": "maintenance_queued",
+                "updated_at": now,
+            }
+        },
     )
     return task
 
@@ -113,7 +153,9 @@ async def record_maintenance_result(
     *, maintenance_id: str, success: bool, evidence: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Record machine-verifiable evidence and close the loop only on success."""
-    task = await db.careops_maintenance.find_one({"maintenance_id": maintenance_id}, {"_id": 0})
+    task = await db.careops_maintenance.find_one(
+        {"maintenance_id": maintenance_id}, {"_id": 0}
+    )
     if not task:
         raise KeyError("maintenance task not found")
 
@@ -123,7 +165,13 @@ async def record_maintenance_result(
         {"maintenance_id": maintenance_id},
         {
             "$set": {"status": status, "evidence": evidence, "updated_at": now},
-            "$push": {"events": {"type": f"maintenance.{status}", "actor": "careops", "ts": now}},
+            "$push": {
+                "events": {
+                    "type": f"maintenance.{status}",
+                    "actor": "careops",
+                    "ts": now,
+                }
+            },
         },
     )
 
@@ -132,15 +180,36 @@ async def record_maintenance_result(
         await db.careops_incidents.update_one(
             {"incident_id": incident_id},
             {
-                "$set": {"status": "resolved", "resolved_at": now, "updated_at": now, "verification_evidence": evidence},
-                "$push": {"events": {"type": "incident.resolved", "actor": "careops", "ts": now}},
+                "$set": {
+                    "status": "resolved",
+                    "resolved_at": now,
+                    "updated_at": now,
+                    "verification_evidence": evidence,
+                },
+                "$push": {
+                    "events": {
+                        "type": "incident.resolved",
+                        "actor": "careops",
+                        "ts": now,
+                    }
+                },
             },
         )
         await db.careops_tickets.update_many(
             {"incident_id": incident_id},
             {
-                "$set": {"status": "resolved", "resolved_at": now, "updated_at": now},
-                "$push": {"events": {"type": "ticket.resolved_from_incident", "actor": "careops", "ts": now}},
+                "$set": {
+                    "status": "resolved",
+                    "resolved_at": now,
+                    "updated_at": now,
+                },
+                "$push": {
+                    "events": {
+                        "type": "ticket.resolved_from_incident",
+                        "actor": "careops",
+                        "ts": now,
+                    }
+                },
             },
         )
         await db.careops_learnings.insert_one(
@@ -160,4 +229,9 @@ async def record_maintenance_result(
             {"$set": {"status": "needs_attention", "updated_at": now}},
         )
 
-    return await db.careops_maintenance.find_one({"maintenance_id": maintenance_id}, {"_id": 0}) or task
+    return (
+        await db.careops_maintenance.find_one(
+            {"maintenance_id": maintenance_id}, {"_id": 0}
+        )
+        or task
+    )
