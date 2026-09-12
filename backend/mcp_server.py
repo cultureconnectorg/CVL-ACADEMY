@@ -207,7 +207,10 @@ def academy_about() -> str:
             "resource": "academy://about",
             "access": "public-read-only",
             "endpoint": "/mcp",
-            "purpose": "Expose Academy expert discovery and published catalogue capabilities to MCP-capable assistants.",
+            "purpose": (
+                "Expose Academy expert discovery and published catalogue "
+                "capabilities to MCP-capable assistants."
+            ),
         },
         ensure_ascii=False,
     )
