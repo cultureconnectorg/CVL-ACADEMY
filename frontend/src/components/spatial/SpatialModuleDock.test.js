@@ -1,4 +1,4 @@
-import { deriveModuleDockState } from "./SpatialModuleDock";
+import { deriveModuleDockState } from "@/lib/spatial/moduleDockState";
 
 describe("SpatialModuleDock state", () => {
   test("projects current and adjacent reachable phases without inventing unlocks", () => {
@@ -24,8 +24,14 @@ describe("SpatialModuleDock state", () => {
     expect(deriveModuleDockState(phases).nextIndex).toBe(-1);
   });
 
-  test("fails safe before the module DOM exists", () => {
+  test("fails safe before the module DOM exists or before a current phase exists", () => {
     expect(deriveModuleDockState([])).toEqual({
+      currentIndex: -1,
+      previousIndex: -1,
+      nextIndex: -1,
+      current: null,
+    });
+    expect(deriveModuleDockState([{ key: "hook", role: "next", disabled: false }])).toEqual({
       currentIndex: -1,
       previousIndex: -1,
       nextIndex: -1,
