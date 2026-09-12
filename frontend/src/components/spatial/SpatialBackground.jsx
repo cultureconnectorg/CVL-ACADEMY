@@ -4,18 +4,20 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 import { makeRailPhysics } from "@/lib/spatial/physics";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { directSpatialExperience } from "@/lib/spatial/spatialDirector";
+import { environmentForStade } from "@/lib/spatial/environmentState";
 import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import "./spatial-background.css";
 import "./spatial-living-world.css";
 
 /** Living CVLN Academy world. Navigation/auth/business state stay outside this layer. */
-export default function SpatialBackground({ pathname = "/" }) {
+export default function SpatialBackground({ pathname = "/", stade }) {
   const rootRef = useRef(null);
   const signalTimerRef = useRef(null);
   const [activeSignal, setActiveSignal] = useState(null);
   const reduced = useReducedMotion();
   const spatialEnabled = FEATURE_FLAGS.SPATIAL_ENGINE && FEATURE_FLAGS.SPATIAL_ENVIRONMENT;
   const { node, scene } = sceneForPathname(pathname);
+  const environment = useMemo(() => environmentForStade(stade), [stade]);
   const director = useMemo(
     () => directSpatialExperience({ node, scene, reducedMotion: reduced, signal: activeSignal }),
     [node, scene, reduced, activeSignal]
@@ -67,6 +69,10 @@ export default function SpatialBackground({ pathname = "/" }) {
     root.style.setProperty("--spatial-focus-strength", String(director.focusStrength));
     root.style.setProperty("--spatial-atmosphere-opacity", String(director.atmosphereOpacity));
     root.style.setProperty("--spatial-world-breath", String(director.worldBreath));
+    root.style.setProperty("--spatial-stage-density", String(environment.density));
+    root.style.setProperty("--spatial-stage-growth", String(environment.growth));
+    root.style.setProperty("--spatial-stage-glow", String(environment.glow));
+    root.style.setProperty("--spatial-stage-horizon", String(environment.horizon));
 
     if (!motionEnabled) {
       root.style.setProperty("--spatial-x", "0px");
@@ -109,7 +115,7 @@ export default function SpatialBackground({ pathname = "/" }) {
       document.documentElement.removeEventListener("mouseleave", onPointerLeave);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [motionEnabled, scene, director]);
+  }, [motionEnabled, scene, director, environment]);
 
   return (
     <div
@@ -124,6 +130,7 @@ export default function SpatialBackground({ pathname = "/" }) {
       data-spatial-intent={director.intent}
       data-spatial-learning-state={director.learningState}
       data-spatial-signal={director.signalType || "NONE"}
+      data-spatial-stade={environment.stade}
       data-spatial-engine={spatialEnabled ? "on" : "off"}
       data-spatial-motion={motionEnabled ? "full" : reduced ? "reduced" : "static"}
     >
