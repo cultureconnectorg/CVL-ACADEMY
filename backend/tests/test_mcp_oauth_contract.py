@@ -9,7 +9,7 @@ from server import app
 
 
 def test_private_mcp_mounts_are_additive():
-    paths = {route.path for route in app.routes}
+    paths = {path for route in app.routes if (path := getattr(route, "path", None))}
     assert "/mcp" in paths
     assert "/mcp/private" in paths
     assert "/.well-known/oauth-authorization-server" in paths
