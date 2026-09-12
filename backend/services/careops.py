@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Literal
 
 from db import db, utc_now_iso
+from services.careops_incidents import correlate_ticket
 
 TicketKind = Literal["support", "claim", "payment", "security", "access", "maintenance"]
 Priority = Literal["P0", "P1", "P2", "P3"]
@@ -82,7 +83,9 @@ async def create_ticket(*, user_id: str, message: str, product: str = "academy",
         "events": [{"type": "ticket.created", "actor": "laurentia", "ts": now}],
     }
     await db.careops_tickets.insert_one(ticket.copy())
-    return await db.careops_tickets.find_one({"ticket_id": ticket["ticket_id"]}, {"_id": 0}) or ticket
+    saved = await db.careops_tickets.find_one({"ticket_id": ticket["ticket_id"]}, {"_id": 0}) or ticket
+    await correlate_ticket(saved)
+    return await db.careops_tickets.find_one({"ticket_id": ticket["ticket_id"]}, {"_id": 0}) or saved
 
 
 async def list_user_tickets(user_id: str, limit: int = 50) -> list[Dict[str, Any]]:
