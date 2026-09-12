@@ -53,6 +53,32 @@ test.describe("Spatial roadmap rail runtime", () => {
     expect(farBlur).not.toContain("blur(0px)");
   });
 
+  test("progressive horizon is bound to real domain distance, not perceptual focus", async ({ page }) => {
+    await setup(page);
+
+    await expect(page.getByTestId("stage-racine")).toHaveAttribute("data-domain-stage-state", "CURRENT");
+    await expect(page.getByTestId("stage-branches")).toHaveAttribute("data-domain-stage-state", "HORIZON");
+    await expect(page.getByTestId("stage-arbre")).toHaveAttribute("data-domain-stage-state", "HORIZON");
+    await expect(page.getByTestId("stage-foret")).toHaveAttribute("data-domain-stage-state", "HORIZON");
+    await expect(page.getByTestId("horizon-branches")).toHaveAttribute("data-horizon-distance", "1");
+    await expect(page.getByTestId("horizon-arbre")).toHaveAttribute("data-horizon-distance", "2");
+    await expect(page.getByTestId("horizon-foret")).toHaveAttribute("data-horizon-distance", "3");
+
+    const nearOpacity = await page.getByTestId("horizon-branches").evaluate((el) => Number(getComputedStyle(el).opacity));
+    const farOpacity = await page.getByTestId("horizon-foret").evaluate((el) => Number(getComputedStyle(el).opacity));
+    expect(nearOpacity).toBeGreaterThan(farOpacity);
+
+    // Looking at the far horizon may make it PRIMARY_ATTENTION, but it remains
+    // a HORIZON domain state: no false unlock, no mutation of `user.stade`.
+    const racine = page.getByTestId("stage-racine");
+    await racine.focus();
+    await page.keyboard.press("End");
+    await expect(page.getByTestId("stage-foret")).toBeFocused();
+    await expect.poll(async () => page.getByTestId("stage-visual-foret").getAttribute("data-attention-tier")).toBe("PRIMARY_ATTENTION");
+    await expect(page.getByTestId("stage-foret")).toHaveAttribute("data-domain-stage-state", "HORIZON");
+    await expect(page.getByTestId("stage-racine")).toHaveAttribute("aria-current", "step");
+  });
+
   test("latent context is removed from the accessibility tree but current/focused domain context is never hidden", async ({ page }) => {
     await setup(page);
     const racine = page.getByTestId("stage-racine");
