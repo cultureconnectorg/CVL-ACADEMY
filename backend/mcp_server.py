@@ -1,8 +1,9 @@
 """CVLN Academy Model Context Protocol (MCP) server.
 
-This module exposes the public Academy catalogue to LLM/MCP clients without
-creating a second business-logic stack. Tools read the same MongoDB collections
-used by the FastAPI API and only return published/public catalogue data.
+This module exposes the public Academy catalogue and expert-directory metadata
+to LLM/MCP clients without creating a second business-logic stack. Tools read
+the same MongoDB collections used by the FastAPI API and only return published
+or explicitly public data.
 """
 
 from __future__ import annotations
@@ -16,16 +17,23 @@ from mcp.server import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
 
 from db import db
+from expert_directory import (
+    get_expert as directory_get_expert,
+    list_experts as directory_list_experts,
+    route_experts as directory_route_experts,
+)
 from pricing_catalog import formation_commercialization
 
 
 academy_mcp = MCPServer(
     "CVLN Academy",
     instructions=(
-        "Use CVLN Academy tools to discover public training programmes, poles, "
-        "commercialisation metadata and programme details. Prefer search_formations "
-        "before get_formation when the user has not supplied an exact formation code. "
-        "Never infer unpublished programmes from missing results."
+        "CVLN Academy is an expert learning and career capability. Use the Expert "
+        "Directory to identify the right domain, then use published Academy data to "
+        "answer. Prefer search_formations before get_formation when the user has not "
+        "supplied an exact formation code. Never infer unpublished programmes, funding "
+        "eligibility, certifications or user state from missing results. Planned experts "
+        "describe target capabilities only and must not be presented as implemented."
     ),
 )
 
@@ -65,14 +73,59 @@ def _public_summary(doc: Dict[str, Any]) -> Dict[str, Any]:
 @academy_mcp.tool()
 async def academy_capabilities() -> Dict[str, Any]:
     """Describe what the CVLN Academy MCP endpoint currently exposes."""
+    active_experts = directory_list_experts(status="active")
     return {
         "name": "CVLN Academy",
         "mode": "public-read-only",
         "protocol": "MCP",
-        "domains": ["formations", "poles", "pricing", "programme_details"],
+        "distribution": {
+            "primary": "MCP-capable assistants",
+            "compatible_targets": ["ChatGPT", "Claude", "Gemini", "other MCP clients"],
+            "note": "Client availability depends on each provider's connector/app review and configuration.",
+        },
+        "domains": [
+            "expert_directory",
+            "formations",
+            "poles",
+            "pricing",
+            "programme_details",
+        ],
+        "active_experts": [expert["id"] for expert in active_experts],
         "privacy": (
-            "Only published catalogue data is exposed. User progress, wallet, "
-            "identity and admin data are not exposed by this MCP surface."
+            "Only published catalogue data and public expert metadata are exposed. "
+            "User progress, wallet, identity and admin data are not exposed by this MCP surface."
+        ),
+    }
+
+
+@academy_mcp.tool()
+async def list_experts(status: Optional[str] = None) -> Dict[str, Any]:
+    """List CVLN Academy experts and whether each capability is active or planned."""
+    items = directory_list_experts(status=status)
+    return {"count": len(items), "items": items}
+
+
+@academy_mcp.tool()
+async def get_expert(expert_id: str) -> Dict[str, Any]:
+    """Return one Expert Directory entry by stable expert id."""
+    expert = directory_get_expert(expert_id)
+    if not expert:
+        return {"found": False, "expert_id": expert_id.strip().lower()}
+    return {"found": True, "expert": expert}
+
+
+@academy_mcp.tool()
+async def route_expert(intent: str, limit: int = 3) -> Dict[str, Any]:
+    """Route a user intent to the most relevant Academy experts transparently."""
+    matches = directory_route_experts(intent, limit=limit)
+    return {
+        "intent": intent,
+        "count": len(matches),
+        "experts": matches,
+        "routing": "deterministic-keyword-v1",
+        "warning": (
+            "A planned expert is not an implemented business capability. "
+            "Use its status before invoking downstream actions."
         ),
     }
 
@@ -142,7 +195,6 @@ async def get_formation(code: str) -> Dict[str, Any]:
         return {"found": False, "code": normalized}
 
     doc["commercialization"] = formation_commercialization(doc)
-    # MCP is public read-only: do not inject user-specific lock/progress state.
     return {"found": True, "formation": doc}
 
 
@@ -155,8 +207,17 @@ def academy_about() -> str:
             "resource": "academy://about",
             "access": "public-read-only",
             "endpoint": "/mcp",
-            "purpose": "Expose the Academy catalogue to MCP-capable LLM clients.",
+            "purpose": "Expose Academy expert discovery and published catalogue capabilities to MCP-capable assistants.",
         },
+        ensure_ascii=False,
+    )
+
+
+@academy_mcp.resource("academy://experts")
+def experts_resource() -> str:
+    """Read the complete public Expert Directory as JSON."""
+    return json.dumps(
+        {"count": len(directory_list_experts()), "items": directory_list_experts()},
         ensure_ascii=False,
     )
 
@@ -174,22 +235,29 @@ def recommend_training(goal: str, level: str = "non précisé") -> str:
     return (
         "Tu aides un utilisateur à choisir une formation CVLN Academy. "
         f"Objectif: {goal}. Niveau: {level}. "
-        "Commence par appeler search_formations avec des mots-clés précis. "
+        "Commence par appeler route_expert puis search_formations avec des mots-clés précis. "
         "Pour chaque résultat pertinent, appelle get_formation avant de recommander. "
         "N'invente jamais une formation absente du catalogue publié et distingue "
         "clairement les informations du catalogue de tes conseils."
     )
 
 
+@academy_mcp.prompt()
+def academy_expert_assist(request: str) -> str:
+    """General Expert Directory orchestration prompt for LLM clients."""
+    return (
+        "Tu utilises CVLN Academy comme système expert. "
+        f"Demande utilisateur: {request}. "
+        "1) appelle route_expert; 2) vérifie le statut des experts proposés; "
+        "3) n'utilise que les tools réellement déclarés pour les experts actifs; "
+        "4) sépare les faits Academy vérifiés des conseils généraux; "
+        "5) si une capacité est planned, explique qu'elle n'est pas encore disponible "
+        "au lieu de simuler son résultat."
+    )
+
+
 def build_transport_security() -> Optional[TransportSecuritySettings]:
-    """Build production-safe MCP Host/Origin allowlists from environment variables.
-
-    MCP_ALLOWED_HOSTS and MCP_ALLOWED_ORIGINS are comma-separated. On Render,
-    RENDER_EXTERNAL_HOSTNAME is automatically used when no explicit host list is
-    supplied. Local development intentionally falls back to the SDK localhost
-    protection by returning ``None``.
-    """
-
+    """Build production-safe MCP Host/Origin allowlists from environment variables."""
     raw_hosts = os.environ.get("MCP_ALLOWED_HOSTS", "")
     hosts: List[str] = [item.strip() for item in raw_hosts.split(",") if item.strip()]
 
@@ -214,8 +282,6 @@ def build_transport_security() -> Optional[TransportSecuritySettings]:
     )
 
 
-# Calling streamable_http_app at import time constructs the session manager.
-# The host FastAPI lifespan enters academy_mcp.session_manager.run().
 mcp_http_app = academy_mcp.streamable_http_app(
     streamable_http_path="/",
     transport_security=build_transport_security(),
