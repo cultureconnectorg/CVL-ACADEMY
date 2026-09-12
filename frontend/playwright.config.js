@@ -35,6 +35,9 @@ module.exports = {
       PORT: "4173",
       BROWSER: "none",
       REACT_APP_BACKEND_URL: "http://127.0.0.1:4174",
+      // Camera-follow stays production-flagged, but every Playwright runtime
+      // pass exercises it so experimental Spatial code cannot silently rot.
+      REACT_APP_ACADEMY_SPATIAL_ROUTE_TRANSITIONS: "true",
     },
   },
 };
