@@ -74,12 +74,11 @@ export function ContextFrame({ show, children, className, ...rest }) {
   const inactiveVisual = reduced
     ? { opacity: 0, y: 0, z: 0, scale: 1 }
     : { opacity: 0, y: 4, z: -18, scale: 0.985 };
-  const initialVisual = reduced && show ? activeVisual : inactiveVisual;
 
   return (
     <motion.div
       className={className}
-      initial={initialVisual}
+      initial={false}
       animate={show ? activeVisual : inactiveVisual}
       transition={{
         duration: show ? enterDuration : exitDuration,
