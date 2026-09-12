@@ -28,6 +28,46 @@ test.describe("Spatial roadmap rail runtime", () => {
     await expect(branches).not.toHaveAttribute("aria-current", "step");
   });
 
+  test("continuous attention has exactly one primary plane and follows the retargeted rail", async ({ page }) => {
+    await setup(page);
+
+    const primaryVisuals = page.locator('[data-testid^="stage-visual-"][data-attention-tier="PRIMARY_ATTENTION"]');
+    await expect(primaryVisuals).toHaveCount(1);
+    await expect(page.getByTestId("stage-visual-racine")).toHaveAttribute("data-attention-tier", "PRIMARY_ATTENTION");
+
+    const racine = page.getByTestId("stage-racine");
+    await racine.focus();
+    await page.keyboard.press("ArrowRight");
+
+    // The spring drives scroll continuously; attention follows the real visual
+    // position rather than jumping directly to the committed keyboard index.
+    await expect.poll(async () => Number(
+      await page.getByTestId("roadmap-scroll").getAttribute("data-attention-position")
+    )).toBeGreaterThan(2.5);
+    await expect(page.getByTestId("stage-visual-branches")).toHaveAttribute("data-attention-tier", "PRIMARY_ATTENTION");
+    await expect(primaryVisuals).toHaveCount(1);
+
+    const primaryBlur = await page.getByTestId("stage-visual-branches").evaluate((el) => getComputedStyle(el).filter);
+    const farBlur = await page.getByTestId("stage-visual-graine").evaluate((el) => getComputedStyle(el).filter);
+    expect(primaryBlur).toContain("blur(0px)");
+    expect(farBlur).not.toContain("blur(0px)");
+  });
+
+  test("latent context is removed from the accessibility tree but current/focused domain context is never hidden", async ({ page }) => {
+    await setup(page);
+    const racine = page.getByTestId("stage-racine");
+    await racine.focus();
+    await page.keyboard.press("End");
+    await expect(page.getByTestId("stage-foret")).toBeFocused();
+
+    await expect.poll(async () => page.getByTestId("stage-graine").getAttribute("data-attention-tier")).toBe("LATENT_CONTEXT");
+    await expect(page.getByTestId("stage-graine")).toHaveAttribute("aria-hidden", "true");
+    // The authenticated user's real current stage is a semantic anchor and is
+    // retained even if it becomes perceptually distant.
+    await expect(page.getByTestId("stage-racine")).not.toHaveAttribute("aria-hidden", "true");
+    await expect(page.getByTestId("stage-foret")).not.toHaveAttribute("aria-hidden", "true");
+  });
+
   test("Home and End provide deterministic rail navigation", async ({ page }) => {
     await setup(page);
     const racine = page.getByTestId("stage-racine");
@@ -72,6 +112,7 @@ test.describe("Spatial roadmap rail runtime", () => {
     await racine.focus();
     await page.keyboard.press("ArrowRight");
     await expect(page.getByTestId("stage-branches")).toBeFocused();
+    await expect(page.getByTestId("stage-visual-branches")).toHaveAttribute("data-attention-tier", "PRIMARY_ATTENTION");
     await expect(page.getByTestId("spatial-background")).toHaveAttribute("data-spatial-motion", "reduced");
   });
 });
