@@ -6,6 +6,7 @@ from services import agent_factory as agent_factory_module
 from services import nvidia_runtime
 from services.nvidia_runtime import (
     DynamoClient,
+    DynamoConfigurationError,
     NvidiaAccelerationError,
     accelerated_group_count,
 )
@@ -121,6 +122,34 @@ def test_dynamo_endpoint_is_openai_compatible(monkeypatch):
     client = DynamoClient()
 
     assert client._endpoint() == "http://dynamo:8000/v1/chat/completions"
+
+
+def test_dynamo_rejects_non_http_endpoint(monkeypatch):
+    monkeypatch.setenv("NVIDIA_DYNAMO_BASE_URL", "ftp://dynamo.internal")
+    monkeypatch.setenv("NVIDIA_DYNAMO_MODEL", "academy-model")
+    client = DynamoClient()
+
+    assert client.is_configured() is False
+    assert client.status()["base_url"] is None
+    with pytest.raises(DynamoConfigurationError):
+        client._endpoint()
+
+
+@pytest.mark.asyncio
+async def test_dynamo_reuses_and_closes_http_connection_pool(monkeypatch):
+    monkeypatch.setenv("NVIDIA_DYNAMO_BASE_URL", "http://dynamo:8000")
+    monkeypatch.setenv("NVIDIA_DYNAMO_MODEL", "academy-model")
+    client = DynamoClient()
+
+    first = client._http_client()
+    second = client._http_client()
+
+    assert first is second
+    assert client.status()["connection_pool_initialized"] is True
+
+    await client.aclose()
+
+    assert client.status()["connection_pool_initialized"] is False
 
 
 @pytest.mark.asyncio
