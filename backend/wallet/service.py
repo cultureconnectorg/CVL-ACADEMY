@@ -1,10 +1,17 @@
-"""Wallet ledger — credit/debit + balance/history reads."""
+"""Academy mini-wallet ledger — credit/debit + balance/history reads.
+
+The append-only transaction history is the auditable source of truth for the
+mini-wallet. ``wallet_accounts`` is a cached read model rebuilt from history on
+reads, so a crash between ledger insertion and cache update cannot permanently
+drift the displayed balance.
+"""
 
 from __future__ import annotations
 
 from typing import List, Literal, Optional
 
 from db import db, utc_now_iso
+from pymongo.errors import DuplicateKeyError
 
 from .models import TransactionType, WalletAccount, WalletSummary, WalletTransaction
 
@@ -16,8 +23,44 @@ async def _get_or_create_account(user_id: str) -> WalletAccount:
     if doc:
         return WalletAccount(**doc)
     account = WalletAccount(user_id=user_id)
-    await db.wallet_accounts.insert_one(account.model_dump())
+    try:
+        await db.wallet_accounts.insert_one(account.model_dump())
+    except DuplicateKeyError:
+        doc = await db.wallet_accounts.find_one({"user_id": user_id}, {"_id": 0})
+        if doc:
+            return WalletAccount(**doc)
+        raise
     return account
+
+
+async def _reconcile_account(user_id: str) -> WalletAccount:
+    """Rebuild cached balances from append-only transaction history."""
+    await _get_or_create_account(user_id)
+    totals = {"jcc": 0.0, "token": 0.0}
+    async for doc in db.wallet_transactions.find(
+        {"user_id": user_id, "currency": {"$in": ["jcc", "token"]}},
+        {"_id": 0, "currency": 1, "amount": 1},
+    ):
+        currency = doc.get("currency")
+        if currency in totals:
+            totals[currency] += float(doc.get("amount", 0.0))
+
+    await db.wallet_accounts.update_one(
+        {"user_id": user_id},
+        {
+            "$set": {
+                "jcc_balance": totals["jcc"],
+                "token_balance": totals["token"],
+                "updated_at": utc_now_iso(),
+            }
+        },
+    )
+    doc = await db.wallet_accounts.find_one({"user_id": user_id}, {"_id": 0})
+    if doc is None:
+        raise RuntimeError(
+            f"Academy mini-wallet account missing after reconciliation: {user_id}"
+        )
+    return WalletAccount(**doc)
 
 
 async def credit(
@@ -28,21 +71,37 @@ async def credit(
     ref: Optional[str] = None,
     description: str = "",
     badge_code: Optional[str] = None,
+    effect_key: Optional[str] = None,
 ) -> WalletTransaction:
-    """Records a ledger entry and updates the cached balance. `amount` is
-    always positive here — `reward_redeemed` records are logged with a
-    negative amount by the caller if it represents a spend."""
+    """Record one Academy-side balance movement.
+
+    ``effect_key`` should be stable for retryable business effects. Reusing the
+    same key for the same learner returns the original transaction and does not
+    apply the balance movement twice.
+    """
     txn = WalletTransaction(
         user_id=user_id,
         type=transaction_type,
         amount=amount,
         currency=currency,
+        effect_key=effect_key,
         ref=ref,
         description=description,
     )
-    await db.wallet_transactions.insert_one(txn.model_dump())
+    try:
+        await db.wallet_transactions.insert_one(txn.model_dump(exclude_none=True))
+    except DuplicateKeyError:
+        if not effect_key:
+            raise
+        existing = await db.wallet_transactions.find_one(
+            {"user_id": user_id, "effect_key": effect_key}, {"_id": 0}
+        )
+        if not existing:
+            raise
+        await _reconcile_account(user_id)
+        return WalletTransaction(**existing)
 
-    await _get_or_create_account(user_id)  # ensure the account doc exists
+    await _get_or_create_account(user_id)
     update: dict = {"updated_at": utc_now_iso()}
     inc: dict = {}
     if currency == "jcc":
@@ -61,7 +120,7 @@ async def credit(
 
 
 async def get_summary(user_id: str, limit: int = 50) -> WalletSummary:
-    account = await _get_or_create_account(user_id)
+    account = await _reconcile_account(user_id)
     txn_docs = (
         await db.wallet_transactions.find({"user_id": user_id}, {"_id": 0})
         .sort("created_at", -1)
