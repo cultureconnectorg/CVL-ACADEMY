@@ -1,0 +1,7 @@
+Domaine,Écart / dépendance,Action,Règle
+CVLN Hospitality,Exact HOS-31→HOS-50 non récupérés dans ce tour,RECONCILE,La cartographie précédente comptait 50 formations; 30 titres ont été récupérés précisément. Ne pas inventer les 20 manquants.
+KORA,15 formations canoniques KOR-01→15,SEPARATE_WORKSTREAM,Le présent classe surtout les rôles opérateurs/cross; le corpus KOR-01/02 construit et KOR-03→15 doivent rester synchronisés avec le repo.
+Kiltikonet,KLT-01→08 existants + KLT-09→20 candidats,RECONCILE,Préserver le corpus canonique existant et ajouter les candidats sans écraser.
+FMS,FMS-01→06 existants + FMS-07→18 candidats,RECONCILE,Préserver les formations canoniques déjà construites.
+Blockchain internal,BCI-31→40,VERIFY_IMPLEMENTATION,Candidats tant que l’implémentation réelle correspondante n’est pas vérifiée.
+Legal/fiscal,Group / Foundation / Tokenization,EXPERT_REVIEW,Enseignement par juridiction et avec spécialistes; aucune recette universelle.

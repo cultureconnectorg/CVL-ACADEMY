@@ -3,9 +3,9 @@
 Each sub-router owns one bounded concern (auth, onboarding, formations,
 learning journey, quiz, badges, missions, progression, mentor, FMS import,
 FMS lineage, skills, certification, templates, assistants, wallet,
-integrations, stakeholders, economy, institutional bridge, careops,
-commercial and billing). This module mounts them under the single `/api`
-prefix used by the app.
+integrations, stakeholders, economy, workbook runtime, institutional bridge,
+careops, commercial and billing). This module mounts them under the single
+`/api` prefix used by the app.
 """
 
 from __future__ import annotations
@@ -40,6 +40,7 @@ from . import (
     stakeholders,
     templates,
     wallet,
+    workbook_runtime,
 )
 from .commercial_access import require_commercial_learning_access
 from .legal import require_legal_acceptance
@@ -61,6 +62,7 @@ for module in (
     assistants,
     integrations,
     economy,
+    workbook_runtime,
     institutional,
     careops,
 ):

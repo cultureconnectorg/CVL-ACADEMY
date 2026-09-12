@@ -1,0 +1,10 @@
+Code,Catégorie,Définition
+EXTERNAL,Marché,Compétence utile hors CVLN; commercialisable.
+INTERNAL,Système CVLN,Compétence propre à l’exploitation de CVLN.
+BRIDGE,Passerelle,"Relie marché/apprentissage à un système, une mission ou une opportunité CVLN."
+INTERNAL_RESTRICTED,Accès restreint,Connaissances/opérations internes sensibles.
+INTERNAL_PRIVILEGED,Accès privilégié,"Contrôle, sécurité, Command Center, opérations sensibles."
+EXECUTIVE_ONLY,Autorité exécutive,Gouvernance/autorité humaine; jamais conférée automatiquement par Academy.
+MARKET,Dimension 1,Métiers et compétences externes.
+SYSTEM_CVLN,Dimension 2,Compétences internes et rôles opérateurs.
+CROSS_ECOSYSTEM,Dimension 2+,Compétences de handoff et chaînes entre systèmes.

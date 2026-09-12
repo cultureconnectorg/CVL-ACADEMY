@@ -1,0 +1,8 @@
+Levier,KPI,Cible 12 mois,Mesure,Valeur économique,Traitement
+Onboarding,Temps jusqu’à autonomie,-30%,Baseline vs qualifiés,Temps productif récupéré,NON-CA
+Erreurs,Incidents/100 opérations,-25%,Avant vs après qualification,Coûts/risques évités,NON-CA
+Supervision,Heures support/opérateur,-20%,Avant vs après,Capacité managériale libérée,NON-CA
+Documentation,Procédures critiques couvertes,90%,Couvertes/requises,Réduction dépendance individus,NON-CA
+Qualification terrain,Missions validées,85%,Validées/total,Qualité d’exécution,NON-CA
+Sécurité,Incidents critiques tracés,100%,Logs + gates,Risque réduit,NON-CA
+Mobilité interne,Transitions rôle→rôle,10% population qualifiée,Transitions annuelles,Flexibilité organisationnelle,NON-CA

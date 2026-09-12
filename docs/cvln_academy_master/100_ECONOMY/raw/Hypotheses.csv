@@ -1,0 +1,42 @@
+Paramètre,Valeur,Unité,Statut,Source
+Access mensuel,24.9,EUR/mois,DECIDED_V1,ECO-004
+Access annuel,249.0,EUR/an,DECIDED_V1,ECO-004
+Pro mensuel,69.0,EUR/mois,DECIDED_V1,ECO-005
+Pro annuel,690.0,EUR/an,DECIDED_V1,ECO-005
+Career mensuel,129.0,EUR/mois,DECIDED_V1,ECO-006
+Career annuel,1290.0,EUR/an,DECIDED_V1,ECO-006
+Parcours métier,990.0,EUR,DECIDED_V1,ECO-007
+Intensive / apprenant,1400.0,EUR,DECIDED_V1,ECO-008
+Taille cohorte,15.0,apprenants,DECIDED_V1,ECO-008
+Assessment,250.0,EUR,DECIDED_V1,ECO-009
+Certification,390.0,EUR,DECIDED_V1,ECO-010
+Renouvellement,190.0,EUR,DECIDED_V1,ECO-011
+B2B Team,12000.0,EUR/an,DECIDED_V1,ECO-012
+B2B Growth,39000.0,EUR/an,DECIDED_V1,ECO-013
+B2B Enterprise,69000.0,EUR/an,DECIDED_V1,ECO-014
+B2G Pilot,35000.0,EUR,DECIDED_V1,ECO-015
+B2G Territory,120000.0,EUR,DECIDED_V1,ECO-016
+B2G Large,250000.0,EUR,DECIDED_V1,ECO-017
+Mission fee,0.12,% GMV,DECIDED_V1,ECO-019
+Mission minimum,150.0,EUR,DECIDED_V1,ECO-019
+Methodology licence,25000.0,EUR/an,DECIDED_V1,ECO-021
+Academy+Spatial licence,60000.0,EUR/an,DECIDED_V1,ECO-022
+White-label annual,120000.0,EUR/an,DECIDED_V1,ECO-023
+White-label setup,25000.0,EUR,DECIDED_V1,ECO-023
+Partner commission cap,0.15,% revenue,DECIDED_V1,ECO-031
+Content/R&D reserve,0.1,% revenue,DECIDED_V1,ECO-032
+Direct cost intensive cohort,3000.0,EUR/cohort,DECIDED_V1,ECO-033
+Access variable cost,4.5,EUR/member-month,DECIDED_V1,Management standard V1
+Pro variable cost,13.5,EUR/member-month,DECIDED_V1,Management standard V1
+Career variable cost,32.0,EUR/member-month,DECIDED_V1,Management standard V1
+Path variable cost,300.0,EUR/path,DECIDED_V1,Management standard V1
+Assessment variable cost,90.0,EUR,DECIDED_V1,Management standard V1
+Certification variable cost,120.0,EUR,DECIDED_V1,Management standard V1
+Renewal variable cost,60.0,EUR,DECIDED_V1,Management standard V1
+B2B delivery cost,0.35,% revenue,DECIDED_V1,Management standard V1
+B2G delivery cost,0.45,% revenue,DECIDED_V1,Management standard V1
+Mission ops cost,0.2,% Academy mission revenue,DECIDED_V1,Management standard V1
+Platform/IP delivery cost,0.2,% revenue,DECIDED_V1,Management standard V1
+White-label setup cost,0.35,% setup revenue,DECIDED_V1,Management standard V1
+Payment processing reserve,0.03,% B2C revenue,DECIDED_V1,Management reserve V1
+Refund/credit reserve,0.02,% B2C revenue,DECIDED_V1,Management reserve V1

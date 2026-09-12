@@ -1,0 +1,8 @@
+Niveau,Nom,Définition
+L0,AWARENESS,Comprend l’architecture. Aucun pouvoir.
+L1,OBSERVER,"Peut consulter état, preuves, événements autorisés."
+L2,OPERATOR,Peut exécuter certaines opérations définies.
+L3,SUPERVISOR,Peut superviser agents/missions et traiter certaines exceptions.
+L4,CONTROLLER,"Peut interrompre, isoler, approuver certaines actions sensibles."
+L5,ADMINISTRATOR,Administration technique limitée au domaine autorisé.
+L6,EXECUTIVE AUTHORITY,Autorité humaine de gouvernance — jamais attribuée automatiquement par Academy.

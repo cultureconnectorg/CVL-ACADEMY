@@ -1,0 +1,46 @@
+ID,Décision,Valeur décidée,Portée,Règle,Statut,Source
+ECO-001,Architecture économique,"7 moteurs: B2C, Certification, B2B, B2G, Learning-to-Work, Platform/IP, Internal Value",Global,Objets pédagogiques != produits commerciaux,DECIDED_V1,Founder decision 2026-09-06
+ECO-002,Devise de pilotage,EUR,Global,Modèle de gestion en EUR; fiscalité appliquée au checkout selon cadre applicable,DECIDED_V1,Founder decision 2026-09-06
+ECO-003,Free Orientation,€0,B2C,Préviews/orientation seulement; aucune certification ni contenu restreint,DECIDED_V1,Founder decision 2026-09-06
+ECO-004,Academy Access,€24.90/mois ou €249/an,B2C,Fondamentaux + bibliothèque + progression,DECIDED_V1,Founder decision 2026-09-06
+ECO-005,Academy Pro,€69/mois ou €690/an,B2C,Catalogue externe complet + projets + simulations standards,DECIDED_V1,Founder decision 2026-09-06
+ECO-006,Academy Career,"€129/mois ou €1,290/an",B2C Career,Pro + portfolio + 2 assessments/an + priorité opportunités; aucune mission garantie,DECIDED_V1,Founder decision 2026-09-06
+ECO-007,Parcours métier,€990,B2C/B2B,12 mois accès; certification séparée,DECIDED_V1,Founder decision 2026-09-06
+ECO-008,Intensive Hybrid Week,"€1,400/apprenant",B2C/B2B/B2G,"15 apprenants cible; CA cible cohorte €21,000",DECIDED_V1,Prior Academy model + Founder decision
+ECO-009,Assessment Only,€250,Certification,Évaluation + skill report; pas de certification Academy,DECIDED_V1,Founder decision 2026-09-06
+ECO-010,Certification Academy,€390,Certification,Assessment + jury/rubric + preuve; aucune autorisation automatique,DECIDED_V1,Founder decision 2026-09-06
+ECO-011,Renouvellement certification,€190,Certification,Réévaluation/upgrade de version,DECIDED_V1,Founder decision 2026-09-06
+ECO-012,B2B Team,"€12,000/an jusqu’à 10 sièges",B2B,Catalogue + dashboard compétences,DECIDED_V1,Founder decision 2026-09-06
+ECO-013,B2B Growth,"€39,000/an jusqu’à 50 sièges",B2B,Formation + assessments + reporting,DECIDED_V1,Founder decision 2026-09-06
+ECO-014,B2B Enterprise,"€69,000/an jusqu’à 100 sièges",B2B,Formation + gouvernance compétences,DECIDED_V1,Founder decision 2026-09-06
+ECO-015,B2G Pilot,"€35,000 / 25 apprenants",B2G,Programme institutionnel pilote,DECIDED_V1,Founder decision 2026-09-06
+ECO-016,B2G Territory,"€120,000 / 100 apprenants",B2G,Formation + assessment + expérience selon programme,DECIDED_V1,Founder decision 2026-09-06
+ECO-017,B2G Large,"€250,000 / 250 apprenants",B2G,Multi-cohortes + reporting impact,DECIDED_V1,Founder decision 2026-09-06
+ECO-018,Learning-to-Work candidat,€0,Mission,Aucun pay-to-work,DECIDED_V1,Founder decision 2026-09-06
+ECO-019,Learning-to-Work client,"12% GMV, minimum €150",Mission,Facturé au client/partenaire,DECIDED_V1,Founder decision 2026-09-06
+ECO-020,Placement permanent,Absent de V1,Mission,V1 = missions/projets seulement,DECIDED_V1,Founder decision 2026-09-06
+ECO-021,Methodology/IP Licence,"€25,000/an",Platform/IP,Phase 2,DECIDED_V1,Founder decision 2026-09-06
+ECO-022,Academy+Spatial Licence,"€60,000/an",Platform/IP,Phase 3,DECIDED_V1,Founder decision 2026-09-06
+ECO-023,White-label Enterprise,"€120,000/an + €25,000 setup",Platform/IP,Phase 3,DECIDED_V1,Founder decision 2026-09-06
+ECO-024,Internal CVLN,Jamais vendu au public,Internal,Valeur mesurée par KPI internes; hors CA commercial,DECIDED_V1,Founder decision 2026-09-06
+ECO-025,BRIDGE,Pas vendu seul,Bridge,Bundled Career/B2B/B2G/sponsor,DECIDED_V1,Founder decision 2026-09-06
+ECO-026,Cross-CVLN,Pas de micro-cours B2C,Cross,Programmes B2B/B2G/Enterprise ou interne,DECIDED_V1,Founder decision 2026-09-06
+ECO-027,Restricted/Privileged/Executive,Aucun prix public,Internal,Achat impossible; accès par rôle/gouvernance,DECIDED_V1,Founder decision 2026-09-06
+ECO-028,Paiement fractionné,3x sans frais dès €300,B2C,Pas de 6x en V1,DECIDED_V1,Founder decision 2026-09-06
+ECO-029,Remise annuelle,16.7% vs mensualisation,B2C,Déjà intégrée aux prix annuels,DECIDED_V1,Founder decision 2026-09-06
+ECO-030,Bourses,10% des places cohortes,Impact,Sponsor/B2G/budget impact,DECIDED_V1,Founder decision 2026-09-06
+ECO-031,Commission partenaire,15% max du revenu encaissé attribuable,Distribution,Vente traçable uniquement,DECIDED_V1,Prior Academy model + Founder decision
+ECO-032,Réinvestissement contenu/R&D,10% du CA Academy,Capitalisation,Contenu + Spatial + assessment + qualité,DECIDED_V1,Prior Academy model + Founder decision
+ECO-033,Coût direct intensive,"€3,000/cohorte",Delivery,Hors commission et R&D,DECIDED_V1,Prior Academy model
+ECO-034,Marge brute plancher digital,80%,Margin gate,Gate exécutif si inférieur,DECIDED_V1,Founder decision 2026-09-06
+ECO-035,Marge brute plancher parcours,65%,Margin gate,Gate exécutif si inférieur,DECIDED_V1,Founder decision 2026-09-06
+ECO-036,Marge brute plancher intensive,55%,Margin gate,Gate exécutif si inférieur,DECIDED_V1,Founder decision 2026-09-06
+ECO-037,Marge brute plancher certification,60%,Margin gate,Gate exécutif si inférieur,DECIDED_V1,Founder decision 2026-09-06
+ECO-038,Marge brute plancher B2B,55%,Margin gate,Gate exécutif si inférieur,DECIDED_V1,Founder decision 2026-09-06
+ECO-039,Marge brute plancher B2G,45%,Margin gate,Gate exécutif si inférieur,DECIDED_V1,Founder decision 2026-09-06
+ECO-040,Marge brute plancher Platform/IP,75%,Margin gate,Gate exécutif si inférieur,DECIDED_V1,Founder decision 2026-09-06
+ECO-041,Qualification opérateur standard,24 mois,Internal,Requalification à échéance ou version majeure,DECIDED_V1,Founder decision 2026-09-06
+ECO-042,Qualification sensible,12 mois,Internal privileged,Cyber/finance/sécurité,DECIDED_V1,Founder decision 2026-09-06
+ECO-043,Executive authority,Jamais délivrée par Academy,Governance,Mandat via gouvernance uniquement,DECIDED_V1,Founder decision 2026-09-06
+ECO-044,CVE/JCC/Wallet,Séparés du prix public,Economy boundary,Prix EUR; CVE mesure; Wallet exécute; JCC reste distinct,DECIDED_V1,Founder decision 2026-09-06
+ECO-045,Claims RNCP/CPF/financement,Preuve préalable obligatoire,Legal,Aucun claim public sans source vérifiée,DECIDED_V1,Founder decision 2026-09-06

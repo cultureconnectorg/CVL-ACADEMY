@@ -1,0 +1,11 @@
+Type,Nom,Chaîne,Objectif / règle
+Mission A,Sortir un morceau,FMS → FREK → LabelOS → KORA → Wallet/CVE,"Ne perdre ni droits, metadata, provenance, responsabilité."
+Mission B,Produire Good Mood,Kiltikonet → artistes → LabelOS/FMS → Good Mood → Gala → Hospitality → KORA → FREK → Wallet → Fondation,Mission cross-ecosystem live complète.
+Mission C,Former puis employer quelqu’un,Academy → assessment → FREK proof → Kiltikonet opportunity → Good Mood mission → évaluation terrain → Wallet → portfolio Academy,Learning-to-work.
+Mission D,Incident écosystème,KORA + agent autonome + Wallet sensible → autorité → suspension → preuve → reprise,"Human authority, incident, recovery."
+Pipeline,Artist-to-Audience,artiste → FMS → FREK → LabelOS → KORA → public,Chaîne culturelle.
+Pipeline,Activity-to-Value,activité → événement → identité → preuve → signal → CVE → allocation → Wallet → ledger → settlement → reconciliation,FREK prouve ≠ CVE valorise ≠ Tokenomics conçoit ≠ Wallet exécute.
+Pipeline,Learning-to-Opportunity,information → apprentissage → simulation → assessment → compétence → preuve → qualification → opportunité → mission → expérience,Academy comme système de qualification.
+Pipeline,Digital-to-Physical,Academy → Spatial → lieu → mission réelle → preuve terrain,Base du Spatial Learning.
+Pipeline,Cultural Memory,création → diffusion → expérience → documentation → FREK → Fondation → archive → Academy → transmission,Boucle longue.
+Pipeline,Intelligent Operations,humain → Laurentia → IOS → Brain → Agent Factory → application → Proof → Command Center → humain,Système nerveux CVLN.

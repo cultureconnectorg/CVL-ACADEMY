@@ -19,6 +19,7 @@ from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
+from services.workbook_runtime import ensure_workbook_runtimes
 from template_engine import seed_default_definitions
 
 logging.basicConfig(
@@ -54,6 +55,13 @@ async def lifespan(app: FastAPI):
             "module_lineage initial matrix: %d inserted, %d already present",
             inserted,
             skipped,
+        )
+        workbook_status = await ensure_workbook_runtimes(db)
+        if not workbook_status["all_ready"]:
+            raise RuntimeError("workbook runtime reconciliation incomplete")
+        logger.info(
+            "workbook runtimes ready; imported=%s",
+            sorted(workbook_status["imported"]),
         )
         app.state.startup_ready = True
         logger.info("Seed done; application ready.")

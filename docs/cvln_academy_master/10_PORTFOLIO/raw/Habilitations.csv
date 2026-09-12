@@ -1,0 +1,72 @@
+Domaine,Habilitation,Sensibilité,Principe,Statut
+Intelligence OS,IOS.CONTEXT.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,IOS.MEMORY.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,IOS.ROUTE.OPERATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,IOS.EXECUTION.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,BRAIN.RECOMMENDATION.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,AGENT.MISSION.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,COMMAND.INCIDENT,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,COMMAND.AGENT.SUSPEND,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,COMMAND.EXECUTION.HALT,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Intelligence OS,COMMAND.RECOVERY.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,ARCHIVE.READ_PUBLIC,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,ARCHIVE.READ_RESTRICTED,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,ARCHIVE.INGEST,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,ARCHIVE.CURATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,TESTIMONY.COLLECT,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,CONSENT.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,COLLECTION.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,PROGRAM.OPERATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,GRANT.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,IMPACT.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Fondation Cœurvolan,GOVERNANCE.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,SECURITY.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,LOGS.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,VULNERABILITY.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,SECURITY.TEST_SANDBOX,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,INCIDENT.RESPOND,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,SECRETS.ROTATE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,ACCESS.REVOKE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,SERVICE.ISOLATE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,DEPLOYMENT.BLOCK,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,KILL_SWITCH.REQUEST,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,SECURITY.AUDIT,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN CyberSecure,SECURITY.ADMIN,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,CHAIN.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,CHAIN.DEPLOY_TEST,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,CONTRACT.PROPOSE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,CONTRACT.DEPLOY,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,CONTRACT.UPGRADE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,TOKEN.SIMULATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,TOKEN.POLICY_PROPOSE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,TOKEN.POLICY.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,ISSUANCE.REQUEST,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,ISSUANCE.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,TREASURY.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,TREASURY.EXECUTE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,EMERGENCY.PAUSE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+Blockchain / Tokenomics,GOVERNANCE.ADMIN,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,GROUP.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,ENTITY.OPERATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,BUDGET.PROPOSE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,BUDGET.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,CONTRACT.PROPOSE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,CONTRACT.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,INVESTMENT.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,INVESTMENT.APPROVE,HIGH,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,INTERCOMPANY.OPERATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,GOVERNANCE.VOTE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,AUDIT.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+CVLN Group,EXECUTIVE.AUTHORITY,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,PLATFORM.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,CATALOG.OPERATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,CREATOR.ONBOARD,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,EDITORIAL.PUBLISH,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,PLAYBACK.OPERATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,MEDIA.INGEST,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,ENTITLEMENT.OPERATE,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,MONETIZATION.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,RIGHTS.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,TRUST_SAFETY.REVIEW,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,DATA.READ,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
+KORA,RELEASE.PUBLISH,STANDARD,Certification ≠ pouvoir; attribution séparée par autorité CVLN.,CANDIDATE
