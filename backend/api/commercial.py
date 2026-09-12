@@ -5,10 +5,6 @@ from __future__ import annotations
 import uuid
 
 import httpx
-from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
-from pymongo import ReturnDocument
-
 from auth import get_current_user
 from billing import build_invoice_intent
 from commercial import (
@@ -21,7 +17,10 @@ from commercial import (
     resolve_offer,
 )
 from db import db, utc_now_iso
+from fastapi import APIRouter, Depends, HTTPException
 from models import User
+from pydantic import BaseModel
+from pymongo import ReturnDocument
 from services.integrations.cvln_wallet import (
     CVLNWalletAmbiguousResult,
     CVLNWalletNotConfigured,
