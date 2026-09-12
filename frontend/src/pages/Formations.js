@@ -31,19 +31,17 @@ export default function Formations() {
   const visible = pole === "ALL" ? allFormations : allFormations.filter(f => f.pole === pole);
 
   return (
-    <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="formations-page">
-      <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">
-        {t("formations")}
-      </div>
-      <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-2">
-        {allFormations.length} formations. {poles.length} pôles. {totalModules} modules.
-      </h1>
-      <p className="text-[--cvln-ink-2] mt-3 max-w-2xl">
-        Chaque formation applique la doctrine CVLN : Hook → Objectifs → Cours → Atelier → Livrable → Quiz → Mini-mission.
-      </p>
+    <div className="cvln-page" data-testid="formations-page">
+      <section className="cvln-page-hero">
+        <div className="cvln-kicker">04. FORMATIONS / EXPLORER LES TERRITOIRES</div>
+        <h1 className="cvln-page-title mt-3">Des formations pour<br/>des talents sans frontières.</h1>
+        <p className="cvln-page-subtitle">
+          {allFormations.length} formations · {poles.length} pôles · {totalModules} modules. Chaque formation applique la doctrine CVLN : Hook → Objectifs → Cours → Atelier → Livrable → Quiz → Mini-mission.
+        </p>
+      </section>
 
       {path?.next_action && (
-        <div className="mt-6 cvln-card p-5 flex items-center gap-4 flex-wrap" data-testid="next-action-banner">
+        <div className="cvln-card p-5 flex items-center gap-4 flex-wrap" data-testid="next-action-banner">
           <div className="w-1 h-10 rounded-full" style={{ background: path.next_action.pole_color }} />
           <div className="flex-1 min-w-0">
             <div className="text-[11px] mono uppercase tracking-wider font-bold text-[--cvln-orange]">
@@ -69,8 +67,7 @@ export default function Formations() {
           <button
             data-testid="pole-ALL"
             onClick={() => setPole("ALL")}
-            className={`px-4 py-2 rounded-full text-sm font-semibold transition
-              ${pole === "ALL" ? "bg-[--cvln-forest] text-white" : "bg-white text-[--cvln-ink-2] border border-black/10 hover:border-[--cvln-orange]/50"}`}
+            className={`px-4 py-2 rounded-full text-sm font-semibold transition border ${pole === "ALL" ? "bg-[--cvln-orange] text-white border-[--cvln-orange]" : "bg-white/5 text-[--cvln-ink-2] border-white/10 hover:border-[--cvln-orange]/50"}`}
           >
             Tous les pôles
           </button>
@@ -80,8 +77,7 @@ export default function Formations() {
             <button
               data-testid={`pole-${p.code}`}
               onClick={() => setPole(p.code)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold transition
-                ${pole === p.code ? "text-white" : "bg-white text-[--cvln-ink-2] border border-black/10 hover:border-[--cvln-orange]/50"}`}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition border ${pole === p.code ? "text-white border-transparent" : "bg-white/5 text-[--cvln-ink-2] border-white/10 hover:border-[--cvln-orange]/50"}`}
               style={pole === p.code ? { background: p.color } : {}}
             >
               {p.code} · {p.name}
@@ -92,22 +88,13 @@ export default function Formations() {
 
       {path?.own_pole?.length > 0 && (pole === "ALL" || visible.some(f => f.is_recommended)) && (
         <>
-          <div className="mt-10 flex items-baseline gap-3">
-            <h2 className="font-display font-bold text-xl tracking-tight">Ta voie · {path.metier_vise}</h2>
-            <span className="text-xs mono uppercase tracking-wider text-[--cvln-ink-2]">
-              parcours séquentiel
-            </span>
+          <div className="cvln-section-heading">
+            <h2>Ta voie · {path.metier_vise}</h2>
+            <span>Parcours séquentiel</span>
           </div>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="cvln-formation-grid">
             {visible.filter(f => f.is_recommended).map(f => (
-              <FormationCard
-                key={f.code}
-                f={f}
-                t={t}
-                focusedId={cardFocus.focusedId}
-                onCardFocus={cardFocus.focus}
-                onCardBlur={cardFocus.clear}
-              />
+              <FormationCard key={f.code} f={f} t={t} focusedId={cardFocus.focusedId} onCardFocus={cardFocus.focus} onCardBlur={cardFocus.clear} />
             ))}
           </div>
         </>
@@ -115,22 +102,13 @@ export default function Formations() {
 
       {(pole === "ALL" || visible.some(f => !f.is_recommended)) && (
         <>
-          <div className="mt-10 flex items-baseline gap-3">
-            <h2 className="font-display font-bold text-xl tracking-tight">Autres pôles</h2>
-            <span className="text-xs mono uppercase tracking-wider text-[--cvln-ink-2]">
-              se débloquent en progressant
-            </span>
+          <div className="cvln-section-heading">
+            <h2>Explorer les autres territoires</h2>
+            <span>Se débloquent en progressant</span>
           </div>
-          <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="cvln-formation-grid">
             {visible.filter(f => !f.is_recommended).map(f => (
-              <FormationCard
-                key={f.code}
-                f={f}
-                t={t}
-                focusedId={cardFocus.focusedId}
-                onCardFocus={cardFocus.focus}
-                onCardBlur={cardFocus.clear}
-              />
+              <FormationCard key={f.code} f={f} t={t} focusedId={cardFocus.focusedId} onCardFocus={cardFocus.focus} onCardBlur={cardFocus.clear} />
             ))}
           </div>
         </>
@@ -147,60 +125,47 @@ function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur }) {
       <Link
         to={`/formations/${f.code}`}
         data-testid={`formation-${f.code}`}
+        data-locked={locked ? "true" : "false"}
         onFocus={() => onCardFocus?.(f.code)}
         onBlur={() => onCardBlur?.()}
-        className={`h-full cvln-card p-6 group flex flex-col relative overflow-hidden ${locked ? "opacity-75" : ""}`}
+        className={`cvln-formation-card group flex flex-col h-full ${locked ? "opacity-75" : ""}`}
       >
         {locked && (
-          <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/70 flex items-center justify-center text-white" data-testid={`lock-${f.code}`}>
+          <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white" data-testid={`lock-${f.code}`}>
             <Lock width={14} height={14} />
           </div>
         )}
         {validated && (
-          <div className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[#15803D] flex items-center justify-center text-white">
+          <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#15803D] flex items-center justify-center text-white">
             <CheckCircle width={16} height={16} />
           </div>
         )}
-        <div className="flex items-center justify-between pr-10">
-          <div
-            className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-bold text-white"
-            style={{ background: f.pole_color }}
-          >
+        <div className="relative z-10 flex items-center justify-between pr-10">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-bold text-white" style={{ background: f.pole_color }}>
             {f.pole} · {f.code}
           </div>
           <div className="text-xs mono text-[--cvln-ink-2]">{f.duration_h}h · {f.cc} CC</div>
         </div>
-        <h3
-          className="font-display font-bold text-xl tracking-tight mt-4 leading-tight"
-          data-spatial-shared-source={`formation:${f.code}`}
-        >
+        <h3 className="relative z-10 font-display font-bold text-2xl tracking-tight mt-8 leading-tight" data-spatial-shared-source={`formation:${f.code}`}>
           {f.name}
         </h3>
 
         {f.modules_count > 0 && !locked && (
-          <div className="mt-4">
-            <div className="h-1.5 bg-black/5 rounded-full overflow-hidden">
+          <div className="relative z-10 mt-6">
+            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
               <div className="h-full bg-[--cvln-orange]" style={{ width: `${f.progress_pct}%` }} />
             </div>
-            <div className="mt-1.5 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
+            <div className="mt-2 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
               {f.validated_count}/{f.modules_count} modules · {f.progress_pct}%
             </div>
           </div>
         )}
 
-        {locked && (
-          <div className="mt-4 text-xs text-[--cvln-ink-2] leading-relaxed">
-            {f.lock_reason}
-          </div>
-        )}
+        {locked && <div className="relative z-10 mt-6 text-xs text-[--cvln-ink-2] leading-relaxed">{f.lock_reason}</div>}
 
-        <div className="mt-4 pt-4 border-t border-black/5 flex items-center justify-between">
-          <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">
-            {f.modules_count} {t("modules")}
-          </div>
-          <div className="text-[--cvln-orange] group-hover:translate-x-1 transition">
-            <ArrowRight width={16} height={16} />
-          </div>
+        <div className="formation-footer relative z-10 flex items-center justify-between">
+          <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">{f.modules_count} {t("modules")}</div>
+          <div className="text-[--cvln-orange] group-hover:translate-x-1 transition"><ArrowRight width={16} height={16} /></div>
         </div>
       </Link>
     </FocusFieldItem>
