@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { Horizon } from "@/lib/motion-primitives";
@@ -34,7 +35,7 @@ export default function Roadmap() {
   const { user } = useAuth();
   const { t } = useI18n();
   const railRef = useRef(null);
-  const currentIdx = STAGE_CODES.indexOf(user?.stade);
+  const currentIdx = user ? STAGE_CODES.indexOf(user.stade) : -1;
 
   const STAGES = STAGE_CODES.map((code) => ({
     code, emoji: STAGE_EMOJI[code], cc: STAGE_CC[code],
@@ -45,7 +46,7 @@ export default function Roadmap() {
     itemCount: STAGES.length,
     initialIndex: currentIdx >= 0 ? currentIdx : 0,
   });
-  const currentStageCode = STAGE_CODES[currentIdx];
+  const currentStageCode = currentIdx >= 0 ? STAGE_CODES[currentIdx] : null;
 
   useEffect(() => {
     const railElement = railRef.current;
@@ -66,14 +67,18 @@ export default function Roadmap() {
   };
 
   return (
-    <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="roadmap-page">
+    <div className="px-6 md:px-12 py-10 max-w-7xl" data-testid="roadmap-page" data-public={!user ? "true" : "false"}>
       <div className="text-xs uppercase tracking-[0.25em] font-bold text-[--cvln-orange]">{t("roadmap")}</div>
       <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-2">
         {t("roadmap_p.hero_title_pre")} <span className="text-[--cvln-orange]">{t("stades.graine")}</span> {t("roadmap_p.hero_title_post")}
       </h1>
-      <p className="text-[--cvln-ink-2] mt-3 max-w-2xl">
-        {t("roadmap_p.hero_p")}
-      </p>
+      <p className="text-[--cvln-ink-2] mt-3 max-w-2xl">{t("roadmap_p.hero_p")}</p>
+      {!user && (
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <p className="text-sm text-[--cvln-ink-2] max-w-2xl">Cette vue publique présente le modèle de progression CVLN. Ta position réelle, tes crédits et tes preuves ne sont visibles qu’après connexion.</p>
+          <Link to="/register" className="btn-primary">Commencer mon parcours</Link>
+        </div>
+      )}
 
       <div
         ref={railRef}
@@ -87,41 +92,33 @@ export default function Roadmap() {
         style={{ ...rail.railProps.style, perspective: "1400px", perspectiveOrigin: "50% 45%" }}
       >
         {STAGES.map((s, i) => {
-          const active = i === currentIdx;
-          const done = currentIdx >= 0 && i < currentIdx;
-          const future = currentIdx >= 0 && i > currentIdx;
+          const active = user && i === currentIdx;
+          const done = user && currentIdx >= 0 && i < currentIdx;
+          const future = user && currentIdx >= 0 && i > currentIdx;
           const horizonDistance = future ? i - currentIdx : 0;
           const predicted = i === rail.predictedIndex;
           const { depth, style } = attentionPresentation(i, rail.attentionPosition, predicted);
+          const state = !user ? "PUBLIC" : active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN";
           const card = (
             <div
               data-testid={`stage-visual-${s.code}`}
               data-attention-tier={depth.tier}
               data-attention-weight={depth.weight.toFixed(4)}
               data-spatial-predicted={predicted ? "true" : "false"}
-              data-domain-stage-state={active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN"}
+              data-domain-stage-state={state}
               className={`h-full cvln-card p-6 flex flex-col ${active ? "border-2 border-[--cvln-orange]" : ""}`}
               style={style}
             >
               <div className="text-6xl mb-4">{s.emoji}</div>
-              <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">
-                {s.cc}+ CC
-              </div>
+              <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">{s.cc}+ CC</div>
               <h3 className="font-display font-bold text-2xl tracking-tight mt-2">{t(`stades.${s.code}`)}</h3>
               <p className="text-sm text-[--cvln-ink-2] mt-3">{s.desc}</p>
               <div className="mt-auto pt-6">
                 <div className="mono text-xs text-[--cvln-orange] font-semibold">{s.signal}</div>
                 {done && <div className="text-xs mt-2 text-[--cvln-forest] font-bold">✓ {t("roadmap_p.crossed")}</div>}
                 {active && <div className="text-xs mt-2 text-[--cvln-orange] font-bold">{t("roadmap_p.you_are_here")}</div>}
-                {future && (
-                  <div
-                    className="text-xs mt-2 text-[--cvln-ink-2] font-semibold"
-                    data-testid={`horizon-label-${s.code}`}
-                    data-horizon-distance={horizonDistance}
-                  >
-                    Horizon · +{horizonDistance}
-                  </div>
-                )}
+                {future && <div className="text-xs mt-2 text-[--cvln-ink-2] font-semibold" data-testid={`horizon-label-${s.code}`} data-horizon-distance={horizonDistance}>Horizon · +{horizonDistance}</div>}
+                {!user && <div className="text-xs mt-2 text-[--cvln-ink-2] font-semibold">Étape du modèle public</div>}
               </div>
             </div>
           );
@@ -138,18 +135,13 @@ export default function Roadmap() {
               data-spatial-focus-id={`roadmap-stage-${s.code}`}
               data-attention-tier={depth.tier}
               data-spatial-predicted={predicted ? "true" : "false"}
-              data-domain-stage-state={active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN"}
-              // Compatibility contract for the original W3-D/Excel proof:
-              // this describes the backend-authoritative domain anchor only.
-              // Live perceptual focus is independently exposed by data-attention-tier.
+              data-domain-stage-state={state}
               data-focus-role={active ? "target" : "secondary"}
               className="snap-start min-w-[280px] max-w-[280px] outline-none focus-visible:ring-2 focus-visible:ring-[--cvln-orange] rounded-3xl"
               style={active ? { transform: "translateZ(0)" } : undefined}
             >
               {future ? (
-                <Horizon visible distance={horizonDistance} className="h-full" data-testid={`horizon-${s.code}`}>
-                  {card}
-                </Horizon>
+                <Horizon visible distance={horizonDistance} className="h-full" data-testid={`horizon-${s.code}`}>{card}</Horizon>
               ) : card}
             </div>
           );
@@ -157,7 +149,7 @@ export default function Roadmap() {
       </div>
 
       <div className="sr-only" aria-live="polite" data-testid="roadmap-spatial-status">
-        {currentStageCode ? `${t(`stades.${currentStageCode}`)} · ${rail.focusedIndex + 1}/${STAGES.length}` : ""}
+        {currentStageCode ? `${t(`stades.${currentStageCode}`)} · ${rail.focusedIndex + 1}/${STAGES.length}` : `Roadmap publique · ${rail.focusedIndex + 1}/${STAGES.length}`}
       </div>
     </div>
   );
