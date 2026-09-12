@@ -1,0 +1,19 @@
+/* Device-performance overrides are intentionally isolated from the cinematic
+   stylesheet. They only reduce ambient animation cost; semantic camera/focus
+   behavior is untouched. Imported after spatial-living-world.css. */
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__clouds--far { animation-duration: 49s; }
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__clouds--near { animation-duration: 36s; }
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe { animation-duration: 17s; }
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe-core { animation-duration: 12s; }
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe-ring--a { animation-duration: 26s; }
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe-ring--b { animation-duration: 35s; }
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__water-shimmer { animation-duration: 10s; }
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__particles { animation-duration: 19s; }
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds--near,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__particles,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe-ring,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__water-shimmer {
+  animation: none !important;
+  will-change: auto;
+}
