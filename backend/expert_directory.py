@@ -30,7 +30,10 @@ EXPERTS: List[Dict[str, Any]] = [
     {
         "id": "funding",
         "name": "Financement",
-        "description": "Explique les pistes de financement vérifiées et distingue éligibilité, pré-éligibilité et information générale.",
+        "description": (
+            "Explique les pistes de financement vérifiées et distingue éligibilité, "
+            "pré-éligibilité et information générale."
+        ),
         "domains": ["financement", "afdas", "france-travail", "cpf", "aides"],
         "tools": [],
         "status": "planned",
@@ -156,7 +159,11 @@ def route_experts(intent: str, limit: int = 3) -> List[Dict[str, Any]]:
     pretend to be semantic AI routing; future embeddings/LLM routing can sit
     behind the same contract once tested.
     """
-    tokens = {token for token in intent.lower().replace("/", " ").replace("-", " ").split() if token}
+    tokens = {
+        token
+        for token in intent.lower().replace("/", " ").replace("-", " ").split()
+        if token
+    }
     scored = []
     for expert in EXPERTS:
         haystack = " ".join(
