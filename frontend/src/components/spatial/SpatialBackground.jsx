@@ -3,6 +3,7 @@ import { FEATURE_FLAGS } from "@/lib/featureFlags";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import "./spatial-background.css";
+import "./spatial-living-world.css";
 
 /** Living CVLN Academy world. Navigation/auth/business state stay outside this layer. */
 export default function SpatialBackground({ pathname = "/" }) {
