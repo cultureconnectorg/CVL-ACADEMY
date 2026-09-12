@@ -32,10 +32,13 @@ function createClone(snapshot) {
   return node;
 }
 
-function animateSharedElement(from, to, root) {
+function animateSharedElement(from, to, root, destinationNode = null) {
   if (!from?.rect || !to?.rect || !root) return null;
   const clone = createClone(from);
   if (!clone) return null;
+
+  const previousVisibility = destinationNode?.style?.visibility;
+  if (destinationNode?.style) destinationNode.style.visibility = "hidden";
   root.appendChild(clone);
 
   const dx = to.rect.left - from.rect.left;
@@ -60,12 +63,24 @@ function animateSharedElement(from, to, root) {
     },
   );
 
-  const cleanup = () => clone.remove();
+  let cleaned = false;
+  const cleanup = () => {
+    if (cleaned) return;
+    cleaned = true;
+    clone.remove();
+    if (destinationNode?.style) destinationNode.style.visibility = previousVisibility || "";
+  };
   animation.addEventListener?.("finish", cleanup, { once: true });
   animation.addEventListener?.("cancel", cleanup, { once: true });
   return () => {
     try { animation.cancel(); } catch { cleanup(); }
+    cleanup();
   };
+}
+
+function destinationSelectorFor(detail) {
+  if (detail.kind === "RETURN_FOLLOW") return detail.sharedSourceSelector || detail.sourceSelector;
+  return detail.sharedDestinationSelector || detail.destinationSelector;
 }
 
 /**
@@ -87,10 +102,13 @@ export default function SpatialSharedElementLayer() {
       if (!detail || (detail.kind !== "FOLLOW" && detail.kind !== "RETURN_FOLLOW")) return;
       if (!detail.sharedSource?.rect || !detail.sharedDestination?.rect) return;
       cleanupRef.current?.();
+      const selector = destinationSelectorFor(detail);
+      const destinationNode = selector ? document.querySelector(selector) : null;
       cleanupRef.current = animateSharedElement(
         detail.sharedSource,
         detail.sharedDestination,
         rootRef.current,
+        destinationNode,
       );
     };
     window.addEventListener(SPATIAL_CAMERA_EVENT, onCamera);
