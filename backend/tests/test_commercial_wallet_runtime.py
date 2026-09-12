@@ -72,7 +72,9 @@ async def test_wallet_payment_grants_exact_entitlement_once(
     monkeypatch.setattr(api_commercial.cvln_wallet, "entity_info", fake_entity_info)
     monkeypatch.setattr(api_commercial.cvln_wallet, "charge", fake_charge)
 
-    order = await api_commercial.create_order(OrderCreate(economy_code="FMS-07"), learner)
+    order = await api_commercial.create_order(
+        OrderCreate(economy_code="FMS-07"), learner
+    )
     paid = await api_commercial.pay_order_with_wallet(order["order_id"], learner)
     replay = await api_commercial.pay_order_with_wallet(order["order_id"], learner)
 
@@ -104,7 +106,9 @@ async def test_ambiguous_wallet_outcome_is_never_auto_retried(
     monkeypatch.setattr(api_commercial.cvln_wallet, "entity_info", fake_entity_info)
     monkeypatch.setattr(api_commercial.cvln_wallet, "charge", ambiguous_charge)
 
-    order = await api_commercial.create_order(OrderCreate(economy_code="FMS-07"), learner)
+    order = await api_commercial.create_order(
+        OrderCreate(economy_code="FMS-07"), learner
+    )
     with pytest.raises(HTTPException) as exc:
         await api_commercial.pay_order_with_wallet(order["order_id"], learner)
     assert exc.value.detail == "REQUIRES_REVIEW"
