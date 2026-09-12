@@ -8,6 +8,7 @@ os.environ.setdefault("MONGO_URL", "mongodb://localhost:27017")
 os.environ.setdefault("DB_NAME", "cvln_academy_test")
 
 from services.careops import autonomy_policy, classify_message, make_fingerprint
+from services.careops_incidents import INCIDENT_THRESHOLD, incident_action_type
 
 
 def test_regular_question_goes_to_support():
@@ -51,3 +52,15 @@ def test_fingerprint_is_stable_for_same_report():
     b = make_fingerprint("academy", "maintenance", "Erreur 500 sur le module 4")
     assert a == b
     assert len(a) == 24
+
+
+def test_incident_threshold_is_explicit_and_conservative():
+    assert INCIDENT_THRESHOLD == 3
+
+
+def test_incident_domain_routing_is_not_all_technical_maintenance():
+    assert incident_action_type("maintenance") == "technical_maintenance"
+    assert incident_action_type("claim") == "claims_review"
+    assert incident_action_type("payment") == "billing_investigation"
+    assert incident_action_type("security") == "security_response"
+    assert incident_action_type("support") == "service_recovery"
