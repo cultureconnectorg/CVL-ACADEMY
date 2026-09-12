@@ -12,7 +12,13 @@ function emit(detail) {
   window.dispatchEvent(new CustomEvent(SPATIAL_CAMERA_EVENT, { detail }));
 }
 
-export function beginCameraIntent({ anchorId, destinationRoute, element, returnRoute } = {}) {
+export function beginCameraIntent({
+  anchorId,
+  destinationRoute,
+  destinationSelector = null,
+  element,
+  returnRoute,
+} = {}) {
   if (!anchorId || !destinationRoute || !element || typeof window === "undefined") return false;
   const sourceRect = rectSnapshot(element.getBoundingClientRect?.());
   if (!sourceRect) return false;
@@ -26,6 +32,7 @@ export function beginCameraIntent({ anchorId, destinationRoute, element, returnR
     anchorId,
     sourceRoute,
     destinationRoute,
+    destinationSelector,
     returnRoute: returnRoute || sourceRoute,
     sourceRect,
     cameraOriginFrom: origin,
