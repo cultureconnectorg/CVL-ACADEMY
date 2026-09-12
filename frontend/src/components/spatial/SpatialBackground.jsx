@@ -11,6 +11,7 @@ import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
 import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import "./spatial-background.css";
 import "./spatial-living-world.css";
+import "./spatial-performance.css";
 
 /** Living CVLN Academy world. Navigation/auth/business state stay outside this layer. */
 export default function SpatialBackground({ pathname = "/", stade }) {
