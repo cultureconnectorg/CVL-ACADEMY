@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from typing import Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+
 from auth import require_role
 from economy_3d import Economy3DError, commercial_class, record_by_code, records
-from fastapi import APIRouter, Depends, HTTPException, Query
 from models import STAFF_ROLES, User
 from pricing_catalog import economic_rules, offer_by_id, offers
 from services.nvidia_runtime import accelerated_group_count
