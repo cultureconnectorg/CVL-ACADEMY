@@ -1,6 +1,8 @@
 const { test, expect } = require("@playwright/test");
 
-const backendUrl = process.env.E2E_BACKEND_URL || "http://127.0.0.1:4174";
+const backendUrl = process.env.E2E_BACKEND_URL;
+
+test.skip(!backendUrl, "requires E2E_BACKEND_URL and a real Academy backend");
 
 test("browser reaches real Academy backend and Mongo-backed readiness", async ({ page }) => {
   await page.goto("/");
