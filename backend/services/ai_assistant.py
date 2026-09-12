@@ -101,9 +101,9 @@ async def assistant_reply(
     )
     history: List[Dict[str, str]] = (doc or {}).get("messages", [])
 
-    sys_prompt = (
-        config["system_prompt"] + f"\nUtilisateur : {user.display_name} ({user.role})."
-    )
+    # Role is useful to the persona; display name and canonical identifiers are not.
+    # Keep those inside Academy and let the provider-neutral boundary redact the rest.
+    sys_prompt = config["system_prompt"] + f"\nUtilisateur : rôle={user.role}."
     reply = await agent_factory.chat_reply(
         sys_prompt, f"{persona}-{session_id}", message, history
     )
