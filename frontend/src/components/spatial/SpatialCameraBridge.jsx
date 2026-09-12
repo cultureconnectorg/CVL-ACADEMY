@@ -41,41 +41,40 @@ function waitForElement(selector, timeoutMs = 1800) {
   });
 }
 
-function focusIfUnclaimed(selector, fallbackTarget = null) {
-  if (typeof document === "undefined") return false;
-  const active = document.activeElement;
-  const target = document.querySelector(selector) || fallbackTarget;
-  if (!target || !target.isConnected || typeof target.focus !== "function") return false;
-
-  // Do not steal a deliberate focus choice. Browser history commonly leaves
-  // focus on body/documentElement while React's entering route settles; that
-  // unclaimed state is the only state in which a bounded retry may reassert
-  // the exact source control.
-  if (
-    active &&
-    active !== document.body &&
-    active !== document.documentElement &&
-    active !== target
-  ) {
-    return false;
-  }
-  target.focus({ preventScroll: true });
-  return document.activeElement === target;
-}
-
 function restoreSourceFocus(selector, fallbackTarget = null) {
-  if (typeof window === "undefined" || typeof document === "undefined") return;
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return () => {};
+  }
 
-  const attempt = () => focusIfUnclaimed(selector, fallbackTarget);
+  let explicitUserIntent = false;
+  const timers = [];
+  const noteExplicitIntent = () => {
+    explicitUserIntent = true;
+  };
+  const attempt = () => {
+    if (explicitUserIntent) return;
+    const target = document.querySelector(selector) || fallbackTarget;
+    if (!target || !target.isConnected || typeof target.focus !== "function") return;
+    target.focus({ preventScroll: true });
+  };
+
+  window.addEventListener("pointerdown", noteExplicitIntent, true);
+  window.addEventListener("keydown", noteExplicitIntent, true);
+  window.addEventListener("touchstart", noteExplicitIntent, true);
+
   attempt();
-
-  // Browser Back and AnimatePresence can each restore focus late in the route
-  // transition. Keep the exact source authoritative through that bounded
-  // window, but only while focus remains otherwise unclaimed.
-  const delays = [0, 60, 180, 360, 720, 1200];
-  delays.forEach((delay) => {
-    window.setTimeout(attempt, delay);
+  [0, 60, 180, 360, 720, 1200, 1800].forEach((delay) => {
+    timers.push(window.setTimeout(attempt, delay));
   });
+
+  const cleanup = () => {
+    timers.forEach((timer) => window.clearTimeout(timer));
+    window.removeEventListener("pointerdown", noteExplicitIntent, true);
+    window.removeEventListener("keydown", noteExplicitIntent, true);
+    window.removeEventListener("touchstart", noteExplicitIntent, true);
+  };
+  timers.push(window.setTimeout(cleanup, 1900));
+  return cleanup;
 }
 
 /**
@@ -93,6 +92,7 @@ export default function SpatialCameraBridge() {
     }
 
     let cancelled = false;
+    let cancelFocusRestore = null;
     const pending = readPendingCameraIntent();
     const armedReturn = readArmedCameraReturn();
 
@@ -125,10 +125,6 @@ export default function SpatialCameraBridge() {
           return;
         }
 
-        // The exact source control is the authoritative focus target for a
-        // browser-back return. Start restoration as soon as it exists.
-        restoreSourceFocus(selector, target);
-
         const sharedTarget = current.sharedSourceSelector
           ? await waitForElement(current.sharedSourceSelector)
           : null;
@@ -136,14 +132,17 @@ export default function SpatialCameraBridge() {
         const contract = consumeArmedCameraReturn();
         completeCameraIntent(contract, target, { returning: true, sharedElement: sharedTarget });
 
-        // Re-arm the bounded focus restoration after camera/shared-element
-        // completion in case browser history performed its own late reset.
-        restoreSourceFocus(selector, target);
+        // Browser history, AnimatePresence and sibling autofocus effects may
+        // programmatically move focus while the returning route settles. The
+        // exact invoking control remains authoritative until the learner makes
+        // a new explicit pointer/keyboard/touch choice.
+        cancelFocusRestore = restoreSourceFocus(selector, target);
       });
     }
 
     return () => {
       cancelled = true;
+      cancelFocusRestore?.();
     };
   }, [location.pathname, reduced]);
 
