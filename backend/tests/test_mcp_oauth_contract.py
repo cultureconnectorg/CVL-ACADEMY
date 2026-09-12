@@ -2,20 +2,30 @@ from __future__ import annotations
 
 import jwt
 import pytest
+from fastapi.testclient import TestClient
 
 import mcp_auth
 from api import mcp_oauth
 from server import app
 
 
-def test_private_mcp_mounts_are_additive():
-    paths = {route.path for route in app.routes}
-    assert "/mcp" in paths
-    assert "/mcp/private" in paths
-    assert "/.well-known/oauth-authorization-server" in paths
-    assert "/.well-known/oauth-protected-resource/mcp/private" in paths
-    assert "/oauth/authorize" in paths
-    assert "/oauth/token" in paths
+def test_private_mcp_mounts_and_oauth_routes_are_additive():
+    mount_paths = {
+        path
+        for route in app.routes
+        if (path := getattr(route, "path", None)) is not None
+    }
+    assert "/mcp" in mount_paths
+    assert "/mcp/private" in mount_paths
+
+    client = TestClient(app)
+    assert client.get("/.well-known/oauth-authorization-server").status_code == 200
+    assert (
+        client.get("/.well-known/oauth-protected-resource/mcp/private").status_code
+        == 200
+    )
+    assert client.get("/oauth/authorize").status_code == 422
+    assert client.post("/oauth/token").status_code == 422
 
 
 def test_oauth_scope_contract_is_allowlisted():
