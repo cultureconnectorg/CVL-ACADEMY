@@ -44,6 +44,7 @@ EXPERTS: List[Dict[str, Any]] = [
             "list_my_funding_dossiers",
         ],
         "status": "active",
+        "access": "private_oauth",
         "guardrail": (
             "Une préparation de dossier n'est jamais présentée comme une approbation, "
             "une éligibilité certaine ou une soumission institutionnelle."
@@ -184,4 +185,4 @@ def route_experts(intent: str, limit: int = 3) -> List[Dict[str, Any]]:
             scored.append((score, expert["id"], expert))
 
     scored.sort(key=lambda item: (-item[0], item[1]))
-    return [expert for _, _, expert in scored[: max(1, min(int(limit), 5)]]]
+    return [expert for _, _, expert in scored[: max(1, min(int(limit), 5))]]
