@@ -9,7 +9,7 @@ describe("public discovery data boundary", () => {
   test("wallet/me is only loaded from authenticated branch", () => {
     const source = read("Wallet.js");
     expect(source).toContain('if (!user)');
-    expect(source).toContain('api.get("/wallet/me")');
+    expect(source).toMatch(/api\s*\.\s*get\("\/wallet\/me"\)/);
     expect(source).toContain('data-public="true"');
   });
 
