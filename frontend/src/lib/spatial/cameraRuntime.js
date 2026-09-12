@@ -33,12 +33,35 @@ function writeJson(key, value, storage) {
   }
 }
 
+export function snapshotSharedElement(element) {
+  if (!element || typeof window === "undefined") return null;
+  const rect = rectSnapshot(element.getBoundingClientRect?.());
+  if (!rect) return null;
+  const style = window.getComputedStyle?.(element);
+  return {
+    rect,
+    text: (element.textContent || "").trim().slice(0, 240),
+    color: style?.color || null,
+    backgroundColor: style?.backgroundColor || null,
+    fontFamily: style?.fontFamily || null,
+    fontSize: style?.fontSize || null,
+    fontWeight: style?.fontWeight || null,
+    lineHeight: style?.lineHeight || null,
+    letterSpacing: style?.letterSpacing || null,
+    borderRadius: style?.borderRadius || null,
+    textAlign: style?.textAlign || null,
+  };
+}
+
 export function beginCameraIntent({
   anchorId,
   destinationRoute,
   destinationSelector = null,
   element,
   returnRoute,
+  sharedElement = null,
+  sharedSourceSelector = null,
+  sharedDestinationSelector = null,
 } = {}) {
   if (!anchorId || !destinationRoute || !element || typeof window === "undefined") return false;
   const sourceRect = rectSnapshot(element.getBoundingClientRect?.());
@@ -49,8 +72,9 @@ export function beginCameraIntent({
     height: window.innerHeight,
   });
   const sourceTestId = element.getAttribute?.("data-testid") || null;
+  const sharedSource = snapshotSharedElement(sharedElement);
   const intent = {
-    version: 1,
+    version: 2,
     anchorId,
     sourceRoute,
     sourceSelector: sourceTestId ? `[data-testid="${sourceTestId}"]` : null,
@@ -59,6 +83,9 @@ export function beginCameraIntent({
     returnRoute: returnRoute || sourceRoute,
     sourceRect,
     cameraOriginFrom: origin,
+    sharedSourceSelector,
+    sharedDestinationSelector,
+    sharedSource,
     createdAt: Date.now(),
   };
   writeJson(STORAGE_KEY, intent, window.sessionStorage);
@@ -83,7 +110,7 @@ export function consumePendingCameraIntent(storage = globalThis?.sessionStorage)
   return value;
 }
 
-export function completeCameraIntent(intent, element, { returning = false } = {}) {
+export function completeCameraIntent(intent, element, { returning = false, sharedElement = null } = {}) {
   if (!intent || !element || typeof window === "undefined") return null;
   const destinationRect = rectSnapshot(element.getBoundingClientRect?.());
   if (!destinationRect) return null;
@@ -91,10 +118,13 @@ export function completeCameraIntent(intent, element, { returning = false } = {}
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const currentShared = snapshotSharedElement(sharedElement);
   const completed = {
     ...intent,
     destinationRect,
     cameraOriginTarget: target,
+    sharedDestination: returning ? intent.sharedSource : currentShared,
+    sharedSource: returning ? (intent.sharedDestination || currentShared) : intent.sharedSource,
   };
   if (!returning) writeJson(RETURN_KEY, completed, window.sessionStorage);
   emit({ kind: returning ? "RETURN_FOLLOW" : "FOLLOW", ...completed });
