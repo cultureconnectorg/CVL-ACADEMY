@@ -9,7 +9,14 @@ export default function InstitutionalBridgePanel() {
   useEffect(() => {
     api
       .get("/institutional/connectors")
-      .then((response) => setRows(response.data))
+      .then((response) => {
+        if (!Array.isArray(response.data)) {
+          setRows([]);
+          setError(true);
+          return;
+        }
+        setRows(response.data);
+      })
       .catch(() => setError(true));
   }, []);
 
@@ -59,7 +66,7 @@ export default function InstitutionalBridgePanel() {
                   )}
                 </div>
               </div>
-              {row.capabilities.length > 0 && (
+              {Array.isArray(row.capabilities) && row.capabilities.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-2">
                   {row.capabilities.map((capability) => (
                     <span
