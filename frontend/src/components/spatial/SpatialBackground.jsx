@@ -5,6 +5,7 @@ import { makeRailPhysics } from "@/lib/spatial/physics";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { directSpatialExperience } from "@/lib/spatial/spatialDirector";
 import { environmentForStade } from "@/lib/spatial/environmentState";
+import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
 import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import "./spatial-background.css";
 import "./spatial-living-world.css";
@@ -13,7 +14,9 @@ import "./spatial-living-world.css";
 export default function SpatialBackground({ pathname = "/", stade }) {
   const rootRef = useRef(null);
   const signalTimerRef = useRef(null);
+  const cameraTimerRef = useRef(null);
   const [activeSignal, setActiveSignal] = useState(null);
+  const [cameraPhase, setCameraPhase] = useState("IDLE");
   const reduced = useReducedMotion();
   const spatialEnabled = FEATURE_FLAGS.SPATIAL_ENGINE && FEATURE_FLAGS.SPATIAL_ENVIRONMENT;
   const { node, scene } = sceneForPathname(pathname);
@@ -23,6 +26,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
     [node, scene, reduced, activeSignal]
   );
   const motionEnabled = spatialEnabled && !reduced;
+  const cameraFollowEnabled = motionEnabled && FEATURE_FLAGS.SPATIAL_ROUTE_TRANSITIONS;
   const publicUrl = process.env.PUBLIC_URL || "";
   const worldImage = `url("${publicUrl}/spatial/cvln-academy-spatial-world.svg")`;
 
@@ -44,6 +48,51 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       if (signalTimerRef.current) window.clearTimeout(signalTimerRef.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!cameraFollowEnabled || typeof window === "undefined") {
+      setCameraPhase("IDLE");
+      return undefined;
+    }
+    const onCamera = (event) => {
+      const root = rootRef.current;
+      const detail = event?.detail;
+      if (!root || !detail?.kind) return;
+      if (cameraTimerRef.current) {
+        window.clearTimeout(cameraTimerRef.current);
+        cameraTimerRef.current = null;
+      }
+
+      if (detail.kind === "LOCK" && detail.cameraOriginFrom) {
+        root.style.setProperty("--spatial-camera-origin-x", `${detail.cameraOriginFrom.x}%`);
+        root.style.setProperty("--spatial-camera-origin-y", `${detail.cameraOriginFrom.y}%`);
+        setCameraPhase("LOCKING");
+        return;
+      }
+
+      if (detail.kind === "FOLLOW" && detail.cameraOriginTarget) {
+        root.style.setProperty("--spatial-camera-origin-x", `${detail.cameraOriginTarget.x}%`);
+        root.style.setProperty("--spatial-camera-origin-y", `${detail.cameraOriginTarget.y}%`);
+        setCameraPhase("FOLLOWING");
+        cameraTimerRef.current = window.setTimeout(() => {
+          setCameraPhase("IDLE");
+          cameraTimerRef.current = null;
+        }, 760);
+        return;
+      }
+
+      if (detail.kind === "CANCEL") {
+        root.style.setProperty("--spatial-camera-origin-x", `${scene.focusX}%`);
+        root.style.setProperty("--spatial-camera-origin-y", `${scene.focusY}%`);
+        setCameraPhase("IDLE");
+      }
+    };
+    window.addEventListener(SPATIAL_CAMERA_EVENT, onCamera);
+    return () => {
+      window.removeEventListener(SPATIAL_CAMERA_EVENT, onCamera);
+      if (cameraTimerRef.current) window.clearTimeout(cameraTimerRef.current);
+    };
+  }, [cameraFollowEnabled, scene.focusX, scene.focusY]);
 
   useEffect(() => {
     setActiveSignal(null);
@@ -73,6 +122,10 @@ export default function SpatialBackground({ pathname = "/", stade }) {
     root.style.setProperty("--spatial-stage-growth", String(environment.growth));
     root.style.setProperty("--spatial-stage-glow", String(environment.glow));
     root.style.setProperty("--spatial-stage-horizon", String(environment.horizon));
+    if (cameraPhase === "IDLE") {
+      root.style.setProperty("--spatial-camera-origin-x", `${scene.focusX}%`);
+      root.style.setProperty("--spatial-camera-origin-y", `${scene.focusY}%`);
+    }
 
     if (!motionEnabled) {
       root.style.setProperty("--spatial-x", "0px");
@@ -115,7 +168,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       document.documentElement.removeEventListener("mouseleave", onPointerLeave);
       window.removeEventListener("scroll", onScroll);
     };
-  }, [motionEnabled, scene, director, environment]);
+  }, [motionEnabled, scene, director, environment, cameraPhase]);
 
   return (
     <div
@@ -127,6 +180,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
       data-spatial-node={node || "NONE"}
       data-spatial-zone={scene.zone}
       data-spatial-camera={director.camera}
+      data-spatial-camera-phase={cameraPhase}
       data-spatial-intent={director.intent}
       data-spatial-learning-state={director.learningState}
       data-spatial-signal={director.signalType || "NONE"}
