@@ -112,7 +112,9 @@ class ReconciliationRecord:
             }:
                 errors.append("implemented formation has no real module")
             if self.status == ReconciliationStatus.PUBLISHED and not self.publishable:
-                errors.append("published formation does not pass every completeness gate")
+                errors.append(
+                    "published formation does not pass every completeness gate"
+                )
         return errors
 
 
