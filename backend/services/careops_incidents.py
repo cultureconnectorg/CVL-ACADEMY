@@ -1,7 +1,8 @@
 """Autonomous incident correlation and maintenance orchestration for CVLN CareOps.
 
 This layer never deploys arbitrary code by itself. It creates auditable incident and
-maintenance records, links affected tickets, and advances only through explicit states.
+operational recovery records, links affected tickets, and advances only through explicit
+states backed by verification evidence.
 """
 
 from __future__ import annotations
@@ -13,6 +14,17 @@ from db import db, utc_now_iso
 
 INCIDENT_THRESHOLD = 3
 OPEN_TICKET_STATES = ("triaged", "in_progress", "waiting", "incident")
+
+
+def incident_action_type(kind: str) -> str:
+    return {
+        "security": "security_response",
+        "claim": "claims_review",
+        "payment": "billing_investigation",
+        "access": "service_recovery",
+        "maintenance": "technical_maintenance",
+        "support": "service_recovery",
+    }.get(kind, "service_recovery")
 
 
 def _incident_id() -> str:
@@ -52,6 +64,7 @@ async def correlate_ticket(ticket: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             "product": ticket["product"],
             "fingerprint": ticket["fingerprint"],
             "kind": ticket["kind"],
+            "action_type": incident_action_type(ticket["kind"]),
             "priority": "P1" if ticket["priority"] in ("P2", "P3") else ticket["priority"],
             "status": "detected",
             "ticket_count": len(related),
@@ -79,6 +92,7 @@ async def _create_maintenance_task(incident: Dict[str, Any]) -> Dict[str, Any]:
         "maintenance_id": _maintenance_id(),
         "incident_id": incident["incident_id"],
         "product": incident["product"],
+        "action_type": incident.get("action_type", incident_action_type(incident["kind"])),
         "status": "queued",
         "automation_mode": "guarded",
         "diagnostics": ["health", "logs", "recent_release", "dependencies", "database", "permissions"],
@@ -134,6 +148,7 @@ async def record_maintenance_result(
                 "incident_id": incident_id,
                 "product": task["product"],
                 "maintenance_id": maintenance_id,
+                "action_type": task.get("action_type"),
                 "evidence": evidence,
                 "created_at": now,
                 "kind": "verified_resolution",
