@@ -147,18 +147,31 @@ export function Confirm({ triggerKey, children, className }) {
   );
 }
 
+export function horizonPresentation(distance = 1, visible = true) {
+  const d = Math.max(1, Number.isFinite(Number(distance)) ? Number(distance) : 1);
+  if (!visible) return { opacity: 0, scale: 0.97, y: 8, filter: "saturate(.72) brightness(.9)" };
+  return {
+    opacity: Math.max(0.34, 0.76 - (d - 1) * 0.12),
+    scale: Math.max(0.93, 0.985 - (d - 1) * 0.014),
+    y: Math.min(12, (d - 1) * 3),
+    filter: `saturate(${Math.max(0.62, 0.9 - (d - 1) * 0.07).toFixed(3)}) brightness(${Math.max(0.86, 0.98 - (d - 1) * 0.035).toFixed(3)})`,
+  };
+}
+
 /** HORIZON — expose the next possibility.
  * ALLOWED: subdued distant cue.
- * FORBIDDEN: false unlock/availability — this primitive only renders
- * what the caller passes it; it must never imply a locked module is
- * reachable. */
-export function Horizon({ visible, children, className, ...props }) {
+ * FORBIDDEN: false unlock/availability. `distance` is domain distance from
+ * the learner's real current stage; visual exploration may focus a future
+ * stage, but this wrapper never changes its locked/unlocked semantics. */
+export function Horizon({ visible, distance = 1, children, className, ...props }) {
   const duration = useDur("horizon");
+  const presentation = horizonPresentation(distance, visible);
   return (
     <motion.div
       className={className}
-      animate={{ opacity: visible ? 0.65 : 0 }}
+      animate={presentation}
       transition={{ duration, ease: MOTION_EASING.standard }}
+      data-horizon-distance={String(Math.max(1, Number(distance) || 1))}
       {...props}
     >
       {children}
