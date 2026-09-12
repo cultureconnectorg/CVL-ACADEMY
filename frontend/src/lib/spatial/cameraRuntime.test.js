@@ -4,6 +4,7 @@ import {
   readArmedCameraReturn,
   readPendingCameraIntent,
   readReturnCameraContract,
+  snapshotSharedElement,
 } from "./cameraRuntime";
 
 function memoryStorage(initial = {}) {
@@ -70,5 +71,28 @@ describe("cameraRuntime pending intent", () => {
     expect(consumeArmedCameraReturn(storage)).toMatchObject(contract);
     expect(readArmedCameraReturn(storage)).toBeNull();
     expect(readReturnCameraContract(storage)).toBeNull();
+  });
+
+  test("shared element snapshot keeps only perceptual geometry and typography", () => {
+    const element = document.createElement("h3");
+    element.textContent = "Fixture Formation";
+    element.style.color = "rgb(10, 20, 30)";
+    element.style.fontSize = "20px";
+    element.style.fontWeight = "700";
+    element.getBoundingClientRect = () => ({
+      x: 10, y: 20, left: 10, top: 20, right: 210, bottom: 60,
+      width: 200, height: 40,
+    });
+    document.body.appendChild(element);
+
+    const snapshot = snapshotSharedElement(element);
+    expect(snapshot).toMatchObject({
+      text: "Fixture Formation",
+      rect: { left: 10, top: 20, width: 200, height: 40 },
+      color: "rgb(10, 20, 30)",
+      fontSize: "20px",
+      fontWeight: "700",
+    });
+    element.remove();
   });
 });
