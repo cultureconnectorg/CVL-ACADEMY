@@ -78,7 +78,31 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
 
   if (!cadenceRef.current) cadenceRef.current = createCadenceTracker();
 
+  const settledCommittedTarget = useCallback(() => {
+    const committedTarget = targetIndexRef.current;
+    const physics = physicsRef.current;
+    if (
+      committedTarget !== null
+      && physics
+      && Math.abs(physics.position - physics.target) <= 0.5
+    ) {
+      return clampRailIndex(committedTarget, itemCount);
+    }
+    return null;
+  }, [itemCount]);
+
   const measureAttentionPosition = useCallback(() => {
+    // Programmatic scroll dispatch can queue a measurement frame after the
+    // physics callback has already declared the rail settled. In that case the
+    // committed target remains authoritative; otherwise a late geometry sample
+    // can overwrite the exact integer with e.g. 2.9986, leaving a PRIMARY card
+    // with a meaningless 0.003px blur. This guard makes settle idempotent.
+    const settledTarget = settledCommittedTarget();
+    if (settledTarget !== null) {
+      setAttentionPosition(settledTarget);
+      return;
+    }
+
     const rail = railRef.current;
     if (!rail) return;
     const items = Array.from(rail.querySelectorAll("[data-spatial-rail-index]"));
@@ -90,7 +114,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     });
     const viewportCenter = rail.scrollLeft + railRect.width / 2;
     setAttentionPosition(interpolateRailPosition(viewportCenter, centers));
-  }, [railRef]);
+  }, [railRef, settledCommittedTarget]);
 
   const scheduleAttentionMeasure = useCallback(() => {
     if (attentionFrameRef.current || typeof requestAnimationFrame !== "function") return;
