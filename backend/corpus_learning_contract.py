@@ -93,10 +93,14 @@ class ReconciliationRecord:
 
     @property
     def publishable(self) -> bool:
-        return self.status in {
-            ReconciliationStatus.VERIFIED,
-            ReconciliationStatus.PUBLISHED,
-        } and self.completeness.complete
+        return (
+            self.status
+            in {
+                ReconciliationStatus.VERIFIED,
+                ReconciliationStatus.PUBLISHED,
+            }
+            and self.completeness.complete
+        )
 
     def validate(self) -> list[str]:
         errors: list[str] = []
