@@ -13,6 +13,7 @@ from economy_3d import Economy3DError, commercial_class, record_by_code, records
 from fastapi import APIRouter, Depends, HTTPException, Query
 from models import STAFF_ROLES, User
 from pricing_catalog import economic_rules, offer_by_id, offers
+from services.nvidia_runtime import accelerated_group_count
 
 router = APIRouter(prefix="/economy", tags=["economy"])
 
@@ -46,20 +47,33 @@ async def economy_3d_health(current: User = Depends(require_role(*STAFF_ROLES)))
     except Economy3DError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 
-    counts = {
-        "PUBLIC_MARKET": 0,
-        "CROSS_ECOSYSTEM_PROGRAM": 0,
-        "INTERNAL_NOT_FOR_SALE": 0,
-        "BUNDLED_BRIDGE": 0,
-        "HOLD_FROM_SALE": 0,
-    }
-    for record in items:
-        counts[commercial_class(record)] += 1
+    # This is a real business path through the adaptive acceleration boundary.
+    # The canonical workbook has only 812 records, so the default policy correctly
+    # stays on CPU today; if this projection grows beyond the benchmarked threshold
+    # on a qualified GPU worker, the same contract can switch to cuDF without
+    # changing the endpoint's business semantics.
+    projected = [
+        {"commercial_class": commercial_class(record)} for record in items
+    ]
+    observed_counts, engine, fallback_reason = accelerated_group_count(
+        projected, "commercial_class"
+    )
+    expected_classes = (
+        "PUBLIC_MARKET",
+        "CROSS_ECOSYSTEM_PROGRAM",
+        "INTERNAL_NOT_FOR_SALE",
+        "BUNDLED_BRIDGE",
+        "HOLD_FROM_SALE",
+    )
+    counts = {name: observed_counts.get(name, 0) for name in expected_classes}
+
     return {
         "status": "verified_projection",
         "source": "CVLN_Academy_Master_Economie_3D_DECIDE_V1.xlsx/Mapping_812",
         "records": len(items),
         "classes": counts,
+        "aggregation_engine": engine,
+        "acceleration_fallback_reason": fallback_reason,
         "commercial_runtime": "TRACEABILITY_PLUS_PRICING_CATALOG",
     }
 
