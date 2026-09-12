@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
+from db import db
 from fastapi import APIRouter, Request, status
 from fastapi.responses import JSONResponse
-
-from db import db
 from services.agent_factory import agent_factory
 from services.frek_core import frek_core
 
