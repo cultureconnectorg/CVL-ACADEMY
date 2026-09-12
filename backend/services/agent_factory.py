@@ -11,6 +11,11 @@ The Academy currently supports two proven local inference transports:
 Agent Factory API contract is implemented and verified. We deliberately expose
 that distinction instead of reporting a configured URL as an active transport.
 
+All provider traffic is passed through ``services.ai_data_policy`` first. Canonical
+CVLN identity is never intentionally injected into model prompts, session ids are
+pseudonymised for provider-facing logging, and obvious identifiers/secrets are
+redacted before outbound inference.
+
 Public methods:
     chat_reply(system_prompt, session_id, message, history) -> str
     mentor_reply(user, session_id, message, history) -> str
@@ -29,6 +34,11 @@ from typing import Any, Dict, List, Literal, Optional, cast
 import anthropic
 from anthropic.types import MessageParam
 
+from services.ai_data_policy import (
+    policy_status,
+    prepare_outbound_conversation,
+    pseudonymise_session,
+)
 from services.nvidia_runtime import (
     DynamoConfigurationError,
     DynamoUnavailableError,
@@ -108,6 +118,7 @@ class AgentFactoryClient:
             "anthropic_configured": bool(ANTHROPIC_API_KEY),
             "dynamo": nvidia_dynamo.status(),
             "agent_factory_remote": self.remote_status(),
+            "data_policy": policy_status(),
         }
 
     async def list_available_agents(self) -> List[Dict[str, Any]]:
@@ -130,7 +141,7 @@ class AgentFactoryClient:
     async def _anthropic_chat_reply(
         self,
         system_prompt: str,
-        session_id: str,
+        session_ref: str,
         message: str,
         history: List[Dict[str, str]],
     ) -> str:
@@ -143,7 +154,7 @@ class AgentFactoryClient:
                 role=cast(Literal["user", "assistant"], item["role"]),
                 content=item["content"],
             )
-            for item in history[-12:]
+            for item in history
             if item.get("role") in ("user", "assistant") and item.get("content")
         ]
         messages.append(MessageParam(role="user", content=message))
@@ -157,14 +168,16 @@ class AgentFactoryClient:
             )
         except anthropic.APIStatusError as exc:
             logger.error(
-                "Assistant Anthropic API error (session=%s): %s", session_id, exc
+                "Assistant Anthropic API error (session_ref=%s): %s", session_ref, exc
             )
             return (
                 "Assistant CVLN rencontre un souci technique. Réessaie dans un instant."
             )
         except anthropic.APIConnectionError as exc:
             logger.error(
-                "Assistant Anthropic connection error (session=%s): %s", session_id, exc
+                "Assistant Anthropic connection error (session_ref=%s): %s",
+                session_ref,
+                exc,
             )
             return (
                 "Assistant CVLN est injoignable pour le moment (réseau). "
@@ -181,17 +194,24 @@ class AgentFactoryClient:
         message: str,
         history: List[Dict[str, str]],
     ) -> str:
-        """Generic assistant transport with explicit, observable provider routing."""
+        """Generic assistant transport with explicit provider-neutral privacy policy."""
+        safe_system_prompt, safe_message, safe_history = prepare_outbound_conversation(
+            system_prompt, message, history
+        )
+        session_ref = pseudonymise_session(session_id)
+
         if AI_TRANSPORT == "dynamo":
             try:
                 return await nvidia_dynamo.chat_reply(
-                    system_prompt=system_prompt,
+                    system_prompt=safe_system_prompt,
                     session_id=session_id,
-                    message=message,
-                    history=history,
+                    message=safe_message,
+                    history=safe_history,
                 )
             except (DynamoConfigurationError, DynamoUnavailableError) as exc:
-                logger.error("Dynamo inference unavailable: %s", exc)
+                logger.error(
+                    "Dynamo inference unavailable session_ref=%s: %s", session_ref, exc
+                )
                 if AI_STRICT:
                     return (
                         "Assistant CVLN rencontre un souci sur le moteur d'inférence. "
@@ -199,7 +219,7 @@ class AgentFactoryClient:
                     )
                 logger.warning("Falling back from Dynamo to Anthropic")
                 return await self._anthropic_chat_reply(
-                    system_prompt, session_id, message, history
+                    safe_system_prompt, session_ref, safe_message, safe_history
                 )
 
         if AI_TRANSPORT != "anthropic":
@@ -208,7 +228,7 @@ class AgentFactoryClient:
                 return ASSISTANT_FALLBACK_REPLY
 
         return await self._anthropic_chat_reply(
-            system_prompt, session_id, message, history
+            safe_system_prompt, session_ref, safe_message, safe_history
         )
 
     async def mentor_reply(
@@ -220,10 +240,10 @@ class AgentFactoryClient:
         history: List[Dict[str, str]],
         lang: str = "fr",
     ) -> str:
-        """The Mentor CVLN persona over the selected inference transport."""
-        sys_prompt = CVLN_MENTOR_SYSTEM_PROMPT + (
-            f"\nApprenant courant: {display_name} · {user_frek_id} · langue={lang}."
-        )
+        """Mentor persona without exporting canonical Academy identity."""
+        # Keep parameters for API compatibility, but identity stays inside CVLN.
+        del user_frek_id, display_name
+        sys_prompt = CVLN_MENTOR_SYSTEM_PROMPT + f"\nLangue préférée: {lang}."
         return await self.chat_reply(sys_prompt, session_id, message, history)
 
 
