@@ -1,12 +1,31 @@
 const { test, expect } = require("@playwright/test");
-const { mockAuthenticatedSession } = require("./fixtures/auth-fixture");
+const { mockAuthenticatedSession, FIXTURE_FORMATION_DETAIL } = require("./fixtures/auth-fixture");
 
 const FORMATION_URL = "/formations/FMS-01";
 const MODULE_URL = "/formations/FMS-01/modules/FMS-01-M01";
+const FORMATION_WITH_MODULE = {
+  ...FIXTURE_FORMATION_DETAIL,
+  modules: [
+    {
+      code: "FMS-01-M01",
+      name: "Fixture Module One",
+      duration_h: 2,
+      stade: "pousse",
+      deliverable: "Fixture deliverable",
+      status: "in_progress",
+      is_unlocked: true,
+      course_progress_pct: 20,
+    },
+  ],
+};
+
+async function setup(page) {
+  return mockAuthenticatedSession(page, { formationDetail: FORMATION_WITH_MODULE });
+}
 
 test.describe("Spatial camera follow H0.8 production bridge", () => {
   test("formation module link creates a real forward camera contract", async ({ page }) => {
-    await mockAuthenticatedSession(page);
+    await setup(page);
     await page.goto(FORMATION_URL);
     const open = page.getByTestId("module-open-FMS-01-M01");
     await expect(open).toBeVisible();
@@ -36,13 +55,12 @@ test.describe("Spatial camera follow H0.8 production bridge", () => {
   });
 
   test("browser Back follows the inverse path and restores source focus", async ({ page }) => {
-    await mockAuthenticatedSession(page);
+    await setup(page);
     await page.goto(FORMATION_URL);
     const open = page.getByTestId("module-open-FMS-01-M01");
     await open.click();
     await expect(page.getByTestId("module-journey")).toBeVisible();
 
-    // Wait until the forward bridge has stored its exact inverse contract.
     await expect.poll(async () => page.evaluate(() => Boolean(
       sessionStorage.getItem("cvln:spatial-camera-return:v1")
     ))).toBe(true);
@@ -59,7 +77,7 @@ test.describe("Spatial camera follow H0.8 production bridge", () => {
   });
 
   test("reduced motion keeps navigation semantic and skips camera persistence", async ({ page }) => {
-    await mockAuthenticatedSession(page);
+    await setup(page);
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto(FORMATION_URL);
     await page.getByTestId("module-open-FMS-01-M01").click();
