@@ -33,7 +33,7 @@ export default function SpatialCameraBridge() {
       frameB = window.requestAnimationFrame(() => {
         const current = readPendingCameraIntent();
         if (!current || current.destinationRoute !== location.pathname) return;
-        const selector = anchorSelector(current.anchorId, "destination");
+        const selector = current.destinationSelector || anchorSelector(current.anchorId, "destination");
         const target = selector ? document.querySelector(selector) : null;
         if (!target) {
           cancelCameraIntent();
