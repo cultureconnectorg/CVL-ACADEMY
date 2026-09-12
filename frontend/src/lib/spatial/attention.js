@@ -57,21 +57,31 @@ export function attentionTier(distance, weight = attentionWeight(distance)) {
   return ATTENTION_TIERS.LATENT;
 }
 
+const ATTENTION_SETTLE_EPSILON = 0.01;
+
 /**
  * Pure depth-styling computation — 6 perceptual-occlusion channels
- * (H0.10's calibrated formulas, unchanged): translateZ/scale/opacity/
+ * (H0.10's calibrated formulas): translateZ/scale/opacity/
  * saturation/contrast/brightness/blur/z-index, plus a light-direction
  * bias. Returns a plain object; the caller applies it however its
  * rendering layer prefers (inline style, a CSS-in-JS prop, a data
  * attribute driving CSS variables — this module doesn't decide).
+ *
+ * Values within ATTENTION_SETTLE_EPSILON of the focal plane are
+ * canonicalized to zero. Physics engines intentionally stop inside a
+ * small tolerance; without this projection epsilon, a visually settled
+ * PRIMARY target could retain a meaningless 0.001–0.004px blur. Snapping
+ * only the final perceptual projection keeps continuous motion intact
+ * while making the settled state deterministic.
  *
  * `mobile` narrows perspective strength (weaker rotateY/Z) — same
  * H0.10 rule, now an explicit parameter instead of a `window.
  * innerWidth` read baked into the function (SSR/test-safety).
  */
 export function computeDepthStyle(distance, { mobile = false } = {}) {
-  const absD = Math.abs(distance);
-  const w = attentionWeight(distance);
+  const d = Math.abs(distance) < ATTENTION_SETTLE_EPSILON ? 0 : distance;
+  const absD = Math.abs(d);
+  const w = attentionWeight(d);
   const z = (-96 + 152 * w) * (mobile ? 0.5 : 1);
   const scale = 0.79 + 0.21 * w;
   const opacity = 0.22 + 0.78 * w;
@@ -79,8 +89,8 @@ export function computeDepthStyle(distance, { mobile = false } = {}) {
   const blur = Math.max(0, (1 - w) * 1.3); // far <=~1.3px, active 0 — H0.10 §2 calibration
   const contrast = 0.72 + 0.28 * w;
   const translateY = 16 - 26 * w;
-  const dir = distance === 0 ? 0 : distance > 0 ? 1 : -1;
-  const translateX = distance * Math.min(absD, 3) * 13;
+  const dir = d === 0 ? 0 : d > 0 ? 1 : -1;
+  const translateX = d * Math.min(absD, 3) * 13;
   let rotateY = dir * (1 - w) * -5.5;
   if (mobile) rotateY *= 0.3;
   // light-direction bias: a real, directional (not just distance-based)
@@ -89,7 +99,7 @@ export function computeDepthStyle(distance, { mobile = false } = {}) {
   // convention (positive = away from a left-sited light, by default).
   const brightness = Math.max(0.85, Math.min(1.05, 0.93 + 0.09 * w - translateX * 0.0006));
   const zIndex = Math.round(w * 100);
-  const tier = attentionTier(distance, w);
+  const tier = attentionTier(d, w);
   return {
     weight: w,
     tier,

@@ -1,4 +1,5 @@
 import axios from "axios";
+import { emitSpatialSignalFromResponse } from "@/lib/spatial/spatialLearningSignals";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 export const API_BASE = `${BACKEND_URL}/api`;
@@ -55,7 +56,12 @@ async function refreshAccessToken() {
 }
 
 api.interceptors.response.use(
-  (r) => r,
+  (response) => {
+    // Spatial is a perceptual subscriber only. A failed visual signal must
+    // never block, mutate, or change the backend-owned business response.
+    emitSpatialSignalFromResponse(response);
+    return response;
+  },
   async (err) => {
     const original = err?.config;
     if (err?.response?.status === 401 && original && !original._retried) {

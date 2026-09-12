@@ -81,7 +81,10 @@ export default function FormationDetail() {
           >
             {f.pole_name} · {f.code}
           </div>
-          <h1 className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-4">
+          <h1
+            className="font-display font-black text-4xl md:text-5xl tracking-tighter leading-none mt-4"
+            data-spatial-shared-destination={`formation:${f.code}`}
+          >
             {f.name}
           </h1>
           <p className="text-[--cvln-ink-2] mt-4 text-lg leading-relaxed max-w-2xl">
@@ -175,7 +178,12 @@ export default function FormationDetail() {
                       </span>
                     )}
                   </div>
-                  <div className="font-semibold text-lg mt-1">{m.name}</div>
+                  <div
+                    className="font-semibold text-lg mt-1"
+                    data-spatial-shared-source={`module:${code}:${m.code}`}
+                  >
+                    {m.name}
+                  </div>
                   <div className="text-sm text-[--cvln-ink-2] mt-1">
                     <strong>{t("deliverable")} : </strong>{m.deliverable}
                   </div>

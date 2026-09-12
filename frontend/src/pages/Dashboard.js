@@ -4,6 +4,7 @@ import { ArrowRight, Coins, Medal1st, GraduationCap, Sparks } from "iconoir-reac
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
+import ReturnToPositionCard from "@/components/spatial/ReturnToPositionCard.jsx";
 
 const STADE_EMOJI = {
   graine: "🌱", pousse: "🌿", racine: "🌳",
@@ -65,6 +66,8 @@ export default function Dashboard() {
           </Link>
         </div>
       </div>
+
+      <ReturnToPositionCard user={user} />
 
       {/* Next Action banner — LX v2 "you are here" */}
       {path?.next_action && (

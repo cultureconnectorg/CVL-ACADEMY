@@ -10,7 +10,7 @@
 
 .spatial-background__clouds {
   inset: 0;
-  opacity: .34;
+  opacity: calc(.18 + (var(--spatial-stage-density, .18) * .16));
   background-repeat: no-repeat;
   mix-blend-mode: screen;
   will-change: transform, opacity;
@@ -33,7 +33,7 @@
     radial-gradient(ellipse at 77% 46%, rgba(255,188,147,.11), transparent 32%),
     radial-gradient(ellipse at 47% 37%, rgba(255,255,255,.07), transparent 30%);
   filter: blur(26px);
-  opacity: .26;
+  opacity: calc(.12 + (var(--spatial-stage-density, .18) * .14));
   animation: spatial-cloud-near 25s ease-in-out infinite alternate;
 }
 
@@ -44,7 +44,7 @@
   left: 50%;
   transform: translateX(-50%) translate3d(calc(var(--spatial-x) * -.18), calc(var(--spatial-y) * -.12), 0);
   border-radius: 50%;
-  opacity: .48;
+  opacity: calc(.34 + (var(--spatial-stage-growth, .12) * .14));
   filter: drop-shadow(0 0 26px rgba(69,166,255,.24));
   animation: spatial-globe-float 12s ease-in-out infinite alternate;
 }
@@ -83,10 +83,11 @@
   right: -8%;
   bottom: 4%;
   height: 32%;
-  opacity: .42;
+  opacity: calc(.24 + (var(--spatial-stage-horizon, .9) * .16));
   background:
     repeating-linear-gradient(177deg, transparent 0 11px, rgba(255,194,129,.08) 12px, transparent 14px),
     radial-gradient(ellipse at 58% 20%, rgba(255,145,63,.18), transparent 52%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
   mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
   transform: skewX(-8deg) translate3d(calc(var(--spatial-x) * .07), calc(var(--spatial-y) * .04), 0);
   animation: spatial-water-shimmer 7s ease-in-out infinite alternate;
@@ -94,7 +95,7 @@
 
 .spatial-background__particles {
   inset: 0;
-  opacity: .36;
+  opacity: calc(.14 + (var(--spatial-stage-density, .18) * .22));
   background-image:
     radial-gradient(circle at 12% 72%, rgba(255,178,102,.7) 0 1px, transparent 1.5px),
     radial-gradient(circle at 24% 62%, rgba(255,255,255,.58) 0 1px, transparent 1.4px),
@@ -105,20 +106,99 @@
   animation: spatial-particles 13s ease-in-out infinite alternate;
 }
 
+.spatial-background__foreground {
+  opacity: calc(.62 + (var(--spatial-stage-density, .18) * .3));
+  transform:
+    translate3d(calc(var(--spatial-x) * .22), calc(var(--spatial-y) * .16), 0)
+    scaleY(calc(.92 + (var(--spatial-stage-growth, .12) * .08)));
+  transform-origin: bottom center;
+  transition: opacity 900ms cubic-bezier(.16,1,.3,1), transform 900ms cubic-bezier(.16,1,.3,1);
+}
+
+.spatial-background__sunset-glow {
+  opacity: calc(.5 + ((var(--spatial-stage-glow, .78) - .78) * .5));
+}
+
+.spatial-background__energy-rail {
+  opacity: calc(.5 + ((var(--spatial-stage-horizon, .9) - .9) * 1.25));
+}
+
+.spatial-background--learning-interior .spatial-background__particles,
+.spatial-background--learning-interior .spatial-background__clouds--near {
+  opacity: calc(.08 + (var(--spatial-stage-density, .18) * .08));
+}
+
+.spatial-background[data-spatial-context="active"] .spatial-background__clouds,
+.spatial-background[data-spatial-context="active"] .spatial-background__particles,
+.spatial-background[data-spatial-context="active"] .spatial-background__orbit,
+.spatial-background[data-spatial-context="active"] .spatial-background__energy-rail {
+  opacity: .12;
+  transition: opacity 260ms cubic-bezier(.16,1,.3,1);
+}
+
+.spatial-background[data-spatial-context="active"] .spatial-background__globe {
+  opacity: .22;
+  filter: drop-shadow(0 0 18px rgba(69,166,255,.14));
+  transition: opacity 260ms cubic-bezier(.16,1,.3,1), filter 260ms cubic-bezier(.16,1,.3,1);
+}
+
+.spatial-background[data-spatial-context="active"] .spatial-background__readability {
+  opacity: .9;
+}
+
+/* Adaptive quality changes ambient cost only. Route semantics, camera contracts,
+   focus and content remain identical at every quality level. */
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__clouds--far,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__clouds--near,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe-core,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe-ring,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__water-shimmer,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__particles {
+  animation-duration: calc(var(--spatial-quality-duration, 1s) * 1.45);
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds--near,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__particles,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe-ring,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__water-shimmer {
+  animation: none !important;
+  will-change: auto;
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds--near,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__particles {
+  opacity: .08;
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe {
+  animation-duration: 22s;
+  filter: drop-shadow(0 0 18px rgba(69,166,255,.18));
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe-core {
+  animation-duration: 14s;
+}
+
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__clouds,
-.spatial-background[data-spatial-motion="reduced"] .spatial-background__globe,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-core,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-ring,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__water-shimmer,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__particles,
 .spatial-background[data-spatial-engine="off"] .spatial-background__clouds,
-.spatial-background[data-spatial-engine="off"] .spatial-background__globe,
 .spatial-background[data-spatial-engine="off"] .spatial-background__globe-core,
 .spatial-background[data-spatial-engine="off"] .spatial-background__globe-ring,
 .spatial-background[data-spatial-engine="off"] .spatial-background__water-shimmer,
 .spatial-background[data-spatial-engine="off"] .spatial-background__particles {
   animation: none !important;
   transform: none !important;
+  will-change: auto;
+}
+
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__globe,
+.spatial-background[data-spatial-engine="off"] .spatial-background__globe {
+  animation: none !important;
+  transform: translateX(-50%) !important;
   will-change: auto;
 }
 
@@ -133,8 +213,8 @@
 }
 
 @keyframes spatial-globe-float {
-  from { margin-top: 0; filter: drop-shadow(0 0 22px rgba(69,166,255,.18)); }
-  to { margin-top: -8px; filter: drop-shadow(0 0 34px rgba(69,166,255,.34)); }
+  from { transform: translateX(-50%) translate3d(calc(var(--spatial-x) * -.18), calc(var(--spatial-y) * -.12), 0) translateY(0); filter: drop-shadow(0 0 22px rgba(69,166,255,.18)); }
+  to { transform: translateX(-50%) translate3d(calc(var(--spatial-x) * -.18), calc(var(--spatial-y) * -.12), 0) translateY(-8px); filter: drop-shadow(0 0 34px rgba(69,166,255,.34)); }
 }
 
 @keyframes spatial-globe-pulse {
@@ -143,13 +223,13 @@
 }
 
 @keyframes spatial-globe-ring-a {
-  from { rotate: 0deg; }
-  to { rotate: 360deg; }
+  from { transform: rotate(17deg); }
+  to { transform: rotate(377deg); }
 }
 
 @keyframes spatial-globe-ring-b {
-  from { rotate: 0deg; }
-  to { rotate: 360deg; }
+  from { transform: rotate(-29deg) scale(.88); }
+  to { transform: rotate(331deg) scale(.88); }
 }
 
 @keyframes spatial-water-shimmer {
@@ -160,6 +240,17 @@
 @keyframes spatial-particles {
   from { transform: translate3d(0, 6px, 0); opacity: .18; }
   to { transform: translate3d(12px, -14px, 0); opacity: .42; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spatial-background__clouds,
+  .spatial-background__globe,
+  .spatial-background__globe-core,
+  .spatial-background__globe-ring,
+  .spatial-background__water-shimmer,
+  .spatial-background__particles {
+    animation: none !important;
+  }
 }
 
 @media (max-width: 768px) {

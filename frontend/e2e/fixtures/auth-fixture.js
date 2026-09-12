@@ -175,16 +175,28 @@ const FIXTURE_FORMATION_DETAIL = {
   stades: ["graine", "pousse"],
   is_unlocked: true,
   lock_reason: "",
-  modules: [],
+  modules: [
+    {
+      code: "FMS-01-M01",
+      name: "Fixture Module One",
+      duration_h: 2,
+      stade: "pousse",
+      deliverable: "Fixture deliverable.",
+      status: "in_progress",
+      is_unlocked: true,
+      course_progress_pct: 0,
+    },
+  ],
 };
 
 /**
  * Installs the fixture for one Playwright `page`: a fake but internally
  * consistent authenticated session, entirely intercepted at the network
  * layer. Protected-route tests represent a learner who has already accepted
- * the current legal bundle; legal-acceptance behavior itself is tested
- * separately. This keeps the production LegalGuard active in E2E instead of
- * bypassing it.
+ * the current legal bundle and already made a necessary-only cookie choice;
+ * legal/cookie-consent behavior itself is tested separately. This keeps those
+ * production guards active without letting unrelated modal UI block a feature
+ * test's real pointer path.
  *
  * @param {import('@playwright/test').Page} page
  * @param {{ user?, poles?, learningPath? }} overrides
@@ -194,24 +206,36 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   const poles = overrides.poles || FIXTURE_POLES;
   const learningPath = overrides.learningPath || FIXTURE_LEARNING_PATH;
   const moduleData = overrides.moduleData || FIXTURE_MODULE;
+  const formationDetail = overrides.formationDetail || FIXTURE_FORMATION_DETAIL;
 
   await page.addInitScript(
-    ([token, refresh]) => {
+    ([token, refresh, cookiePreference]) => {
       window.localStorage.setItem("cvln_token", token);
       window.localStorage.setItem("cvln_refresh_token", refresh);
+      window.localStorage.setItem("cvln_cookie_consent_v1", JSON.stringify(cookiePreference));
     },
-    ["e2e-fixture-token", "e2e-fixture-refresh-token"]
+    [
+      "e2e-fixture-token",
+      "e2e-fixture-refresh-token",
+      {
+        version: 1,
+        necessary: true,
+        analytics: false,
+        marketing: false,
+        choice: "necessary",
+        decided_at: "2026-01-01T00:00:00.000Z",
+      },
+    ]
   );
 
+  // Playwright resolves page.route handlers in last-in-first-out order.
+  // Register the broad fallback first, then layer specific contracts above it
+  // so auth/domain fixtures win deterministically.
   await page.route("**/api/**", (route) => route.fulfill({ status: 200, body: "{}" }));
 
   await page.route("**/api/auth/me", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(user) })
   );
-  // Protected-route fixtures explicitly model a learner whose current legal
-  // bundle is already accepted. Without this route, the generic `{}` fallback
-  // is interpreted by LegalGuard as `accepted === false`, redirecting every
-  // authenticated journey to /legal/accept and masking the feature under test.
   await page.route("**/api/legal/requirements", (route) =>
     route.fulfill({
       status: 200,
@@ -265,7 +289,6 @@ async function mockAuthenticatedSession(page, overrides = {}) {
       body: JSON.stringify({ reply: "Fixture mentor reply." }),
     })
   );
-  const formationDetail = overrides.formationDetail || FIXTURE_FORMATION_DETAIL;
   await page.route("**/api/formations/*", (route) =>
     route.fulfill({
       status: 200,

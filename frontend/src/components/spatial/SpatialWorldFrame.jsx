@@ -1,5 +1,16 @@
 import { useLocation } from "react-router-dom";
+import { useAuth } from "@/lib/auth.jsx";
 import SpatialBackground from "@/components/spatial/SpatialBackground.jsx";
+import SpatialCameraBridge from "@/components/spatial/SpatialCameraBridge.jsx";
+import SpatialCameraIntentCapture from "@/components/spatial/SpatialCameraIntentCapture.jsx";
+import SpatialFocusManager from "@/components/spatial/SpatialFocusManager.jsx";
+import SpatialModuleDock from "@/components/spatial/SpatialModuleDock.jsx";
+import SpatialModuleEnvironmentBridge from "@/components/spatial/SpatialModuleEnvironmentBridge.jsx";
+import SpatialRuntimeDiagnostics from "@/components/spatial/SpatialRuntimeDiagnostics.jsx";
+import SpatialSensoryBridge from "@/components/spatial/SpatialSensoryBridge.jsx";
+import SpatialSharedElementLayer from "@/components/spatial/SpatialSharedElementLayer.jsx";
+import ReturnPositionTracker from "@/components/spatial/ReturnPositionTracker.jsx";
+import "./spatial-camera.css";
 
 /**
  * Mounts the visual world behind the already-existing application routes.
@@ -7,11 +18,21 @@ import SpatialBackground from "@/components/spatial/SpatialBackground.jsx";
  */
 export default function SpatialWorldFrame({ children }) {
   const location = useLocation();
+  const { user } = useAuth();
 
   return (
     <div className="relative min-h-screen overflow-hidden" data-testid="spatial-world-frame">
-      <SpatialBackground pathname={location.pathname} />
+      <ReturnPositionTracker />
+      <SpatialFocusManager />
+      <SpatialCameraIntentCapture />
+      <SpatialCameraBridge />
+      <SpatialSensoryBridge />
+      <SpatialRuntimeDiagnostics />
+      <SpatialBackground pathname={location.pathname} stade={user?.stade} />
+      <SpatialModuleEnvironmentBridge />
+      <SpatialSharedElementLayer />
       <div className="relative z-10 min-h-screen">{children}</div>
+      <SpatialModuleDock />
     </div>
   );
 }
