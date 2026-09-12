@@ -72,17 +72,16 @@ jobs:
       - name: Run NVIDIA runtime contract tests
         working-directory: backend
         run: pytest -q tests/test_nvidia_runtime.py
-      - name: Prove accelerator routes are reachable from the final FastAPI application
+      - name: Prove accelerator routes are reachable from the final FastAPI contract
         working-directory: backend
         run: |
           python - <<'PY'
           from server import app
 
-          paths = {
-              route.path
-              for route in app.routes
-              if getattr(route, "path", None)
-          }
+          # FastAPI 0.141 keeps included routers as deferred internal objects.
+          # The generated OpenAPI contract resolves those inclusions and is the
+          # stable public HTTP surface clients actually integrate against.
+          paths = set(app.openapi().get("paths", {}))
           required = {
               "/api/accelerators/status",
               "/api/accelerators/diagnostics",
@@ -91,8 +90,8 @@ jobs:
           }
           missing = required - paths
           if missing:
-              raise SystemExit(f"Accelerated app routes not wired: {sorted(missing)}")
-          print("Accelerated app routes wired:", sorted(required))
+              raise SystemExit(f"Accelerated OpenAPI paths not wired: {sorted(missing)}")
+          print("Accelerated OpenAPI paths wired:", sorted(required))
           PY
       - name: Prove CPU runtime never claims a GPU by configuration alone
         working-directory: backend
