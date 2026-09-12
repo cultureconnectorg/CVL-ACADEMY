@@ -35,8 +35,16 @@ function writeJson(key, value, storage) {
 
 export function snapshotSharedElement(element) {
   if (!element || typeof window === "undefined") return null;
-  const rect = rectSnapshot(element.getBoundingClientRect?.());
-  if (!rect) return null;
+  const baseRect = rectSnapshot(element.getBoundingClientRect?.());
+  if (!baseRect) return null;
+  // Shared-element consumers use CSS positioning semantics (left/top), while
+  // the camera contract intentionally uses x/y. Keep both aliases here so the
+  // same immutable geometry can drive each layer without guessing.
+  const rect = Object.freeze({
+    ...baseRect,
+    left: baseRect.x,
+    top: baseRect.y,
+  });
   const style = window.getComputedStyle?.(element);
   return {
     rect,
