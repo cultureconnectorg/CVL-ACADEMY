@@ -102,6 +102,8 @@ function App() {
               <RouteTransition>
                 <Routes>
                   <Route path="/" element={<LandingSpatial />} />
+                  <Route path="/login" element={<LandingSpatial authMode="login" />} />
+                  <Route path="/register" element={<LandingSpatial authMode="register" />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/legal/accept" element={<LegalAcceptance />} />
                   <Route path="/legal/:slug" element={<LegalHub />} />
