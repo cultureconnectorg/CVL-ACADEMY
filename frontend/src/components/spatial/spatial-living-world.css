@@ -131,6 +131,26 @@
   opacity: calc(.08 + (var(--spatial-stage-density, .18) * .08));
 }
 
+/* CONTEXT is a foreground layer. The persistent world does not disappear; it
+   settles and recedes so the learner's local task owns attention. */
+.spatial-background[data-spatial-context="active"] .spatial-background__clouds,
+.spatial-background[data-spatial-context="active"] .spatial-background__particles,
+.spatial-background[data-spatial-context="active"] .spatial-background__orbit,
+.spatial-background[data-spatial-context="active"] .spatial-background__energy-rail {
+  opacity: .12;
+  transition: opacity 260ms cubic-bezier(.16,1,.3,1);
+}
+
+.spatial-background[data-spatial-context="active"] .spatial-background__globe {
+  opacity: .22;
+  filter: drop-shadow(0 0 18px rgba(69,166,255,.14));
+  transition: opacity 260ms cubic-bezier(.16,1,.3,1), filter 260ms cubic-bezier(.16,1,.3,1);
+}
+
+.spatial-background[data-spatial-context="active"] .spatial-background__readability {
+  opacity: .9;
+}
+
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__clouds,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-core,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-ring,
