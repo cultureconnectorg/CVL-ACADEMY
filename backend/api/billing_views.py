@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fastapi import APIRouter, Depends
-
 from auth import get_current_user
 from billing_config import billing_production_status
 from db import db
+from fastapi import APIRouter, Depends
 from models import User
 
 router = APIRouter(prefix="/billing", tags=["billing"])
