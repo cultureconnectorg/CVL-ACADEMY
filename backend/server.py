@@ -24,6 +24,10 @@ from services.integrations.subscribers import (
 )
 from template_engine import seed_default_definitions
 
+# Side-effect registration only: adds the optional Apps SDK widget/resource to
+# the existing vendor-neutral public MCP server.
+import apps_sdk  # noqa: E402,F401
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
