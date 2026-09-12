@@ -3,6 +3,7 @@ import { useAuth } from "@/lib/auth.jsx";
 import SpatialBackground from "@/components/spatial/SpatialBackground.jsx";
 import SpatialCameraBridge from "@/components/spatial/SpatialCameraBridge.jsx";
 import ReturnPositionTracker from "@/components/spatial/ReturnPositionTracker.jsx";
+import "./spatial-camera.css";
 
 /**
  * Mounts the visual world behind the already-existing application routes.
