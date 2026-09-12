@@ -14,7 +14,7 @@ const STAGE_SIGNAL = {
   branches: "FREK-LINK", arbre: "FREK-CERT", foret: "FREK-CONTRIB",
 };
 
-function attentionPresentation(index, attentionPosition) {
+function attentionPresentation(index, attentionPosition, predicted = false) {
   const depth = computeDepthStyle(index - attentionPosition);
   return {
     depth,
@@ -25,6 +25,7 @@ function attentionPresentation(index, attentionPosition) {
       zIndex: depth.zIndex,
       transformStyle: "preserve-3d",
       transformOrigin: "50% 50%",
+      boxShadow: predicted ? "0 0 0 1px color-mix(in srgb, var(--cvln-orange) 42%, transparent)" : undefined,
     },
   };
 }
@@ -44,9 +45,6 @@ export default function Roadmap() {
     itemCount: STAGES.length,
     initialIndex: currentIdx >= 0 ? currentIdx : 0,
   });
-  // DOMAIN_STATE remains authoritative: the current stage comes only from the
-  // authenticated user. Spatial attention can travel across the rail but never
-  // writes `user.stade`, unlock state, credits, or progression.
   const currentStageCode = STAGE_CODES[currentIdx];
 
   useEffect(() => {
@@ -60,9 +58,6 @@ export default function Roadmap() {
     return () => {
       window.cancelAnimationFrame(firstFrame);
       if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
-      // Do not write here: once unmount/layout removal begins the detached
-      // element may report scrollLeft=0 and overwrite the exact live snapshot.
-      // Native onScroll is the authoritative capture point below.
     };
   }, []);
 
@@ -96,12 +91,14 @@ export default function Roadmap() {
           const done = currentIdx >= 0 && i < currentIdx;
           const future = currentIdx >= 0 && i > currentIdx;
           const horizonDistance = future ? i - currentIdx : 0;
-          const { depth, style } = attentionPresentation(i, rail.attentionPosition);
+          const predicted = i === rail.predictedIndex;
+          const { depth, style } = attentionPresentation(i, rail.attentionPosition, predicted);
           const card = (
             <div
               data-testid={`stage-visual-${s.code}`}
               data-attention-tier={depth.tier}
               data-attention-weight={depth.weight.toFixed(4)}
+              data-spatial-predicted={predicted ? "true" : "false"}
               data-domain-stage-state={active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN"}
               className={`h-full cvln-card p-6 flex flex-col ${active ? "border-2 border-[--cvln-orange]" : ""}`}
               style={style}
@@ -140,6 +137,7 @@ export default function Roadmap() {
               data-testid={`stage-${s.code}`}
               data-spatial-focus-id={`roadmap-stage-${s.code}`}
               data-attention-tier={depth.tier}
+              data-spatial-predicted={predicted ? "true" : "false"}
               data-domain-stage-state={active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN"}
               className="snap-start min-w-[280px] max-w-[280px] outline-none focus-visible:ring-2 focus-visible:ring-[--cvln-orange] rounded-3xl"
             >
