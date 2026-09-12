@@ -4,12 +4,8 @@ from __future__ import annotations
 
 import logging
 import os
-import platform
-import ssl
 from contextlib import asynccontextmanager
-from urllib.parse import urlsplit
 
-import pymongo
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
@@ -19,7 +15,7 @@ import apps_sdk  # noqa: E402,F401
 from api import router
 from api.mcp_oauth import router as mcp_oauth_router
 from billing_config import assert_billing_production_ready
-from db import MONGO_URL, client, db  # noqa
+from db import client, db  # noqa
 from fms_lineage import seed_initial_matrix
 from infra_indexes import ensure_indexes
 from mcp_indexes import ensure_mcp_indexes
@@ -40,17 +36,6 @@ logging.basicConfig(
 logger = logging.getLogger("cvln")
 
 
-def _mongo_target_summary() -> tuple[str, str | None]:
-    """Return scheme + hostname only, never credentials or query parameters."""
-    if MONGO_URL.startswith("mongodb+srv://"):
-        parsed = urlsplit("https://" + MONGO_URL.removeprefix("mongodb+srv://"))
-        return "mongodb+srv", parsed.hostname
-    if MONGO_URL.startswith("mongodb://"):
-        parsed = urlsplit("http://" + MONGO_URL.removeprefix("mongodb://"))
-        return "mongodb", parsed.hostname
-    return "unknown", None
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Own Academy startup/shutdown and both MCP session managers."""
@@ -69,25 +54,6 @@ async def lifespan(app: FastAPI):
 
     register_integration_subscribers()
     try:
-        mongo_scheme, mongo_host = _mongo_target_summary()
-        logger.info(
-            "mongo diagnostic runtime: python=%s openssl=%s pymongo=%s scheme=%s host=%s",
-            platform.python_version(),
-            ssl.OPENSSL_VERSION,
-            pymongo.version,
-            mongo_scheme,
-            mongo_host,
-        )
-        try:
-            await client.admin.command("ping")
-            logger.info("mongo diagnostic ping=ok")
-        except Exception as mongo_exc:  # noqa: BLE001
-            logger.exception(
-                "mongo diagnostic ping=failed error_type=%s",
-                type(mongo_exc).__name__,
-            )
-            raise
-
         await ensure_indexes()
         await ensure_mcp_indexes()
         await seed_if_empty()
