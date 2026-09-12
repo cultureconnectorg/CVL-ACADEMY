@@ -11,9 +11,10 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import List, Optional
 
+from fastapi import APIRouter, Depends, HTTPException, Query
+
 from auth import get_current_user, require_role
 from db import db
-from fastapi import APIRouter, Depends, HTTPException, Query
 from models import ADMIN_ROLES, STAFF_ROLES, User
 from services.institutional_bridge import models as bridge_models
 from services.institutional_bridge import registry as bridge_registry
