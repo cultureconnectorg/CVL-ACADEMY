@@ -172,11 +172,7 @@ def module_has_authored_content(module: Dict[str, Any]) -> bool:
             for item in value:
                 if not isinstance(item, dict):
                     continue
-                body = (
-                    item.get("content_md")
-                    or item.get("body")
-                    or item.get("body_md")
-                )
+                body = item.get("content_md") or item.get("body") or item.get("body_md")
                 if isinstance(body, str) and len(body.strip()) >= 300:
                     return True
 
@@ -192,9 +188,7 @@ def module_has_authored_content(module: Dict[str, Any]) -> bool:
 
 def formation_learning_evidence(formation: Dict[str, Any]) -> Dict[str, Any]:
     modules = formation.get("modules") or []
-    structured = [
-        m for m in modules if isinstance(m, dict) and module_has_structure(m)
-    ]
+    structured = [m for m in modules if isinstance(m, dict) and module_has_structure(m)]
     authored = [
         m for m in modules if isinstance(m, dict) and module_has_authored_content(m)
     ]
