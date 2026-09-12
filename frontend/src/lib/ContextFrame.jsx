@@ -20,61 +20,53 @@ function emitContextState(show) {
   }));
 }
 
-function inferInvoker(frame) {
-  if (typeof document === "undefined") return null;
-  const active = document.activeElement;
-  if (active && active !== document.body && active !== document.documentElement) return active;
-  const phase = frame?.closest?.('[data-testid^="phase-"]');
-  return phase?.querySelector?.('[data-testid^="phase-toggle-"]') || null;
-}
-
 export function useContextEntry() {
   const [state, dispatch] = useSpatialState(SPATIAL_STATES.ACTIVE);
-  const enterContext = useCallback(() => dispatch(SPATIAL_EVENTS.REVEAL_CONTEXT), [dispatch]);
-  const leaveContext = useCallback(() => dispatch(SPATIAL_EVENTS.DISMISS_CONTEXT), [dispatch]);
-  return { state, isContext: state === SPATIAL_STATES.CONTEXT, enterContext, leaveContext };
+  const invokerRef = useRef(null);
+
+  const enterContext = useCallback((eventOrElement = null) => {
+    const candidate = eventOrElement?.currentTarget || eventOrElement;
+    if (candidate && typeof candidate.focus === "function") invokerRef.current = candidate;
+    dispatch(SPATIAL_EVENTS.REVEAL_CONTEXT);
+  }, [dispatch]);
+
+  const leaveContext = useCallback(() => {
+    dispatch(SPATIAL_EVENTS.DISMISS_CONTEXT);
+    const target = invokerRef.current;
+    if (!target || typeof target.focus !== "function") return;
+    const restore = () => {
+      if (target.isConnected === false) return;
+      target.focus({ preventScroll: true });
+    };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(restore);
+    else restore();
+  }, [dispatch]);
+
+  return {
+    state,
+    isContext: state === SPATIAL_STATES.CONTEXT,
+    enterContext,
+    leaveContext,
+    invokerRef,
+  };
 }
 
 /**
  * Context is a perceptual Z-layer, not another page. It approaches the learner
- * while remaining inside the current route, remembers the real invoking control
- * and restores that exact focus target on RETURN when it still exists.
+ * while remaining inside the current route. Reduced motion preserves the same
+ * semantic state with a 1ms transition and no meaningful depth travel.
  */
 export function ContextFrame({ show, children, className, ...rest }) {
-  const frameRef = useRef(null);
-  const invokerRef = useRef(null);
-  const previousShowRef = useRef(false);
   const reduced = useReducedMotion();
   const enterDuration = motionDuration("reveal", reduced) / 1000;
   const exitDuration = motionDuration("return", reduced) / 1000;
 
   useEffect(() => {
-    const wasVisible = previousShowRef.current;
-    if (show && !wasVisible) {
-      invokerRef.current = inferInvoker(frameRef.current);
-    }
-    if (!show && wasVisible) {
-      const invoker = invokerRef.current;
-      if (invoker?.isConnected && typeof invoker.focus === "function") {
-        invoker.focus({ preventScroll: true });
-      }
-      invokerRef.current = null;
-    }
-    previousShowRef.current = show;
     emitContextState(show);
-
     return () => {
       if (show) emitContextState(false);
     };
   }, [show]);
-
-  useEffect(() => () => {
-    const invoker = invokerRef.current;
-    if (invoker?.isConnected && typeof invoker.focus === "function") {
-      invoker.focus({ preventScroll: true });
-    }
-    invokerRef.current = null;
-  }, []);
 
   const activeVisual = reduced
     ? { opacity: 1, y: 0, z: 0, scale: 1 }
@@ -85,7 +77,6 @@ export function ContextFrame({ show, children, className, ...rest }) {
 
   return (
     <motion.div
-      ref={frameRef}
       className={className}
       initial={inactiveVisual}
       animate={show ? activeVisual : inactiveVisual}
