@@ -10,9 +10,6 @@ export default function Formations() {
   const [path, setPath] = useState(null);
   const [poles, setPoles] = useState([]);
   const [pole, setPole] = useState("ALL");
-  // Which formation card currently has DOM focus (keyboard tab or click)
-  // — never hover. TARGET -> APPROACH, everything else -> RECEDE, nothing
-  // focused -> CALM. See CvlnFocusField.jsx / W2-C for the contract.
   const cardFocus = useFocusField();
 
   useEffect(() => {
@@ -42,7 +39,6 @@ export default function Formations() {
         Chaque formation applique la doctrine CVLN : Hook → Objectifs → Cours → Atelier → Livrable → Quiz → Mini-mission.
       </p>
 
-      {/* Next action banner */}
       {path?.next_action && (
         <div className="mt-6 cvln-card p-5 flex items-center gap-4 flex-wrap" data-testid="next-action-banner">
           <div className="w-1 h-10 rounded-full" style={{ background: path.next_action.pole_color }} />
@@ -65,8 +61,6 @@ export default function Formations() {
         </div>
       )}
 
-      {/* Poles filter — the already-existing `pole` selection state is
-          reused directly as the field's focusedId, no new state added. */}
       <div className="mt-8 flex flex-wrap gap-2" data-testid="pole-filter">
         <FocusFieldItem id="ALL" focusedId={pole} className="inline-block">
           <button
@@ -93,7 +87,6 @@ export default function Formations() {
         ))}
       </div>
 
-      {/* Own pole section */}
       {path?.own_pole?.length > 0 && (pole === "ALL" || visible.some(f => f.is_recommended)) && (
         <>
           <div className="mt-10 flex items-baseline gap-3">
@@ -117,7 +110,6 @@ export default function Formations() {
         </>
       )}
 
-      {/* Other poles */}
       {(pole === "ALL" || visible.some(f => !f.is_recommended)) && (
         <>
           <div className="mt-10 flex items-baseline gap-3">
@@ -148,9 +140,6 @@ function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur }) {
   const locked = !f.is_unlocked;
   const validated = f.validated_count > 0 && f.validated_count === f.modules_count;
   return (
-    // TARGET -> APPROACH, other cards -> RECEDE, nothing focused -> CALM.
-    // Driven by real DOM focus (keyboard tab or the click that's about to
-    // navigate) on the Link below, never by :hover — NO_GENERIC_SCALE_HOVER.
     <FocusFieldItem id={f.code} focusedId={focusedId} className="h-full">
       <Link
         to={`/formations/${f.code}`}
@@ -178,11 +167,13 @@ function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur }) {
           </div>
           <div className="text-xs mono text-[--cvln-ink-2]">{f.duration_h}h · {f.cc} CC</div>
         </div>
-        <h3 className="font-display font-bold text-xl tracking-tight mt-4 leading-tight">
+        <h3
+          className="font-display font-bold text-xl tracking-tight mt-4 leading-tight"
+          data-spatial-shared-source={`formation:${f.code}`}
+        >
           {f.name}
         </h3>
 
-        {/* Progress bar */}
         {f.modules_count > 0 && !locked && (
           <div className="mt-4">
             <div className="h-1.5 bg-black/5 rounded-full overflow-hidden">
@@ -194,7 +185,6 @@ function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur }) {
           </div>
         )}
 
-        {/* Lock reason */}
         {locked && (
           <div className="mt-4 text-xs text-[--cvln-ink-2] leading-relaxed">
             {f.lock_reason}
