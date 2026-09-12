@@ -60,9 +60,7 @@ def test_prepare_rejects_unsupported_capability():
 
 def test_unknown_connector_fails_closed():
     with pytest.raises(bridge_registry.UnknownConnector):
-        bridge_registry.require_capability(
-            "invented-financeur", "APPLICATION_PREPARE"
-        )
+        bridge_registry.require_capability("invented-financeur", "APPLICATION_PREPARE")
 
 
 def test_portal_connectors_do_not_advertise_application_submit():
