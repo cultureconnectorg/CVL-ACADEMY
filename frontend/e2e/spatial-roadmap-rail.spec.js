@@ -23,7 +23,6 @@ test.describe("Spatial roadmap rail runtime", () => {
     await expect(branches).toHaveAttribute("aria-selected", "true");
     await expect(racine).toHaveAttribute("aria-current", "step");
 
-    // Moving perceptual focus must never change the real learner stage.
     await expect(racine).toHaveAttribute("aria-current", "step");
     await expect(branches).not.toHaveAttribute("aria-current", "step");
   });
@@ -39,8 +38,6 @@ test.describe("Spatial roadmap rail runtime", () => {
     await racine.focus();
     await page.keyboard.press("ArrowRight");
 
-    // The spring drives scroll continuously; attention follows the real visual
-    // position rather than jumping directly to the committed keyboard index.
     await expect.poll(async () => Number(
       await page.getByTestId("roadmap-scroll").getAttribute("data-attention-position")
     )).toBeGreaterThan(2.5);
@@ -68,8 +65,6 @@ test.describe("Spatial roadmap rail runtime", () => {
     const farOpacity = await page.getByTestId("horizon-foret").evaluate((el) => Number(getComputedStyle(el).opacity));
     expect(nearOpacity).toBeGreaterThan(farOpacity);
 
-    // Looking at the far horizon may make it PRIMARY_ATTENTION, but it remains
-    // a HORIZON domain state: no false unlock, no mutation of `user.stade`.
     const racine = page.getByTestId("stage-racine");
     await racine.focus();
     await page.keyboard.press("End");
@@ -88,10 +83,45 @@ test.describe("Spatial roadmap rail runtime", () => {
 
     await expect.poll(async () => page.getByTestId("stage-graine").getAttribute("data-attention-tier")).toBe("LATENT_CONTEXT");
     await expect(page.getByTestId("stage-graine")).toHaveAttribute("aria-hidden", "true");
-    // The authenticated user's real current stage is a semantic anchor and is
-    // retained even if it becomes perceptually distant.
     await expect(page.getByTestId("stage-racine")).not.toHaveAttribute("aria-hidden", "true");
     await expect(page.getByTestId("stage-foret")).not.toHaveAttribute("aria-hidden", "true");
+  });
+
+  test("repeated directional cadence predicts only one perceptual step ahead then expires", async ({ page }) => {
+    await setup(page);
+    const rail = page.getByTestId("roadmap-scroll");
+    const racine = page.getByTestId("stage-racine");
+    await racine.focus();
+
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowRight");
+
+    await expect(page.getByTestId("stage-arbre")).toBeFocused();
+    await expect(rail).toHaveAttribute("data-spatial-cadence", /REPEATED|FAST_REPEAT/);
+    await expect(rail).toHaveAttribute("data-spatial-predicted-index", "5");
+    await expect(page.getByTestId("stage-foret")).toHaveAttribute("data-spatial-predicted", "true");
+
+    // Prediction never becomes domain truth or DOM focus.
+    await expect(page.getByTestId("stage-foret")).not.toBeFocused();
+    await expect(page.getByTestId("stage-foret")).toHaveAttribute("data-domain-stage-state", "HORIZON");
+    await expect(page.getByTestId("stage-racine")).toHaveAttribute("aria-current", "step");
+
+    await expect.poll(async () => rail.getAttribute("data-spatial-predicted-index"), { timeout: 1200 }).toBe("-1");
+    await expect(rail).toHaveAttribute("data-spatial-cadence", "STOPPED");
+  });
+
+  test("direction reversal cancels prediction instead of fighting explicit intent", async ({ page }) => {
+    await setup(page);
+    const rail = page.getByTestId("roadmap-scroll");
+    await page.getByTestId("stage-racine").focus();
+    await page.keyboard.press("ArrowRight");
+    await page.keyboard.press("ArrowRight");
+    await expect(rail).toHaveAttribute("data-spatial-predicted-index", "5");
+
+    await page.keyboard.press("ArrowLeft");
+    await expect(page.getByTestId("stage-branches")).toBeFocused();
+    await expect(rail).toHaveAttribute("data-spatial-cadence", "REVERSAL");
+    await expect(rail).toHaveAttribute("data-spatial-predicted-index", "-1");
   });
 
   test("Home and End provide deterministic rail navigation", async ({ page }) => {
@@ -126,6 +156,7 @@ test.describe("Spatial roadmap rail runtime", () => {
     await page.mouse.up();
 
     await expect.poll(async () => rail.evaluate((el) => el.scrollLeft)).toBeGreaterThan(before);
+    await expect(rail).toHaveAttribute("data-spatial-predicted-index", "-1");
     expect(mutations).toEqual([]);
   });
 
