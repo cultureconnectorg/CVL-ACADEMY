@@ -20,7 +20,9 @@ from typing import Any, Dict, List, Mapping, Tuple
 
 OUTBOUND_HISTORY_LIMIT = 12
 
-_EMAIL_RE = re.compile(r"(?<![\w.+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![\w.-])", re.I)
+_EMAIL_RE = re.compile(
+    r"(?<![\w.+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![\w.-])", re.I
+)
 # Require at least four identifier characters after FREK- so the generic label
 # "FREK-ID" remains readable while real canonical ids are removed.
 _FREK_ID_RE = re.compile(r"\bFREK-[A-Z0-9][A-Z0-9._:/-]{3,}\b", re.I)
@@ -65,7 +67,11 @@ def sanitise_history(history: List[Mapping[str, Any]]) -> List[Dict[str, str]]:
     for item in history[-OUTBOUND_HISTORY_LIMIT:]:
         role = item.get("role")
         content = item.get("content")
-        if role not in {"user", "assistant"} or not isinstance(content, str) or not content:
+        if (
+            role not in {"user", "assistant"}
+            or not isinstance(content, str)
+            or not content
+        ):
             continue
         clean.append({"role": str(role), "content": redact_text(content)})
     return clean
