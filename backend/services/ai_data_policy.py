@@ -21,7 +21,9 @@ from typing import Any, Dict, List, Mapping, Tuple
 OUTBOUND_HISTORY_LIMIT = 12
 
 _EMAIL_RE = re.compile(r"(?<![\w.+-])[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}(?![\w.-])", re.I)
-_FREK_ID_RE = re.compile(r"\bFREK-[A-Z0-9][A-Z0-9._:/-]{2,}\b", re.I)
+# Require at least four identifier characters after FREK- so the generic label
+# "FREK-ID" remains readable while real canonical ids are removed.
+_FREK_ID_RE = re.compile(r"\bFREK-[A-Z0-9][A-Z0-9._:/-]{3,}\b", re.I)
 _BEARER_RE = re.compile(r"\bBearer\s+[A-Z0-9._~+/=-]{12,}", re.I)
 _API_KEY_RE = re.compile(r"\bsk-[A-Z0-9_-]{16,}\b", re.I)
 
