@@ -151,7 +151,7 @@ async def create_funding_dossier(
     )
     if not formation:
         raise ValueError("Published formation not found")
-    dossier = {
+    dossier: dict[str, Any] = {
         "id": _uid(),
         "user_id": user_id,
         "connector_code": connector.code,
