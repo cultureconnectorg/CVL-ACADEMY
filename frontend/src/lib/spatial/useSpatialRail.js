@@ -24,21 +24,44 @@ export function nearestRailIndex(railRect, itemRects) {
   return bestIndex;
 }
 
+/** Fractional item index under the viewport center — used by H0.10 attention. */
+export function interpolateRailPosition(viewportCenter, itemCenters) {
+  if (!Number.isFinite(viewportCenter) || !Array.isArray(itemCenters) || itemCenters.length === 0) return 0;
+  const centers = itemCenters.map(Number).filter(Number.isFinite);
+  if (centers.length === 0) return 0;
+  if (viewportCenter <= centers[0]) return 0;
+  const last = centers.length - 1;
+  if (viewportCenter >= centers[last]) return last;
+
+  for (let i = 0; i < last; i += 1) {
+    const a = centers[i];
+    const b = centers[i + 1];
+    if (viewportCenter >= a && viewportCenter <= b) {
+      if (b === a) return i;
+      return i + (viewportCenter - a) / (b - a);
+    }
+  }
+  return last;
+}
+
 function itemSelector(index) {
   return `[data-spatial-rail-index="${index}"]`;
 }
 
 /**
  * H0.10/H0.6 rail runtime: roving tabindex, rapid-input retargeting,
- * 1:1 pointer drag and nearest-item settle. It never activates domain
- * actions; callers decide what Enter/Space means beyond focus movement.
+ * 1:1 pointer drag, nearest-item settle and continuous attention position.
+ * It never activates domain actions; callers decide what Enter/Space means.
  */
 export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   const reduced = useReducedMotion();
-  const [focusedIndex, setFocusedIndex] = useState(() => clampRailIndex(initialIndex, itemCount));
+  const initial = clampRailIndex(initialIndex, itemCount);
+  const [focusedIndex, setFocusedIndex] = useState(initial);
+  const [attentionPosition, setAttentionPosition] = useState(initial);
   const dragRef = useRef(null);
   const aliveRef = useRef(true);
   const physicsRef = useRef(null);
+  const attentionFrameRef = useRef(null);
 
   useEffect(() => {
     aliveRef.current = true;
@@ -51,11 +74,15 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     return () => {
       aliveRef.current = false;
       physicsRef.current = null;
+      if (attentionFrameRef.current && typeof cancelAnimationFrame === "function") {
+        cancelAnimationFrame(attentionFrameRef.current);
+      }
     };
   }, [railRef]);
 
   useEffect(() => {
     setFocusedIndex((index) => clampRailIndex(index, itemCount));
+    setAttentionPosition((position) => Math.max(0, Math.min(Math.max(itemCount - 1, 0), position)));
   }, [itemCount]);
 
   const targetScrollForIndex = useCallback((index) => {
@@ -69,6 +96,28 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     return Math.max(0, rail.scrollLeft + delta);
   }, [itemCount, railRef]);
 
+  const measureAttentionPosition = useCallback(() => {
+    const rail = railRef.current;
+    if (!rail) return;
+    const railRect = rail.getBoundingClientRect();
+    const items = Array.from(rail.querySelectorAll("[data-spatial-rail-index]"));
+    if (items.length === 0) return;
+    const centers = items.map((item) => {
+      const rect = item.getBoundingClientRect();
+      return rect.left - railRect.left + rail.scrollLeft + rect.width / 2;
+    });
+    const viewportCenter = rail.scrollLeft + railRect.width / 2;
+    setAttentionPosition(interpolateRailPosition(viewportCenter, centers));
+  }, [railRef]);
+
+  const scheduleAttentionMeasure = useCallback(() => {
+    if (attentionFrameRef.current || typeof requestAnimationFrame !== "function") return;
+    attentionFrameRef.current = requestAnimationFrame(() => {
+      attentionFrameRef.current = null;
+      measureAttentionPosition();
+    });
+  }, [measureAttentionPosition]);
+
   const centerIndex = useCallback((index) => {
     const target = targetScrollForIndex(index);
     const rail = railRef.current;
@@ -76,6 +125,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     if (target === null || !rail || !physics) return;
     if (reduced) {
       physics.jump(target);
+      scheduleAttentionMeasure();
       return;
     }
     // Pointer drag / depth-memory restoration can move the real DOM scroll
@@ -85,7 +135,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
       physics.jump(rail.scrollLeft);
     }
     physics.setTarget(target);
-  }, [railRef, reduced, targetScrollForIndex]);
+  }, [railRef, reduced, scheduleAttentionMeasure, targetScrollForIndex]);
 
   const focusIndex = useCallback((index, { focus = true, center = true } = {}) => {
     const next = clampRailIndex(index, itemCount);
@@ -134,7 +184,8 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     if (!drag || !rail || drag.pointerId !== event.pointerId) return;
     const delta = event.clientX - drag.startX;
     rail.scrollLeft = Math.max(0, drag.startScroll - delta);
-  }, [railRef]);
+    scheduleAttentionMeasure();
+  }, [railRef, scheduleAttentionMeasure]);
 
   const settleFromCurrentScroll = useCallback(() => {
     const rail = railRef.current;
@@ -157,6 +208,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
 
   return {
     focusedIndex,
+    attentionPosition,
     focusIndex,
     centerIndex,
     itemProps,
@@ -166,6 +218,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
       onPointerMove,
       onPointerUp: endDrag,
       onPointerCancel: endDrag,
+      onScrollCapture: scheduleAttentionMeasure,
       style: { touchAction: "pan-y" },
     },
   };
