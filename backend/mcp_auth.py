@@ -33,8 +33,14 @@ SCOPES = {
     "academy:profile.read": "Read the connected user's Academy profile.",
     "academy:funding.read": "Read the user's funding cases and prepared dossiers.",
     "academy:funding.write": "Create or update the user's funding dossier drafts.",
-    "academy:enrollment.read": "Read the user's enrollment requests.",
-    "academy:enrollment.write": "Create an enrollment request for a published formation.",
+    "academy:enrollment.read": "Read the user's enrollment requests and journey state.",
+    "academy:enrollment.write": "Create or finalize an Academy enrollment when guarded requirements are satisfied.",
+    "academy:legal.write": "Accept the current Academy terms for the connected user.",
+    "academy:payment.write": "Create and pay Academy commercial orders through the configured CVLN Wallet runtime.",
+    "academy:support.read": "Read the user's Academy CareOps tickets.",
+    "academy:support.write": "Create an Academy CareOps support or complaint ticket.",
+    "academy:certification.read": "Read the user's certification journey state.",
+    "academy:certification.write": "Start or submit the user's certification attempts.",
 }
 DEFAULT_SCOPES = ("academy:profile.read",)
 
