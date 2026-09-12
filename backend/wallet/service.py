@@ -56,6 +56,8 @@ async def _reconcile_account(user_id: str) -> WalletAccount:
         },
     )
     doc = await db.wallet_accounts.find_one({"user_id": user_id}, {"_id": 0})
+    if doc is None:
+        raise RuntimeError(f"Academy mini-wallet account missing after reconciliation: {user_id}")
     return WalletAccount(**doc)
 
 
