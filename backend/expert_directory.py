@@ -31,15 +31,22 @@ EXPERTS: List[Dict[str, Any]] = [
         "id": "funding",
         "name": "Financement",
         "description": (
-            "Explique les pistes de financement vérifiées et distingue éligibilité, "
-            "pré-éligibilité et information générale."
+            "Prépare et suit des dossiers de financement Academy avec capacités "
+            "institutionnelles vérifiées, sans inventer d'éligibilité ni de soumission externe."
         ),
         "domains": ["financement", "afdas", "france-travail", "cpf", "aides"],
-        "tools": [],
-        "status": "planned",
+        "tools": [
+            "list_funding_connectors",
+            "create_funding_dossier",
+            "get_my_funding_dossier",
+            "add_funding_document_reference",
+            "mark_funding_dossier_ready",
+            "list_my_funding_dossiers",
+        ],
+        "status": "active",
         "guardrail": (
-            "Ne jamais inventer une éligibilité ou un financement absent "
-            "d'une source vérifiée."
+            "Une préparation de dossier n'est jamais présentée comme une approbation, "
+            "une éligibilité certaine ou une soumission institutionnelle."
         ),
     },
     {
@@ -177,4 +184,4 @@ def route_experts(intent: str, limit: int = 3) -> List[Dict[str, Any]]:
             scored.append((score, expert["id"], expert))
 
     scored.sort(key=lambda item: (-item[0], item[1]))
-    return [expert for _, _, expert in scored[: max(1, min(int(limit), 5))]]
+    return [expert for _, _, expert in scored[: max(1, min(int(limit), 5)]]]
