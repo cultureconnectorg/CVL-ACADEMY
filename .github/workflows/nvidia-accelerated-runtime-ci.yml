@@ -6,6 +6,7 @@ on:
       - "backend/services/nvidia_runtime.py"
       - "backend/services/agent_factory.py"
       - "backend/api/accelerators.py"
+      - "backend/api/economy.py"
       - "backend/api/health.py"
       - "backend/api/__init__.py"
       - "backend/tests/test_nvidia_runtime.py"
@@ -19,6 +20,7 @@ on:
       - "backend/services/nvidia_runtime.py"
       - "backend/services/agent_factory.py"
       - "backend/api/accelerators.py"
+      - "backend/api/economy.py"
       - "backend/api/health.py"
       - "backend/api/__init__.py"
       - "backend/tests/test_nvidia_runtime.py"
@@ -64,9 +66,9 @@ jobs:
       - name: Format and lint NVIDIA delta
         working-directory: backend
         run: |
-          black --check services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/health.py tests/test_nvidia_runtime.py
-          isort --check-only --profile black --src-path . services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/health.py tests/test_nvidia_runtime.py
-          flake8 --config=.flake8 services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/health.py tests/test_nvidia_runtime.py
+          black --check --diff services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/economy.py api/health.py tests/test_nvidia_runtime.py
+          isort --check-only --diff --profile black --src-path . services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/economy.py api/health.py tests/test_nvidia_runtime.py
+          flake8 --config=.flake8 services/nvidia_runtime.py services/agent_factory.py api/accelerators.py api/economy.py api/health.py tests/test_nvidia_runtime.py
       - name: Run NVIDIA runtime contract tests
         working-directory: backend
         run: pytest -q tests/test_nvidia_runtime.py
@@ -81,11 +83,12 @@ jobs:
               "/api/accelerators/status",
               "/api/accelerators/diagnostics",
               "/api/accelerators/self-test",
+              "/api/economy/3d/health",
           }
           missing = required - paths
           if missing:
-              raise SystemExit(f"Accelerator routes not wired: {sorted(missing)}")
-          print("Accelerator routes wired:", sorted(required))
+              raise SystemExit(f"Accelerated routes not wired: {sorted(missing)}")
+          print("Accelerated routes wired:", sorted(required))
           PY
       - name: Prove CPU runtime never claims a GPU by configuration alone
         working-directory: backend
