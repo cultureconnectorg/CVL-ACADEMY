@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import pytest
+
 from services.institutional_bridge import models as bridge_models
 from services.institutional_bridge import registry as bridge_registry
 
