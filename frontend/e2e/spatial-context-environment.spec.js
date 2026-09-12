@@ -18,15 +18,17 @@ test.describe("Spatial context depth environment", () => {
     await expect(page.getByTestId("spatial-background")).toHaveAttribute("data-spatial-context", "active");
   });
 
-  test("mentor return restores the world to ACTIVE without navigation", async ({ page }) => {
+  test("mentor return restores world, URL and exact invoking control", async ({ page }) => {
     await mockAuthenticatedSession(page);
     await page.goto(MODULE_URL);
-    await page.getByTestId("mentor-fab").click();
+    const fab = page.getByTestId("mentor-fab");
+    await fab.click();
     await expect(page.getByTestId("spatial-background")).toHaveAttribute("data-spatial-context", "active");
 
     await page.getByTestId("mentor-close").click();
     await expect(page.getByTestId("spatial-background")).toHaveAttribute("data-spatial-context", "idle");
     await expect(page).toHaveURL(new RegExp(`${MODULE_URL}$`));
+    await expect(fab).toBeFocused();
   });
 
   test("reduced motion preserves semantic context with no meaningful Z travel", async ({ page }) => {
