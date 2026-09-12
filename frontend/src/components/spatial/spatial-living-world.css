@@ -106,9 +106,6 @@
   animation: spatial-particles 13s ease-in-out infinite alternate;
 }
 
-/* The learner's real stade changes the same persistent world instead of
-   swapping backgrounds. This is visual state only; domain progression remains
-   authoritative in the backend. */
 .spatial-background__foreground {
   opacity: calc(.62 + (var(--spatial-stage-density, .18) * .3));
   transform:
@@ -131,8 +128,6 @@
   opacity: calc(.08 + (var(--spatial-stage-density, .18) * .08));
 }
 
-/* CONTEXT is a foreground layer. The persistent world does not disappear; it
-   settles and recedes so the learner's local task owns attention. */
 .spatial-background[data-spatial-context="active"] .spatial-background__clouds,
 .spatial-background[data-spatial-context="active"] .spatial-background__particles,
 .spatial-background[data-spatial-context="active"] .spatial-background__orbit,
@@ -151,6 +146,40 @@
   opacity: .9;
 }
 
+/* Adaptive quality changes ambient cost only. Route semantics, camera contracts,
+   focus and content remain identical at every quality level. */
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__clouds--far,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__clouds--near,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe-core,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__globe-ring,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__water-shimmer,
+.spatial-background[data-spatial-quality="balanced"] .spatial-background__particles {
+  animation-duration: calc(var(--spatial-quality-duration, 1s) * 1.45);
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds--near,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__particles,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe-ring,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__water-shimmer {
+  animation: none !important;
+  will-change: auto;
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds--near,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__particles {
+  opacity: .08;
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe {
+  animation-duration: 22s;
+  filter: drop-shadow(0 0 18px rgba(69,166,255,.18));
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe-core {
+  animation-duration: 14s;
+}
+
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__clouds,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-core,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-ring,
@@ -166,7 +195,6 @@
   will-change: auto;
 }
 
-/* Preserve the centering transform when motion is reduced/off. */
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__globe,
 .spatial-background[data-spatial-engine="off"] .spatial-background__globe {
   animation: none !important;
