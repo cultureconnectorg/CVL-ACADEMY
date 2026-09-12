@@ -95,12 +95,14 @@ export default function Roadmap() {
           const active = i === currentIdx;
           const done = currentIdx >= 0 && i < currentIdx;
           const future = currentIdx >= 0 && i > currentIdx;
+          const horizonDistance = future ? i - currentIdx : 0;
           const { depth, style } = attentionPresentation(i, rail.attentionPosition);
           const card = (
             <div
               data-testid={`stage-visual-${s.code}`}
               data-attention-tier={depth.tier}
               data-attention-weight={depth.weight.toFixed(4)}
+              data-domain-stage-state={active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN"}
               className={`h-full cvln-card p-6 flex flex-col ${active ? "border-2 border-[--cvln-orange]" : ""}`}
               style={style}
             >
@@ -115,8 +117,12 @@ export default function Roadmap() {
                 {done && <div className="text-xs mt-2 text-[--cvln-forest] font-bold">✓ {t("roadmap_p.crossed")}</div>}
                 {active && <div className="text-xs mt-2 text-[--cvln-orange] font-bold">{t("roadmap_p.you_are_here")}</div>}
                 {future && (
-                  <div className="text-xs mt-2 text-[--cvln-ink-2] font-semibold" data-testid={`horizon-label-${s.code}`}>
-                    Horizon
+                  <div
+                    className="text-xs mt-2 text-[--cvln-ink-2] font-semibold"
+                    data-testid={`horizon-label-${s.code}`}
+                    data-horizon-distance={horizonDistance}
+                  >
+                    Horizon · +{horizonDistance}
                   </div>
                 )}
               </div>
@@ -134,10 +140,11 @@ export default function Roadmap() {
               data-testid={`stage-${s.code}`}
               data-spatial-focus-id={`roadmap-stage-${s.code}`}
               data-attention-tier={depth.tier}
+              data-domain-stage-state={active ? "CURRENT" : done ? "ACQUIRED" : future ? "HORIZON" : "UNKNOWN"}
               className="snap-start min-w-[280px] max-w-[280px] outline-none focus-visible:ring-2 focus-visible:ring-[--cvln-orange] rounded-3xl"
             >
               {future ? (
-                <Horizon visible className="h-full" data-testid={`horizon-${s.code}`}>
+                <Horizon visible distance={horizonDistance} className="h-full" data-testid={`horizon-${s.code}`}>
                   {card}
                 </Horizon>
               ) : card}
