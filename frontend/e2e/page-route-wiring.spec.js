@@ -107,6 +107,7 @@ test.describe("authenticated page route wiring", () => {
     await jsonRoute(page, "**/api/integrations", []);
     await jsonRoute(page, "**/api/orgs", []);
     await jsonRoute(page, "**/api/formations", []);
+    await jsonRoute(page, "**/api/institutional/connectors", []);
     await page.goto("/admin");
     await expect(page).toHaveURL(/\/admin$/);
     await expect(page.getByTestId("admin-dashboard-page")).toBeVisible();
@@ -114,5 +115,6 @@ test.describe("authenticated page route wiring", () => {
     await expect(page.getByTestId("integrations-panel")).toBeVisible();
     await expect(page.getByTestId("orgs-panel")).toBeVisible();
     await expect(page.getByTestId("catalogue-panel")).toBeVisible();
+    await expect(page.getByTestId("institutional-bridge-panel")).toBeVisible();
   });
 });

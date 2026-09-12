@@ -3,6 +3,7 @@ import { UploadSquare, CheckCircle, WarningTriangle, Xmark } from "iconoir-react
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { useI18n } from "@/lib/i18n.jsx";
+import InstitutionalBridgePanel from "./InstitutionalBridgePanel";
 
 const inputCls =
   "w-full bg-white border-2 border-black/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-[--cvln-orange] focus:ring-2 focus:ring-[--cvln-orange]/30";
@@ -43,9 +44,7 @@ function ImportPanel() {
   return (
     <div className="cvln-card p-6" data-testid="fms-import-panel">
       <h3 className="font-display font-bold text-xl tracking-tight mb-2">{t("admin_p.import_title")}</h3>
-      <p className="text-sm text-[--cvln-ink-2] mb-4">
-        {t("admin_p.import_desc")}
-      </p>
+      <p className="text-sm text-[--cvln-ink-2] mb-4">{t("admin_p.import_desc")}</p>
       <label className="btn-primary inline-flex cursor-pointer" data-testid="fms-import-btn">
         <UploadSquare width={18} height={18} className="mr-2" />
         {busy ? t("admin_p.import_busy") : t("admin_p.import_btn")}
@@ -134,6 +133,7 @@ function OrgsPanel() {
   const [slug, setSlug] = useState("");
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState("student");
+  const [inviteOrgId, setInviteOrgId] = useState("");
   const [lastCode, setLastCode] = useState(null);
 
   const loadOrgs = () => api.get("/orgs").then((r) => setOrgs(r.data));
@@ -158,7 +158,11 @@ function OrgsPanel() {
   const createInvite = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await api.post("/invitations", { email: inviteEmail || undefined, role: inviteRole });
+      const { data } = await api.post("/invitations", {
+        email: inviteEmail || undefined,
+        role: inviteRole,
+        org_id: inviteOrgId || undefined,
+      });
       setLastCode(data.code);
       toast.success(t("admin_p.invite_created"));
       setInviteEmail("");
@@ -195,6 +199,12 @@ function OrgsPanel() {
         <select className={inputCls} value={inviteRole} onChange={(e) => setInviteRole(e.target.value)}>
           {["student", "trainer", "corrector", "jury", "admin"].map((r) => (
             <option key={r} value={r}>{r}</option>
+          ))}
+        </select>
+        <select className={inputCls} value={inviteOrgId} onChange={(e) => setInviteOrgId(e.target.value)}>
+          <option value="">Organisation (optionnel)</option>
+          {orgs.map((org) => (
+            <option key={org.id} value={org.id}>{org.name}</option>
           ))}
         </select>
         <button type="submit" className="btn-outline">{t("trainer_p.generate_invite")}</button>
@@ -269,6 +279,9 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <OrgsPanel />
         <CataloguePanel />
+      </div>
+      <div className="grid grid-cols-1 mt-6">
+        <InstitutionalBridgePanel />
       </div>
     </div>
   );
