@@ -63,17 +63,17 @@ export default function SpatialBackground({ pathname = "/", stade }) {
         cameraTimerRef.current = null;
       }
 
-      if (detail.kind === "LOCK" && detail.cameraOriginFrom) {
+      if ((detail.kind === "LOCK" || detail.kind === "RETURN_LOCK") && detail.cameraOriginFrom) {
         root.style.setProperty("--spatial-camera-origin-x", `${detail.cameraOriginFrom.x}%`);
         root.style.setProperty("--spatial-camera-origin-y", `${detail.cameraOriginFrom.y}%`);
-        setCameraPhase("LOCKING");
+        setCameraPhase(detail.kind === "RETURN_LOCK" ? "RETURNING" : "LOCKING");
         return;
       }
 
-      if (detail.kind === "FOLLOW" && detail.cameraOriginTarget) {
+      if ((detail.kind === "FOLLOW" || detail.kind === "RETURN_FOLLOW") && detail.cameraOriginTarget) {
         root.style.setProperty("--spatial-camera-origin-x", `${detail.cameraOriginTarget.x}%`);
         root.style.setProperty("--spatial-camera-origin-y", `${detail.cameraOriginTarget.y}%`);
-        setCameraPhase("FOLLOWING");
+        setCameraPhase(detail.kind === "RETURN_FOLLOW" ? "RETURNING" : "FOLLOWING");
         cameraTimerRef.current = window.setTimeout(() => {
           setCameraPhase("IDLE");
           cameraTimerRef.current = null;
