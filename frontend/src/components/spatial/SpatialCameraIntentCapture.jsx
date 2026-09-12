@@ -20,14 +20,26 @@ function routeFromHref(href) {
 }
 
 function findSharedSource(anchorId, link) {
-  const scope = link?.closest?.("[data-testid]") || document;
-  const local = Array.from(scope.querySelectorAll?.("[data-spatial-shared-source]") || []).find(
-    (node) => node.getAttribute("data-spatial-shared-source") === anchorId,
-  );
-  if (local) return local;
-  return Array.from(document.querySelectorAll("[data-spatial-shared-source]")).find(
-    (node) => node.getAttribute("data-spatial-shared-source") === anchorId,
-  ) || null;
+  const scopes = [
+    link,
+    link?.parentElement?.closest?.("[data-testid]"),
+    document,
+  ].filter(Boolean);
+
+  for (const scope of scopes) {
+    const exact = Array.from(scope.querySelectorAll?.("[data-spatial-shared-source]") || []).find(
+      (node) => node.getAttribute("data-spatial-shared-source") === anchorId,
+    );
+    if (exact) return exact;
+  }
+
+  // Existing Dashboard/Formations "continue" cards already expose one real
+  // prominent title. Use it as a perceptual source without changing business DOM.
+  const contextual = link?.parentElement?.closest?.("[data-testid]");
+  if (anchorId.startsWith("module:") && contextual) {
+    return contextual.querySelector(".font-display, .font-semibold") || null;
+  }
+  return null;
 }
 
 function buildForwardContract(link, destinationRoute) {
