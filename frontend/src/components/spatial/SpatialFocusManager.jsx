@@ -97,29 +97,29 @@ export default function SpatialFocusManager() {
 
     if (!routeToTopologyNode(location.pathname)) return undefined;
     let cancelled = false;
+    let pendingTarget = null;
+    let pendingSnapshot = null;
     const saved = readRouteDepth(location.pathname);
-    const request = guardRef.current.request(() => {});
+    const request = guardRef.current.request(() => {
+      if (cancelled || !pendingTarget) return;
+      if (pendingSnapshot) {
+        window.scrollTo?.(pendingSnapshot.x || 0, pendingSnapshot.y || 0);
+      }
+      pendingTarget.focus?.({ preventScroll: true });
+    });
 
-    const applyTarget = (target, snapshot = null) => {
+    const resolveTarget = (target, snapshot = null) => {
       if (cancelled || !target) return;
-      // Resolve through the guard only after the async target exists. Replacing
-      // the no-op apply here keeps stale requests from ever stealing focus.
-      const guarded = guardRef.current.request(() => {
-        if (snapshot) window.scrollTo?.(snapshot.x || 0, snapshot.y || 0);
-        target.focus?.({ preventScroll: true });
-      });
-      guarded.resolve();
+      pendingTarget = target;
+      pendingSnapshot = snapshot;
+      request.resolve();
     };
 
     if (saved?.focusTestId || saved?.focusId) {
-      waitForTarget(() => findByToken(saved)).then((target) => applyTarget(target, saved));
+      waitForTarget(() => findByToken(saved)).then((target) => resolveTarget(target, saved));
     } else if (location.pathname === "/formations") {
-      waitForTarget(recommendedFormationTarget).then((target) => applyTarget(target));
+      waitForTarget(recommendedFormationTarget).then((target) => resolveTarget(target));
     }
-
-    // Resolve the placeholder request immediately; its sole purpose is to
-    // advance the request sequence before async lookup begins.
-    request.resolve();
 
     return () => {
       cancelled = true;
