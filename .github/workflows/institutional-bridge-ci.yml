@@ -48,7 +48,7 @@ jobs:
       - name: Black
         run: black --check --diff api/__init__.py api/institutional.py infra_indexes.py services/institutional_bridge tests/test_institutional_bridge.py
       - name: Isort
-        run: isort --check-only --diff api/__init__.py api/institutional.py infra_indexes.py services/institutional_bridge tests/test_institutional_bridge.py
+        run: isort --profile black --check-only --diff api/__init__.py api/institutional.py infra_indexes.py services/institutional_bridge tests/test_institutional_bridge.py
       - name: Flake8
         run: flake8 --config=.flake8 api/__init__.py api/institutional.py infra_indexes.py services/institutional_bridge tests/test_institutional_bridge.py
       - name: Mypy
