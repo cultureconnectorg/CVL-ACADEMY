@@ -11,6 +11,7 @@ import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
 import LegalFooter from "@/components/LegalFooter";
 import CookieConsent from "@/components/CookieConsent";
+import PublicDiscoveryLayout from "@/components/PublicDiscoveryLayout";
 import SpatialWorldFrame from "@/components/spatial/SpatialWorldFrame.jsx";
 import { RouteTransition } from "@/lib/RouteTransition";
 
@@ -90,6 +91,14 @@ function Protected({ children, roles }) {
   return <Authenticated roles={roles}>{children}</Authenticated>;
 }
 
+function PublicOrMember({ children }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) return <PublicDiscoveryLayout>{children}</PublicDiscoveryLayout>;
+  if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
+  return <Authenticated>{children}</Authenticated>;
+}
+
 function App() {
   const [cookieManagerToken, setCookieManagerToken] = useState(0);
 
@@ -102,6 +111,8 @@ function App() {
               <RouteTransition>
                 <Routes>
                   <Route path="/" element={<LandingSpatial />} />
+                  <Route path="/login" element={<LandingSpatial authMode="login" />} />
+                  <Route path="/register" element={<LandingSpatial authMode="register" />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/legal/accept" element={<LegalAcceptance />} />
                   <Route path="/legal/:slug" element={<LegalHub />} />
@@ -131,16 +142,16 @@ function App() {
                     }
                   />
                   <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-                  <Route path="/roadmap" element={<Protected><Roadmap /></Protected>} />
-                  <Route path="/formations" element={<Protected><Formations /></Protected>} />
-                  <Route path="/formations/:code" element={<Protected><FormationDetail /></Protected>} />
+                  <Route path="/roadmap" element={<PublicOrMember><Roadmap /></PublicOrMember>} />
+                  <Route path="/formations" element={<PublicOrMember><Formations /></PublicOrMember>} />
+                  <Route path="/formations/:code" element={<PublicOrMember><FormationDetail /></PublicOrMember>} />
                   <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
-                  <Route path="/missions" element={<Protected><Missions /></Protected>} />
-                  <Route path="/badges" element={<Protected><Badges /></Protected>} />
-                  <Route path="/frek-profile" element={<Protected><FrekProfile /></Protected>} />
-                  <Route path="/wallet" element={<Protected><Wallet /></Protected>} />
-                  <Route path="/skills" element={<Protected><Skills /></Protected>} />
-                  <Route path="/certifications" element={<Protected><Certifications /></Protected>} />
+                  <Route path="/missions" element={<PublicOrMember><Missions /></PublicOrMember>} />
+                  <Route path="/badges" element={<PublicOrMember><Badges /></PublicOrMember>} />
+                  <Route path="/frek-profile" element={<PublicOrMember><FrekProfile /></PublicOrMember>} />
+                  <Route path="/wallet" element={<PublicOrMember><Wallet /></PublicOrMember>} />
+                  <Route path="/skills" element={<PublicOrMember><Skills /></PublicOrMember>} />
+                  <Route path="/certifications" element={<PublicOrMember><Certifications /></PublicOrMember>} />
                   <Route
                     path="/trainer"
                     element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}

@@ -1,20 +1,41 @@
-import { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Leaf, ArrowRight } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n, LANGS } from "@/lib/i18n.jsx";
 import { toast } from "sonner";
 import { Focus, Enter } from "@/lib/motion-primitives";
 
-const PUBLIC_NAV = ["Accueil", "Formations", "Parcours", "Communauté", "Entreprises", "Institutions", "À propos"];
+const PUBLIC_NAV = [
+  { label: "Accueil", href: "#top" },
+  { label: "Formations", href: "#formations" },
+  { label: "Parcours", href: "#parcours" },
+  { label: "Communauté", href: "#communaute" },
+  { label: "Entreprises", href: "#entreprises" },
+  { label: "Institutions", href: "#institutions" },
+  { label: "À propos", href: "#about" },
+];
 
-export default function Landing() {
+export default function Landing({ initialMode }) {
   const { user, login, register, loading } = useAuth();
   const { t, lang, setLang } = useI18n();
   const nav = useNavigate();
-  const [mode, setMode] = useState("register");
+  const location = useLocation();
+  const [mode, setMode] = useState(initialMode === "login" ? "login" : "register");
   const [form, setForm] = useState({ email: "", password: "", display_name: "" });
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (initialMode === "login" || initialMode === "register") {
+      setMode(initialMode);
+    }
+  }, [initialMode]);
+
+  const setAuthMode = (nextMode) => {
+    setMode(nextMode);
+    const target = nextMode === "login" ? "/login" : "/register";
+    if (location.pathname !== target) nav(target, { replace: false });
+  };
 
   if (loading) return null;
   if (user) {
@@ -43,7 +64,7 @@ export default function Landing() {
   return (
     <div className="cvln-landing" data-testid="landing-page">
       <header className="cvln-topbar">
-        <div className="cvln-wordmark">
+        <Link to="/" className="cvln-wordmark" aria-label="CVLN Academy — Accueil">
           <div className="cvln-wordmark-mark" aria-hidden="true">
             <Leaf width={20} height={20} />
           </div>
@@ -51,14 +72,15 @@ export default function Landing() {
             <div className="font-display font-black tracking-[0.12em] text-xl leading-none">CVLN</div>
             <div className="text-[10px] tracking-[0.24em] text-white/60 mt-1">ACADEMY</div>
           </div>
-        </div>
+        </Link>
 
         <nav className="cvln-topnav" aria-label="Navigation publique">
           {PUBLIC_NAV.map((item, index) => (
-            <a key={item} href={index === 0 ? "#top" : "#academy"} className={index === 0 ? "active" : ""}>
-              {item}
+            <a key={item.label} href={item.href} className={index === 0 ? "active" : ""}>
+              {item.label}
             </a>
           ))}
+          <Link to="/pricing">Tarifs</Link>
         </nav>
 
         <div className="flex items-center gap-2">
@@ -77,18 +99,20 @@ export default function Landing() {
               </Focus>
             ))}
           </div>
-          <button
+          <Link
+            to="/login"
             onClick={() => setMode("login")}
             className="hidden sm:inline-flex px-4 py-2.5 rounded-xl border border-white/15 bg-black/10 text-sm font-semibold text-white hover:bg-white/10 transition"
           >
             Se connecter
-          </button>
-          <button
+          </Link>
+          <Link
+            to="/register"
             onClick={() => setMode("register")}
             className="inline-flex px-4 py-2.5 rounded-xl bg-[--cvln-orange] text-sm font-bold text-white hover:brightness-110 transition"
           >
             Rejoindre l’Academy
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -106,10 +130,10 @@ export default function Landing() {
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
-            <button onClick={() => setMode("register")} className="btn-primary rounded-xl">
+            <a href="#formations" className="btn-primary rounded-xl">
               Découvrir nos formations <ArrowRight width={17} height={17} className="ml-2" />
-            </button>
-            <a href="#academy" className="btn-outline rounded-xl border-white/30 text-white">
+            </a>
+            <a href="#about" className="btn-outline rounded-xl border-white/30 text-white">
               Voir le monde CVLN <span className="ml-2 text-xs">▷</span>
             </a>
           </div>
@@ -182,11 +206,69 @@ export default function Landing() {
 
           <button
             data-testid="auth-toggle"
-            onClick={() => setMode(mode === "register" ? "login" : "register")}
+            onClick={() => setAuthMode(mode === "register" ? "login" : "register")}
             className="mt-5 text-sm text-white/55 hover:text-[--cvln-orange] transition"
           >
             {mode === "register" ? t("landing_p.toggle_to_login") : t("landing_p.toggle_to_register")}
           </button>
+        </div>
+      </section>
+
+      <section id="formations" className="px-6 md:px-16 py-16 border-t border-white/10">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-[1.2fr_.8fr] gap-8 items-start">
+          <div>
+            <div className="cvln-kicker">Formations</div>
+            <h2 className="font-display font-black text-4xl md:text-6xl tracking-tight text-white mt-3">Découvrir avant de s’inscrire.</h2>
+            <p className="mt-4 text-white/65 max-w-2xl">Explore l’Academy, puis crée ton compte pour débloquer ton parcours personnalisé, tes modules, missions et preuves de compétences.</p>
+          </div>
+          <div className="flex flex-wrap gap-3 md:justify-end">
+            <Link to="/register" className="btn-primary rounded-xl">Créer mon parcours</Link>
+            <Link to="/pricing" className="btn-outline rounded-xl border-white/30 text-white">Voir les tarifs</Link>
+          </div>
+        </div>
+      </section>
+
+      <section id="parcours" className="px-6 md:px-16 py-16 border-t border-white/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="cvln-kicker">Parcours</div>
+          <h2 className="font-display font-black text-4xl md:text-5xl tracking-tight text-white mt-3">Inscription → conformité → onboarding → dashboard → formation.</h2>
+        </div>
+      </section>
+
+      <section id="communaute" className="px-6 md:px-16 py-16 border-t border-white/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="cvln-kicker">Communauté</div>
+          <h2 className="font-display font-black text-4xl md:text-5xl tracking-tight text-white mt-3">Talents, mentors, jurys et partenaires réunis dans le même environnement.</h2>
+        </div>
+      </section>
+
+      <section id="entreprises" className="px-6 md:px-16 py-16 border-t border-white/10">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <div className="cvln-kicker">Entreprises</div>
+            <h2 className="font-display font-black text-4xl md:text-5xl tracking-tight text-white mt-3">Former, identifier et connecter les compétences.</h2>
+          </div>
+          <Link to="/register" className="btn-outline rounded-xl border-white/30 text-white">Créer un accès</Link>
+        </div>
+      </section>
+
+      <section id="institutions" className="px-6 md:px-16 py-16 border-t border-white/10">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <div className="cvln-kicker">Institutions</div>
+            <h2 className="font-display font-black text-4xl md:text-5xl tracking-tight text-white mt-3">Un pont entre financement, parcours, preuves et suivi.</h2>
+          </div>
+          <Link to="/login" className="btn-outline rounded-xl border-white/30 text-white">Accéder à mon espace</Link>
+        </div>
+      </section>
+
+      <section id="about" className="px-6 md:px-16 py-16 border-t border-white/10">
+        <div className="max-w-6xl mx-auto flex flex-wrap items-end justify-between gap-6">
+          <div>
+            <div className="cvln-kicker">À propos</div>
+            <h2 className="font-display font-black text-4xl md:text-5xl tracking-tight text-white mt-3">CVLN Academy relie apprentissage, culture, technologie et employabilité.</h2>
+          </div>
+          <Link to="/legal/mentions-legales" className="btn-outline rounded-xl border-white/30 text-white">Centre juridique</Link>
         </div>
       </section>
     </div>
