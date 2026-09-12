@@ -16,7 +16,7 @@ import hashlib
 import hmac
 import os
 import re
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, Dict, List, Mapping, Sequence, Tuple
 
 OUTBOUND_HISTORY_LIMIT = 12
 
@@ -61,7 +61,7 @@ def redact_text(value: str) -> str:
     return text
 
 
-def sanitise_history(history: List[Mapping[str, Any]]) -> List[Dict[str, str]]:
+def sanitise_history(history: Sequence[Mapping[str, Any]]) -> List[Dict[str, str]]:
     """Keep only the recent role/content window needed by a chat model."""
     clean: List[Dict[str, str]] = []
     for item in history[-OUTBOUND_HISTORY_LIMIT:]:
@@ -80,7 +80,7 @@ def sanitise_history(history: List[Mapping[str, Any]]) -> List[Dict[str, str]]:
 def prepare_outbound_conversation(
     system_prompt: str,
     message: str,
-    history: List[Mapping[str, Any]],
+    history: Sequence[Mapping[str, Any]],
 ) -> Tuple[str, str, List[Dict[str, str]]]:
     """Return the provider-safe system prompt, message and history."""
     return (
