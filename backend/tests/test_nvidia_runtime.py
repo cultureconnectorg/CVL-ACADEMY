@@ -4,6 +4,7 @@ import pytest
 
 from services import agent_factory as agent_factory_module
 from services import nvidia_runtime
+from services.ai_data_policy import pseudonymise_session
 from services.nvidia_runtime import (
     DynamoClient,
     DynamoConfigurationError,
@@ -153,13 +154,14 @@ async def test_dynamo_reuses_and_closes_http_connection_pool(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_assistant_transport_reaches_dynamo(monkeypatch):
+async def test_assistant_transport_reaches_dynamo_with_minimized_payload(monkeypatch):
     calls = []
 
     async def fake_dynamo_reply(**kwargs):
         calls.append(kwargs)
         return "dynamo-ok"
 
+    monkeypatch.setenv("AI_PSEUDONYMIZATION_KEY", "nvidia-test-pseudonym-key")
     monkeypatch.setattr(agent_factory_module, "AI_TRANSPORT", "dynamo")
     monkeypatch.setattr(agent_factory_module, "AI_STRICT", True)
     monkeypatch.setattr(
@@ -168,16 +170,26 @@ async def test_assistant_transport_reaches_dynamo(monkeypatch):
 
     client = agent_factory_module.AgentFactoryClient()
     result = await client.chat_reply(
-        "system",
+        "system FREK-ABCD-1234",
         "session-1",
-        "message",
-        [{"role": "user", "content": "before"}],
+        "contact me at maya@example.com",
+        [
+            {
+                "role": "user",
+                "content": "before Bearer abcdefghijklmnop",
+                "ts": "internal-only",
+            }
+        ],
     )
 
     assert result == "dynamo-ok"
     assert len(calls) == 1
-    assert calls[0]["session_id"] == "session-1"
-    assert calls[0]["message"] == "message"
+    assert calls[0]["session_id"] == pseudonymise_session("session-1")
+    assert "session-1" not in calls[0]["session_id"]
+    assert "FREK-ABCD-1234" not in calls[0]["system_prompt"]
+    assert "maya@example.com" not in calls[0]["message"]
+    assert "abcdefghijklmnop" not in calls[0]["history"][0]["content"]
+    assert set(calls[0]["history"][0]) == {"role", "content"}
 
 
 def test_remote_agent_factory_configuration_is_not_reported_active(monkeypatch):
