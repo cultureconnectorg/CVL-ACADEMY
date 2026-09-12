@@ -2,6 +2,7 @@ const STORAGE_PREFIX = "cvln:return-position:v1";
 const RESUME_PREFIX = "cvln:return-resume:v1";
 
 const RESTORABLE_ROUTE = /^\/(dashboard|roadmap|formations(?:\/[^/]+(?:\/modules\/[^/]+)?)?|missions|badges|skills|certifications|wallet|frek-profile)$/;
+const CAPTURE_ROUTE = /^\/(roadmap|formations(?:\/[^/]+(?:\/modules\/[^/]+)?)?|missions|badges|skills|certifications|wallet|frek-profile)$/;
 
 function storageAvailable(storage) {
   return Boolean(storage && typeof storage.getItem === "function" && typeof storage.setItem === "function");
@@ -15,13 +16,17 @@ export function isRestorablePath(pathname) {
   return typeof pathname === "string" && RESTORABLE_ROUTE.test(pathname);
 }
 
+export function isReturnCapturePath(pathname) {
+  return typeof pathname === "string" && CAPTURE_ROUTE.test(pathname);
+}
+
 function keyFor(prefix, userKey) {
   return userKey ? `${prefix}:${String(userKey)}` : null;
 }
 
 export function saveReturnPosition(userKey, snapshot, storage = globalThis?.localStorage) {
   const key = keyFor(STORAGE_PREFIX, userKey);
-  if (!key || !isRestorablePath(snapshot?.pathname) || !storageAvailable(storage)) return false;
+  if (!key || !isReturnCapturePath(snapshot?.pathname) || !storageAvailable(storage)) return false;
 
   const payload = {
     pathname: snapshot.pathname,
