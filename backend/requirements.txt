@@ -1,5 +1,5 @@
 # --- runtime ---
-fastapi==0.110.1
+fastapi>=0.141.1,<0.142
 uvicorn>=0.31.1,<1
 python-dotenv>=1.0.1
 pymongo>=4.9,<5
