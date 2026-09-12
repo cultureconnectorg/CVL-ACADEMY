@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-from fastapi import Depends, HTTPException, Request
-
 from auth import get_current_user
 from commercial import has_commercial_access
+from fastapi import Depends, HTTPException, Request
 from models import User
 
 
