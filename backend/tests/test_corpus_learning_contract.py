@@ -9,8 +9,14 @@ from corpus_learning_contract import (
 
 def test_corpus_type_classification():
     assert classify_corpus_type("Formation") == CorpusObjectType.FORMATION
-    assert classify_corpus_type("Internal skill / operator") == CorpusObjectType.INTERNAL_SKILL_OPERATOR
-    assert classify_corpus_type("Cross-ecosystem competency") == CorpusObjectType.CROSS_ECOSYSTEM_COMPETENCY
+    assert (
+        classify_corpus_type("Internal skill / operator")
+        == CorpusObjectType.INTERNAL_SKILL_OPERATOR
+    )
+    assert (
+        classify_corpus_type("Cross-ecosystem competency")
+        == CorpusObjectType.CROSS_ECOSYSTEM_COMPETENCY
+    )
     assert classify_corpus_type("Transversal") == CorpusObjectType.TRANSVERSAL
     assert classify_corpus_type("Case Lab") == CorpusObjectType.CASE_LAB
     assert classify_corpus_type("Coverage gap") == CorpusObjectType.GAP_TO_RECONCILE
