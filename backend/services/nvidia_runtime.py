@@ -328,9 +328,7 @@ class DynamoClient:
         except ValueError:
             return False
         return bool(
-            self.model
-            and parsed.scheme in {"http", "https"}
-            and parsed.hostname
+            self.model and parsed.scheme in {"http", "https"} and parsed.hostname
         )
 
     def is_selected(self) -> bool:
