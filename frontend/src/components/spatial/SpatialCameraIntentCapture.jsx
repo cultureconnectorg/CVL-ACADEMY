@@ -124,7 +124,12 @@ export default function SpatialCameraIntentCapture() {
       const destinationAnchor = contract.destinationSelector
         ? document.querySelector(contract.destinationSelector)
         : null;
-      if (destinationAnchor) armCameraReturn(contract, destinationAnchor);
+
+      // During browser Back, React may unmount the destination DOM before this
+      // popstate handler observes it. armCameraReturn already has the persisted
+      // destinationRect from the completed forward camera contract, so always
+      // arm here and let that geometry provide the race-safe fallback.
+      armCameraReturn(contract, destinationAnchor);
     };
 
     document.addEventListener("click", onClickCapture, true);
