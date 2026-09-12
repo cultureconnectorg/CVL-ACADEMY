@@ -6,7 +6,9 @@ import { anchorSelector } from "@/lib/spatial/cameraAnchor";
 import {
   cancelCameraIntent,
   completeCameraIntent,
+  consumeArmedCameraReturn,
   consumePendingCameraIntent,
+  readArmedCameraReturn,
   readPendingCameraIntent,
 } from "@/lib/spatial/cameraRuntime";
 
@@ -22,26 +24,27 @@ function waitForElement(selector, timeoutMs = 1800) {
       return;
     }
     let settled = false;
-    const finish = (value) => {
-      if (settled) return;
-      settled = true;
-      observer.disconnect();
-      window.clearTimeout(timer);
-      resolve(value);
-    };
+    let timer = null;
     const observer = new MutationObserver(() => {
       const candidate = document.querySelector(selector);
       if (candidate) finish(candidate);
     });
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      observer.disconnect();
+      if (timer) window.clearTimeout(timer);
+      resolve(value);
+    };
     observer.observe(document.documentElement, { childList: true, subtree: true });
-    const timer = window.setTimeout(() => finish(null), timeoutMs);
+    timer = window.setTimeout(() => finish(null), timeoutMs);
   });
 }
 
 /**
- * Resolves the destination half of a camera-follow contract after React has
- * mounted the new route. Navigation is never delayed; async API rendering gets
- * a bounded observation window, then safely falls back to normal routing.
+ * Resolves forward and exact-return camera anchors after React has mounted the
+ * route. Navigation is never delayed; async API rendering gets a bounded
+ * observation window, then safely falls back to normal routing.
  */
 export default function SpatialCameraBridge() {
   const location = useLocation();
@@ -52,22 +55,39 @@ export default function SpatialCameraBridge() {
       return undefined;
     }
 
-    const pending = readPendingCameraIntent();
-    if (!pending || pending.destinationRoute !== location.pathname) return undefined;
-
     let cancelled = false;
-    const selector = pending.destinationSelector || anchorSelector(pending.anchorId, "destination");
-    waitForElement(selector).then((target) => {
-      if (cancelled) return;
-      const current = readPendingCameraIntent();
-      if (!current || current.destinationRoute !== location.pathname) return;
-      if (!target) {
-        cancelCameraIntent();
-        return;
-      }
-      const intent = consumePendingCameraIntent();
-      completeCameraIntent(intent, target);
-    });
+    const pending = readPendingCameraIntent();
+    const armedReturn = readArmedCameraReturn();
+
+    if (pending && pending.destinationRoute === location.pathname) {
+      const selector = pending.destinationSelector || anchorSelector(pending.anchorId, "destination");
+      waitForElement(selector).then((target) => {
+        if (cancelled) return;
+        const current = readPendingCameraIntent();
+        if (!current || current.destinationRoute !== location.pathname) return;
+        if (!target) {
+          cancelCameraIntent();
+          return;
+        }
+        const intent = consumePendingCameraIntent();
+        completeCameraIntent(intent, target);
+      });
+    } else if (armedReturn && armedReturn.sourceRoute === location.pathname) {
+      const selector = armedReturn.sourceSelector || `a[href="${armedReturn.destinationRoute}"]`;
+      waitForElement(selector).then((target) => {
+        if (cancelled) return;
+        const current = readArmedCameraReturn();
+        if (!current || current.sourceRoute !== location.pathname) return;
+        if (!target) {
+          consumeArmedCameraReturn();
+          cancelCameraIntent();
+          return;
+        }
+        const contract = consumeArmedCameraReturn();
+        completeCameraIntent(contract, target, { returning: true });
+        if (typeof target.focus === "function") target.focus({ preventScroll: true });
+      });
+    }
 
     return () => {
       cancelled = true;
