@@ -70,13 +70,16 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   const physicsRef = useRef(null);
   const attentionFrameRef = useRef(null);
   const cadenceRef = useRef(null);
-  // A committed keyboard/focus target is distinct from the instantaneous
-  // viewport-center measurement. Near the physical settle point it becomes
-  // authoritative for attention so edge items (which cannot always be centered
-  // because scrollLeft clamps) still settle to exactly one PRIMARY plane.
   const targetIndexRef = useRef(initial);
 
   if (!cadenceRef.current) cadenceRef.current = createCadenceTracker();
+
+  const cancelPendingAttentionMeasure = useCallback(() => {
+    if (attentionFrameRef.current && typeof cancelAnimationFrame === "function") {
+      cancelAnimationFrame(attentionFrameRef.current);
+    }
+    attentionFrameRef.current = null;
+  }, []);
 
   const settledCommittedTarget = useCallback(() => {
     const committedTarget = targetIndexRef.current;
@@ -92,11 +95,6 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   }, [itemCount]);
 
   const measureAttentionPosition = useCallback(() => {
-    // Programmatic scroll dispatch can queue a measurement frame after the
-    // physics callback has already declared the rail settled. In that case the
-    // committed target remains authoritative; otherwise a late geometry sample
-    // can overwrite the exact integer with e.g. 2.9986, leaving a PRIMARY card
-    // with a meaningless 0.003px blur. This guard makes settle idempotent.
     const settledTarget = settledCommittedTarget();
     if (settledTarget !== null) {
       setAttentionPosition(settledTarget);
@@ -127,6 +125,12 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   useEffect(() => {
     aliveRef.current = true;
     let physics = null;
+    const settleExactTarget = () => {
+      const committedTarget = targetIndexRef.current;
+      if (!aliveRef.current || committedTarget === null) return;
+      cancelPendingAttentionMeasure();
+      setAttentionPosition(clampRailIndex(committedTarget, itemCount));
+    };
     physics = makeRailPhysics((position) => {
       const rail = railRef.current;
       if (!aliveRef.current || !rail) return;
@@ -138,23 +142,20 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
         && physics
         && Math.abs(position - physics.target) <= 0.5
       ) {
-        // Exact perceptual settle. This is intentionally independent of the
-        // browser's edge scroll clamp; DOMAIN_STATE is still untouched.
+        cancelPendingAttentionMeasure();
         setAttentionPosition(clampRailIndex(committedTarget, itemCount));
       } else {
         scheduleAttentionMeasure();
       }
-    });
+    }, settleExactTarget);
     physicsRef.current = physics;
     return () => {
       aliveRef.current = false;
       physicsRef.current = null;
       cadenceRef.current?.dispose?.();
-      if (attentionFrameRef.current && typeof cancelAnimationFrame === "function") {
-        cancelAnimationFrame(attentionFrameRef.current);
-      }
+      cancelPendingAttentionMeasure();
     };
-  }, [itemCount, railRef, scheduleAttentionMeasure]);
+  }, [cancelPendingAttentionMeasure, itemCount, railRef, scheduleAttentionMeasure]);
 
   useEffect(() => {
     setFocusedIndex((index) => clampRailIndex(index, itemCount));
@@ -182,6 +183,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
     if (target === null || !rail || !physics) return;
     targetIndexRef.current = nextIndex;
     if (reduced) {
+      cancelPendingAttentionMeasure();
       physics.jump(target);
       setAttentionPosition(nextIndex);
       return;
@@ -190,7 +192,7 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
       physics.jump(rail.scrollLeft);
     }
     physics.setTarget(target);
-  }, [itemCount, railRef, reduced, targetScrollForIndex]);
+  }, [cancelPendingAttentionMeasure, itemCount, railRef, reduced, targetScrollForIndex]);
 
   const focusIndex = useCallback((index, { focus = true, center = true } = {}) => {
     const next = clampRailIndex(index, itemCount);
@@ -247,7 +249,6 @@ export function useSpatialRail({ railRef, itemCount, initialIndex = 0 }) {
   const onPointerDown = useCallback((event) => {
     if (event.button !== 0 || !railRef.current) return;
     clearPrediction();
-    // Pointer drag owns attention continuously until the nearest-item settle.
     targetIndexRef.current = null;
     dragRef.current = {
       pointerId: event.pointerId,
