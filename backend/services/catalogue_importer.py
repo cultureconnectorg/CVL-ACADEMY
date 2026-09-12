@@ -58,7 +58,7 @@ def load_catalogue_rows(path: Path = CATALOGUE_SOURCE) -> list[dict[str, Any]]:
                 raise ValueError(f"catalogue master duplicate Code: {code}")
             seen.add(code)
 
-            payload = {
+            payload: dict[str, Any] = {
                 "domain": _clean(raw.get("Domaine")),
                 "code": code,
                 "title": _clean(raw.get("Intitulé")),
