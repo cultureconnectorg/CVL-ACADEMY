@@ -15,6 +15,7 @@ from typing import Any, Optional
 from mcp.server import MCPServer
 from mcp.server.auth.middleware.auth_context import get_access_token
 from mcp.server.auth.settings import AuthSettings
+from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import AnyHttpUrl
 
 from db import db
@@ -43,6 +44,29 @@ def _principal(required_scopes: set[str]) -> tuple[str, set[str]]:
     if missing:
         raise PermissionError(f"Missing OAuth scope(s): {', '.join(sorted(missing))}")
     return token.subject, granted
+
+
+def _transport_security() -> Optional[TransportSecuritySettings]:
+    """Reuse the production Host/Origin policy used by the public MCP."""
+    raw_hosts = os.environ.get("MCP_ALLOWED_HOSTS", "")
+    hosts = [item.strip() for item in raw_hosts.split(",") if item.strip()]
+    if not hosts:
+        render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "").strip()
+        if render_host:
+            hosts = [render_host, f"{render_host}:*"]
+    if not hosts:
+        return None
+
+    raw_origins = os.environ.get("MCP_ALLOWED_ORIGINS", "")
+    origins = [
+        item.strip()
+        for item in raw_origins.split(",")
+        if item.strip() and item.strip() != "*"
+    ]
+    return TransportSecuritySettings(
+        allowed_hosts=hosts,
+        allowed_origins=origins,
+    )
 
 
 private_academy_mcp = MCPServer(
@@ -89,7 +113,10 @@ async def list_funding_connectors() -> dict[str, Any]:
     return {
         "count": len(items),
         "items": items,
-        "policy": "Connector capability is evidence-based; live_write_implemented=false means preparation only.",
+        "policy": (
+            "Connector capability is evidence-based; live_write_implemented=false "
+            "means preparation only."
+        ),
     }
 
 
@@ -110,8 +137,13 @@ async def create_funding_dossier(
     if amount_requested_eur is not None and amount_requested_eur < 0:
         raise ValueError("amount_requested_eur must be >= 0")
     try:
-        connector = bridge_registry.require_capability(connector_code, "APPLICATION_PREPARE")
-    except (bridge_registry.UnknownConnector, bridge_registry.UnsupportedCapability) as exc:
+        connector = bridge_registry.require_capability(
+            connector_code, "APPLICATION_PREPARE"
+        )
+    except (
+        bridge_registry.UnknownConnector,
+        bridge_registry.UnsupportedCapability,
+    ) as exc:
         raise ValueError(str(exc)) from exc
     formation = await db.formations.find_one(
         {"code": formation_code, "content_status": "published"},
@@ -180,7 +212,7 @@ async def add_funding_document_reference(
 
 @private_academy_mcp.tool()
 async def mark_funding_dossier_ready(dossier_id: str) -> dict[str, Any]:
-    """Mark an Academy dossier ready for human/connector review, without external submission."""
+    """Mark an Academy dossier ready for review, without external submission."""
     user_id, _ = _principal({"academy:funding.write"})
     result = await db.mcp_funding_dossiers.update_one(
         {"id": dossier_id, "user_id": user_id, "status": "DRAFT"},
@@ -240,7 +272,11 @@ async def create_enrollment_request(
         {"_id": 0},
     )
     if existing:
-        return {"created": False, "reason": "active_request_exists", "request": existing}
+        return {
+            "created": False,
+            "reason": "active_request_exists",
+            "request": existing,
+        }
     request_doc = {
         "id": _uid(),
         "user_id": user_id,
@@ -275,4 +311,5 @@ async def list_my_enrollment_requests(limit: int = 50) -> dict[str, Any]:
 
 private_mcp_http_app = private_academy_mcp.streamable_http_app(
     streamable_http_path="/",
+    transport_security=_transport_security(),
 )
