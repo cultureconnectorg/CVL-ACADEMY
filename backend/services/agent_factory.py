@@ -4,7 +4,7 @@ CVLN Agent Factory is a SEPARATE system that owns agents, orchestration & automa
 for the CVLN ecosystem. This module is the sole boundary CVLN Academy uses to talk to it.
 
 The Academy currently supports two proven local inference transports:
-- ``anthropic``: direct Anthropic SDK fallback;
+- ``anthropic``: direct asynchronous Anthropic SDK fallback;
 - ``dynamo``: NVIDIA Dynamo OpenAI-compatible inference frontend.
 
 ``CVLN_AGENT_FACTORY_URL`` remains a configuration marker only until the remote
@@ -73,9 +73,9 @@ Style: direct, chaleureux, sans jargon inutile. Réponses courtes (3–8 phrases
 
 class AgentFactoryClient:
     def __init__(self) -> None:
-        self._client: Optional[anthropic.Anthropic] = None
+        self._client: Optional[anthropic.AsyncAnthropic] = None
         if ANTHROPIC_API_KEY:
-            self._client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            self._client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
 
     def is_remote_enabled(self) -> bool:
         """Legacy compatibility marker: remote URL configured, not proven active."""
@@ -142,7 +142,7 @@ class AgentFactoryClient:
         messages.append(MessageParam(role="user", content=message))
 
         try:
-            response = self._client.messages.create(
+            response = await self._client.messages.create(
                 model=LOCAL_MENTOR_MODEL,
                 max_tokens=1024,
                 system=system_prompt,
