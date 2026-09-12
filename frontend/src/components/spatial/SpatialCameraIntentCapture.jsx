@@ -35,13 +35,14 @@ function buildForwardContract(link, destinationRoute) {
   if (moduleMatch) {
     const [, formationCode, moduleCode] = moduleMatch;
     const anchorId = `module:${formationCode}:${moduleCode}`;
+    const destinationSelector = '[data-testid="module-journey"] h1';
     return {
       anchorId,
       destinationRoute,
-      destinationSelector: '[data-testid="module-journey"] h1',
+      destinationSelector,
       sharedElement: findSharedSource(anchorId, link),
       sharedSourceSelector: `[data-spatial-shared-source="${anchorId}"]`,
-      sharedDestinationSelector: `[data-spatial-shared-destination="${anchorId}"]`,
+      sharedDestinationSelector: destinationSelector,
     };
   }
 
@@ -49,13 +50,14 @@ function buildForwardContract(link, destinationRoute) {
   if (formationMatch && window.location.pathname === "/formations") {
     const [, formationCode] = formationMatch;
     const anchorId = `formation:${formationCode}`;
+    const destinationSelector = '[data-testid="formation-detail"] h1';
     return {
       anchorId,
       destinationRoute,
-      destinationSelector: '[data-testid="formation-detail"] h1',
+      destinationSelector,
       sharedElement: findSharedSource(anchorId, link),
       sharedSourceSelector: `[data-spatial-shared-source="${anchorId}"]`,
-      sharedDestinationSelector: `[data-spatial-shared-destination="${anchorId}"]`,
+      sharedDestinationSelector: destinationSelector,
     };
   }
 
