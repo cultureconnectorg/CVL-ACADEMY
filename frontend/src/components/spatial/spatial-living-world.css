@@ -1,0 +1,169 @@
+.spatial-background__clouds,
+.spatial-background__globe,
+.spatial-background__globe-core,
+.spatial-background__globe-ring,
+.spatial-background__water-shimmer,
+.spatial-background__particles {
+  position: absolute;
+  pointer-events: none;
+}
+
+.spatial-background__clouds {
+  inset: 0;
+  opacity: .34;
+  background-repeat: no-repeat;
+  mix-blend-mode: screen;
+  will-change: transform, opacity;
+}
+
+.spatial-background__clouds--far {
+  background:
+    radial-gradient(ellipse at 18% 18%, rgba(255,255,255,.12) 0 10%, transparent 26%),
+    radial-gradient(ellipse at 72% 16%, rgba(255,164,108,.12) 0 9%, transparent 24%),
+    radial-gradient(ellipse at 48% 26%, rgba(255,255,255,.08) 0 7%, transparent 23%);
+  filter: blur(18px);
+  animation: spatial-cloud-far 34s ease-in-out infinite alternate;
+}
+
+.spatial-background__clouds--near {
+  inset: 8% -12% auto -12%;
+  height: 46%;
+  background:
+    radial-gradient(ellipse at 15% 60%, rgba(255,220,197,.14), transparent 31%),
+    radial-gradient(ellipse at 77% 46%, rgba(255,188,147,.11), transparent 32%),
+    radial-gradient(ellipse at 47% 37%, rgba(255,255,255,.07), transparent 30%);
+  filter: blur(26px);
+  opacity: .26;
+  animation: spatial-cloud-near 25s ease-in-out infinite alternate;
+}
+
+.spatial-background__globe {
+  width: clamp(220px, 27vw, 520px);
+  aspect-ratio: 1;
+  top: 5vh;
+  left: 50%;
+  transform: translateX(-50%) translate3d(calc(var(--spatial-x) * -.18), calc(var(--spatial-y) * -.12), 0);
+  border-radius: 50%;
+  opacity: .48;
+  filter: drop-shadow(0 0 26px rgba(69,166,255,.24));
+  animation: spatial-globe-float 12s ease-in-out infinite alternate;
+}
+
+.spatial-background__globe-core {
+  inset: 12%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255,255,255,.78), transparent 10%),
+    radial-gradient(circle at 52% 48%, rgba(67,158,255,.34), rgba(8,34,72,.12) 52%, transparent 70%);
+  border: 1px solid rgba(126,199,255,.42);
+  box-shadow: inset 0 0 48px rgba(78,169,255,.26), 0 0 30px rgba(41,146,255,.22);
+  animation: spatial-globe-pulse 8s ease-in-out infinite alternate;
+}
+
+.spatial-background__globe-ring {
+  inset: 28% 2%;
+  border: 1px solid rgba(255,135,50,.48);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255,122,34,.17);
+}
+
+.spatial-background__globe-ring--a {
+  transform: rotate(17deg);
+  animation: spatial-globe-ring-a 18s linear infinite;
+}
+
+.spatial-background__globe-ring--b {
+  transform: rotate(-29deg) scale(.88);
+  border-color: rgba(85,181,255,.44);
+  animation: spatial-globe-ring-b 24s linear infinite reverse;
+}
+
+.spatial-background__water-shimmer {
+  left: 35%;
+  right: -8%;
+  bottom: 4%;
+  height: 32%;
+  opacity: .42;
+  background:
+    repeating-linear-gradient(177deg, transparent 0 11px, rgba(255,194,129,.08) 12px, transparent 14px),
+    radial-gradient(ellipse at 58% 20%, rgba(255,145,63,.18), transparent 52%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 28%, #000 100%);
+  transform: skewX(-8deg) translate3d(calc(var(--spatial-x) * .07), calc(var(--spatial-y) * .04), 0);
+  animation: spatial-water-shimmer 7s ease-in-out infinite alternate;
+}
+
+.spatial-background__particles {
+  inset: 0;
+  opacity: .36;
+  background-image:
+    radial-gradient(circle at 12% 72%, rgba(255,178,102,.7) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 24% 62%, rgba(255,255,255,.58) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 39% 78%, rgba(255,134,48,.64) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 58% 67%, rgba(121,196,255,.58) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 76% 74%, rgba(255,199,142,.56) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 88% 58%, rgba(255,255,255,.5) 0 1px, transparent 1.3px);
+  animation: spatial-particles 13s ease-in-out infinite alternate;
+}
+
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__clouds,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__globe,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-core,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__globe-ring,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__water-shimmer,
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__particles,
+.spatial-background[data-spatial-engine="off"] .spatial-background__clouds,
+.spatial-background[data-spatial-engine="off"] .spatial-background__globe,
+.spatial-background[data-spatial-engine="off"] .spatial-background__globe-core,
+.spatial-background[data-spatial-engine="off"] .spatial-background__globe-ring,
+.spatial-background[data-spatial-engine="off"] .spatial-background__water-shimmer,
+.spatial-background[data-spatial-engine="off"] .spatial-background__particles {
+  animation: none !important;
+  transform: none !important;
+  will-change: auto;
+}
+
+@keyframes spatial-cloud-far {
+  from { transform: translate3d(-2%, -1%, 0) scale(1.03); opacity: .22; }
+  to { transform: translate3d(4%, 1%, 0) scale(1.08); opacity: .38; }
+}
+
+@keyframes spatial-cloud-near {
+  from { transform: translate3d(-5%, 0, 0) scale(1.02); opacity: .16; }
+  to { transform: translate3d(7%, -2%, 0) scale(1.08); opacity: .31; }
+}
+
+@keyframes spatial-globe-float {
+  from { margin-top: 0; filter: drop-shadow(0 0 22px rgba(69,166,255,.18)); }
+  to { margin-top: -8px; filter: drop-shadow(0 0 34px rgba(69,166,255,.34)); }
+}
+
+@keyframes spatial-globe-pulse {
+  from { opacity: .68; transform: scale(.985); }
+  to { opacity: .96; transform: scale(1.015); }
+}
+
+@keyframes spatial-globe-ring-a {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+@keyframes spatial-globe-ring-b {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+@keyframes spatial-water-shimmer {
+  from { background-position: 0 0, 0 0; opacity: .24; }
+  to { background-position: 18px 10px, 22px 0; opacity: .5; }
+}
+
+@keyframes spatial-particles {
+  from { transform: translate3d(0, 6px, 0); opacity: .18; }
+  to { transform: translate3d(12px, -14px, 0); opacity: .42; }
+}
+
+@media (max-width: 768px) {
+  .spatial-background__globe { width: min(56vw, 330px); top: 10vh; opacity: .34; }
+  .spatial-background__water-shimmer { left: 16%; height: 24%; }
+  .spatial-background__clouds--near { opacity: .16; }
+}
