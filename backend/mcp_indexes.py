@@ -17,3 +17,10 @@ async def ensure_mcp_indexes() -> None:
     await db.mcp_enrollment_requests.create_index("id", unique=True)
     await db.mcp_enrollment_requests.create_index([("user_id", 1), ("created_at", -1)])
     await db.mcp_enrollment_requests.create_index([("user_id", 1), ("formation_code", 1), ("status", 1)])
+    await db.academy_terms_acceptances.create_index(
+        [("user_id", 1), ("terms_version", 1)], unique=True
+    )
+    await db.academy_enrollments.create_index(
+        [("user_id", 1), ("formation_code", 1)], unique=True
+    )
+    await db.academy_enrollments.create_index([("status", 1), ("updated_at", -1)])
