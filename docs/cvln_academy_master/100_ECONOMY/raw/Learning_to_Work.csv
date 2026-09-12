@@ -1,0 +1,9 @@
+Étape,Produit/valeur,Payeur,Prix/règle,Gate,Décision
+Apprentissage,Access/Pro/Career/Path,Apprenant/financeur/entreprise,Selon Pricing_V1,Inscription,Commercialisé
+Assessment,Évaluation,Apprenant/entreprise,250,Épreuve,Commercialisé
+Certification,Preuve Academy,Apprenant/entreprise,390,Jury + evidence,Commercialisé
+Qualification,Éligibilité mission,Aucun frais candidat,0,Skill + evidence,Incluse
+Opportunity,Matching,Aucun frais candidat,0,Éligibilité + consentement,Incluse
+Mission,Travail réel supervisé,Client/partenaire,12% GMV; min €150,Autorisation + contrat,Commercialisé côté client
+Expérience,Évaluation terrain,Programme/employeur,Incluse,Supervisor evidence,Incluse
+Portfolio,Signal de compétence,Apprenant/entreprise,Inclus Career/B2B,Consentement,Inclus

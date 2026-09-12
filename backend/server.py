@@ -9,6 +9,9 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
+# Side-effect registration only: adds the optional Apps SDK widget/resource to
+# the existing vendor-neutral public MCP server.
+import apps_sdk  # noqa: E402,F401
 from api import router
 from api.mcp_oauth import router as mcp_oauth_router
 from billing_config import assert_billing_production_ready
@@ -22,11 +25,8 @@ from seed import seed_if_empty
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
+from services.workbook_runtime import ensure_workbook_runtimes
 from template_engine import seed_default_definitions
-
-# Side-effect registration only: adds the optional Apps SDK widget/resource to
-# the existing vendor-neutral public MCP server.
-import apps_sdk  # noqa: E402,F401
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,6 +41,8 @@ async def lifespan(app: FastAPI):
     app.state.startup_ready = False
     app.state.startup_error = None
 
+    # This gate intentionally runs outside the seed try/except. Production must
+    # not accept paid Academy orders if legal invoice issuance is not configured.
     billing_status = assert_billing_production_ready()
     logger.info(
         "billing production readiness: required=%s ready=%s environment=%s",
@@ -60,6 +62,13 @@ async def lifespan(app: FastAPI):
             "module_lineage initial matrix: %d inserted, %d already present",
             inserted,
             skipped,
+        )
+        workbook_status = await ensure_workbook_runtimes(db)
+        if not workbook_status["all_ready"]:
+            raise RuntimeError("workbook runtime reconciliation incomplete")
+        logger.info(
+            "workbook runtimes ready; imported=%s",
+            sorted(workbook_status["imported"]),
         )
         app.state.startup_ready = True
         logger.info("Seed done; application ready.")

@@ -19,11 +19,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 from pydantic import AnyHttpUrl
 
 from db import db
-from mcp_auth import (
-    AcademyMCPTokenVerifier,
-    MCP_OAUTH_ISSUER,
-    MCP_PRIVATE_RESOURCE,
-)
+from mcp_auth import MCP_OAUTH_ISSUER, MCP_PRIVATE_RESOURCE, AcademyMCPTokenVerifier
 from services.institutional_bridge import registry as bridge_registry
 
 
@@ -151,7 +147,7 @@ async def create_funding_dossier(
     )
     if not formation:
         raise ValueError("Published formation not found")
-    dossier = {
+    dossier: dict[str, Any] = {
         "id": _uid(),
         "user_id": user_id,
         "connector_code": connector.code,

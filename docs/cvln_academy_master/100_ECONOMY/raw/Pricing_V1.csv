@@ -1,0 +1,20 @@
+Produit,Canal,Mensuel,Annuel / unitaire,Inclut,N’inclut pas,Commercialisation,Statut
+Free Orientation,B2C,0.0,0,"Préviews, orientation",Assessment/certification/interne,Public,DECIDED_V1
+Academy Access,B2C,24.9,249,Fondamentaux + bibliothèque,Catalogue complet/certification,Public,DECIDED_V1
+Academy Pro,B2C,69.0,690,Catalogue externe + projets + simulations,Certification/autorisation,Public,DECIDED_V1
+Academy Career,B2C Career,129.0,1290,Pro + portfolio + 2 assessments/an + opportunités prioritaires,Mission garantie/autorisation,Public,DECIDED_V1
+Parcours métier,B2C/B2B,0.0,990,12 mois accès parcours,Certification,Public,DECIDED_V1
+Intensive Hybrid Week,B2C/B2B/B2G,0.0,1400,5 jours + pratique selon domaine,Autorisation,Cohorte,DECIDED_V1
+Assessment Only,Certification,0.0,250,Évaluation + skill report,Certification Academy,Public,DECIDED_V1
+Certification Academy,Certification,0.0,390,Assessment + jury + preuve,Autorisation,Public,DECIDED_V1
+Renewal,Certification,0.0,190,Réévaluation/upgrade,Formation complète,Public,DECIDED_V1
+B2B Team,B2B,0.0,12000,10 sièges/an,Custom enterprise,Contrat,DECIDED_V1
+B2B Growth,B2B,0.0,39000,50 sièges + assessments/reporting,White-label,Contrat,DECIDED_V1
+B2B Enterprise,B2B,0.0,69000,100 sièges + gouvernance compétences,White-label complet,Contrat,DECIDED_V1
+B2G Pilot,B2G,0.0,35000,25 apprenants,Programme large,Contrat,DECIDED_V1
+B2G Territory,B2G,0.0,120000,100 apprenants + expérience,Programme 250,Contrat,DECIDED_V1
+B2G Large,B2G,0.0,250000,250 apprenants + reporting impact,Custom national,Contrat,DECIDED_V1
+Methodology/IP Licence,Platform/IP,0.0,25000,Référentiels/méthode,Plateforme complète,B2B/B2G,DECIDED_PHASE_2
+Academy+Spatial Licence,Platform/IP,0.0,60000,Plateforme + Spatial standard,White-label complet,B2B/B2G,DECIDED_PHASE_3
+White-label Enterprise,Platform/IP,0.0,120000,Licence annuelle,Setup €25k,Enterprise,DECIDED_PHASE_3
+White-label Setup,Platform/IP,0.0,25000,Implémentation initiale,Licence annuelle,Enterprise,DECIDED_PHASE_3

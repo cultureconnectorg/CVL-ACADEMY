@@ -32,14 +32,14 @@ async def academy_overview_widget() -> types.CallToolResult:
                 text="CVLN Academy est prêt : catalogue public + actions privées OAuth.",
             )
         ],
-        structuredContent=structured,
+        structured_content=structured,
         _meta={
             "openai/outputTemplate": TEMPLATE_URI,
             "openai/toolInvocation/invoking": "Chargement de CVLN Academy",
             "openai/toolInvocation/invoked": "CVLN Academy prêt",
             "openai/widgetAccessible": True,
         },
-        isError=False,
+        is_error=False,
     )
 
 

@@ -1,0 +1,5 @@
+Phase,Timing,Moteurs activés,Condition d’entrée,KPI de sortie,Décision
+Phase 1 — Launch,0-6 mois,"Free, Access, Pro, Career, Path, Intensive, Assessment, Certification, B2B Team/Growth, B2G Pilot/Territory",Packages canoniques prioritaires + checkout + assessment,"MRR, conversion, marge, completion, certification",DECIDED_V1
+Phase 2 — Scale,6-18 mois,"B2B Enterprise, B2G Large, Methodology/IP, Learning-to-Work à volume",Demande prouvée + ops mission + portfolio,"ARR B2B, mission GMV, renouvellement",DECIDED_V1
+Phase 3 — Platform,18-36 mois,"Academy+Spatial licence, White-label",Produit stabilisé + controls licensing,"ARR licence, marge, retention",DECIDED_V1
+Internal — continuous,Dès maintenant,Internal CVLN qualification,Rôles/gates définis,"Onboarding, erreurs, incidents, mobilité",DECIDED_V1
