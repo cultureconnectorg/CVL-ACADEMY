@@ -69,9 +69,10 @@ function restoreSourceFocus(selector, fallbackTarget = null) {
   const attempt = () => focusIfUnclaimed(selector, fallbackTarget);
   attempt();
 
-  // Browser Back can restore its own focus after React's first commit. Retry
-  // across the short transition window, but only while focus remains unclaimed.
-  const delays = [0, 60, 180, 360];
+  // Browser Back and AnimatePresence can each restore focus late in the route
+  // transition. Keep the exact source authoritative through that bounded
+  // window, but only while focus remains otherwise unclaimed.
+  const delays = [0, 60, 180, 360, 720, 1200];
   delays.forEach((delay) => {
     window.setTimeout(attempt, delay);
   });
