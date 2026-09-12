@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
-import { FocusFieldItem } from "@/lib/CvlnFocusField";
 import { Horizon } from "@/lib/motion-primitives";
 import { captureElementDepth, restoreElementDepth } from "@/lib/depthMemory";
+import { computeDepthStyle } from "@/lib/spatial/attention";
 import { useSpatialRail } from "@/lib/spatial/useSpatialRail";
 
 const STAGE_CODES = ["graine", "pousse", "racine", "branches", "arbre", "foret"];
@@ -13,6 +13,21 @@ const STAGE_SIGNAL = {
   graine: "FREK-TIME", pousse: "FREK-WORK", racine: "FREK-SCORE",
   branches: "FREK-LINK", arbre: "FREK-CERT", foret: "FREK-CONTRIB",
 };
+
+function attentionPresentation(index, attentionPosition) {
+  const depth = computeDepthStyle(index - attentionPosition);
+  return {
+    depth,
+    style: {
+      transform: `translate3d(${depth.translateX.toFixed(2)}px, ${depth.translateY.toFixed(2)}px, ${depth.translateZ.toFixed(2)}px) rotateY(${depth.rotateY.toFixed(2)}deg) scale(${depth.scale.toFixed(4)})`,
+      opacity: depth.opacity,
+      filter: `saturate(${depth.saturate.toFixed(4)}) contrast(${depth.contrast.toFixed(4)}) brightness(${depth.brightness.toFixed(4)}) blur(${depth.blur.toFixed(3)}px)`,
+      zIndex: depth.zIndex,
+      transformStyle: "preserve-3d",
+      transformOrigin: "50% 50%",
+    },
+  };
+}
 
 export default function Roadmap() {
   const { user } = useAuth();
@@ -30,10 +45,9 @@ export default function Roadmap() {
     initialIndex: currentIdx >= 0 ? currentIdx : 0,
   });
   // DOMAIN_STATE remains authoritative: the current stage comes only from the
-  // authenticated user. Spatial focus can move as the learner explores the
-  // rail, but that never changes `user.stade` or unlock state.
+  // authenticated user. Spatial attention can travel across the rail but never
+  // writes `user.stade`, unlock state, credits, or progression.
   const currentStageCode = STAGE_CODES[currentIdx];
-  const spatialFocusCode = STAGE_CODES[rail.focusedIndex] || currentStageCode;
 
   useEffect(() => {
     const railElement = railRef.current;
@@ -70,28 +84,25 @@ export default function Roadmap() {
         ref={railRef}
         {...rail.railProps}
         onScroll={rememberRailDepth}
-        className="mt-12 flex gap-6 overflow-x-auto pb-6 snap-x snap-mandatory"
+        className="mt-12 flex gap-6 overflow-x-auto overflow-y-visible pb-10 snap-x snap-mandatory"
         data-testid="roadmap-scroll"
+        data-attention-position={rail.attentionPosition.toFixed(3)}
         role="listbox"
         aria-label={t("roadmap")}
+        style={{ ...rail.railProps.style, perspective: "1400px", perspectiveOrigin: "50% 45%" }}
       >
         {STAGES.map((s, i) => {
           const active = i === currentIdx;
           const done = currentIdx >= 0 && i < currentIdx;
           const future = currentIdx >= 0 && i > currentIdx;
-          const stage = (
-            <FocusFieldItem
-              key={s.code}
-              id={s.code}
-              focusedId={spatialFocusCode}
-              {...rail.itemProps(i)}
-              role="option"
-              aria-selected={i === rail.focusedIndex}
-              aria-current={active ? "step" : undefined}
-              data-testid={`stage-${s.code}`}
-              data-spatial-focus-id={`roadmap-stage-${s.code}`}
-              className={`snap-start min-w-[280px] max-w-[280px] cvln-card p-6 flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-[--cvln-orange]
-                ${active ? "border-2 border-[--cvln-orange]" : ""}`}
+          const { depth, style } = attentionPresentation(i, rail.attentionPosition);
+          const card = (
+            <div
+              data-testid={`stage-visual-${s.code}`}
+              data-attention-tier={depth.tier}
+              data-attention-weight={depth.weight.toFixed(4)}
+              className={`h-full cvln-card p-6 flex flex-col ${active ? "border-2 border-[--cvln-orange]" : ""}`}
+              style={style}
             >
               <div className="text-6xl mb-4">{s.emoji}</div>
               <div className="text-[11px] mono uppercase tracking-[0.25em] text-[--cvln-ink-2]">
@@ -109,17 +120,34 @@ export default function Roadmap() {
                   </div>
                 )}
               </div>
-            </FocusFieldItem>
+            </div>
           );
 
-          // PROGRESSIVE_HORIZON: future stages stay perceptible but visibly
-          // distant; they are never promoted to an unlocked/interactive state.
-          return future ? (
-            <Horizon key={s.code} visible className="snap-start" data-testid={`horizon-${s.code}`}>
-              {stage}
-            </Horizon>
-          ) : stage;
+          return (
+            <div
+              key={s.code}
+              {...rail.itemProps(i)}
+              role="option"
+              aria-selected={i === rail.focusedIndex}
+              aria-current={active ? "step" : undefined}
+              aria-hidden={depth.ariaHidden && i !== rail.focusedIndex && !active ? true : undefined}
+              data-testid={`stage-${s.code}`}
+              data-spatial-focus-id={`roadmap-stage-${s.code}`}
+              data-attention-tier={depth.tier}
+              className="snap-start min-w-[280px] max-w-[280px] outline-none focus-visible:ring-2 focus-visible:ring-[--cvln-orange] rounded-3xl"
+            >
+              {future ? (
+                <Horizon visible className="h-full" data-testid={`horizon-${s.code}`}>
+                  {card}
+                </Horizon>
+              ) : card}
+            </div>
+          );
         })}
+      </div>
+
+      <div className="sr-only" aria-live="polite" data-testid="roadmap-spatial-status">
+        {currentStageCode ? `${t(`stades.${currentStageCode}`)} · ${rail.focusedIndex + 1}/${STAGES.length}` : ""}
       </div>
     </div>
   );
