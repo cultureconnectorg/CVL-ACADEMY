@@ -29,13 +29,36 @@ SOURCE_SHEET = "Master_Catalogue"
 SOURCE_RANGE = "A1:H813"
 
 LEGACY_RUNTIME_CODES: tuple[str, ...] = (
-    "FMS-01", "FMS-02", "FMS-03", "FMS-04", "FMS-05", "FMS-06",
-    "KOR-01", "KOR-02", "GMD-01", "SAY-01",
-    "KLT-01", "KLT-02", "KLT-03", "KLT-04", "KLT-05",
-    "FRK-01", "FRK-02", "FRK-03",
-    "LOS-01", "LOS-02", "LOS-03",
-    "BRN-01", "BRN-02", "BRN-03",
-    "AGR-01", "BCH-01", "HOS-01", "GRP-01", "GRP-02", "CIP-01",
+    "FMS-01",
+    "FMS-02",
+    "FMS-03",
+    "FMS-04",
+    "FMS-05",
+    "FMS-06",
+    "KOR-01",
+    "KOR-02",
+    "GMD-01",
+    "SAY-01",
+    "KLT-01",
+    "KLT-02",
+    "KLT-03",
+    "KLT-04",
+    "KLT-05",
+    "FRK-01",
+    "FRK-02",
+    "FRK-03",
+    "LOS-01",
+    "LOS-02",
+    "LOS-03",
+    "BRN-01",
+    "BRN-02",
+    "BRN-03",
+    "AGR-01",
+    "BCH-01",
+    "HOS-01",
+    "GRP-01",
+    "GRP-02",
+    "CIP-01",
 )
 
 # Fields that can prove authored/persisted learning material exists. Generic LX v2
@@ -70,7 +93,11 @@ def formation_codes() -> tuple[str, ...]:
     if projection_hash != EXPECTED_FORMATION_PROJECTION_SHA256:
         raise Corpus812Error("2D formation projection SHA-256 drift")
 
-    codes = tuple(line.strip().upper() for line in raw.decode("utf-8").splitlines() if line.strip())
+    codes = tuple(
+        line.strip().upper()
+        for line in raw.decode("utf-8").splitlines()
+        if line.strip()
+    )
     if len(codes) != EXPECTED_FORMATION_COUNT:
         raise Corpus812Error(
             f"expected {EXPECTED_FORMATION_COUNT} canonical formations, got {len(codes)}"
@@ -145,13 +172,19 @@ def module_has_authored_content(module: Dict[str, Any]) -> bool:
             for item in value:
                 if not isinstance(item, dict):
                     continue
-                body = item.get("content_md") or item.get("body") or item.get("body_md")
+                body = (
+                    item.get("content_md")
+                    or item.get("body")
+                    or item.get("body_md")
+                )
                 if isinstance(body, str) and len(body.strip()) >= 300:
                     return True
 
     # A real course media asset counts only when paired with some authored support
     # text/resources, so an empty video URL alone cannot pass the gate.
-    has_media = any(str(module.get(field) or "").strip() for field in _AUTHORED_MEDIA_FIELDS)
+    has_media = any(
+        str(module.get(field) or "").strip() for field in _AUTHORED_MEDIA_FIELDS
+    )
     resources = module.get("resources")
     has_resources = isinstance(resources, list) and len(resources) > 0
     return bool(has_media and has_resources)
@@ -159,8 +192,12 @@ def module_has_authored_content(module: Dict[str, Any]) -> bool:
 
 def formation_learning_evidence(formation: Dict[str, Any]) -> Dict[str, Any]:
     modules = formation.get("modules") or []
-    structured = [m for m in modules if isinstance(m, dict) and module_has_structure(m)]
-    authored = [m for m in modules if isinstance(m, dict) and module_has_authored_content(m)]
+    structured = [
+        m for m in modules if isinstance(m, dict) and module_has_structure(m)
+    ]
+    authored = [
+        m for m in modules if isinstance(m, dict) and module_has_authored_content(m)
+    ]
     total = len(modules)
     return {
         "code": str(formation.get("code") or "").upper(),
@@ -183,7 +220,9 @@ def runtime_coverage(runtime_formations: Sequence[Dict[str, Any]]) -> Dict[str, 
 
     canonical_runtime = sorted(code for code in runtime_by_code if code in canonical)
     legacy_only = sorted(code for code in runtime_by_code if code not in canonical)
-    evidence = [formation_learning_evidence(runtime_by_code[code]) for code in runtime_by_code]
+    evidence = [
+        formation_learning_evidence(runtime_by_code[code]) for code in runtime_by_code
+    ]
 
     with_structure = sum(1 for item in evidence if item["module_structure_complete"])
     with_authored_content = sum(
