@@ -1,5 +1,11 @@
 # FRK-72 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Littératie structurelle du protocole d'attestation (283 octets, L0/L1/L2) + frontière de maturité FRK-71 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
