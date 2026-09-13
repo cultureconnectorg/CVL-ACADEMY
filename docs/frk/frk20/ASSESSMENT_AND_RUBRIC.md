@@ -1,5 +1,11 @@
 # FRK-20 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Vérification offline-first (store-and-forward, vérification cryptographique locale) + discipline CVLN-gap |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
