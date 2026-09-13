@@ -1,6 +1,13 @@
 name: Workbook Runtime CI
 
 on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+      - "docs/cvln_academy_master/**"
+      - ".github/workflows/workbook-runtime-ci.yml"
   pull_request:
     paths:
       - "backend/**"
