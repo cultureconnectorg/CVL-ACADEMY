@@ -45,6 +45,16 @@ C3/C8).
   (`ACADEMY_LOCAL_EVIDENCE = NOT_FOUND`, consistent with both `KOR-03`
   §6 and `KOR-04` §6) — the coordination is taught as a human judgment
   exercised against two other humans' outputs, not a system.
+- Precisely explain the escalation discipline required when a
+  misalignment is found: the operator never silently resolves it by
+  making a technical fix (that belongs to `KOR-03`) or a scheduling
+  decision (that belongs to `KOR-04`) — the operator documents the
+  conflict, proposes an explicit go/no-go recommendation, and
+  escalates to whichever side owns the actual fix.
+- Explain precisely why claiming this coordination role already runs
+  on a real KORA platform tool would be an eliminatory error: it would
+  invent a CMS/release-management capability that no evidence in
+  `KOR-03` or `KOR-04`'s own grounding sections supports.
 
 ## Modules
 
@@ -60,6 +70,9 @@ C3/C8).
 4. **Boundary discipline** — this formation is a thin bridge, never a
    replacement for `KOR-03` or `KOR-04`'s own competencies, and never
    evidence of a real KORA release-management platform.
+5. **Escalation discipline** — documenting a conflict and routing it to
+   the side that actually owns the fix, never resolving it unilaterally
+   as a technical or editorial decision.
 
 ## Assessment
 
@@ -71,6 +84,12 @@ produce a documented go/no-go decision with an explicit rationale —
 eliminatory failure for silently re-deriving `KOR-03`/`KOR-04` content
 instead of reading their outputs, or for claiming a real KORA release
 platform exists.
+
+## Evidence / mission eligibility
+
+`KOROP12.SKILL.RELEASE_COORDINATION.L1` reserved once deepened. No
+mission eligibility path exists — no real release-management platform
+observed to operate against.
 
 ## Status
 
