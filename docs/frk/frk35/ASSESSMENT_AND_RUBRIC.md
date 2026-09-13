@@ -1,5 +1,11 @@
 # FRK-35 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Suivi de versions/dérivés/crédits (chaîne, crédit vs. droits) + frontière LabelOS |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
