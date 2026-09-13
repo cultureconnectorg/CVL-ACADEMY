@@ -1,5 +1,11 @@
 # FRK-38 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Vérification d'intégrité média post-capture (détection anti-tampering) + chaîne FRK-36/37/38 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
