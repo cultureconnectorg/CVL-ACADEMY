@@ -1,5 +1,11 @@
 # FRK-32 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Signaux contexte/device/consentement (capture technique) + double frontière (`VALID_SIGNALS` / Fondation §18) |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
