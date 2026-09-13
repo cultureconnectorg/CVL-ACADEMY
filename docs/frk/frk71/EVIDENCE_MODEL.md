@@ -4,6 +4,25 @@
 
 ## Chaîne de preuve
 
+Classification de maturité annotée (échelle 3 niveaux, FPGA comme
+pont non franchi) + note de frontière `frek_core.py` + distinction
+maturité/intégration → correcteur → (jury si 2.0–2.5) →
+`FRK71.SKILL.FREK_V3_ARCHITECTURE.L1` (réservé).
+
+## Ce qui compte comme preuve
+
+Une classification correcte contre l'échelle propre du corpus, sans
+inflation ; une frontière explicite avec `frek_core.py` ; une
+distinction correcte entre maturité architecturale et intégration
+production.
+
+## Ce qui NE compte PAS comme preuve
+
+Toute validation d'une affirmation de niveau 3 pour FREK v3 ; toute
+fusion des deux couches dans une seule évaluation ; toute
+rétrogradation de la classification sur la base de la seule absence
+d'intégration production.
+
 - Réservation d'ID : `FRK71.SKILL.FREK_V3_ARCHITECTURE.L1` — réservé,
   non émis.
 - Grounding réel : `frekcoreAout2026`, commit
