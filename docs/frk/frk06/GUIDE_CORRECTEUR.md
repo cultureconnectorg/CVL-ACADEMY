@@ -9,6 +9,9 @@ Ouvre `mint_frek_id()` dans `frek_core.py` à côté de la copie.
 1. Le format d'identifiant est-il exact (`FREK-{seq:03d}`) ?
 2. Le candidat invente-t-il une révocation/rotation ?
 3. Confond-il avec DID/VC ?
+4. Explique-t-il correctement pourquoi `find_one_and_update`/`$inc`
+   garantit l'unicité sous appels concurrents sans verrou applicatif
+   supplémentaire ?
 
 ## Ce que tu ne fais pas
 

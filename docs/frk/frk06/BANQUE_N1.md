@@ -35,3 +35,15 @@ frek_core.py, re-read this session.
 8. Si `db.counters` ne contient pas encore de document `_id:
    "frek_id"` lors du tout premier appel, que se passe-t-il ? (`upsert=
    True` crée le document, `seq` démarre à 1 par l'incrément)
+9. Pourquoi l'incrémentation atomique (`find_one_and_update` avec
+   `$inc`) est-elle indispensable face à des appels concurrents, plutôt
+   qu'une lecture puis une écriture séparées ? (Une lecture-puis-
+   écriture non atomique risquerait une race condition — deux appels
+   concurrents pourraient lire la même valeur avant incrémentation et
+   produire un doublon d'identifiant ; `$inc` atomique élimine ce
+   risque par construction)
+10. Le format `FREK-{seq:03d}` suppose un remplissage sur 3 chiffres —
+    que se passe-t-il au-delà de 999 identifiants ? (Le format Python
+    `{seq:03d}` ne tronque jamais un nombre plus grand — il affiche
+    simplement `FREK-1000`, `FREK-1001`, etc., sans erreur ni
+    troncation, le remplissage à 3 chiffres n'étant qu'un minimum)

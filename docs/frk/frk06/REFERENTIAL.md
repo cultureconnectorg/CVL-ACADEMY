@@ -25,7 +25,14 @@ below a full identity-architecture discipline:
   local counter mechanism.
 - Local counter mechanics: `db.counters` document keyed `"frek_id"`,
   atomically incremented (`find_one_and_update`, `$inc`, `upsert`),
-  formatted `FREK-{seq:03d}` (e.g. `FREK-001`, `FREK-042`).
+  formatted `FREK-{seq:03d}` (e.g. `FREK-001`, `FREK-042`). The
+  atomicity of `find_one_and_update` matters precisely because it
+  removes any window for two concurrent calls to read the same `seq`
+  value before either increments it — no application-level lock is
+  needed on top of this real MongoDB guarantee.
+- Format literacy: `{seq:03d}` is a minimum-width formatter, not a
+  cap — beyond 999 it produces `FREK-1000`, `FREK-1001`, etc., without
+  truncation or error.
 - Explicit scope boundary: this formation never teaches DID/VC
   architecture, EUDI/SD-JWT, or any identity-lifecycle/recovery
   discipline — those are FRK-07/08/09's separate, market-general

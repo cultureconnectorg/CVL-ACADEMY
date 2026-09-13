@@ -31,3 +31,17 @@ standard." Corrige-le.
 séquentiel formaté, sans rapport avec la norme W3C DID (territoire de
 FRK-08) — une frontière de portée explicite, jamais franchie ici.
 Élimination si le candidat confirme l'affirmation erronée.
+
+## Cas N2-4 — Appels concurrents
+
+Deux requêtes `mint_frek_id()` arrivent simultanément avec le distant
+indisponible. Le candidat doit expliquer pourquoi l'usage de
+`find_one_and_update` avec `$inc` garantit que chaque requête reçoit
+un identifiant unique, même sans verrouillage applicatif explicite.
+
+**Critères de notation :** explique que l'atomicité de l'opération
+MongoDB empêche toute lecture intermédiaire entre les deux
+incrémentations — chaque appel reçoit une valeur `seq` distincte par
+construction. Élimination si le candidat propose un verrou applicatif
+supplémentaire comme nécessaire, ou affirme qu'une collision
+d'identifiant serait possible dans ce mécanisme réel.
