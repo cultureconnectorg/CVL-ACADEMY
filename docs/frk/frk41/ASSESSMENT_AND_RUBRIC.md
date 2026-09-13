@@ -1,5 +1,11 @@
 # FRK-41 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Preuve de provenance stems/versions/crédits + frontière héritée FMS-03/08 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
