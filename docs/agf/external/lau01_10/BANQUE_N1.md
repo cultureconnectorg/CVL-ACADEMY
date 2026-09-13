@@ -15,6 +15,12 @@ Réserve `LAU0110.SKILL.*`.
    cette Academy ?
 4. Pourquoi serait-il une erreur éliminatoire d'affirmer que cette
    Academy dispose d'un assistant exécutif IA fonctionnel ?
+5. Pourquoi un triage d'agenda réaliste doit-il prévoir une escalade
+   des décisions qui dépassent le mandat de l'assistant, plutôt que de
+   toujours décider seul ?
+6. En quoi la présence du nom `laurentia` dans `registry.py` ne
+   constitue-t-elle en rien une preuve d'intégration avec le vrai
+   produit externe `Laurent.ia` ?
 
 ## Corrigé indicatif
 
@@ -31,3 +37,11 @@ Réserve `LAU0110.SKILL.*`.
 4. Cela affirmerait une capacité technique inexistante — contraire à
    la discipline `CAPABILITY_NOT_IMPLEMENTED`/`BLOCKED_PRODUCT_
    DEPENDENCY`.
+5. Un assistant qui déciderait seul de tout risquerait de prendre des
+   décisions hors de son autorité réelle (ex. engagement financier,
+   changement stratégique) — l'escalade préserve la responsabilité
+   humaine finale sur les décisions à fort enjeu.
+6. Un nom de configuration générique ne construit aucune route, aucun
+   appel réseau, aucune logique métier vers le produit externe — la
+   présence du nom seul ne rapproche en rien une intégration
+   fonctionnelle.

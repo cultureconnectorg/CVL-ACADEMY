@@ -18,3 +18,14 @@ malgré son existence réelle.
 
 **Critère éliminatoire :** manquer l'un des deux volets, ou affirmer un
 câblage réel dans l'un des deux cas.
+
+## Cas 3 — Décision hors mandat
+
+Le candidat conçoit le flux de triage d'agenda pour un cas concret :
+une demande de réorganisation urgente d'un déplacement international
+arrive avec un impact budgétaire significatif. Il doit tracer
+précisément à quel moment le flux doit escalader vers un humain plutôt
+que de décider seul.
+
+**Critère éliminatoire :** concevoir un flux qui prend la décision à
+fort enjeu sans jamais prévoir d'escalade humaine.
