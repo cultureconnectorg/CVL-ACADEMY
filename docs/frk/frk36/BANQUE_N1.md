@@ -12,6 +12,16 @@ Réserve `FRK36.SKILL.*`.
    `fms-os/fms`, `gmfest972/goodmooddjsayd` — zéro résultat) ?
 4. Pourquoi serait-il une erreur éliminatoire d'affirmer que FREKRAW
    « fonctionne de telle manière » dans une copie ?
+5. Pourquoi une preuve d'intégrité ajoutée après la capture (plutôt
+   qu'à l'origine) ne protège-t-elle pas contre une altération
+   survenue entre la capture et l'ajout de cette preuve ?
+6. En quoi `NEEDS_REPO_AUDIT` diffère-t-il de `NEEDS_EXPERT_REVIEW`
+   (utilisé pour FRK-10/14/73) ?
+7. Si un futur audit dépôt trouvait effectivement FREKRAW, cela
+   changerait-il la nature du concept marché-général enseigné ici ?
+8. Pourquoi la discipline `CVLN-gap` exige-t-elle de citer FREKRAW
+   uniquement comme nom sans substance vérifiée, plutôt que de
+   l'omettre complètement du référentiel ?
 
 ## Corrigé indicatif
 
@@ -28,3 +38,19 @@ Réserve `FRK36.SKILL.*`.
 4. Cela affirmerait une fonctionnalité vérifiée alors qu'aucune preuve
    n'existe — exactement le type d'invention de capacité que la
    discipline `NEEDS_REPO_AUDIT` interdit.
+5. Une altération survenue entre la capture et l'ajout tardif de la
+   preuve resterait indétectable — seule une preuve intégrée dès
+   l'origine couvre l'intégralité du cycle de vie du média depuis sa
+   création.
+6. `NEEDS_EXPERT_REVIEW` porte sur un contenu déjà construit
+   nécessitant une revue humaine experte (juridique/forensic/
+   cryptographique) avant certification ; `NEEDS_REPO_AUDIT` porte sur
+   la vérification de l'existence même d'un produit nommé (FREKRAW)
+   dans le code, un statut différent et antérieur.
+7. Non — le concept marché-général de capture authentique reste réel
+   et enseignable quelle que soit l'issue d'un futur audit ; seule
+   l'affirmation FREKRAW-spécifique deviendrait alors possible.
+8. Citer FREKRAW par son nom, sans substance vérifiée, respecte la
+   transparence du référentiel envers le candidat tout en maintenant
+   la discipline de gap — l'omettre effacerait une trace utile de ce
+   qui reste à vérifier, sans bénéfice pédagogique.
