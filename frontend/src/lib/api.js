@@ -1,7 +1,8 @@
 import axios from "axios";
 import { emitSpatialSignalFromResponse } from "@/lib/spatial/spatialLearningSignals";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const rawBackendUrl = process.env.REACT_APP_BACKEND_URL || "";
+const BACKEND_URL = rawBackendUrl.replace(/\/+$/, "");
 export const API_BASE = `${BACKEND_URL}/api`;
 
 const TOKEN_KEY = "cvln_token";
