@@ -19,6 +19,16 @@ Réserve `FRK16.SKILL.*`.
 5. `COMPONENT-MATRIX.md` documente honnêtement : "Notary private key
    stored unencrypted at rest." Pourquoi cette formation enseigne-t-elle
    cette limite plutôt que de la masquer ?
+6. Que signifie précisément l'état `pending` dans la machine à états
+   d'ancrage (`pending`/`confirmed`/`offline`/`unavailable`), et
+   pourquoi un digest à cet état ne constitue-t-il pas encore une
+   preuve d'ancrage confirmée ?
+7. Pourquoi la surface de lecture publique (`/public/notarizations`)
+   renforce-t-elle la vérifiabilité du système sans pour autant lui
+   conférer un quelconque effet légal ?
+8. En quoi le fait que ce système ait été découvert par audit direct
+   de `Cvln-ios-v.1` (plutôt que dans le corpus initialement consulté)
+   illustre-t-il la discipline repo-truth-first de cette Academy ?
 
 ## Corrigé indicatif
 
@@ -38,3 +48,16 @@ Réserve `FRK16.SKILL.*`.
 5. La discipline du corpus source (repo-truth-first) exige de
    transmettre les limites documentées telles quelles — masquer cette
    limite reviendrait à fausser l'évaluation réelle du système.
+6. `pending` signifie que le digest a été soumis à un fournisseur
+   d'ancrage mais n'est pas encore inclus dans un bloc confirmé — sans
+   confirmation, aucune garantie d'immutabilité temporelle n'est
+   encore établie.
+7. La lecture publique permet à tout tiers de vérifier
+   indépendamment une signature et une notarisation — cette
+   vérifiabilité technique reste orthogonale à toute reconnaissance
+   légale, qui exigerait un cadre juridique distinct.
+8. Cela illustre que l'absence de preuve dans un corpus consulté ne
+   vaut jamais absence de système réel — la discipline exige de
+   vérifier directement les repos pertinents avant de conclure à un
+   `BLOCKED_PRODUCT_DEPENDENCY`, plutôt que de s'arrêter à une
+   première réconciliation incomplète.

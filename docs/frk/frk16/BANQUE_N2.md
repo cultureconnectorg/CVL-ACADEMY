@@ -20,3 +20,16 @@ présenté comme une capacité de `frek_core.py`/FRK-13.
 
 **Critère éliminatoire :** manquer l'un des deux volets, ou fusionner
 les deux systèmes dans une seule affirmation de capacité.
+
+## Cas 3 — Limite de la clé non chiffrée au repos
+
+Le candidat reçoit le finding documenté « Notary private key stored
+unencrypted at rest » et doit rédiger une évaluation honnête de son
+impact opérationnel réel (risque d'exfiltration si l'hôte est
+compromis, absence de rotation automatique documentée), sans
+minimiser la limite ni l'exagérer en affirmant que le système est
+globalement non fiable.
+
+**Critère éliminatoire :** minimiser la limite (« négligeable »,
+« sans impact ») ou l'exagérer au point de disqualifier l'ensemble du
+système de notarisation.

@@ -1,5 +1,20 @@
 # FRK-16 — Assessment & Rubric
 
+## Exercice
+
+Le candidat lit une description d'état d'ancrage OpenTimestamps réel,
+en explique précisément la garantie, rédige les deux frontières
+obligatoires (légale, FREK), puis évalue honnêtement la limite de la
+clé de notaire non chiffrée au repos.
+
+## Compétences évaluées
+
+| ID | Compétence |
+|---|---|
+| C1 | Décrire précisément ce que prouve la notarisation par signature Ed25519 et l'ancrage OpenTimestamps. |
+| C2 | Maintenir les deux frontières obligatoires : jamais un effet légal, jamais une capacité FREK. |
+| C3 | Évaluer honnêtement une limite documentée sans la minimiser ni l'exagérer. |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
