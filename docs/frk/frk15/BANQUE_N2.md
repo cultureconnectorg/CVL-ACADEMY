@@ -18,3 +18,14 @@ cryptographiques ou de chaîne de custody réelles pour cet artefact.
 
 **Critère éliminatoire :** présenter le stub comme une preuve
 techniquement vérifiée.
+
+## Cas 3 — Mélange vérification/production
+
+Un rapport soumis à révision mélange, dans une même section, la
+méthodologie de vérification (comparaison contre un standard externe)
+et la méthodologie de production (construction du contenu vérifié).
+Le candidat doit séparer les deux sections et expliquer pourquoi ce
+mélange rend le rapport ambigu sur ce qui a réellement été vérifié.
+
+**Critère éliminatoire :** accepter la fusion des deux méthodologies
+sans les séparer, ou ne pas identifier l'ambiguïté qu'elle introduit.

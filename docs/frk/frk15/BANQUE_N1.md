@@ -14,6 +14,16 @@ Réserve `FRK15.SKILL.*`.
    simplification acceptable.
 4. Pourquoi cette formation ne peut-elle pas être passée sans que le
    candidat maîtrise déjà FRK-12 ET FRK-14 (prérequis, pas suggestion) ?
+5. Un rapport cite un artefact `issue_proof()` de `frek_core.py` comme
+   preuve. Pourquoi ce stub ne peut-il jamais être présenté comme une
+   preuve techniquement vérifiée ?
+6. En quoi une conclusion « vérifiée » sans méthodologie documentée
+   diffère-t-elle d'une simple affirmation d'autorité ?
+7. Pourquoi la réutilisation par référence de FRK-12/FRK-14 évite-t-elle
+   un risque de divergence de contenu entre formations ?
+8. Quelle serait la conséquence pratique d'un rapport de preuve
+   technique qui mélangerait la méthodologie de vérification et la
+   méthodologie de production sans les distinguer ?
 
 ## Corrigé indicatif
 
@@ -29,3 +39,18 @@ Réserve `FRK15.SKILL.*`.
 4. Le rapport de preuve s'appuie structurellement sur les deux
    disciplines amont ; sans elles, la « vérification » resterait une
    coquille vide.
+5. `issue_proof()` reste un stub sans garantie cryptographique réelle
+   (frontière FRK-13) — l'affirmer vérifié introduirait une conclusion
+   non appuyée par une méthode réelle, contraire à toute la discipline
+   enseignée ici.
+6. Une conclusion vérifiée s'appuie sur une méthode reproductible et
+   documentée ; une affirmation d'autorité demande d'être crue sans
+   moyen de contrôle indépendant — c'est exactement ce que la
+   méthodologie de vérification prévient.
+7. Parce que chaque brique amont reste l'unique source de vérité — sans
+   citation par référence, une copie locale pourrait diverger
+   silencieusement de l'original au fil des mises à jour.
+8. Le rapport perdrait sa clarté méthodologique — un lecteur ne
+   pourrait plus distinguer ce qui a été vérifié contre un standard
+   externe de ce qui a été construit ex nihilo, rendant le rapport
+   inutilisable comme preuve.
