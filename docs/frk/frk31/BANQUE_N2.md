@@ -18,3 +18,16 @@ réel (no-op silencieux, car `"AFFINITY"` n'est pas dans
 
 **Critère éliminatoire :** affirmer que ce vocabulaire est déjà
 implémenté par `frek_core.py`.
+
+## Cas 3 — Distinction affinité/résonance/cadence
+
+Le candidat reçoit trois observations comportementales sur une
+plateforme culturelle générique (un utilisateur revient chaque
+vendredi soir ; un contenu suscite de nombreux partages ; un
+utilisateur consulte systématiquement les contenus liés à un artiste
+précis) et doit classer chacune correctement sous cadence, résonance
+ou affinité, en justifiant la distinction.
+
+**Critère éliminatoire :** classer une observation sous le mauvais
+signal sans justification technique, ou fusionner deux des trois
+concepts en un seul.
