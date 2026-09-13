@@ -29,9 +29,32 @@ AF-16, AF-17.
   both real building blocks exist (Skill IDs, evidence models,
   personas), but **no wiring connects them to any agent-qualification
   concept** today.
-- Cite `CVLNAgentfactory`'s real ADL lifecycle as evidence this bridge
-  is a real, substantial future direction in the ecosystem — never as
-  a claim that this Academy already qualifies agents.
+- Precisely name the two real building blocks and what each actually
+  is: (1) the Academy's skill/certification engine — Skill IDs,
+  evidence models, rubric scoring, jury sign-off, all real and already
+  serving human candidates; (2) the persona system in
+  `ai_assistant.py` (`ASSISTANT_PERSONAS`) — real, config-driven
+  persona definitions for student/trainer/jury/corrector assistants.
+- Cite `CVLNAgentfactory`'s real ADL lifecycle (`AGT-\d{3}` ids,
+  semver, 7-stage lifecycle Draft→Prototype→Alpha→Beta→
+  Production→Maintenance→Archive, `allowed_transitions()`) as evidence
+  this bridge is a real, substantial future direction in the
+  ecosystem — never as a claim that this Academy already qualifies
+  agents.
+- Explain precisely why this formation is called "the best-grounded of
+  the 9 AF-X bridges": both real building blocks on this Academy's own
+  side are directly verifiable in its own code, unlike other AF-X
+  bridges that may be missing one side entirely.
+- Document, without ever building it, what a real bridge would
+  concretely require: an explicit mapping from Skill ID to ADL
+  lifecycle stage, a qualification API, and a validation mechanism —
+  and explain why this list stays a documented requirement rather than
+  an implementation, given no such wiring is observed anywhere in the
+  repository.
+- Explain precisely why affirming this bridge exists today, even
+  informally or as "in progress," would be an eliminatory error: it
+  would claim a cross-system capability that has never been built,
+  merely because both of its real halves happen to exist separately.
 
 ## Modules
 
@@ -41,18 +64,22 @@ AF-16, AF-17.
    real ADL as market-context.
 3. "Not yet wired" discipline — explicit statement that no bridge
    exists today between the two real building blocks.
+4. Requirements-documentation discipline — what a real bridge would
+   need (Skill ID ↔ ADL stage mapping, qualification API, validation
+   mechanism), documented as a future requirement, never as a claim
+   of present capability.
 
 ## Assessment
 
 A bridge-conceptualization exercise: candidate documents what a real
 agent-qualification bridge would require, citing only real existing
 pieces on both sides — eliminatory failure for claiming the bridge
-already operates.
+already operates, in any tense (present, "in progress", or informal).
 
 ## Evidence / mission eligibility
 
-`AFX03.SKILL.*` reserved once deepened. No mission eligibility path
-exists.
+`AFX03.SKILL.SKILL_AGENT_QUALIFICATION_BRIDGE.L1` reserved once
+deepened. No mission eligibility path exists.
 
 ## Status
 

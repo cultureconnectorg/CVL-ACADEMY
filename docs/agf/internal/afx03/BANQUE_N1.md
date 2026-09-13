@@ -1,6 +1,6 @@
 # AF-X-03 — Banque N1 (formatif)
 
-Réserve `AFX03.SKILL.*`.
+Réserve `AFX03.SKILL.SKILL_AGENT_QUALIFICATION_BRIDGE.L1`.
 
 1. Quels sont les deux vrais blocs de construction cités dans cette
    formation, et pourquoi sont-ils réels malgré l'absence de câblage
@@ -15,6 +15,11 @@ Réserve `AFX03.SKILL.*`.
 4. Que faudrait-il construire concrètement pour que ce pont existe
    réellement — pourquoi cette liste reste-t-elle documentée, jamais
    construite ?
+5. Pourquoi AF-16 et AF-17 sont-ils des prérequis indispensables pour
+   conceptualiser ce pont ?
+6. Un candidat affirme que ce pont est "en cours de construction" côté
+   Academy. Que réponds-tu, et pourquoi cette formulation reste-t-elle
+   problématique même si elle n'affirme pas qu'il est terminé ?
 
 ## Corrigé indicatif
 
@@ -33,3 +38,12 @@ Réserve `AFX03.SKILL.*`.
    de qualification, un mécanisme de validation — rien de tout cela
    n'existe aujourd'hui ; documenté comme exigence future, jamais
    construit faute de câblage réel.
+5. AF-16/AF-17 couvrent le système de personas réel de l'Academy — sans
+   maîtriser ce que ce système est réellement (et n'est pas), un
+   candidat risquerait d'inventer des capacités agentiques qu'il ne
+   possède pas lorsqu'il conceptualise le pont.
+6. Réponse à corriger : "en cours de construction" affirme un travail
+   observable qui n'existe nulle part dans le dépôt — aucune trace de
+   développement partiel n'est visible. Toute formulation suggérant un
+   état intermédiaire non observé reste une invention de capacité,
+   même adoucie par une formulation progressive.
