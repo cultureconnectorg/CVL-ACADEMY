@@ -1,5 +1,11 @@
 # FRK-37 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Attestation de source/dispositif (racine de confiance, limites) + frontière FRK-36/FRK-38 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
