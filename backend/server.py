@@ -6,7 +6,7 @@ import logging
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
 
 # Side-effect registration only: adds the optional Apps SDK widget/resource to
@@ -86,6 +86,30 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="CVLN Academy OS", version="0.2", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def normalize_duplicate_leading_slashes(request: Request, call_next):
+    """Normalize malformed leading // paths before Starlette route matching.
+
+    This is a defensive compatibility layer for stale/browser-cached frontend
+    bundles that may temporarily emit URLs such as //api/auth/register. The
+    canonical frontend still emits /api/...; this prevents an avoidable 404
+    while a deployment catches up without changing route semantics.
+    """
+    path = request.scope.get("path", "")
+    if path.startswith("//"):
+        normalized_path = "/" + path.lstrip("/")
+        request.scope["path"] = normalized_path
+
+        raw_path = request.scope.get("raw_path")
+        if isinstance(raw_path, bytes) and raw_path.startswith(b"//"):
+            request.scope["raw_path"] = b"/" + raw_path.lstrip(b"/")
+
+        logger.warning("Normalized duplicate-leading-slash request: %s -> %s", path, normalized_path)
+
+    return await call_next(request)
+
 
 app.add_middleware(
     CORSMiddleware,
