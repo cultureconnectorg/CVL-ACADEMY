@@ -1,5 +1,11 @@
 # FRK-62 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Intégrité de dossiers patrimoniaux à long terme (vérification, cadence) + frontière Fondation Cœurvolan |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
