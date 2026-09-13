@@ -1,5 +1,11 @@
 # FRK-29 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Fondations de l'empreinte culturelle (extraction, invariance) + frontière FRK-74 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
