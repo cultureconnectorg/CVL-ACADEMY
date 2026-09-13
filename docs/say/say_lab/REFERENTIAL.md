@@ -54,8 +54,25 @@ competency).
   Mood) competencies are complementary, never overlapping — reading
   the real routes/models as a platform operator would, while reasoning
   as the artist whose career depends on them.
+- Precisely distinguish, for every decision point in the cycle, which
+  side owns it: the artist decides creative and commercial direction
+  (which tracks to release, what merch to design, pricing intent for
+  tickets); the operator configures and maintains the platform
+  mechanics that carry those decisions out (catalogue entry format,
+  webhook configuration, QR generation, Stripe checkout flow).
 - Never claim mission eligibility beyond literacy — this is a
   capstone case lab, not a real production deployment.
+- Explain precisely why this capstone reuses `GMD-22/24/27/28` by
+  reference rather than re-deriving a fictional backend: the real repo
+  `gmfest972/goodmooddjsayd` has already been audited and documented at
+  each of those four formations — inventing a parallel fictional
+  backend here would fork the truth into two inconsistent versions of
+  the same real system.
+- Explain precisely why inventing a platform capability that neither
+  Good Mood nor DJ Sayd actually has (a loyalty engine, a royalty-split
+  calculator, an analytics dashboard) would be an eliminatory error:
+  it would claim the real repo does something it does not, undermining
+  the entire "worked proof" nature of this capstone.
 
 ## Modules
 
@@ -77,7 +94,14 @@ A capstone case-lab exercise: candidate is given the real route/model
 shapes from `GMD-22/24/27/28` and must produce a documented artist
 release/event plan that correctly uses each, with an eliminatory
 failure for inventing a platform capability (e.g. a loyalty engine,
-a royalty-split calculator) that does not exist in the real repo.
+a royalty-split calculator) that does not exist in the real repo, or
+for attributing an artist decision to the operator side or vice versa.
+
+## Evidence / mission eligibility
+
+`SAYLAB.SKILL.CAPSTONE_RELEASE_EVENT_CYCLE.L1` reserved once deepened.
+No mission eligibility path exists today — this is a documentary
+capstone, not a live integration.
 
 ## Status
 
