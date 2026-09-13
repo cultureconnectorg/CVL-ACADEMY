@@ -1,6 +1,6 @@
 # AF-16 — Banque N1 (formatif)
 
-Réserve `AF16.SKILL.*`.
+Réserve `AF16.SKILL.AGENT_FACTORY_OPERATOR.L1`.
 
 1. Que fait réellement `chat_reply()` dans `backend/services/
    agent_factory.py`, et pourquoi est-il qualifié de "persona-
@@ -14,6 +14,11 @@ Réserve `AF16.SKILL.*`.
 4. Pourquoi serait-il une erreur éliminatoire d'inventer un registre
    d'agents, un système de détachement/mission, ou un mécanisme de
    rollback pour cette Academy ?
+5. Un candidat propose, à titre d'idée future, un "registre d'agents"
+   pour cette Academy, en le qualifiant clairement d'hypothétique.
+   Cette proposition est-elle acceptable ? Sous quelle condition ?
+6. Pourquoi `chat_reply()` ne "sélectionne"-t-il aucune persona
+   lui-même, alors que `mentor_reply()` en encapsule une ?
 
 ## Corrigé indicatif
 
@@ -30,3 +35,12 @@ Réserve `AF16.SKILL.*`.
 4. Aucun de ces éléments n'existe dans `agent_factory.py` ni dans
    aucune intégration observée — les inventer romprait la discipline
    repo-truth-first.
+5. C'est acceptable uniquement si la proposition est explicitement
+   qualifiée d'hypothétique et de travail futur non entamé — jamais
+   présentée comme une capacité actuelle, même partielle.
+6. `chat_reply()` est une fonction de transport générique, réutilisable
+   par n'importe quelle persona future ; `mentor_reply()` est une
+   fonction spécifique qui appelle `chat_reply()` avec la
+   configuration figée de la persona "Mentor CVLN" — la sélection de
+   persona se fait par le choix de la fonction appelée, pas par une
+   logique de routage interne à `chat_reply()`.
