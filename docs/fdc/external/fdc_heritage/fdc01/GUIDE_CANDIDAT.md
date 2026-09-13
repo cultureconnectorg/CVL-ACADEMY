@@ -29,3 +29,9 @@ deux objets distincts par décision Founder finale (`FD-CIP-001`).
 Ne fusionne jamais `CIP-01` et Fondation Cœurvolan, et ne gonfle
 jamais la citation K1602 en reconnaissance CVLN — élimination
 automatique.
+
+## Périmètre à ne pas dépasser
+
+FDC-21→35 (gouvernance/philanthropie) reste `NEEDS_EXPERT_REVIEW` —
+n'ajoute jamais cette compétence à ton livrable FDC-01, même par
+extension naturelle du sujet.

@@ -33,3 +33,16 @@ exemple travaillé, jamais reproduit — le livrable doit appliquer la
 méthode à une nouvelle collection patrimoniale. Pas d'élimination
 automatique (pas une invention), mais note fortement réduite pour
 absence de travail original.
+
+## Cas N2-4 — Confusion FDC-21→35 et FDC-01
+
+Un candidat, en présentant son gap analysis FDC-01, ajoute une section
+sur "la gouvernance philanthropique de Fondation Cœurvolan" en
+affirmant que cette compétence fait partie de FDC-01. Corrige.
+
+**Critères de notation:** rappelle que FDC-21→35 (gouvernance/
+philanthropie) reste `NEEDS_EXPERT_REVIEW`, jamais enseigné ici comme
+une recette universelle — FDC-01 porte strictement sur la méthodologie
+comparative de standards patrimoniaux. Élimination si le candidat
+maintient que cette compétence de gouvernance fait partie du périmètre
+certifié de FDC-01.

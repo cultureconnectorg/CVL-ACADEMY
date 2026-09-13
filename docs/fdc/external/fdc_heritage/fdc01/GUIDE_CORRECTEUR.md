@@ -11,6 +11,9 @@ copie.
 2. La citation K1602 est-elle précise, sans inflation ?
 3. Fusionne-t-il `CIP-01` et Fondation Cœurvolan ? Applique la règle
    éliminatoire sans exception si oui.
+4. Le candidat déborde-t-il vers une compétence de gouvernance/
+   philanthropie (FDC-21→35) en la présentant comme partie du
+   périmètre FDC-01 ?
 
 ## Ce que tu ne fais pas
 

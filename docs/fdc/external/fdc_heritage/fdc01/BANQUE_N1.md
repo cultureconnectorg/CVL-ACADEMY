@@ -28,3 +28,14 @@ and the real France Travail K1602 classification
    Foundation` and `Fondation Cœurvolan` are two distinct objects,
    never merged — `CIP-01` is cited here only as market-context, this
    formation builds independently)
+5. Why does a comparative-standards gap analysis need to be redone for
+   each new cultural-heritage collection rather than reused verbatim
+   from `CIP-01-M02`? (Because each collection has its own real
+   standards gaps — the *method* is the worked example to apply, not a
+   one-size-fits-all output to copy)
+6. A candidate cites K1602 to justify a claim that "CVLN heritage
+   conservators are recognized by the French state." What precisely is
+   wrong with this framing? (K1602 recognizes the *profession* of
+   conservateur du patrimoine in general — it says nothing about CVLN
+   specifically, and no CVLN-operated conservator role exists to be
+   recognized)

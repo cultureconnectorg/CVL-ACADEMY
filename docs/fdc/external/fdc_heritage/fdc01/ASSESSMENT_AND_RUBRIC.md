@@ -10,6 +10,7 @@ Structure identique à `../../../../gmd/gmd21/ASSESSMENT_AND_RUBRIC.md`
 | C1 | Méthodologie comparative de standards, citant `CIP-01-M02` |
 | C2 | Citation précise de K1602, jamais gonflée en capacité CVLN |
 | C3 | Discipline de frontière `CIP-01`/Fondation Cœurvolan (`FD-CIP-001`) |
+| C4 | Discipline de périmètre FDC-01 vs. FDC-21→35 (gouvernance/philanthropie, `NEEDS_EXPERT_REVIEW`) |
 
 ## Rubric (0–4 par compétence)
 
