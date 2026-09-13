@@ -1,5 +1,11 @@
 # FRK-30 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Ingénierie de pipeline d'empreinte (extraction, vecteur, stockage/indexation) + référence FRK-29 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
