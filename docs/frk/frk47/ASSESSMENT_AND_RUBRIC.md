@@ -1,5 +1,11 @@
 # FRK-47 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Piste d'audit institutionnelle (séparation des rôles, non-répudiation) + frontière FRK-68 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
