@@ -12,6 +12,17 @@ Réserve `FRK75.SKILL.*`.
    « nice-to-have » ?
 4. Pourquoi cette formation ne doit-elle jamais être confondue avec
    FRK-13 (stub `issue_proof()` de l'Academy) ?
+5. En quoi un vecteur d'or (golden vector) diffère-t-il d'un test
+   arbitraire — pourquoi sa provenance importe-t-elle pour la
+   crédibilité de la preuve ?
+6. Si les 16 tests échouaient tous, que cela prouverait-il — et
+   inversement, que ne prouve PAS leur succès complet ?
+7. Pourquoi FRK-71 est-il un prérequis logique pour FRK-75 malgré
+   leur différence de sujet (architecture vs. ingénierie de
+   vérificateur) ?
+8. Comment un candidat démontrerait-il, sans inventer de résultat,
+   qu'il comprend la différence entre « cette implémentation
+   fonctionne » et « la spécification est correcte » ?
 
 ## Corrigé indicatif
 
@@ -33,3 +44,21 @@ Réserve `FRK75.SKILL.*`.
    ingénierie de vérificateur bien plus mature et testée dans
    `frek_v3/` — deux réalités techniques très différentes, jamais
    fusionnées.
+5. Un vecteur d'or provient d'une source de référence indépendante et
+   validée ; un test arbitraire ne garantit rien sur la conformité à
+   une spécification externe — c'est la provenance qui donne du poids
+   à la preuve, pas le simple fait de passer.
+6. Un échec complet prouverait que cette implémentation ne suit même
+   pas ses propres vecteurs de référence — un signal d'alarme
+   immédiat. Un succès complet ne prouve que la conformité de cette
+   implémentation à ces vecteurs précis, jamais l'exhaustivité ou
+   l'agnosticisme de la spécification testée.
+7. FRK-71 établit la littératie architecturale du cluster FREK v3 dans
+   son ensemble ; sans cette base, la place précise de
+   `reference_verifier/` dans l'échelle de maturité globale resterait
+   incompréhensible.
+8. En rédigeant explicitement deux affirmations séparées et distinctes
+   — « cette implémentation Python passe ses 16 tests » (prouvé) et
+   « la spécification est démontrée correcte et implémentable
+   génériquement » (non prouvé, en attente d'une implémentation
+   croisée) — sans jamais fusionner les deux.

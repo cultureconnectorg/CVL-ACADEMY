@@ -18,3 +18,17 @@ présentés comme le même système ou au même niveau de maturité.
 
 **Critère éliminatoire :** fusionner `reference_verifier/` et
 `issue_proof()`.
+
+## Cas 3 — Une future implémentation Rust échoue
+
+Une implémentation Rust croisée est développée et échoue sur 2 des 16
+vecteurs d'or que l'implémentation Python passait tous. Le candidat
+doit expliquer ce que cet écart révèle précisément (une ambiguïté ou
+une erreur soit dans la spécification, soit dans l'une des deux
+implémentations — à investiguer) et pourquoi ce scénario, même
+négatif, serait un progrès réel par rapport à la situation actuelle
+(implémentation unique, jamais testée contre un tiers indépendant).
+
+**Critère éliminatoire :** présenter cet échec hypothétique comme
+disqualifiant la formation elle-même, plutôt que comme le
+fonctionnement attendu du processus de validation croisée.

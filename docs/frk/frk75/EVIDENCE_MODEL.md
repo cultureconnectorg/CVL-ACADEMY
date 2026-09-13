@@ -4,6 +4,24 @@
 
 ## Chaîne de preuve
 
+Lecture de sortie de test annotée (16/16 vecteurs d'or) + distinction
+implémentation/spécification + frontière FRK-13 → correcteur → (jury
+si 2.0–2.5) → `FRK75.SKILL.REFERENCE_VERIFIER_ENGINEERING.L1`
+(réservé).
+
+## Ce qui compte comme preuve
+
+Une lecture correcte de la sortie de test réelle, distinguant
+précisément ce qui est prouvé (cette implémentation Python) de ce qui
+ne l'est pas (agnosticisme de la spécification) ; une frontière
+explicite avec FRK-13.
+
+## Ce qui NE compte PAS comme preuve
+
+Toute affirmation que les 16 tests prouvent l'agnosticisme
+d'implémentation de la spécification ; toute fusion avec `issue_proof()`
+(FRK-13) ; une analyse incorrecte du scénario d'échec croisé Rust.
+
 - Réservation d'ID : `FRK75.SKILL.REFERENCE_VERIFIER_ENGINEERING.L1`
   — réservé, non émis.
 - Grounding réel : `frek_v3/reference_verifier/` (7 modules réels, 16
