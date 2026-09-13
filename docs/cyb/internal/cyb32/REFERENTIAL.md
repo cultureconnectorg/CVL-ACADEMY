@@ -46,12 +46,27 @@ None (entry point of the CyberSecure internal-operator track).
   `backend/auth.py`: password hashing, JWT issuance/verification,
   refresh-token rotation and revocation, hashed-at-rest opaque tokens
   (reset/verification), and role-based access control.
+- Explain precisely why `bcrypt` is used for password storage rather
+  than a plain SHA-family hash or plaintext: bcrypt's built-in salt
+  and tunable cost factor resist both rainbow-table attacks and brute
+  force in a way a single unsalted hash never does.
+- Explain precisely how refresh-token rotation defeats replay: each
+  use of a refresh token issues a new one and invalidates the old
+  (`rotate_refresh_token`), so an attacker replaying a stolen but
+  already-used token produces a detectable inconsistency the system
+  can act on by revoking the session.
+- Explain precisely why even single-use opaque tokens (password reset,
+  email verification) are hashed at rest rather than stored in
+  plaintext: a database leak would otherwise expose usable tokens even
+  within their short validity window.
 - Correctly state the maturity boundary: this is real, running code —
   not a mockup — but it is a single-service auth module, never an
   enterprise IAM platform (no SSO federation, no secrets vault, no
   MFA/2FA implementation observed in this file).
 - Never claim CVLN operates a SOC, secrets manager, or dedicated IAM
-  platform beyond this module.
+  platform beyond this module — and never respond to a hypothetical
+  incident by assuming automated detection tooling that isn't in this
+  repo.
 
 ## Modules
 
@@ -71,6 +86,10 @@ None (entry point of the CyberSecure internal-operator track).
 6. **Maturity-boundary discipline** — this module vs. an enterprise
    IAM platform: what exists, what doesn't (SSO, MFA, secrets vault),
    never claiming the latter.
+7. **Incident-response literacy within the real boundary** — a
+   suspected compromise is handled with the real functions available
+   (`revoke_all_refresh_tokens`), never by assuming a SOC or automated
+   detection system this repo does not have.
 
 ## Assessment
 
@@ -78,13 +97,14 @@ A code-literacy exercise: candidate is given a redacted excerpt of
 `backend/auth.py`'s real functions and must correctly explain the token
 lifecycle, hashing discipline, and RBAC pattern — eliminatory failure
 for claiming this module is an enterprise IAM platform, a SOC, or a
-secrets manager.
+secrets manager, or for confusing the JWT access token's role with the
+refresh token's.
 
 ## Evidence / certification / mission eligibility
 
-`CYB32.SKILL.*` Skill IDs, reserved. Mission eligibility requires
-literacy of this real module — never operational access to production
-auth credentials or secrets.
+`CYB32.SKILL.IAM_OPERATOR.L1` Skill ID, reserved. Mission eligibility
+requires literacy of this real module — never operational access to
+production auth credentials or secrets.
 
 ## Status
 
