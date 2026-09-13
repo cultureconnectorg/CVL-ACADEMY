@@ -1,5 +1,11 @@
 # FRK-55 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Standards transversaux API/événements (taxonomie d'erreur, versionnage unifié) + référence FRK-52/54 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
