@@ -34,3 +34,17 @@ lors d'un entretien.
 d'audité ne dépend de lui") — jamais une affirmation de maturité
 gonflée. Élimination si le candidat affirme que `MetaCVLN` est un
 système de production pleinement opérationnel.
+
+## Cas N2-4 — Rapport de fin de formation
+
+Un candidat rédige un court rapport de synthèse de sa certification
+CMD-15 pour son dossier professionnel. Le rapport doit refléter
+exactement la portée réelle de la certification, sans l'enjoliver.
+
+**Critères de notation :** le rapport indique clairement que la
+certification porte sur la littératie de deux routes réelles d'un
+système externe (`MetaCVLN`), avec la classification de maturité
+exacte (`PARTIAL`/`PRODUCT_DEPENDENCY`), sans jamais suggérer que le
+candidat a acquis une capacité de pilotage ou d'accès opérationnel.
+Élimination si le rapport suggère, même implicitement, une capacité
+d'opération réelle sur `MetaCVLN`.

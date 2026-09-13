@@ -54,3 +54,19 @@ memory.
     Command Center CVLN, réel mais non opérable par cette Academy ;
     3. `external/cmd01_14` — discipline SRE/ICS marché-générale,
     indépendante de l'existence de l'un ou l'autre)
+
+## M5 — pourquoi CMD-15 est le flagship de cette vague
+
+11. Pourquoi CMD-15 a-t-il été choisi comme flagship de sa vague de
+    reconciliation, alors que d'autres lignes du même corpus restent
+    `BLOCKED_PRODUCT_DEPENDENCY` ? (C'est la seule ligne des 109 dont
+    la maturité a été directement changée cette session par un audit
+    de repo réel et nouvellement confirmé — un cas rare et documenté
+    de correction en place, pas un choix arbitraire.)
+12. Un candidat certifié CMD-15 affirme dans un rapport que "CMD-15
+    prouve que cette Academy pilote un vrai centre de commandement."
+    Pourquoi cette phrase est-elle fausse malgré la réalité des routes
+    `MetaCVLN` ? (Parce que la certification porte sur la littératie
+    d'un système externe réel, jamais sur une capacité de pilotage
+    opérée par cette Academy — aucune intégration technique n'existe
+    entre les deux.)

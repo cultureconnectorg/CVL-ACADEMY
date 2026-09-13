@@ -13,6 +13,9 @@ Ouvre `docs/cvln_academy_master/95_GAPS/REPO_REGISTRY.md` (section
    Center CVLN ?
 3. Classe-t-il correctement la maturité (`PARTIAL`/
    `PRODUCT_DEPENDENCY`, jamais `BLOCKED` ni `DEPLOYED_RUNTIME`) ?
+4. Si un rapport de synthèse est demandé (Cas N2-4), reste-t-il
+   strictement dans la portée réelle, sans suggérer une capacité de
+   pilotage ?
 
 ## Ce que tu ne fais pas
 

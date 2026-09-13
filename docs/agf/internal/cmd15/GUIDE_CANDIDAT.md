@@ -32,3 +32,10 @@ Aucune intégration n'est observée entre `CVL-ACADEMY` et `MetaCVLN`.
 N'affirme jamais un accès opérationnel réel à `MetaCVLN`, ni une
 fusion des trois systèmes (`fms-os/fms` / `MetaCVLN` / discipline
 marché) — élimination automatique.
+
+## Rédiger ton rapport de synthèse
+
+Si tu dois résumer cette certification pour ton dossier professionnel,
+reste strictement dans la portée réelle : littératie de deux routes
+d'un système externe, classification de maturité exacte, jamais une
+capacité de pilotage. Voir Cas N2-4 de `BANQUE_N2.md`.

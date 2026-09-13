@@ -10,6 +10,7 @@ Structure identique à `docs/frk/frk01/ASSESSMENT_AND_RUBRIC.md` (N1
 | C1 | Littératie des routes réelles `/command-center/overview`/`/timeline` (`MetaCVLN`) |
 | C2 | Frontière de maturité (`PARTIAL`/`PRODUCT_DEPENDENCY`, jamais `BLOCKED` ni `DEPLOYED_RUNTIME`) |
 | C3 | Discipline des trois systèmes (`fms-os/fms` vs `MetaCVLN` vs discipline SRE/ICS marché) |
+| C4 | Honnêteté de portée dans un rapport de synthèse (jamais de suggestion de capacité de pilotage) |
 
 ## Rubric (0–4 par compétence)
 
