@@ -17,3 +17,14 @@ ou de mémoire d'agent.
 
 **Critère éliminatoire :** affirmer qu'une conception de persona
 implique une orchestration multi-agent.
+
+## Cas 3 — Ajout d'une cinquième persona
+
+Un développeur souhaite ajouter une persona « auditeur » à
+`ASSISTANT_PERSONAS`. Le candidat doit expliquer précisément ce que
+cela exigerait (une nouvelle entrée de configuration, pas une branche
+de code) et pourquoi cette simplicité d'ajout est la preuve concrète
+du principe persona-comme-donnée.
+
+**Critère éliminatoire :** proposer d'ajouter la persona via une
+branche conditionnelle dans le code exécutable.

@@ -15,6 +15,12 @@ Réserve `AF0103.SKILL.*`.
 4. Donne un exemple de principe d'architecture de system prompt
    (séparation instructions/contexte/contraintes) indépendant de tout
    système CVLN.
+5. Pourquoi le fait que `ASSISTANT_PERSONAS` ne compte que 4 personas
+   réelles (étudiant/formateur/jury/correcteur) ne limite-t-il en rien
+   la validité du principe persona-comme-donnée qu'il illustre ?
+6. Que se passerait-il concrètement, en termes de modification de
+   code, si une cinquième persona devait être ajoutée à un système
+   encodé en branches conditionnelles plutôt qu'en données ?
 
 ## Corrigé indicatif
 
@@ -32,3 +38,12 @@ Réserve `AF0103.SKILL.*`.
 4. Séparer clairement les instructions de rôle, le contexte
    dynamique injecté, et les contraintes de sortie dans un system
    prompt — principe général, applicable à tout système d'agent.
+5. Le principe d'ingénierie (extensibilité sans modification de code)
+   reste valable quel que soit le nombre de personas — 4 personas
+   réelles suffisent à démontrer le patron, la validité du principe
+   n'est pas proportionnelle à l'échelle du système qui l'illustre.
+6. Un système en branches conditionnelles exigerait d'ajouter une
+   nouvelle branche de code (avec tests, revue, déploiement) pour
+   chaque nouvelle persona ; un système en données permettrait
+   d'ajouter une entrée de configuration sans toucher au code
+   exécutable.
