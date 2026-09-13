@@ -10,6 +10,9 @@ Ouvre `issue_proof()` dans `frek_core.py` à côté de la copie.
 2. Confond-il `issue_proof()` avec FRK-75 ?
 3. Dénigre-t-il le concept professionnel, ou sur-vend-il
    l'implémentation ?
+4. Attribue-t-il une garantie de sécurité supplémentaire au simple
+   fait que `issue_proof()` tente un appel distant avant son fallback
+   local ?
 
 ## Ce que tu ne fais pas
 

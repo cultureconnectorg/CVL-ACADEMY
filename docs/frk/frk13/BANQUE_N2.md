@@ -30,3 +30,16 @@ testé (16 tests, vecteurs golden) appartient au cluster `frek_v3`
 (FRK-75), un système complètement distinct et plus mature que le stub
 `issue_proof()` de cette Academy. Élimination si le candidat confirme
 la confusion.
+
+## Cas N2-4 — L'appel distant réussit
+
+Un candidat affirme : « puisque `issue_proof()` tente d'abord un appel
+distant, une preuve issue de ce chemin distant est nécessairement plus
+fiable et cryptographiquement garantie que le fallback local UUID. »
+Corrige cette affirmation.
+
+**Critères de notation :** explique que rien dans le code observé ne
+documente une garantie cryptographique côté distant — le pattern
+remote-first décrit uniquement l'ordre de tentative, jamais une
+propriété de sécurité du résultat. Élimination si le candidat accepte
+l'affirmation sans la corriger.

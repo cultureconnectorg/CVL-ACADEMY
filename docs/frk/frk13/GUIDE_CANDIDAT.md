@@ -13,7 +13,7 @@ distinguer ce stub du vrai vérificateur FRK-75.
 ## Comment réviser
 
 1. Relis `issue_proof()` dans `frek_core.py`.
-2. Fais les 8 questions de `BANQUE_N1.md`, traite les 3 cas de
+2. Fais les 9 questions de `BANQUE_N1.md`, traite les 4 cas de
    `BANQUE_N2.md`.
 
 ## Piège le plus fréquent

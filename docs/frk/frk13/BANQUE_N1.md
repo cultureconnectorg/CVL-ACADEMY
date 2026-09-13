@@ -36,3 +36,10 @@ re-read this session, plus the market-general proof-engine concept.
    `issue_proof()` ? (Non — FRK-75 est le vérificateur Python réel et
    testé du cluster `frek_v3`, une couche bien plus mature et
    distincte, jamais confondue avec le stub Academy)
+9. Pourquoi le fait que `issue_proof()` tente d'abord un appel distant
+   (`POST /proof`) avant son fallback local ne change-t-il rien à la
+   conclusion « aucune garantie cryptographique » ? (Parce que même en
+   cas de succès de l'appel distant, rien dans le code observé ne
+   documente que ce chemin distant produirait une signature ou un
+   ancrage — le pattern remote-first ne doit jamais être confondu avec
+   une preuve de garantie cryptographique supplémentaire)

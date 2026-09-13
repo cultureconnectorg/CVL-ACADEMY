@@ -34,6 +34,11 @@ implementation:
 - Operating this reality honestly: a candidate must be able to explain
   to a stakeholder exactly what today's "proof" does and does not
   guarantee — never smoothing over the gap.
+- Remote-first-pattern discipline: `issue_proof()`'s attempt-remote-
+  then-fallback-local ordering describes only *attempt sequence*,
+  never a security property of the result — nothing in the observed
+  code documents that a successful remote path would carry any
+  cryptographic guarantee the local UUID fallback lacks.
 
 ## Modules
 
