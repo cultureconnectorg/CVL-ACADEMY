@@ -36,3 +36,13 @@ written rationale, re-read this session.
    technique réelle entre KORA et FREK ? (Non — il documente une
    intention d'émission de signal, pas une intégration technique
    bidirectionnelle)
+7. Pourquoi l'usage réel du stack `frek_signal` (`FREK-WORK`/
+   `FREK-SCORE`/`FREK-CONTRIB`/`FREK-CERT`) ne suffit-il pas à lui
+   seul à justifier `READY_FOR_FREK_PROOF = TRUE` ? (Parce que
+   l'émission de signal est indépendante de l'existence d'une ancre
+   externe vérifiable — hash publié, horodatage tiers — qui seule
+   pourrait établir la preuve prête ; les deux conditions sont
+   distinctes et la seconde manque partout)
+8. Quels trois systèmes ont été vérifiés cette session comme
+   n'ayant aucune ancre externe pour aucune formation ? (`fms_
+   canonical`, `klt_canonical`, `frek_core.py`)

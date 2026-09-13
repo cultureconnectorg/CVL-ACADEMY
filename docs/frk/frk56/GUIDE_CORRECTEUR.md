@@ -9,6 +9,8 @@ Ouvre `docs/kor/kor01/skills/EVIDENCE_MODEL.md` à côté de la copie.
 1. Le candidat affirme-t-il `TRUE` sans preuve ?
 2. Invente-t-il une intégration technique FREK↔KORA ?
 3. Réutilise-t-il le cas worked plutôt que de le re-dériver ?
+4. Distingue-t-il correctement émission de signal interne (réelle) et
+   ancre externe vérifiable (absente) ?
 
 ## Ce que tu ne fais pas
 

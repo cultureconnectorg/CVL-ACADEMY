@@ -31,3 +31,17 @@ et FREK sont techniquement intégrés." Corrige-le.
 intention de signal (quel `VALID_SIGNALS` ce module référence), pas
 une intégration technique bidirectionnelle vérifiée. Élimination si le
 candidat confirme l'affirmation erronée.
+
+## Cas N2-4 — Émission de signal réelle mais `FALSE` maintenu
+
+Un candidat objecte : « puisque le stack `frek_signal` est réellement
+utilisé et émet des signaux `FREK-WORK`/`FREK-SCORE` vérifiables en
+base, `READY_FOR_FREK_PROOF` devrait logiquement passer à `TRUE`. »
+Corrige cette confusion.
+
+**Critères de notation :** distingue précisément l'émission de signal
+interne (réelle, vérifiable en base) de l'existence d'une ancre
+externe vérifiable (hash publié, horodatage tiers) — seule la seconde
+condition, absente dans `fms_canonical`/`klt_canonical`/`frek_core.py`,
+détermine `READY_FOR_FREK_PROOF`. Élimination si le candidat accepte
+que l'émission de signal seule suffise à justifier `TRUE`.

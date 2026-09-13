@@ -14,7 +14,7 @@ sans le re-dériver pour tout nouveau domaine.
 ## Comment réviser
 
 1. Lis `docs/kor/kor01/skills/EVIDENCE_MODEL.md` en entier.
-2. Fais les 6 questions de `BANQUE_N1.md`, traite les 3 cas de
+2. Fais les 8 questions de `BANQUE_N1.md`, traite les 4 cas de
    `BANQUE_N2.md`.
 
 ## Piège le plus fréquent
