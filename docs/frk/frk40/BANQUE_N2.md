@@ -17,3 +17,14 @@ FMS-03/08 seraient spécifiques à des techniques/outils précis.
 
 **Critère éliminatoire :** re-décrire du contenu FMS-03/08 au lieu de
 le citer.
+
+## Cas 3 — Réutilisation par FRK-41
+
+Le candidat explique pourquoi FRK-41 (stems/versions/crédits) peut
+réutiliser par référence le schéma de provenance conçu en FRK-40,
+plutôt que d'en concevoir un nouveau — en identifiant précisément ce
+qui est générique (l'historique d'actions) et ce qui serait
+spécifique à FRK-41 (les métadonnées de crédit).
+
+**Critère éliminatoire :** proposer de dupliquer intégralement le
+schéma FRK-40 dans FRK-41 au lieu de le référencer.

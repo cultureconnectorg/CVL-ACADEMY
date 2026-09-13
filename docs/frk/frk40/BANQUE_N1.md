@@ -12,6 +12,16 @@ Réserve `FRK40.SKILL.*`.
    avec la compétence de production musicale.
 4. Pourquoi FMS-03/FMS-08 restent-ils la référence canonique pour la
    craft (Founder-gated), tandis que FRK-40 reste indépendant ?
+5. Pourquoi un schéma de provenance de session doit-il rester
+   identique quel que soit le logiciel DAW utilisé ?
+6. En quoi la présence d'un plugin de reverb dans l'historique de
+   provenance diffère-t-elle d'une évaluation de la qualité de cette
+   reverb sur le mix ?
+7. Pourquoi FRK-41 (stems/versions/crédits) peut-il réutiliser le
+   schéma de provenance de FRK-40 par référence plutôt que de le
+   reconcevoir ?
+8. Quelle serait la conséquence si FRK-40 redécrivait, même
+   partiellement, le contenu de FMS-08 plutôt que de le citer ?
 
 ## Corrigé indicatif
 
@@ -28,3 +38,16 @@ Réserve `FRK40.SKILL.*`.
 4. FMS-03/08 sont la source canonique de la craft, verrouillée par le
    Founder ; FRK-40 ajoute une couche de traçabilité au-dessus, sans
    jamais s'y substituer.
+5. Parce que la provenance est un patron générique d'historique
+   d'actions, indépendant des spécificités techniques d'un outil
+   donné — contrairement à la craft, potentiellement spécifique à un
+   DAW précis.
+6. La provenance enregistre le simple fait qu'un plugin a été
+   appliqué (action, horodatage) ; juger sa qualité sonore relève
+   entièrement du domaine FMS-03/08, hors périmètre de FRK-40.
+7. Parce que le schéma de provenance est générique et technique, non
+   lié à la spécialisation stems/versions/crédits — la réutilisation
+   par référence évite la duplication et garantit la cohérence.
+8. Cela créerait un risque de divergence avec le contenu canonique
+   Founder-gated et brouillerait la frontière entre provenance et
+   craft, contraire à la discipline de cette formation.
