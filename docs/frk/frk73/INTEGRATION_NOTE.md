@@ -10,7 +10,8 @@ canoniques.
 
 `FREK_01_75_RECONCILIATION.md`, `docs/frk/frk71/REFERENTIAL.md`
 (prérequis), `frek_v3/reference_verifier/frek_crypto.py` (grounding
-réel cité).
+réel cité), `docs/frk/frk75/REFERENTIAL.md` (couverture par tests
+fonctionnels, jamais confondue avec un audit de sécurité).
 
 ## Ce que ce package couvre
 
@@ -32,6 +33,18 @@ Ce même principe a déjà été appliqué à FRK-10 (EUDI/eIDAS2) et FRK-14
 (chaîne de custody) dans les passes précédentes — FRK-73 clôt les
 trois exceptions `NEEDS_EXPERT_REVIEW` identifiées dans le corpus
 FREK complet (75/75).
+
+## Ce qu'une levée du statut exigerait
+
+1. Un cryptographe réel, nommé, avec ses qualifications déclarées.
+2. Une revue documentée de la chaîne de dérivation, du schéma de
+   signature, et de la résistance aux classes d'attaques pertinentes.
+3. Une distinction explicite, dans cette revue, entre « ce que les 16
+   tests fonctionnels de FRK-75 prouvent » et « ce que la revue de
+   sécurité elle-même établit » — les deux ne se substituent jamais
+   l'un à l'autre.
+4. Une mise à jour explicite de ce fichier et de `REFERENTIAL.md`
+   confirmant la levée — jamais une promotion silencieuse.
 
 ## Status
 

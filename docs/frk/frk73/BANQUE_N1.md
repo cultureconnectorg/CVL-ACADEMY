@@ -15,6 +15,17 @@ n'est pas levé.
 4. Qu'est-ce qui devrait être vrai (nom d'expert réel, revue
    documentée) avant qu'un item de cette formation devienne
    certifiant ?
+5. Qu'est-ce qu'un PUF (fonction physiquement non clonable) et
+   pourquoi constitue-t-il un point de départ approprié pour une
+   chaîne de dérivation de clés ?
+6. Pourquoi HKDF est-il utilisé entre le PUF et la clé racine (DRK)
+   plutôt qu'une dérivation directe ?
+7. En quoi la présence de tests passants sur `frek_crypto.py`
+   (rattachés à FRK-75) ne constitue-t-elle pas, à elle seule, une
+   preuve de sécurité cryptographique du schéma ?
+8. Pourquoi la distinction entre AK, FK et CK (clés dérivées
+   distinctes) importe-t-elle du point de vue de la sécurité, plutôt
+   que d'utiliser une seule clé pour tous les usages ?
 
 ## Corrigé indicatif
 
@@ -32,3 +43,20 @@ n'est pas levé.
 4. Un nom de cryptographe réel, une revue documentée du schéma de
    dérivation et de signature — rien de moins ne lève le statut
    `NEEDS_EXPERT_REVIEW`.
+5. Un PUF exploite des variations physiques microscopiques uniques à
+   chaque puce, impossibles à cloner — un point d'ancrage matériel
+   propre à un dispositif spécifique, approprié comme racine d'une
+   chaîne de dérivation liée au matériel.
+6. HKDF (fonction de dérivation de clé basée sur HMAC) étend et
+   renforce l'entropie brute du PUF en une clé cryptographiquement
+   robuste — une dérivation directe risquerait d'exposer des biais ou
+   une entropie insuffisante du signal PUF brut.
+7. Des tests passants prouvent que cette implémentation produit des
+   résultats attendus sur des vecteurs connus — ils ne constituent en
+   rien une revue de la conception cryptographique elle-même
+   (résistance aux attaques, choix de primitives, gestion des cas
+   limites), qui exige un cryptographe qualifié.
+8. Séparer les clés par usage limite l'impact d'une compromission :
+   si une seule clé servait à tout, sa fuite compromettrait
+   simultanément l'authentification, les fonctions et le chiffrement —
+   la séparation contient le dommage à un seul domaine.

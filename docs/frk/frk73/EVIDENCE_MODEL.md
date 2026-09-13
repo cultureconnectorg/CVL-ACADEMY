@@ -15,6 +15,20 @@ signal ou de preuve n'est ouverte tant que la formation reste
   levé — émettre un signal sur un contenu cryptographique non révisé
   par un expert serait une fausse preuve de compétence.
 
+## Ce qui compterait comme preuve, une fois la revue levée
+
+Une lecture fidèle de la chaîne de dérivation et du schéma de
+signature réels, distinguant précisément conformité fonctionnelle
+(tests passants) et sécurité cryptographique prouvée — évaluée par un
+correcteur formé, sous supervision du cryptographe nommé ayant levé le
+statut.
+
+## Ce qui NE compte PAS comme preuve, aujourd'hui comme demain
+
+Toute invention d'une étape de dérivation absente du code réel ; toute
+affirmation que le schéma est audité ou sécurisé sans réserve ; toute
+confusion entre tests fonctionnels passants et audit de sécurité.
+
 ## Condition de levée
 
 Un cryptographe nommé documente sa revue dans une future révision de
