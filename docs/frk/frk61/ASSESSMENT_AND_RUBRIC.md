@@ -1,5 +1,11 @@
 # FRK-61 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Archivage/préservation technique à long terme (redondance, migration, vérification) + frontière Fondation Cœurvolan |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
@@ -8,8 +14,7 @@
 | 1 | Distingue en théorie, stratégie technique incomplète. |
 | 2 | Stratégie complète, frontière implicite seulement. |
 | 3 | Stratégie complète, frontière explicite et correcte. |
-| 4 | Niveau 3 + principes de préservation multiples correctement
-    justifiés. |
+| 4 | Niveau 3 + principes de préservation multiples correctement justifiés. |
 
 **Règle éliminatoire :** intégrer une décision de droits dans la
 stratégie technique, ou dupliquer la doctrine Fondation Cœurvolan.
