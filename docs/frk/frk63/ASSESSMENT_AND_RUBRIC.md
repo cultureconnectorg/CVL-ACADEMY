@@ -1,5 +1,11 @@
 # FRK-63 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Preuve géographique/provenance territoriale (mécanisme, garanties) + frontière KOR-15 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
