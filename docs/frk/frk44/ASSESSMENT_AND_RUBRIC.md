@@ -1,5 +1,11 @@
 # FRK-44 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Réconciliation post-déconnexion (détection de conflit, stratégies, compromis) + référence FRK-43 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
