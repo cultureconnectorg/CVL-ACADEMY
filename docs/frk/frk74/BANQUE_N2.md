@@ -16,3 +16,14 @@ ne s'appliquerait pas telle quelle à une empreinte culturelle générale
 non-audio (FRK-29/30).
 
 **Critère éliminatoire :** fusionner les deux domaines techniques.
+
+## Cas 3 — Compromis fenêtre/hop size
+
+Le candidat doit expliquer, pour deux scénarios distincts (analyse
+temps réel à faible latence vs. analyse hors-ligne haute précision),
+quel compromis de fenêtre FFT et de hop size serait raisonnable à
+envisager — en précisant explicitement qu'il s'agit d'une proposition
+d'ingénierie, jamais d'une valeur déjà verrouillée par la spécification.
+
+**Critère éliminatoire :** présenter une valeur proposée comme la
+décision officielle déjà prise par le corpus FREK v3.
