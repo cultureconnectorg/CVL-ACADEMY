@@ -17,3 +17,14 @@ de cette Academy.
 
 **Critère éliminatoire :** affirmer que l'Academy suit un cycle de vie
 ADL.
+
+## Cas 3 — Ajout hypothétique d'une persona
+
+Un relecteur propose : « puisqu'une deuxième persona pourrait être
+ajoutée facilement, décrivons dès maintenant une architecture à
+plusieurs personas typées. » Le candidat doit refuser cette
+proposition et expliquer pourquoi décrire une capacité future
+hypothétique comme actuelle serait une erreur.
+
+**Critère éliminatoire :** accepter de décrire une architecture
+multi-persona comme actuelle sur la base d'une possibilité future.

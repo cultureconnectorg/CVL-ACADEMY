@@ -13,6 +13,13 @@ Réserve `AF17.SKILL.*`.
    marché uniquement, jamais comme la forme réelle de cette Academy ?
 4. Pourquoi cette formation cite-t-elle AF-16 comme prérequis plutôt
    que de redéfinir le même grounding ?
+5. Si un développeur ajoutait une deuxième persona réelle au code,
+   cela validerait-il rétroactivement une taxonomie de types d'agents
+   déjà enseignée comme existante ? Pourquoi cette question révèle-
+   t-elle un piège de raisonnement ?
+6. Pourquoi la simplicité réelle de l'architecture (un client, une
+   persona) n'est-elle pas en elle-même une faiblesse à corriger dans
+   cette formation, mais un fait à décrire fidèlement ?
 
 ## Corrigé indicatif
 
@@ -25,3 +32,12 @@ Réserve `AF17.SKILL.*`.
    Academy — le citer comme forme réelle inventerait une capacité.
 4. Réutiliser par référence évite la duplication et garde AF-16 comme
    source unique de vérité pour le grounding commun.
+5. Non — même avec une deuxième persona réelle ajoutée, cela resterait
+   un fait ponctuel du code, jamais une taxonomie structurée de
+   « types » d'agents ; le piège serait de sur-généraliser un
+   changement futur hypothétique en une classification actuelle
+   inexistante.
+6. Parce que la discipline de cette formation est de décrire le réel
+   fidèlement, pas de l'améliorer ou de l'enrichir artificiellement —
+   la simplicité observée est le fait pédagogique central, pas un
+   défaut du système à corriger dans la réponse du candidat.

@@ -1,4 +1,24 @@
 # AF-17 — Guide Jury
 
-Copie limite (2.0–2.5). Vérifie l'absence de taxonomie inventée.
-N'assouplit jamais. Seule `AF17.SKILL.*` est en jeu.
+## Rôle du jury
+
+Copie limite (2.0–2.5) ou contestation d'une élimination.
+
+## Ce que le jury vérifie en priorité
+
+1. L'élimination porte-t-elle sur une vraie taxonomie inventée (ou un
+   cycle de vie ADL affirmé à tort), et non une simple imprécision de
+   vocabulaire ?
+2. Le candidat a-t-il réellement décrit l'architecture étroite, même
+   si la formulation est maladroite ?
+
+## Décision du jury
+
+N'assouplit jamais la règle éliminatoire pour une copie par ailleurs
+solide — l'absence de taxonomie inventée est non négociable, pas un
+habillage rédactionnel.
+
+## Ce que le jury ne fait pas
+
+Ne délivre aucune compétence liée à `CVLNAgentfactory` par extension
+automatique — seule `AF17.SKILL.*` est en jeu.
