@@ -1,5 +1,11 @@
 # FRK-26 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Modélisation de graphe de provenance (acyclicité, horodatage) |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
