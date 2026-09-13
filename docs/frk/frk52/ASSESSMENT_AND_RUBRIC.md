@@ -1,5 +1,11 @@
 # FRK-52 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Ingénierie d'API (versionnage, gestion d'erreur) + discipline CVLN-gap sur `frek_core.py` |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
