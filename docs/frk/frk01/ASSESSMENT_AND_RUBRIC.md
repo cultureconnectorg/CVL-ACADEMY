@@ -11,6 +11,7 @@ Structure identique à `docs/wal/wal19/ASSESSMENT_AND_RUBRIC.md` (N1
 | C2 | Vocabulaire de signal (8 valeurs réelles, rejet silencieux) |
 | C3 | Paliers de progression (6 réels, seuils exacts) |
 | C4 | Réalité honnête de `issue_proof()` (stub, aucune garantie crypto) |
+| C5 | Discipline des trois systèmes FREK réels distincts (Academy, Good Mood, frek_v3) |
 
 ## Rubric (0–4 par compétence)
 
@@ -25,7 +26,9 @@ Structure identique à `docs/wal/wal19/ASSESSMENT_AND_RUBRIC.md` (N1
 ## Règle éliminatoire
 
 Toute capacité inventée (méthode, signal, palier, garantie
-cryptographique de `issue_proof()`) entraîne un 0 automatique.
+cryptographique de `issue_proof()`), ou toute fusion des trois
+systèmes FREK réels distincts (Academy, Good Mood, `frek_v3/`),
+entraîne un 0 automatique.
 
 ## Seuil de passage
 

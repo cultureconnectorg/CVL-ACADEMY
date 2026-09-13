@@ -15,8 +15,8 @@ honnêtement ce que `issue_proof()` garantit réellement aujourd'hui
 ## Comment réviser
 
 1. Lis `backend/services/frek_core.py` toi-même (142 lignes).
-2. Fais les 12 questions de `BANQUE_N1.md`.
-3. Traite les 3 cas de `BANQUE_N2.md`.
+2. Fais les 14 questions de `BANQUE_N1.md`.
+3. Traite les 4 cas de `BANQUE_N2.md`.
 
 ## Piège le plus fréquent
 

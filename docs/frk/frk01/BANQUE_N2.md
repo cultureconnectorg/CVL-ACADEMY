@@ -37,3 +37,17 @@ custody ni horodatage tiers — donc non opposable en l'état — tout en
 reconnaissant que le concept professionnel de "proof engine" (FRK-13)
 est réel et vise à terme cette garantie. Élimination si le candidat
 affirme une opposabilité actuelle ou nie toute valeur au concept.
+
+## Cas N2-4 — Confusion entre les trois systèmes FREK réels
+
+Un stagiaire affirme "on a déjà un vérificateur cryptographique testé,
+c'est `frek_core.py`" en confondant ce module avec le vérificateur
+Python réel du cluster `frek_v3/` (FRK-75). Corrige-le en distinguant
+précisément les trois systèmes FREK réels observés cette session.
+
+**Critères de notation :** nomme les trois systèmes (`frek_core.py`
+Academy, `frek_service.py`/`wallet_service.py` Good Mood, `frek_v3/`
+frekcoreAout2026) et explique que `frek_core.py` reste un client fin
+sans garantie cryptographique, distinct du vérificateur mature de
+`frek_v3/`. Élimination si le candidat confirme la confusion ou
+fusionne deux de ces systèmes.

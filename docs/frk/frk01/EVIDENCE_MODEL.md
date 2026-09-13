@@ -17,7 +17,9 @@ implicite.
 ## Ce qui NE compte PAS comme preuve
 
 Une méthode, un signal, ou un palier inventé ; une affirmation que
-`issue_proof()` produit une garantie cryptographique aujourd'hui.
+`issue_proof()` produit une garantie cryptographique aujourd'hui ; une
+fusion des trois systèmes FREK réels distincts (Academy, Good Mood,
+`frek_v3/`).
 
 `READY_FOR_FREK_PROOF = FALSE`. Seule une certification interne
 Academy (`FRK01.SKILL.*`) est en jeu — même principe que chaque module

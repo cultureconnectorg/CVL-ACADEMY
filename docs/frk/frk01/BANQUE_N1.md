@@ -53,3 +53,17 @@ re-read in full this session).
     toute spécialisation ? (Parce que chaque formation en aval du
     domaine FREK dépend de cette réalité — la contredire ou la
     minoraliser plus tard casserait la cohérence de tout le corpus)
+
+## M5 — frontière avec les autres systèmes FREK réels
+
+13. Combien de systèmes FREK réels et distincts existent à travers
+    l'écosystème observé cette session, et lesquels ? (Trois :
+    `frek_core.py` de cette Academy, `frek_service.py`/
+    `wallet_service.py` de Good Mood, et `frek_v3/` de
+    `frekcoreAout2026` — jamais fusionnés dans une réponse)
+14. `frek_core.py` (ce module) est-il plus ou moins mature que
+    l'architecture `frek_v3/` (FRK-71→75) ? (Moins mature — `frek_
+    core.py` est un client fin à 5 méthodes avec fallback local, tandis
+    que `frek_v3/` est classé `ARCHITECTURE_LEVEL_2` avec un
+    vérificateur Python réel testé — deux couches réelles distinctes du
+    même produit éventuel)

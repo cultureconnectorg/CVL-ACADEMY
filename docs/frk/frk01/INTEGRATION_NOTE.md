@@ -17,6 +17,20 @@ Academy — inexistant (`NO_RUNTIME_BINDING`).
   EVIDENCE_ARCHITECTURE.md`, `100_ECONOMY/ECONOMIC_MODEL.md` (statut
   économique à trancher séparément — non décidé ici).
 
+## Les trois systèmes FREK réels observés cette session
+
+Pour éviter toute confusion en aval, cette note recense explicitement
+les trois systèmes réels et distincts que le domaine FRK-01→75 traite
+jamais comme un seul :
+
+1. `backend/services/frek_core.py` (cette Academy) — le sujet de
+   cette formation, un client fin à 5 méthodes.
+2. `frek_service.py`/`wallet_service.py` (Good Mood) — deux clients
+   outbox distincts, cités dans `docs/gmd/gmd31`/`gmd32` et enseignés
+   en FRK-59.
+3. `frek_v3/` (`frekcoreAout2026`) — une couche d'architecture plus
+   mature, `ARCHITECTURE_LEVEL_2`, enseignée en FRK-71→75.
+
 ## Ce qu'une future intégration exigerait
 
 1. Une entrée `FRK01` dans le registre de certification/compétences

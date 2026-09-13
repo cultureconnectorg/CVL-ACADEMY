@@ -13,6 +13,10 @@ Ouvre `backend/services/frek_core.py` à côté de la copie.
 3. Le candidat affirme-t-il, à tort, que `issue_proof()` produit une
    garantie cryptographique ? Applique la règle éliminatoire sans
    exception.
+4. Le candidat fusionne-t-il `frek_core.py` avec Good Mood's
+   `frek_service.py`/`wallet_service.py` (FRK-59) ou avec `frek_v3/`
+   de `frekcoreAout2026` (FRK-71→75) ? Applique la règle éliminatoire
+   sans exception.
 
 ## Ce que tu ne fais pas
 
