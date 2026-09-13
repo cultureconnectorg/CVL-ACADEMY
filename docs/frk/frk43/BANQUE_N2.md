@@ -16,3 +16,15 @@ Le candidat doit concevoir le mécanisme de dead-letter déclenché après
 
 **Critère éliminatoire :** ne prévoir aucun mécanisme pour l'échec
 persistant.
+
+## Cas 3 — Panne longue durée du destinataire
+
+Un service destinataire est indisponible pendant 4 heures. Le candidat
+doit tracer le comportement exact du mécanisme conçu pendant cette
+panne (nombre de tentatives, espacement, moment de bascule en
+dead-letter le cas échéant) en s'appuyant sur le calendrier
+`[30s, 2m, 10m, 1h, 6h]`.
+
+**Critère éliminatoire :** un comportement qui continue de solliciter
+le destinataire à intervalle fixe pendant toute la panne (absence de
+backoff réel).
