@@ -31,6 +31,15 @@ substituer. Ce même principe a déjà été appliqué à FRK-10 (EUDI/eIDAS2)
 dans la passe précédente, et sera appliqué à FRK-73 (cryptographie
 appliquée) plus loin dans cette passe.
 
+## Ce qu'une levée du statut exigerait
+
+1. Un expert forensic/légal réel, nommé, avec une juridiction précise
+   déclarée.
+2. Une revue documentée de chaque affirmation du contenu contre le
+   droit de la preuve de cette juridiction.
+3. Une mise à jour explicite de ce fichier et de `REFERENTIAL.md`
+   confirmant la levée — jamais une promotion silencieuse.
+
 ## Status
 
 `STATUS = MODULE_CONTENT_DRAFTED` — package de support complet (8/8

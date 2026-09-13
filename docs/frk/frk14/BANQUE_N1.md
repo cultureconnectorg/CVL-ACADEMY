@@ -18,6 +18,16 @@ pas levé.
 4. Explique la discipline de révision experte : qu'est-ce qui doit être
    vrai (qui, quand, quel périmètre) avant qu'un item de cette
    formation puisse devenir un item certifiant.
+5. Pourquoi un hash de fichier inchangé ne prouve-t-il rien sur les
+   accès qui ont eu lieu entre deux vérifications successives ?
+6. En quoi la variabilité du droit de la preuve entre juridictions
+   rend-elle dangereux tout gabarit de chaîne de custody présenté
+   comme universellement applicable ?
+7. Pourquoi le statut `NEEDS_EXPERT_REVIEW` bloque-t-il spécifiquement
+   la voie certifiante, alors que le contenu littéraire (principes,
+   concepts) reste enseignable dès aujourd'hui ?
+8. Qu'est-ce qui distinguerait une future revue experte valable d'une
+   simple relecture interne à cette Academy ?
 
 ## Corrigé indicatif
 
@@ -31,3 +41,18 @@ pas levé.
    qualifié dans cette juridiction précise.
 4. Un nom d'expert réel, une juridiction précise, une revue documentée
    du contenu — rien de moins ne lève le statut `NEEDS_EXPERT_REVIEW`.
+5. Le hash mesure l'état du contenu à un instant donné ; il ne
+   documente aucun accès physique ou numérique intermédiaire —
+   seule une chaîne de custody journalisée couvre cette dimension.
+6. Une règle valide dans une juridiction peut être insuffisante ou
+   inapplicable dans une autre — présenter un gabarit comme universel
+   risquerait d'induire une fausse confiance en sa recevabilité légale
+   réelle.
+7. Les principes et concepts constituent une discipline réelle,
+   enseignable indépendamment de toute validation légale spécifique ;
+   seule l'affirmation de validité légale certifiée nécessite une
+   revue experte réelle avant d'être délivrée comme compétence.
+8. Une revue experte valable nommerait un expert réel, qualifié dans
+   une juridiction précise, avec une documentation de la portée exacte
+   de sa validation — une relecture interne, même rigoureuse, ne
+   remplace jamais cette expertise externe spécifique.

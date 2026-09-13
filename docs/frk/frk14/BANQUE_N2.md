@@ -20,3 +20,16 @@ peut en aucun cas servir d'exemple de chaîne de custody fonctionnelle.
 
 **Critère éliminatoire :** présenter `issue_proof()` comme une
 implémentation réelle de chaîne de custody.
+
+## Cas 3 — Gabarit présenté comme validé légalement
+
+Un candidat produit un gabarit de chaîne de custody techniquement
+solide (transferts horodatés, signés) et l'accompagne de la mention
+« conforme au droit de la preuve ». Le candidat doit identifier
+précisément pourquoi cette mention, même adossée à un gabarit
+techniquement rigoureux, reste une affirmation excessive tant
+qu'aucun expert forensic/légal nommé n'a validé la conformité dans une
+juridiction précise.
+
+**Critère éliminatoire :** accepter la mention « conforme au droit de
+la preuve » sans réserve explicite sur l'absence de revue experte.
