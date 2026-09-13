@@ -10,6 +10,8 @@ et `frek_core.py` à côté de la copie.
 1. Le candidat distingue-t-il intention de signal et preuve vérifiée ?
 2. Décrit-il correctement les effets de bord réels ?
 3. Affirme-t-il à tort `READY_FOR_FREK_PROOF = TRUE` ?
+4. Affirme-t-il qu'un échec de mirroring distant invalide l'écriture
+   locale `db.frek_signals` ?
 
 ## Ce que tu ne fais pas
 

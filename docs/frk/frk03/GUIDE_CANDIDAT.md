@@ -14,7 +14,7 @@ réels d'`emit_signal()`/`mint_frek_id()`, et jamais promouvoir
 
 1. Lis un header réel dans `docs/kor/kor01/modules/`.
 2. Lis `docs/kor/kor01/skills/EVIDENCE_MODEL.md`.
-3. Fais les 8 questions de `BANQUE_N1.md`, traite les 3 cas de
+3. Fais les 9 questions de `BANQUE_N1.md`, traite les 4 cas de
    `BANQUE_N2.md`.
 
 ## Piège le plus fréquent

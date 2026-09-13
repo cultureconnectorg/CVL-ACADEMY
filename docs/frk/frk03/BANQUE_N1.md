@@ -44,3 +44,8 @@ VALID_SIGNALS/db writes.
 8. Un opérateur FREK peut-il "corriger" ce `FALSE` en marquant `TRUE`
    sans qu'une vraie ancre existe ? (Non — ce serait une affirmation
    non vérifiée, une faute grave)
+9. Si `emit_signal()` échoue silencieusement à mirrorer un signal à
+   distance, l'écriture locale `db.frek_signals` est-elle affectée ?
+   (Non — l'écriture locale et la tentative de mirroring distant sont
+   deux opérations distinctes ; l'échec du second n'invalide jamais le
+   premier)

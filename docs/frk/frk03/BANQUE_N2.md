@@ -35,3 +35,17 @@ garantit qu'elles n'obtiennent pas le même identifiant.
 l'atomicité native de la base de données qui garantit l'unicité,
 jamais un verrou applicatif inventé. Élimination si le candidat invente
 un mécanisme de verrouillage absent du code.
+
+## Cas N2-4 — Échec silencieux du mirroring distant
+
+Un `emit_signal()` réussit localement (`db.frek_signals` inséré) mais
+le mirroring distant échoue silencieusement (`is_remote_enabled()`
+était `True`, mais l'appel a échoué). Un opérateur veut savoir si
+cela invalide la preuve interne du signal. Réponds.
+
+**Critères de notation :** explique que l'écriture locale et la
+tentative de mirroring distant sont deux opérations indépendantes —
+l'échec du second n'affecte jamais la validité de la trace locale
+`db.frek_signals`, qui reste la seule preuve interne fiable.
+Élimination si le candidat affirme que l'échec distant invalide ou
+compromet l'écriture locale.
