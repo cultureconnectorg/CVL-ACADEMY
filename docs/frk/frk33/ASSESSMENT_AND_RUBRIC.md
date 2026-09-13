@@ -1,5 +1,11 @@
 # FRK-33 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Suivi technique de cycle de vie créatif (versionnage, provenance) + frontière Fondation Cœurvolan |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
