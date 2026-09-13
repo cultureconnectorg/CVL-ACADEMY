@@ -13,6 +13,9 @@ Relis `REFERENTIAL.md` §Grounding (`BCH-01-M03`) à côté de la copie.
 3. Affirme-t-il, à tort, qu'un audit a eu lieu ou qu'un système de
    production existe ? Applique la règle éliminatoire sans exception
    si oui.
+4. Si un vrai engagement d'audit est demandé (Cas N2-4), la liste des
+   exigences est-elle réaliste et jamais présentée comme déjà en
+   place ?
 
 ## Ce que tu ne fais pas
 

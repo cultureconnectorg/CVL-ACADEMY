@@ -10,6 +10,7 @@ Structure identique à `../../../../gmd/gmd21/ASSESSMENT_AND_RUBRIC.md`
 | C1 | Littératie de `BCH-01-M03` — périmètre réel testnet, jamais production |
 | C2 | Classes de vulnérabilités standards, checklist appliquée |
 | C3 | Discipline testnet-vs-audité — jamais confondus |
+| C4 | Conception réaliste des exigences d'un vrai engagement d'audit, sans concéder qu'elles existent déjà |
 
 ## Rubric (0–4 par compétence)
 

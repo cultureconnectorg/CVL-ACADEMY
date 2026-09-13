@@ -31,3 +31,15 @@ smart-contract security-audit methodology.
    been professionally audited?" (No — its real scope is a
    pedagogical testnet deployment, never presented as an audited
    production system)
+6. Why does automated royalty distribution specifically raise the
+   access-control vulnerability class as a top concern, more than a
+   generic utility contract might? (Because it moves value between
+   parties automatically — a broken access check could let an
+   unauthorized party redirect or drain royalty payments, a direct
+   financial-harm vector unique to payment-moving contracts)
+7. If a candidate is asked to design a *real* audit engagement for a
+   contract like `BCH-01-M03`'s, what would need to exist that does
+   not exist today? (A contracted third-party security auditor, a
+   defined audit scope and methodology sign-off, and a mainnet
+   deployment target — none of which exist for this pedagogical
+   exercise)

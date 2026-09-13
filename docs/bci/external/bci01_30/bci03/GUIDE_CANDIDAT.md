@@ -28,3 +28,9 @@ sécurité — ce sont deux choses distinctes.
 N'affirme jamais qu'un audit professionnel a eu lieu, et ne présente
 jamais un système blockchain de production CVLN comme existant —
 élimination automatique.
+
+## Concevoir un vrai engagement d'audit (Cas N2-4)
+
+Si on te demande de documenter ce qu'exigerait un vrai audit, liste
+précisément ce qui manque (auditeur tiers, méthodologie formalisée,
+cible mainnet) sans jamais concéder qu'un de ces éléments existe déjà.

@@ -40,6 +40,10 @@ BCI-02 (market-general smart-contract development fundamentals).
    successful testnet deployment demonstrates the contract runs, not
    that it has been audited for the vulnerability classes in
    Objective 2 — never conflate the two.
+4. Document what a real professional audit engagement would require
+   that does not exist today (a contracted third-party auditor, a
+   formalized audit scope/methodology, a mainnet deployment target) —
+   as a future requirement only, never as something already in place.
 
 ## Modules
 

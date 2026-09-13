@@ -34,3 +34,16 @@ standards du marché (réentrance, overflow/underflow, contrôle
 d'accès, manipulation d'oracle) — une checklist qui les omet n'est pas
 un audit de sécurité complet. Élimination si le candidat valide cette
 checklist incomplète comme un audit rigoureux.
+
+## Cas N2-4 — Conception d'un vrai engagement d'audit
+
+Un candidat doit documenter ce qu'exigerait un vrai engagement d'audit
+professionnel pour un contrat comme celui de `BCH-01-M03`, en listant
+précisément ce qui manque aujourd'hui (auditeur tiers contracté,
+méthodologie et périmètre d'audit formalisés, cible mainnet).
+
+**Critères de notation:** la liste est réaliste et complète, et le
+candidat ne prétend jamais qu'un élément de cette liste existe déjà
+pour `BCH-01-M03`. Élimination si le candidat affirme qu'un de ces
+éléments (auditeur contracté, méthodologie formalisée, cible mainnet)
+existe déjà.
