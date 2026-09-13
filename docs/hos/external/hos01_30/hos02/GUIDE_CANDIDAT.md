@@ -21,7 +21,8 @@ formation legacy réelle `HOS-01`.
 ## Piège le plus fréquent
 
 Recopier le contenu de `HOS-01-M03` comme livrable propre au lieu de
-produire un travail original appliqué à un nouveau cas.
+produire un travail original appliqué à un nouveau cas — y compris un
+simple renommage du lieu sans adaptation réelle du parcours.
 
 ## Règle absolue
 

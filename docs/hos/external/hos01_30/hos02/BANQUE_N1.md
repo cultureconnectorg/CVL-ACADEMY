@@ -29,3 +29,14 @@ Sourced against legacy HOS-01's real module definition
    it matter? (`HOS-02` — kept distinct from the legacy runtime
    `HOS-01` formation code, to prevent any future build from silently
    conflating or overwriting the legacy formation)
+5. A candidate proposes reusing `HOS-01-M03`'s exact journey map for a
+   new hybrid venue case, changing only the venue's name. Why does
+   this fail the specialization objective even though no fact is
+   invented? (Because the deliverable must demonstrate original
+   application of the method to a genuinely different case — a
+   renamed copy shows no independent journey-mapping work, only
+   citation without application)
+6. Why is legacy `HOS-01` never rebuilt or modified as part of this
+   formation's construction? (Because `HOS-01` is a real, already-
+   delivered runtime formation — this row cites it as a worked example
+   by reference only, per the corpus's repo-truth-first discipline)

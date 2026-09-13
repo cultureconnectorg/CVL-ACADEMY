@@ -10,6 +10,7 @@ Structure identique à `../../../../gmd/gmd21/ASSESSMENT_AND_RUBRIC.md`
 | C1 | Méthode de journey mapping + scénographie, citant `HOS-01-M03` |
 | C2 | Discipline profondeur-vs-survol — spécialisation, jamais duplication |
 | C3 | Discipline de collision de code — `HOS-02` ≠ `HOS-01` legacy |
+| C4 | Originalité du livrable — jamais un renommage superficiel du cas cité |
 
 ## Rubric (0–4 par compétence)
 

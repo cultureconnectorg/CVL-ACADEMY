@@ -7,7 +7,7 @@ Relis `REFERENTIAL.md` §Grounding (`HOS-01-M03`) à côté de la copie.
 ## Ce que tu vérifies en priorité
 
 1. Le livrable est-il un travail original, ou une copie de
-   `HOS-01-M03` ?
+   `HOS-01-M03` (y compris un simple renommage du lieu, Cas N2-4) ?
 2. Le candidat distingue-t-il correctement spécialisation et survol ?
 3. Confond-il les codes `HOS-01`/`HOS-02` ? Applique la règle
    éliminatoire sans exception si la confusion persiste après

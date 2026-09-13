@@ -34,3 +34,16 @@ lieu hybride CVLN n'existe en production — `HOS-01` (legacy) est une
 formation pédagogique livrée, jamais un système opérationnel réel à
 accéder via une certification. Élimination si le candidat maintient
 l'affirmation.
+
+## Cas N2-4 — Livrable renommé, jamais réappliqué
+
+Un candidat soumet le journey map de `HOS-01-M03`, en changeant
+uniquement le nom du lieu ("Villa Caraïbe" devient "Villa Créole"),
+sans aucune adaptation réelle au nouveau cas.
+
+**Critères de notation:** identifie que ceci n'est pas un travail
+original — le candidat doit démontrer l'application indépendante de la
+méthode à un cas réellement différent (parcours client distinct,
+points de contact différents), pas un renommage. Pas d'élimination
+automatique (pas une invention), mais note fortement réduite,
+équivalente au Cas N2-2.
