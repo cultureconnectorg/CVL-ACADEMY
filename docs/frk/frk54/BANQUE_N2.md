@@ -18,3 +18,15 @@ supplémentaire.
 
 **Critère éliminatoire :** affirmer que `events.py` notifie déjà des
 systèmes externes.
+
+## Cas 3 — Évolution d'un schéma d'événement
+
+Un événement webhook déjà consommé par des systèmes externes doit
+évoluer (ajout d'un champ obligatoire). Le candidat conçoit une
+stratégie de versionnage (ex. nouvelle version de schéma, champ
+optionnel avec valeur par défaut, ou en-tête de version) qui ne casse
+aucun consommateur existant.
+
+**Critère éliminatoire :** proposer de modifier le schéma existant
+sans mécanisme de compatibilité ascendante, cassant silencieusement
+les consommateurs déjà intégrés.
