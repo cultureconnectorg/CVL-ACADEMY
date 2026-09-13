@@ -30,10 +30,11 @@ prerequisite.
 ## M3 — progression-tier resolution
 
 6. Si `cc_credits = 99`, quel palier `resolve_stade()` retourne-t-il ?
-   (`branches` — seuil 100 non atteint, palier `racine`... attention:
-   vérifier l'ordre décroissant réel : foret=300, arbre=150,
-   branches=100, racine=50, pousse=10, graine=0 — 99 < 100 donc ne
-   passe pas `branches`, retombe sur `racine` puisque 99 ≥ 50)
+   (`racine` — la vérification se fait en ordre décroissant
+   `foret=300, arbre=150, branches=100, racine=50, pousse=10,
+   graine=0` ; 99 est inférieur au seuil `branches` (100) donc ne le
+   franchit pas, mais reste ≥ au seuil `racine` (50), donc `racine`
+   est retourné)
 7. Quel est le palier retourné pour `cc_credits = 0` ? (`graine`)
 
 ## M4 — frontière avec le système externe
@@ -44,3 +45,8 @@ prerequisite.
 9. Existe-t-il une preuve d'intégration observée entre `frek_core.py`
    et n'importe quel autre système CVLN réel (Wallet, KORA,
    Agent Factory) ? (Non — aucune intégration observée nulle part)
+10. Pourquoi `cc_credits = 150` exactement retourne-t-il `arbre` plutôt
+    que `branches` ? (Le seuil `arbre` est 150 ; la vérification en
+    ordre décroissant teste d'abord `foret` (300, non atteint) puis
+    `arbre` (150, atteint exactement) — une valeur égale au seuil
+    franchit ce palier, elle ne reste pas au palier inférieur)

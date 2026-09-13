@@ -37,3 +37,14 @@ fin (5 méthodes, remote/local fallback), alors que `frekcoreAout2026`/
 couches réelles distinctes, jamais fusionnées, sans intégration
 observée entre elles. Élimination si le candidat affirme qu'elles sont
 le même système ou que l'une opère l'autre.
+
+## Cas N2-4 — Seuil de palier exact
+
+Un candidat prédit qu'un `cc_credits = 150` retournerait le palier
+`branches` (juste en dessous d'`arbre`), en raisonnant que 150 est
+« la limite haute de branches ». Corrige-le en citant le comportement
+exact de la vérification en ordre décroissant.
+
+**Critère éliminatoire :** confirmer la prédiction erronée, ou ne pas
+expliquer précisément pourquoi une valeur égale à un seuil franchit ce
+palier plutôt que de rester au palier inférieur.

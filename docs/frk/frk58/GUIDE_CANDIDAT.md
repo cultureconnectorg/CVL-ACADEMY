@@ -14,8 +14,8 @@ architecture `frek_v3` (FRK-71→75).
 ## Comment réviser
 
 1. Relis `backend/services/frek_core.py` toi-même.
-2. Fais les 9 questions de `BANQUE_N1.md`.
-3. Traite les 3 cas de `BANQUE_N2.md`.
+2. Fais les 10 questions de `BANQUE_N1.md`.
+3. Traite les 4 cas de `BANQUE_N2.md`.
 
 ## Piège le plus fréquent
 
