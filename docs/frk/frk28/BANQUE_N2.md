@@ -18,3 +18,15 @@ append-only, chaînage).
 
 **Critère éliminatoire :** présenter `events.py` comme un registre de
 provenance existant.
+
+## Cas 3 — Correction d'un événement erroné
+
+Un événement de provenance a été écrit avec une valeur incorrecte
+(ex. mauvais horodatage d'origine). Le candidat doit concevoir le
+mécanisme de correction : un événement compensatoire référencant
+l'événement erroné, jamais une modification de celui-ci — et
+expliquer pourquoi la chaîne reste intègre et auditable après
+correction.
+
+**Critère éliminatoire :** proposer de modifier ou supprimer
+l'événement erroné directement dans le registre.
