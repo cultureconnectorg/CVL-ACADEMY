@@ -1,5 +1,11 @@
 # FRK-27 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Ingénierie de knowledge graph culturel (ontologie, inférence) + référence FRK-26 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
