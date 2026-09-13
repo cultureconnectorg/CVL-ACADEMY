@@ -1,5 +1,11 @@
 # FRK-17 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Littératie horodatage de confiance (RFC 3161, vérification manuelle, frontière FRK-13) |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
