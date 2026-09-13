@@ -1,11 +1,16 @@
 # FRK-69 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Audit d'artefact de preuve/provenance (correspondance source) + référence FRK-68 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
 |---|---|
-| 0 | Confond audit procédural général (FRK-68) et audit d'artefact de
-    preuve. |
+| 0 | Confond audit procédural général (FRK-68) et audit d'artefact de preuve. |
 | 1 | Distingue en théorie, audit d'artefact incomplet. |
 | 2 | Audit d'artefact complet, référence à FRK-68 implicite. |
 | 3 | Audit complet, référence à FRK-68 explicite et correcte. |
