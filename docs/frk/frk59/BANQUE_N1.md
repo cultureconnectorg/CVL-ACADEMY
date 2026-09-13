@@ -38,3 +38,8 @@ already cited in docs/gmd/gmd31, gmd32.
 8. `backend/wallet/` de cette Academy appelle-t-il `frek_core` ?
    (Non — aucun appel observé, les deux systèmes internes ne se
    parlent pas non plus)
+9. Combien de systèmes distincts au total ce référentiel exige-t-il
+   de garder séparés dans toute affirmation ? (Quatre — `frek_
+   service.py` Good Mood, `wallet_service.py` Good Mood,
+   `frek_core.py` Academy, `backend/wallet/` Academy — aucune paire
+   parmi ces quatre n'est observée s'appeler mutuellement)

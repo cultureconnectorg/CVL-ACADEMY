@@ -32,3 +32,14 @@ complètement distincts — l'un est un client sortant vers un Wallet
 externe, l'autre un ledger interne additif de cette Academy — et
 qu'aucun des deux n'appelle l'autre ni `frek_core`. Élimination si le
 candidat confirme la confusion.
+
+## Cas N2-4 — Diagramme des quatre systèmes
+
+Le candidat doit dessiner un diagramme (ou une description textuelle
+équivalente) des quatre systèmes en jeu (`frek_service.py` Good Mood,
+`wallet_service.py` Good Mood, `frek_core.py` Academy, `backend/
+wallet/` Academy), en indiquant explicitement l'absence de tout appel
+observé entre chaque paire.
+
+**Critère éliminatoire :** dessiner une flèche de connexion entre deux
+de ces quatre systèmes sans preuve réelle observée.

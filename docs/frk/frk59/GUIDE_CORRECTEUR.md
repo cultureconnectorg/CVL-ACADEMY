@@ -11,6 +11,7 @@ de la copie.
 2. Confond-il les 4 systèmes (frek_service/wallet_service Good Mood
    vs. frek_core/wallet Academy) ?
 3. Décrit-il correctement le schedule de retry ?
+4. Dessine-t-il une connexion inventée entre deux des quatre systèmes ?
 
 ## Ce que tu ne fais pas
 
