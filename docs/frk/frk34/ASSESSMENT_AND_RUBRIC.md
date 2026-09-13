@@ -1,5 +1,11 @@
 # FRK-34 — Assessment & Rubric
 
+## Compétences évaluées
+
+| Compétence | Description |
+|---|---|
+| C1 | Identité d'œuvre (hash, métadonnées structurelles) + frontière LabelOS LOS-02 |
+
 ## Grille (0–4)
 
 | Niveau | Critère |
