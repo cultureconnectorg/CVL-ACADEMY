@@ -9,6 +9,10 @@ sérialisation.
 **Critère éliminatoire :** faire dépendre le modèle d'un détail
 d'encodage binaire particulier.
 
+**Critères de notation :** entités, attributs et relations réellement
+distincts, réutilisables indépendamment du format choisi pour les
+sérialiser.
+
 ## Cas 2 — Frontière `.fk`
 
 Le candidat doit expliquer pourquoi son schéma resterait valide même si
@@ -16,3 +20,17 @@ Le candidat doit expliquer pourquoi son schéma resterait valide même si
 réelle des deux sujets.
 
 **Critère éliminatoire :** affirmer que le schéma dépend de `.fk`.
+
+## Cas 3 — Dépendance cachée
+
+Un candidat propose un modèle où l'attribut "provenance" est structuré
+comme une liste ordonnée, en justifiant ce choix par "c'est comme ça
+que `.fk` l'encoderait probablement". Identifie le problème dans cette
+justification.
+
+**Critères de notation :** identifie que cette justification introduit
+une dépendance cachée à une supposition sur un format inexistant — la
+structure de l'attribut doit être justifiée par la sémantique du
+domaine (ex. l'ordre chronologique de la chaîne de provenance
+lui-même), jamais par une anticipation d'encodage `.fk`. Élimination
+si le candidat ne perçoit pas le problème.
