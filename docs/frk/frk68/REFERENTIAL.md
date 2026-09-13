@@ -37,6 +37,11 @@ unified audit trail across systems they do not actually connect:
   (Good Mood→external Wallet) are three separate real tables in
   separate systems — an auditor never merges them into a single
   narrative.
+- **Independent-channel discipline within Good Mood**: even the two
+  outbox tables that share the same Good Mood system are independent
+  delivery channels — a `delivered`/`failed` entry in one never
+  implies anything about the state of the other for the same
+  `user_id`; each follows its own retry cycle.
 
 ## Modules
 

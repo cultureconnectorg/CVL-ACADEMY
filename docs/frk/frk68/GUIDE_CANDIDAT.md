@@ -14,7 +14,7 @@ retry exact.
 
 1. Relis `emit_signal()` dans `frek_core.py`, et `docs/gmd/gmd31`/
    `gmd32` en entier.
-2. Fais les 7 questions de `BANQUE_N1.md`, traite les 3 cas de
+2. Fais les 8 questions de `BANQUE_N1.md`, traite les 4 cas de
    `BANQUE_N2.md`.
 
 ## Piège le plus fréquent

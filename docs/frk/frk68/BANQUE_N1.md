@@ -35,3 +35,9 @@ outbox tables (frek_outbox, wallet_outbox), re-read this session.
    quelles tentatives ont déjà eu lieu selon le schedule réel ? (30s,
    2m, 10m — la tentative à 1h n'est pas encore due si le compteur
    part de l'insertion initiale)
+8. Pourquoi un auditeur ne peut-il jamais déduire l'état d'une entrée
+   `db.wallet_outbox` à partir de l'état d'une entrée
+   `db.frek_outbox` portant un `user_id` identique ? (Ce sont deux
+   canaux de livraison indépendants dans le même système Good Mood —
+   chacun suit son propre cycle de tentatives et peut échouer ou
+   réussir indépendamment de l'autre, même pour le même utilisateur)

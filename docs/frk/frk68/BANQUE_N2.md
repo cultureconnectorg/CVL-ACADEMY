@@ -32,3 +32,16 @@ Un stagiaire audite `db.frek_signals` et conclut sur l'état de
 distinctes, dans deux systèmes distincts (cette Academy vs. Good
 Mood) — l'état de l'une ne dit rien sur l'état de l'autre. Élimination
 si le candidat confirme la conclusion croisée erronée.
+
+## Cas N2-4 — Même utilisateur, deux canaux Good Mood
+
+Un même `user_id` a une entrée `delivered` dans `db.frek_outbox` et
+une entrée `failed` dans `db.wallet_outbox`. Un stagiaire conclut que
+l'échec du wallet doit signaler un problème avec la livraison FREK-ID
+également. Corrige-le.
+
+**Critères de notation :** explique que les deux outbox sont des
+canaux de livraison indépendants au sein du même système Good Mood —
+le succès de l'un ne garantit ni ne compromet l'état de l'autre, même
+pour le même utilisateur. Élimination si le candidat accepte le lien
+de causalité inventé entre les deux canaux.
