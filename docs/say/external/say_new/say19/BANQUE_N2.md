@@ -32,3 +32,16 @@ tournée n'existe dans le repo réel `gmfest972/goodmooddjsayd` audité
 — cette formation enseigne une pratique de marché standard, jamais
 une capacité de plateforme. Élimination si le candidat maintient
 l'affirmation de capacité plateforme.
+
+## Cas N2-4 — Routing sans contrainte logistique réelle
+
+Un candidat produit un plan de routing multi-lieux qui ignore les
+contraintes de déplacement réelles entre les dates (temps de trajet,
+horaires de set qui se chevauchent), rendant le routing physiquement
+irréalisable.
+
+**Critères de notation:** identifie que le plan doit être réalisable
+dans un scénario de tournée plausible — un routing qui ignore les
+contraintes de déplacement ne démontre pas la compétence M3. Pas
+d'élimination automatique (pas une invention), mais note fortement
+réduite pour absence de réalisme logistique.

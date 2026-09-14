@@ -10,6 +10,7 @@ Structure identique à `../../../say_lab/ASSESSMENT_AND_RUBRIC.md` (N1
 | C1 | Tourbook fondé sur `FMS-05-M04`, avec matière DJ-spécifique ajoutée |
 | C2 | Rider technique et logistique d'équipement DJ-spécifique |
 | C3 | Routing multi-lieux/back-to-back festival |
+| C4 | Réalisme logistique du routing (contraintes de déplacement respectées) |
 
 ## Rubric (0–4 par compétence)
 

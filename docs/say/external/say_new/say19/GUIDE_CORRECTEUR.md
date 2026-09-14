@@ -10,6 +10,8 @@ Relis `REFERENTIAL.md` §Grounding (`FMS-05-M04`) à côté de la copie.
 2. Le rider technique spécifie-t-il du matériel DJ réel ?
 3. Le candidat invente-t-il une capacité de plateforme Good Mood pour
    le routing ? Applique la règle éliminatoire sans exception si oui.
+4. Le plan de routing est-il logistiquement réalisable (Cas N2-4),
+   ou ignore-t-il les contraintes de déplacement réelles ?
 
 ## Ce que tu ne fais pas
 

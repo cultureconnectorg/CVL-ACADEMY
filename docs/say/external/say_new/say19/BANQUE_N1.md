@@ -29,3 +29,14 @@ DJ-touring industry practice.
 5. What is the assessment eliminatory check? (Re-teaching
    `FMS-05-M04`'s general content verbatim instead of citing it and
    adding the DJ-specific delta)
+6. Why is this row the flagship of a 19-row cluster where the other
+   18 stay at `MODULE_CONTENT_DRAFTED`? (Because SAY-19 has a unique,
+   real per-row grounding touchpoint — `FMS-05-M04`'s deliverable
+   format — that the other market-general rows in this cluster don't
+   individually have; it's the one row buildable to full depth without
+   fabricating a repo/canon-module anchor)
+7. Un collègue affirme que `gmfest972/goodmooddjsayd` (le repo réel
+   audité de Good Mood/DJ Sayd) gère le routing de tournée. Que
+   réponds-tu ? (Aucune capacité de routing de tournée n'existe dans
+   ce repo audité — cette formation enseigne une pratique de marché
+   standard, jamais une capacité de plateforme observée)

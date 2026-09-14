@@ -25,3 +25,9 @@ technique, routing multi-lieux).
 
 N'invente jamais une capacité de plateforme Good Mood pour le routing
 de tournée — élimination automatique.
+
+## Réalisme du routing
+
+Ton plan de routing multi-lieux doit respecter des contraintes de
+déplacement plausibles — un routing qui ignore les temps de trajet et
+les chevauchements d'horaires n'est pas réalisable.
