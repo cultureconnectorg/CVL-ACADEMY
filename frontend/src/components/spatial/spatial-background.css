@@ -254,7 +254,26 @@
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__orbit,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__energy-rail,
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__mist,
-.spatial-background[data-spatial-motion="reduced"] .spatial-background__foreground {
+.spatial-background[data-spatial-motion="reduced"] .spatial-background__foreground,
+/* data-spatial-motion="static" is the LITE-quality mobile tier (coarse
+   pointer + narrow viewport, e.g. iPhone Safari) — devicePerformancePolicy
+   deliberately disables motion here for compositor cost, not user a11y
+   preference, so it must be starved of continuous animation exactly like
+   "reduced"/"off" above. Before this rule these 7 always-on, blur-heavy
+   layers (aurora x2 @ blur(54px), mist/sunset-glow @ blur(34px), orbit x2,
+   energy-rail, stars) kept animating forever on LITE devices even though
+   spatial-living-world.css already stops the smaller clouds/globe/particles
+   animations for that same tier — the real cause of the sustained
+   GPU/compositor load that freezes/crashes Safari on iPhone starting on
+   Landing, despite quality detection correctly identifying the device. */
+.spatial-background[data-spatial-motion="static"] .spatial-background__world,
+.spatial-background[data-spatial-motion="static"] .spatial-background__stars,
+.spatial-background[data-spatial-motion="static"] .spatial-background__sunset-glow,
+.spatial-background[data-spatial-motion="static"] .spatial-background__aurora,
+.spatial-background[data-spatial-motion="static"] .spatial-background__orbit,
+.spatial-background[data-spatial-motion="static"] .spatial-background__energy-rail,
+.spatial-background[data-spatial-motion="static"] .spatial-background__mist,
+.spatial-background[data-spatial-motion="static"] .spatial-background__foreground {
   animation: none !important;
   transform: none !important;
   will-change: auto;
