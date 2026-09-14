@@ -21,17 +21,12 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
   const [viewportWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1440));
   const backgroundUrl = backgroundForNode(node, { viewportWidth });
   const enabled = FEATURE_FLAGS.SPATIAL_WEBGL && quality !== SPATIAL_QUALITY.LITE && Boolean(backgroundUrl);
+  const isFull = enabled && quality === SPATIAL_QUALITY.FULL;
+  const isBalanced = enabled && quality === SPATIAL_QUALITY.BALANCED;
   const [engineReady, setEngineReady] = useState(0);
 
-  // On BALANCED/mobile, preserve the source photograph's aspect ratio with
-  // cover-based layers and still react to scroll/touch/camera/learning events.
-  // FULL desktop keeps the Three.js perspective engine.
-  if (enabled && quality === SPATIAL_QUALITY.BALANCED) {
-    return <SpatialMobileLivingBackground pathname={pathname} />;
-  }
-
   useEffect(() => {
-    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
+    if (!isFull || typeof window === "undefined") return undefined;
     let cancelled = false;
 
     import("@/lib/spatial/webglEngine").then((mod) => {
@@ -50,42 +45,46 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
       engineRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled, quality]);
+  }, [isFull, quality]);
 
   useEffect(() => {
     engineRef.current?.setReducedMotion?.(reduced);
   }, [reduced]);
 
   useEffect(() => {
-    if (!enabled || quality !== SPATIAL_QUALITY.FULL || !backgroundUrl) return;
+    if (!isFull || !backgroundUrl) return;
     engineRef.current?.transitionTo?.({ url: backgroundUrl, scene, environment, node });
-  }, [enabled, quality, backgroundUrl, scene, environment, node, engineReady]);
+  }, [isFull, backgroundUrl, scene, environment, node, engineReady]);
 
   useEffect(() => {
-    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
+    if (!isFull || typeof window === "undefined") return undefined;
     const onCamera = (event) => engineRef.current?.onCameraEvent?.(event?.detail);
     window.addEventListener(SPATIAL_CAMERA_EVENT, onCamera);
     return () => window.removeEventListener(SPATIAL_CAMERA_EVENT, onCamera);
-  }, [enabled, quality]);
+  }, [isFull]);
 
   useEffect(() => {
-    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
+    if (!isFull || typeof window === "undefined") return undefined;
     const onContext = (event) => engineRef.current?.setContextActive?.(Boolean(event?.detail?.active));
     window.addEventListener(SPATIAL_CONTEXT_EVENT, onContext);
     return () => window.removeEventListener(SPATIAL_CONTEXT_EVENT, onContext);
-  }, [enabled, quality]);
+  }, [isFull]);
 
   useEffect(() => {
-    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
+    if (!isFull || typeof window === "undefined") return undefined;
     const onSignal = (event) => {
       const profile = spatialSignalProfile(event?.detail?.type);
       if (profile) engineRef.current?.onLearningSignal?.(profile);
     };
     window.addEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
     return () => window.removeEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
-  }, [enabled, quality]);
+  }, [isFull]);
 
-  if (!enabled || quality !== SPATIAL_QUALITY.FULL) return null;
+  if (isBalanced) {
+    return <SpatialMobileLivingBackground pathname={pathname} />;
+  }
+
+  if (!isFull) return null;
 
   return (
     <div
