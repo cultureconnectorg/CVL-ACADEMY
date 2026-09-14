@@ -20,7 +20,22 @@ const FORMATION_WITH_MODULE = {
 };
 
 async function setup(page) {
-  return mockAuthenticatedSession(page, { formationDetail: FORMATION_WITH_MODULE });
+  await mockAuthenticatedSession(page, { formationDetail: FORMATION_WITH_MODULE });
+
+  // FormationDetail includes the real commercial entitlement gate. This test
+  // exercises camera navigation, not checkout, so make that independent
+  // contract explicit: no Economy mapping means no commercial lock. Without
+  // this route the generic fixture fallback returns `{}`; CommercialPurchaseCard
+  // expects an entitlement array, correctly treats the malformed response as
+  // commercial failure and replaces the module link with a lock after first
+  // render. That produced a locator which could appear and then detach.
+  await page.route("**/api/commercial/offers/FMS-01**", (route) =>
+    route.fulfill({
+      status: 404,
+      contentType: "application/json",
+      body: JSON.stringify({ detail: "NO_ECONOMY_MAPPING" }),
+    })
+  );
 }
 
 test.describe("Spatial camera follow H0.8 production bridge", () => {

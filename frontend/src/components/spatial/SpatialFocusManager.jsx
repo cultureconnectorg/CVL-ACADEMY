@@ -73,7 +73,6 @@ function snapshotCurrentRoute(pathname) {
 export default function SpatialFocusManager() {
   const location = useLocation();
   const guardRef = useRef(null);
-  const pathRef = useRef(location.pathname);
   if (!guardRef.current) guardRef.current = createAutofocusGuard();
 
   useEffect(() => {
@@ -89,12 +88,6 @@ export default function SpatialFocusManager() {
   }, []);
 
   useEffect(() => {
-    const previous = pathRef.current;
-    if (previous && previous !== location.pathname && routeToTopologyNode(previous)) {
-      snapshotCurrentRoute(previous);
-    }
-    pathRef.current = location.pathname;
-
     if (!routeToTopologyNode(location.pathname)) return undefined;
     let cancelled = false;
     let pendingTarget = null;
@@ -123,6 +116,11 @@ export default function SpatialFocusManager() {
 
     return () => {
       cancelled = true;
+      // The cleanup still sees the DOM of the route being left, so this is
+      // the only safe moment to persist focus/depth for that pathname.
+      // Re-saving the previous pathname from the next effect runs after React
+      // has committed the destination DOM and can overwrite the correct CTA
+      // with <body>, making browser Back unable to restore explicit focus.
       snapshotCurrentRoute(location.pathname);
     };
   }, [location.pathname]);
