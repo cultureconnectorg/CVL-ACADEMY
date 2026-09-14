@@ -54,6 +54,32 @@ async def ensure_indexes() -> None:
         partialFilterExpression={"effect_key": {"$type": "string"}},
     )
 
+    # ACA-0026 — real payment/funding runtime (payments/), RECONCILE-2
+    # Groupe 3: r35l31 built payments/service.py's idempotency guards
+    # around these indexes (idempotency_key on checkout sessions,
+    # checkout_session_id on payments) but its own infra_indexes.py
+    # entry for them had never been carried into this codebase's
+    # startup path until now — without them, create_checkout() and
+    # handle_stripe_webhook() had no real DB-level duplicate/race
+    # protection, only the application-level pre-checks already in
+    # payments/service.py (see its own comments).
+    await db.payment_checkout_sessions.create_index("idempotency_key", unique=True)
+    await db.payment_checkout_sessions.create_index("provider_session_id")
+    await db.payment_checkout_sessions.create_index(
+        [("user_id", 1), ("created_at", -1)]
+    )
+    await db.payments.create_index("checkout_session_id", unique=True)
+    await db.payments.create_index([("user_id", 1), ("created_at", -1)])
+    # Real race guard (not the primary idempotency check — see
+    # payments/service.py's own comment): two concurrent webhook
+    # deliveries for the same event on the same checkout session can
+    # never both write.
+    await db.payments.create_index(
+        [("checkout_session_id", 1), ("last_provider_event_id", 1)],
+        unique=True,
+        partialFilterExpression={"last_provider_event_id": {"$type": "string"}},
+    )
+
     # Assistants / mentor
     await db.mentor_conversations.create_index(
         [("user_id", 1), ("session_id", 1)], unique=True
