@@ -8,6 +8,12 @@ const FLAG_NAMES = [
   "SPATIAL_HAPTICS",
   "SPATIAL_DEBUG",
   "LIFECYCLE_RUNTIME",
+  "SPATIAL_HUB_ENABLED",
+  "SPATIAL_CAMERA_INTENT",
+  "SPATIAL_MODULE_DEPTH",
+  "SPATIAL_HERO_ENTRY",
+  "SPATIAL_IDENTITY_ENTRY",
+  "SPATIAL_ONBOARDING_ENTRY",
 ];
 
 describe("featureFlags.js", () => {
@@ -27,6 +33,12 @@ describe("featureFlags.js", () => {
     expect(FEATURE_FLAGS.SPATIAL_HAPTICS).toBe(false);
     expect(FEATURE_FLAGS.SPATIAL_DEBUG).toBe(false);
     expect(FEATURE_FLAGS.LIFECYCLE_RUNTIME).toBe(false);
+    expect(FEATURE_FLAGS.SPATIAL_HUB_ENABLED).toBe(false);
+    expect(FEATURE_FLAGS.SPATIAL_CAMERA_INTENT).toBe(false);
+    expect(FEATURE_FLAGS.SPATIAL_MODULE_DEPTH).toBe(false);
+    expect(FEATURE_FLAGS.SPATIAL_HERO_ENTRY).toBe(false);
+    expect(FEATURE_FLAGS.SPATIAL_IDENTITY_ENTRY).toBe(false);
+    expect(FEATURE_FLAGS.SPATIAL_ONBOARDING_ENTRY).toBe(false);
   });
 
   test("an explicit false or garbage value disables a flag", () => {
