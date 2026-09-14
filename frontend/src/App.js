@@ -14,6 +14,7 @@ import CookieConsent from "@/components/CookieConsent";
 import PublicDiscoveryLayout from "@/components/PublicDiscoveryLayout";
 import SpatialWorldFrame from "@/components/spatial/SpatialWorldFrame.jsx";
 import { RouteTransition } from "@/lib/RouteTransition";
+import { ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/AuthRecovery";
 
 const LandingSpatial = lazy(() => import("@/pages/LandingSpatial"));
 const Pricing = lazy(() => import("@/pages/Pricing"));
@@ -113,6 +114,9 @@ function App() {
                   <Route path="/" element={<LandingSpatial />} />
                   <Route path="/login" element={<LandingSpatial authMode="login" />} />
                   <Route path="/register" element={<LandingSpatial authMode="register" />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/legal/accept" element={<LegalAcceptance />} />
                   <Route path="/legal/:slug" element={<LegalHub />} />
