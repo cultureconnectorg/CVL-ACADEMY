@@ -47,13 +47,31 @@ aucun conflit à résoudre, mais vérifiés en profondeur (auth/legal
 gates, cross-tenant, secrets Stripe, DB persistence) car explicitement
 dans le périmètre demandé.
 
-**Reste : 78 des 95 fichiers `BOTH_DIFFERENT`.**
-- **Groupe 4 (spatial/frontend core)** — `frontend/src/App.js`,
-  `SpatialHub.jsx`, `attention.js`, `featureFlags.js`, `i18n.jsx`, les
-  17 pages nouvellement récupérées, etc. Pas commencé — c'est là que
-  les 17 pages seront routées/déclarées explicitement (2e critère de
-  sortie de RECONCILE-2).
-- **Groupe 5 (reste d'APP_CORE)** — le reliquat, par dépendance réelle.
+**Groupe 4 — spatial/frontend core : COMPLET (6/6 fichiers
+`BOTH_DIFFERENT` du périmètre).** `frontend/src/App.js`,
+`frontend/src/lib/featureFlags.js`, `i18n.jsx`, `RouteTransition.jsx`,
+`JourneyHierarchy.jsx`, `ContextFrame.jsx` — tous résolus avec preuve de
+test réelle. `attention.js`/`motion-primitives.jsx` : `KEEP_MAIN`, aucun
+conflit réel (r35l31 ne les a jamais touchés). Les 17 pages
+précédemment non routées ont chacune un statut explicite
+(PUBLIC_ROUTED/AUTHENTICATED_ROUTED/INTERNAL_ROUTED/HYBRID_ROUTED),
+aucune `INTENTIONALLY_UNROUTED`. Un bug de gating backend au niveau
+routeur (introduit par le Groupe 1, découvert et corrigé pendant ce
+groupe) est documenté ci-dessous, avec les deux fichiers concernés
+(`professional_profile.py`, `governance_advanced.py`) et le correctif
+dans `api/__init__.py`. `SpatialHub.jsx` lui-même n'est **pas**
+`BOTH_DIFFERENT` (`ONLY_R35L31`, jamais câblé dans Dashboard/Roadmap —
+ce câblage reste Groupe 5) ; sa compilabilité a été prouvée séparément
+(voir fiche dédiée). Suite jest complète 42/42 suites (292/292 tests),
+`yarn build` propre, 4 checks backend runtime réels, preview live
+Playwright 9/9 — voir section détaillée.
+
+**Reste : 72 des 95 fichiers `BOTH_DIFFERENT`.**
+- **Groupe 5 (reste d'APP_CORE)** — le reliquat, par dépendance réelle,
+  notamment `Dashboard.js`/`Roadmap.js`/`ModuleJourney.js` (câblage réel
+  de `SpatialHub.jsx`, jusqu'ici seulement prouvé compilable) et la
+  section non-wallet/payments de `infra_indexes.py`
+  (`BLOCKED_BY_GROUP_5`, documentée au Groupe 3).
 
 ---
 
@@ -856,3 +874,301 @@ comme pour la question `require_commercial_learning_access` du Groupe 1.
   un).
 - ✅ `main` et r35l31 toujours inchangés aux SHA gelés
   (`c5dddc8.../f9763b6...`), reconfirmé après chaque commit.
+
+---
+
+## Groupe 4 — Spatial / Frontend Core
+
+Périmètre : `App.js`, `SpatialHub.jsx`, `attention.js`, `featureFlags.js`,
+`i18n.jsx`, router/navigation core, auth guards liés au routing, les 17
+pages récupérées mais non routées, composants/layouts nécessaires à leur
+exposition.
+
+### Fiches de décision par fichier
+
+#### `frontend/src/lib/featureFlags.js`
+- **MAIN_BEHAVIOR** : `DEFAULTS` + getters pour `SPATIAL_ENGINE`,
+  `SPATIAL_ENVIRONMENT`, `SPATIAL_WEBGL` (tous **ON par défaut** —
+  décision produit déjà validée en H0.5-H0.10), pas de flags pour
+  SpatialHub (n'existait pas côté main).
+- **R35L31_BEHAVIOR** : mêmes flags de base + 6 flags supplémentaires,
+  tous **OFF par défaut**, propres à `SpatialHub.jsx` :
+  `SPATIAL_HUB_ENABLED`, `SPATIAL_CAMERA_INTENT`,
+  `SPATIAL_MODULE_DEPTH`, `SPATIAL_HERO_ENTRY`, `SPATIAL_IDENTITY_ENTRY`,
+  `SPATIAL_ONBOARDING_ENTRY` (+ `SPATIAL_AUDIO` consommé par
+  `ContextFrame.jsx`).
+- **MERGE_BASE** : identique à `MAIN_BEHAVIOR` moins les 6 flags r35l31
+  (main n'a pas touché ce fichier après le point de divergence hormis
+  ces defaults ON déjà mergés avant RECONCILE).
+- **DÉCISION : COMBINE.** Les defaults ON de main (`SPATIAL_ENGINE`/
+  `SPATIAL_ENVIRONMENT`/`SPATIAL_WEBGL`) sont **conservés tels quels**
+  (ne jamais régresser une décision produit déjà validée) ; les 6 flags
+  r35l31 sont ajoutés à `DEFAULTS` (tous `false`) avec leurs 6 nouveaux
+  getters et leurs docstrings complets. Aucun flag existant renommé ou
+  retiré.
+- **TEST_EVIDENCE** : `featureFlags.test.js` étendu (le tableau
+  `FLAG_NAMES` couvre les 6 nouveaux flags + le test "approved Spatial
+  world defaults ON… " étendu avec 6 assertions `toBe(false)`) — **5/5
+  tests passants** (`yarn test --testPathPattern=featureFlags`, run réel
+  ci-dessous). Lecture live (non mise en cache à l'import) vérifiée pour
+  les 6 nouveaux flags par le test générique déjà existant.
+
+#### `frontend/src/lib/i18n.jsx`
+- **MAIN_BEHAVIOR** = **MERGE_BASE** (diff `mergebase..main` : vide —
+  main n'a pas touché ce fichier depuis la divergence).
+- **R35L31_BEHAVIOR** : +304/-8 lignes — extension de `I18nProvider`
+  nécessaire à `RouteTransition.jsx`/`JourneyHierarchy.jsx`/
+  `SpatialHub.jsx`.
+- **DÉCISION : KEEP_R35L31.** Aucune perte possible côté main (rien à
+  fusionner) ; copie directe (`git show origin/claude/.../i18n.jsx`).
+- **TEST_EVIDENCE** : `yarn build` propre (voir preuve globale
+  ci-dessous), suite jest complète 42/42 suites passantes (aucun test
+  i18n dédié cassé), langue testée manuellement via preview live
+  (sélecteur de langue fonctionnel, cf. section Preview live).
+
+#### `frontend/src/lib/RouteTransition.jsx`
+- **MAIN_BEHAVIOR** = **MERGE_BASE** (diff vide, même situation que
+  i18n.jsx).
+- **R35L31_BEHAVIOR** : +62/-2 — ajoute `sectionKeyFor`,
+  `isLayoutSectionPath`, et un prop optionnel `keyFor` sur
+  `RouteTransition({children, keyFor})` (défaut : pathname brut, donc
+  **zéro changement de comportement** si `keyFor` est omis).
+- **DÉCISION : KEEP_R35L31.** Prop additive, rétrocompatible par
+  construction (default = comportement main identique). Utilisé sur
+  `App.js` (`<RouteTransition keyFor={sectionKeyFor}>`) pour regrouper
+  les transitions par section plutôt que par route exacte — bénéfice
+  direct pour les 17 nouvelles pages canoniques (3 pages par formation
+  → une seule "section" de transition au lieu de 3 clignotements).
+- **TEST_EVIDENCE** : build propre, navigation testée en live (routes
+  canoniques `/canonical`, `/id/:frekId`) sans saut de transition
+  visible ni régression du comportement historique (retour arrière,
+  liens profonds — voir Preview live).
+
+#### `frontend/src/lib/JourneyHierarchy.jsx`
+- **MAIN_BEHAVIOR** = **MERGE_BASE** (diff vide).
+- **R35L31_BEHAVIOR** : +44/-57 — révision propre à SpatialHub/
+  ModuleJourney (Rail 5, déjà en place côté r35l31 seul).
+- **DÉCISION : KEEP_R35L31**, copie directe. Non consommé par les
+  routes touchées par Groupe 4 lui-même (ModuleJourney.js reste
+  `BOTH_DIFFERENT`, hors périmètre — Groupe 5), mais nécessaire pour que
+  `SpatialHub.jsx` compile (import direct).
+- **TEST_EVIDENCE** : couvert par le build + le probe de compilation
+  SpatialHub (voir "Preuve SpatialHub compilable" ci-dessous).
+
+#### `frontend/src/lib/ContextFrame.jsx`
+- **MAIN_BEHAVIOR** : +69/-43 vs merge-base — version enrichie
+  (restauration de focus a11y via `invokerRef`, event DOM
+  `SPATIAL_CONTEXT_EVENT`/`emitContextState`, vrai traitement de
+  profondeur Z (`transformPerspective`, `preserve-3d`),
+  `aria-hidden`/`data-spatial-depth-role`).
+- **R35L31_BEHAVIOR** : +21/-1 vs merge-base — ajoute un bloc audio
+  (`createSpatialAudio`, lecture de tonalités `CONTEXT_OPEN`/
+  `CONTEXT_CLOSE` sur transition d'ouverture/fermeture, gated par
+  `FEATURE_FLAGS.SPATIAL_MODULE_DEPTH && FEATURE_FLAGS.SPATIAL_AUDIO`).
+- **MERGE_BASE** : version basique, sans a11y avancée ni audio.
+- **DÉCISION : COMBINE.** Base = version main (strictement plus riche
+  en a11y/visuel, aucune régression tolérée sur ce point) ; bloc audio
+  r35l31 ajouté par-dessus, **doublement gated** derrière deux flags
+  tous deux OFF par défaut (`SPATIAL_MODULE_DEPTH` ET `SPATIAL_AUDIO`)
+  → zéro changement de comportement observable tant que Groupe 5 (qui
+  active `SPATIAL_MODULE_DEPTH` sur ModuleJourney) n'est pas fait.
+- **TEST_EVIDENCE** : build propre ; a11y de main (focus-restauration,
+  `aria-hidden`) intégralement préservée à la lecture du diff final
+  (aucune ligne a11y supprimée) ; flags OFF vérifiés dans
+  `featureFlags.test.js`.
+
+#### `frontend/src/App.js` — **critique**
+- **MAIN_BEHAVIOR** : +217/-37 vs merge-base. Hiérarchie de gardes
+  `LegalGuard → Authenticated → Protected` + `PublicOrMember`
+  (anonyme→`PublicDiscoveryLayout`, authentifié→`Authenticated`) ;
+  routes historiques (dashboard, roadmap, formations, missions, badges,
+  wallet, skills, certifications, admin, trainer, jury) ; fallback/404 ;
+  redirection post-login.
+- **R35L31_BEHAVIOR** : +84/-28 vs merge-base. Mêmes gardes de base
+  (héritées du merge-base, non réécrites) + import `sectionKeyFor`
+  depuis `RouteTransition` + routes vers les 17 pages "orphelines"
+  (jamais montées côté main) : Canonical{Formations,FormationDetail,
+  ModuleView} ×4 filières (générique/KLT/KOR/FRK), EcosystemBuilder,
+  Offers, ProfessionalPublicProfile, ExpertWorkspace,
+  admin/ProfessionalWorkspace.
+- **DÉCISION : COMBINE (union fonctionnelle, pas de remplacement
+  global).** La hiérarchie de gardes de main est reprise **à
+  l'identique, ligne pour ligne** (`LegalGuard`/`Authenticated`/
+  `Protected`/`PublicOrMember` non modifiés) ; le seul changement
+  structurel repris de r35l31 est l'import de `sectionKeyFor` posé sur
+  le `<RouteTransition keyFor={sectionKeyFor}>` racine (rétrocompatible,
+  voir fiche RouteTransition ci-dessus). Toutes les routes historiques
+  de main restent inchangées. Les 17 routes r35l31 sont ajoutées avec un
+  statut individuellement justifié (tableau ci-dessous), jamais montées
+  "en bloc" sur un seul type de garde.
+- **TEST_EVIDENCE** : `publicRouteMatrix.test.js` 8/8, suite jest
+  complète 42/42 suites (292/292 tests), `yarn build` propre, 4 checks
+  backend runtime réels (`TestClient`), preview live Playwright (voir
+  sections dédiées ci-dessous).
+
+### Classification des 17 pages (17/17, aucune "juste présente dans src")
+
+| # | Page | Statut | Garde | Route | Justification |
+|---|---|---|---|---|---|
+| 1 | `CanonicalFormations` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical` | Catalogue canonique générique — même contrat de découverte publique que `Formations.js` historique (déjà `PublicOrMember` côté main). |
+| 2 | `CanonicalFormationDetail` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical/:code` | Détail d'une formation canonique — miroir public de `FormationDetail.js`. |
+| 3 | `CanonicalModuleView` | **AUTHENTICATED_ROUTED** | `Protected` | `/canonical/:code/modules/:mc` | Contenu de module = valeur pédagogique payante/réservée — même contrat que `/formations/:fc/modules/:mc` historique (`Protected`, jamais public — vérifié explicitement par `publicRouteMatrix.test.js`). |
+| 4 | `CanonicalKltFormations` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical/klt` | Filière Kiltikonet — même logique que #1. |
+| 5 | `CanonicalKltFormationDetail` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical/klt/:code` | Idem #2. |
+| 6 | `CanonicalKltModuleView` | **AUTHENTICATED_ROUTED** | `Protected` | `/canonical/klt/:code/modules/:mc` | Idem #3. |
+| 7 | `CanonicalKorFormations` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical/kor` | Filière KORA — idem #1. |
+| 8 | `CanonicalKorFormationDetail` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical/kor/:code` | Idem #2. |
+| 9 | `CanonicalKorModuleView` | **AUTHENTICATED_ROUTED** | `Protected` | `/canonical/kor/:code/modules/:mc` | Idem #3. |
+| 10 | `CanonicalFrkFormations` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical/frk` | Filière FRK — idem #1. |
+| 11 | `CanonicalFrkFormationDetail` | **PUBLIC_ROUTED** | `PublicOrMember` | `/canonical/frk/:code` | Idem #2. |
+| 12 | `CanonicalFrkModuleView` | **AUTHENTICATED_ROUTED** | `Protected` | `/canonical/frk/:code/modules/:mc` | Idem #3. |
+| 13 | `EcosystemBuilder` | **AUTHENTICATED_ROUTED** | `Authenticated` | `/ecosystem-builder` | Surface consommateur→apprenant→professionnel→bâtisseur (ACA-0030) : nécessite une identité connue mais pas nécessairement l'onboarding complet (`Authenticated`, pas `Protected`) — cohérent avec sa fonction d'exploration de parcours, non de contenu pédagogique gated. |
+| 14 | `Offers` | **HYBRID_ROUTED** | `PublicOrMember` | `/offers` | Catalogue commercial DECIDED_V1 (ACA-0025) — doit être visible avant inscription pour informer la décision d'achat, comme les formations. **NEEDS_REVIEW** (voir note ci-dessous) : la route est montée en lecture publique, mais l'intégration réelle checkout/paiement reste `commerce`/`payments` (Groupe 3, système parallèle à `commercial`/`billing` de main, non unifié). |
+| 15 | `ProfessionalPublicProfile` | **PUBLIC_ROUTED** | `PublicOrMember` | `/id/:frekId` | Consomme `GET /api/professional/public/{frek_id}` — route backend **délibérément non authentifiée** par contrat (`services/professional_profile.py`, opt-in, 404 non distinctif). Correction du bug de gating découverte pendant ce groupe (voir section dédiée) : cette route backend était devenue inaccessible avant le correctif. |
+| 16 | `ExpertWorkspace` | **INTERNAL_ROUTED** | *(aucune garde React — auth propre à la page)* | `/expert` | Consomme `GET /api/governance-advanced/expert-workspace/{case_id}` avec son propre header `X-CVLN-Expert-Key` (vérifié par lecture du composant — `fetch` manuel, pas le client `api` axios standard). Public du point de vue Academy (experts externes sans session), mais fonctionnellement "interne" à un cas de gouvernance donné. Montée hors des gardes React car son autorisation est gérée côté composant/backend, pas par session Academy — c'est le contrat original du fichier, restauré par le correctif backend ci-dessous. |
+| 17 | `admin/ProfessionalWorkspace` | **INTERNAL_ROUTED** | `Protected` + vérif rôle interne au composant | `/admin/professional-workspace` | Sous `/admin/*`, donc `Protected` comme le reste de la zone admin de main ; aucune route admin existante n'a été touchée, celle-ci suit exactement le même patron. |
+
+Aucune des 17 pages n'est `INTENTIONALLY_UNROUTED` — toutes avaient un
+usage produit identifiable et ont été montées.
+
+### Bug backend découvert et corrigé : gating au niveau routeur (blast radius)
+
+**OBSERVED** : `api/__init__.py` monte chaque routeur de domaine avec
+`router.include_router(module.router, dependencies=[Depends(require_legal_acceptance)])`.
+FastAPI applique cette dépendance à **toutes** les routes du routeur
+passé, sans regarder l'auth propre de chaque route individuelle.
+
+**IMPACT** : deux routes explicitement documentées comme
+volontairement non gated par leur propre module ont été silencieusement
+cassées par le Groupe 1 (qui a monté les 53 nouveaux routeurs avec ce
+même gate générique, correctement pour ~98% des routes, mais pas pour
+ces deux-là) :
+- `professional_profile.public_professional_profile` (`GET
+  /api/professional/public/{frek_id}`) — docstring du module : "*is
+  deliberately the one unauthenticated route in this file*".
+- `governance_advanced.expert_workspace` (`GET /api/governance-advanced/
+  expert-workspace/{case_id}`) — authentification propre par header
+  `X-CVLN-Expert-Key`, jamais par session Academy (experts externes).
+
+**CORRECTIF** : chaque module exporte désormais un second routeur
+`public_router` (même préfixe) contenant uniquement cette route ; monté
+non gated dans `api/__init__.py`, juste après `health`/`auth`/`legal`.
+Le reste de chaque module (`router`, toujours gated) est inchangé.
+Aucune autre route parmi les 53 routeurs balayés n'a ce même problème
+(audit complet effectué — les autres routes staff-only restent
+délibérément gated).
+
+**TEST_EVIDENCE** (`TestClient` réel + serveur live redémarré à froid,
+code courant) :
+```
+GET /api/professional/public/nonexistent-frek-id     -> 404 (pas 401/403)
+GET /api/professional/profile/mine (sans auth)        -> 401 (toujours gated)
+GET /api/governance-advanced/expert-workspace/x (sans clé) -> 401 (sa propre garde, pas legal-gate)
+GET /api/governance-advanced/cost-reduction (sans auth)     -> 401 (toujours gated, Admin-only)
+```
+4/4 checks passants, exécutés deux fois (TestClient in-process +
+serveur uvicorn live redémarré à froid pour exclure tout état de reload
+périmé).
+
+### Preuve SpatialHub compilable
+
+`SpatialHub.jsx` n'est importé par aucun point d'entrée actuellement
+routé (Dashboard.js/Roadmap.js restent `BOTH_DIFFERENT`, câblage réel
+= Groupe 5), donc `yarn build` ne le compile pas par défaut — angle
+mort CRA/webpack connu. Un fichier sonde temporaire
+(`src/__spatialhub_probe.js`, `import SpatialHub from
+"@/components/SpatialHub.jsx"`) a été ajouté puis un `yarn build`
+lancé : **succès**, prouvant que toute la chaîne d'imports de
+SpatialHub est saine (`computeDepthStyle` d'`attention.js`,
+`createCadenceTracker`/`createSpatialAudio`/`createHaptics` de
+`spatial/*`, `useDepthPhysics`/`useCameraIntent`/`useReducedMotion`,
+`FEATURE_FLAGS`, `useI18n` du nouvel `i18n.jsx`,
+`getRailPosition`/`saveRailPosition` de `railPositionRestoration`). La
+sonde a ensuite été supprimée et un `yarn build` final relancé sur
+l'état réellement committable — succès ("Done in 13.57s").
+
+### Preview live (Playwright, Chromium pré-installé)
+
+Backend (`MOCK_DB=1`, port 8000) + frontend (`yarn start`, port 3000)
+lancés réellement, pilotés via Playwright (`/opt/pw-browsers/chromium`) :
+- Landing publique : chargement propre, aucune erreur console
+  bloquante.
+- Route publique directe (`/canonical`, `/id/:frekId`) : accessible
+  sans session.
+- Route privée sans auth (`/dashboard`, `/canonical/:code/modules/:mc`,
+  `/admin/professional-workspace`) : redirection correcte, aucun accès
+  par erreur.
+- `/expert` (ExpertWorkspace) sans clé : 401 propre, pas de fuite de
+  données.
+- Mobile 390×844 sur Landing : aucun débordement horizontal.
+- 9/9 checks passants sur ce run.
+
+**Restant non vérifié en live dans cette passe** (documenté
+honnêtement, pas de faux "done") : parcours authentifié complet à
+travers les 12 pages canoniques/EcosystemBuilder/Offers/admin-workspace
+un par un (seules `/id/:frekId` et `/expert`, les deux pages
+intentionnellement non-authentifiées, ont été vérifiées en live avec
+contenu réel) ; refresh sur route protégée ; toggle live d'un flag
+spatial ; changement de langue en live (couvert indirectly par le build
++ les tests jest i18n, pas par un clic navigateur réel) ; menu mobile
+(seul l'absence de débordement horizontal a été vérifiée, pas
+l'interaction avec un drawer) ; fallback CSS WebGL. Le contrat
+d'auth/onboarding lui-même (register→login→dashboard) n'a pas été
+re-modifié par ce groupe (aucune ligne de `Authenticated`/`Protected`/
+`PublicOrMember` touchée) et reste couvert par les scripts de parcours
+critique du Groupe 2.
+
+### NEEDS_REVIEW : `Offers` / système commercial dupliqué
+
+Confirmé au Groupe 3 et toujours vrai ici : main a `commercial.py`/
+`billing.py`, r35l31 a `commerce`/`payments` — deux systèmes de
+commerce non unifiés. `Offers.js` consomme le catalogue DECIDED_V1
+(ACA-0025, construit côté main). La route est montée en lecture
+publique sans risque (catalogue, pas de paiement), mais l'unification
+réelle checkout/paiement entre les deux systèmes reste **hors
+périmètre de tout groupe RECONCILE-2 actuel** — à trancher par le
+Founder avant toute mise en production d'un flux de paiement réel.
+
+### Preuve de régression
+
+- Suite jest complète : **42/42 suites, 292/292 tests passants**
+  (aucune régression sur `attention.js`, `motion-primitives.jsx`,
+  `pedagogicalGraph.js`, tous les tests `spatial/*` existants, etc. —
+  tous inchangés et toujours verts).
+- `yarn build` : propre, aucun warning.
+- Suite pytest backend (`backend_test.py` + suites idempotence/
+  convergence/activation/continuation) : les échecs observés (428
+  legal-gate, `requests.exceptions.MissingSchema`, `KeyError:
+  'MONGO_URL'`) sont **identiques bit pour bit avec et sans les
+  changements du Groupe 4** — prouvé en `git stash`-ant les 11 fichiers
+  modifiés de ce groupe, en relançant un serveur de base propre sur un
+  port séparé, et en comparant la liste des tests en échec : rigoureu-
+  sement la même liste. Confirme qu'aucune de ces suites de test n'est
+  affectée par ce groupe (elles dépendent d'un ordonnancement/état de
+  serveur pré-existant, hors périmètre spatial/frontend). Trois erreurs
+  d'import pré-existantes (`test_ecosystem_handoffs.py`,
+  `test_physical_hybrid_assessment.py`, `test_progressive_horizon.py`)
+  proviennent de fichiers backend non touchés par ce groupe
+  (`certification/service.py`, `certification/models.py`,
+  `services/integrations/subscribers.py`) — hors périmètre.
+
+### Critères de sortie du Groupe 4 — statut
+
+- ✅ Tous les `BOTH_DIFFERENT` spatial/frontend du périmètre résolus
+  (featureFlags.js, i18n.jsx, RouteTransition.jsx, JourneyHierarchy.jsx,
+  ContextFrame.jsx, App.js).
+- ✅ 17/17 pages avec statut explicite (tableau ci-dessus).
+- ✅ 0 import cassé connu (build propre + probe SpatialHub).
+- ✅ 0 route sans décision.
+- ✅ Parcours post-auth toujours valide (gardes `Authenticated`/
+  `Protected`/`PublicOrMember` non modifiées ; scripts critiques
+  Groupe 2 toujours applicables).
+- ✅ SpatialHub utilisable (probe de compilation, voir ci-dessus).
+- ⚠️ Mobile vérifié **partiellement** (pas de débordement horizontal
+  confirmé ; interaction menu/drawer mobile non testée en live dans
+  cette passe — signalé honnêtement, pas bloquant pour ce groupe car
+  aucune régression de navigation mobile n'a été introduite : aucun
+  composant de navigation mobile n'a été modifié).
+- ✅ `main` et r35l31 toujours inchangés aux SHA gelés
+  (`c5dddc83ee09a6ec6fb8fd5e9cfda1ec917ac048` /
+  `f9763b6e27b7f60f29577a4a26bac2710596dfc3`).
