@@ -37,6 +37,7 @@ const POINTER_LERP = 0.06;
 const IDLE_DRIFT_AMPLITUDE = 0.05;
 const IDLE_DRIFT_PERIOD_MS = 26000;
 const EXPOSURE_BASE = 1.0;
+const BALANCED_FRAME_INTERVAL_MS = 1000 / 30;
 
 function planeSize(camera, distance) {
   const vFov = (camera.fov * Math.PI) / 180;
@@ -85,8 +86,8 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   const full = quality === SPATIAL_QUALITY.FULL;
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
-    powerPreference: "high-performance",
+    antialias: full,
+    powerPreference: full ? "high-performance" : "default",
     alpha: false,
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -235,11 +236,19 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
 
   let rafId = null;
   let lastT = performance.now();
+  let lastRenderT = 0;
+  const minFrameInterval = full ? 0 : BALANCED_FRAME_INTERVAL_MS;
 
   function frame(t) {
     if (disposed) return;
+    rafId = requestAnimationFrame(frame);
+
+    if (minFrameInterval > 0 && t - lastRenderT < minFrameInterval) return;
+    lastRenderT = t;
+
     const dt = Math.min(t - lastT, 100);
     lastT = t;
+    void dt;
 
     pointer.x += (pointerTarget.x - pointer.x) * POINTER_LERP;
     pointer.y += (pointerTarget.y - pointer.y) * POINTER_LERP;
@@ -275,8 +284,6 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
 
     if (composer) composer.render();
     else renderer.render(scene, camera);
-
-    rafId = requestAnimationFrame(frame);
   }
   rafId = requestAnimationFrame(frame);
 
@@ -286,6 +293,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
       rafId = null;
     } else if (!rafId && !disposed) {
       lastT = performance.now();
+      lastRenderT = 0;
       rafId = requestAnimationFrame(frame);
     }
   }
