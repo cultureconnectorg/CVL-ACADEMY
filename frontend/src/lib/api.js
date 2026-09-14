@@ -1,9 +1,33 @@
 import axios from "axios";
 import { emitSpatialSignalFromResponse } from "@/lib/spatial/spatialLearningSignals";
 
+/**
+ * Build one canonical API base from whatever was entered in
+ * REACT_APP_BACKEND_URL.
+ *
+ * Accepted examples all resolve to the same result:
+ * - https://cvl-academy.onrender.com
+ * - https://cvl-academy.onrender.com/
+ * - https://cvl-academy.onrender.com/api
+ * - https://cvl-academy.onrender.com/api/auth/register
+ *
+ * This prevents malformed requests such as
+ * /api/auth/register/api/auth/register when the environment variable was
+ * accidentally configured with a full endpoint instead of the backend root.
+ */
+export function normalizeBackendApiBase(rawValue = "") {
+  const value = String(rawValue || "").trim().replace(/\/+$/, "");
+  if (!value) return "/api";
+
+  // Strip an existing /api segment and anything after it, then append exactly
+  // one canonical /api suffix. Matching is case-insensitive and only applies
+  // to a real path segment, so hostnames containing the letters "api" are safe.
+  const backendRoot = value.replace(/\/api(?:\/.*)?$/i, "");
+  return `${backendRoot}/api`;
+}
+
 const rawBackendUrl = process.env.REACT_APP_BACKEND_URL || "";
-const BACKEND_URL = rawBackendUrl.replace(/\/+$/, "");
-export const API_BASE = `${BACKEND_URL}/api`;
+export const API_BASE = normalizeBackendApiBase(rawBackendUrl);
 
 const TOKEN_KEY = "cvln_token";
 const REFRESH_KEY = "cvln_refresh_token";
