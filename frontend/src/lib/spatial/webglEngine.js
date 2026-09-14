@@ -83,16 +83,22 @@ function disposeLayerSet(set) {
 
 export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   const full = quality === SPATIAL_QUALITY.FULL;
+  // MSAA and a >1x pixel ratio both multiply fragment-shader work — real
+  // cost on any GPU, more so on a phone's. BALANCED (the only tier touch
+  // devices reach — see detectWebglQuality) skips both: at typical mobile
+  // viewing distance a single un-antialiased 1x-DPR photograph reads as
+  // sharp, and the saved fragment work is exactly what a phone GPU is
+  // tightest on.
   const renderer = new THREE.WebGLRenderer({
     canvas,
-    antialias: true,
+    antialias: full,
     powerPreference: "high-performance",
     alpha: false,
   });
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = EXPOSURE_BASE;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, full ? 2 : 1.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, full ? 2 : 1));
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x04101e);
@@ -135,6 +141,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     [currentSet, incomingSet].forEach((set) => {
       set?.layers.forEach((layer) => resizeLayer(layer, camera));
     });
+    requestFrame();
   }
 
   function buildLayerSet(url) {
@@ -143,7 +150,10 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
         url,
         (texture) => {
           texture.colorSpace = THREE.SRGBColorSpace;
-          texture.anisotropy = Math.min(4, renderer.capabilities.getMaxAnisotropy());
+          // Anisotropic filtering only pays for itself at a grazing viewing
+          // angle; this photograph is viewed near head-on. Real sampling
+          // cost, so BALANCED skips it same as antialiasing/DPR above.
+          texture.anisotropy = full ? Math.min(4, renderer.capabilities.getMaxAnisotropy()) : 1;
           const layers = [
             makeLayer(texture, { distanceFromCamera: CAMERA_Z - FAR_Z, band: null, overscan: OVERSCAN_FAR }),
           ];
@@ -196,6 +206,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
       layer.material.opacity = 0;
     });
     crossfadeStart = performance.now();
+    requestFrame();
   }
 
   function onCameraEvent(detail) {
@@ -210,21 +221,49 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
       panTarget.x = 0;
       panTarget.y = 0;
     }
+    requestFrame();
   }
 
   function onPointerMove(event) {
     if (reduced) return;
     pointerTarget.x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * POINTER_RANGE;
     pointerTarget.y = -(event.clientY / Math.max(window.innerHeight, 1) - 0.5) * POINTER_RANGE;
+    requestFrame();
   }
   function onPointerLeave() {
     pointerTarget.x = 0;
     pointerTarget.y = 0;
+    requestFrame();
   }
 
   if (typeof window !== "undefined") {
     window.addEventListener("pointermove", onPointerMove, { passive: true });
     document.documentElement.addEventListener("mouseleave", onPointerLeave, { passive: true });
+  }
+
+  let rafId = null;
+  let lastT = performance.now();
+  // Idle-stop: once the scene has fully settled (no pending crossfade, camera
+  // not meaningfully moving), rendering the exact same pixels forever wastes
+  // GPU/CPU and — on a phone — battery/thermal headroom for zero visible
+  // benefit. Touch devices never fire pointermove without an active drag, so
+  // on BALANCED (the only tier touch reaches, see detectWebglQuality) this
+  // routinely settles within a handful of frames after any scene/camera
+  // change and goes fully dormant until the next real trigger (see
+  // requestFrame(), called from every event handler below that can move the
+  // camera or swap the photograph). FULL keeps its continuous idle drift —
+  // desktop is untouched.
+  let lastRenderedX = null;
+  let lastRenderedY = null;
+  let idleFrames = 0;
+  const IDLE_STOP_AFTER = 6;
+  const STILL_EPSILON = 0.0004;
+
+  function requestFrame() {
+    if (rafId === null && !disposed) {
+      lastT = performance.now();
+      rafId = requestAnimationFrame(frame);
+    }
   }
 
   const resizeObserver =
@@ -233,12 +272,8 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   window.addEventListener("resize", resize);
   resize();
 
-  let rafId = null;
-  let lastT = performance.now();
-
   function frame(t) {
     if (disposed) return;
-    const dt = Math.min(t - lastT, 100);
     lastT = t;
 
     pointer.x += (pointerTarget.x - pointer.x) * POINTER_LERP;
@@ -246,7 +281,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
 
     let driftX = 0;
     let driftY = 0;
-    if (!reduced) {
+    if (!reduced && full) {
       const phase = (t % IDLE_DRIFT_PERIOD_MS) / IDLE_DRIFT_PERIOD_MS;
       driftX = Math.sin(phase * Math.PI * 2) * IDLE_DRIFT_AMPLITUDE;
       driftY = Math.cos(phase * Math.PI * 2) * IDLE_DRIFT_AMPLITUDE * 0.6;
@@ -257,7 +292,8 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     camera.position.y = (pointer.y + panTarget.y * 0.6 + driftY) * contextScale;
     camera.lookAt(camera.position.x * 0.4, camera.position.y * 0.4, FAR_Z);
 
-    if (incomingSet) {
+    const crossfading = Boolean(incomingSet);
+    if (crossfading) {
       const elapsed = t - crossfadeStart;
       const p = Math.min(1, elapsed / CROSSFADE_MS);
       incomingSet.layers.forEach((layer) => {
@@ -276,17 +312,37 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     if (composer) composer.render();
     else renderer.render(scene, camera);
 
-    rafId = requestAnimationFrame(frame);
+    const settled =
+      !full &&
+      !crossfading &&
+      lastRenderedX !== null &&
+      Math.abs(camera.position.x - lastRenderedX) < STILL_EPSILON &&
+      Math.abs(camera.position.y - lastRenderedY) < STILL_EPSILON;
+    lastRenderedX = camera.position.x;
+    lastRenderedY = camera.position.y;
+
+    if (settled) {
+      idleFrames += 1;
+    } else {
+      idleFrames = 0;
+    }
+
+    if (idleFrames >= IDLE_STOP_AFTER) {
+      rafId = null; // dormant — requestFrame() wakes it back up on demand
+    } else {
+      rafId = requestAnimationFrame(frame);
+    }
   }
-  rafId = requestAnimationFrame(frame);
+  // The loop is already running: the initial resize() call above (before
+  // frame() existed textually, but function declarations hoist) already
+  // called requestFrame() and scheduled the first frame.
 
   function handleVisibility() {
     if (document.hidden) {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = null;
-    } else if (!rafId && !disposed) {
-      lastT = performance.now();
-      rafId = requestAnimationFrame(frame);
+    } else if (!disposed) {
+      requestFrame();
     }
   }
   document.addEventListener("visibilitychange", handleVisibility);
@@ -296,6 +352,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     onCameraEvent,
     setContextActive(active) {
       contextActive = Boolean(active);
+      requestFrame();
     },
     setReducedMotion(value) {
       reduced = Boolean(value);
@@ -303,6 +360,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
         pointerTarget.x = 0;
         pointerTarget.y = 0;
       }
+      requestFrame();
     },
     dispose() {
       disposed = true;
