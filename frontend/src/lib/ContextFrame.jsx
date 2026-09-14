@@ -10,6 +10,8 @@ import { MOTION_EASING, motionDuration } from "@/lib/motion-tokens";
 import { useReducedMotion } from "@/lib/useReducedMotion";
 import { useSpatialState } from "@/lib/useSpatialState";
 import { SPATIAL_STATES, SPATIAL_EVENTS } from "@/lib/spatial-state";
+import { createSpatialAudio } from "@/lib/spatial/audio";
+import { FEATURE_FLAGS } from "@/lib/featureFlags";
 
 export const SPATIAL_CONTEXT_EVENT = "cvln:spatial-context";
 
@@ -66,6 +68,24 @@ export function ContextFrame({ show, children, className, ...rest }) {
     return () => {
       if (show) emitContextState(false);
     };
+  }, [show]);
+
+  // RAIL 5 (2026-09-07) — real CONTEXT_OPEN/CONTEXT_CLOSE audio, correcting
+  // a wrong claim in Rail 3's own SpatialHub docstring ("belong to
+  // route-level transitions") — this dock is exactly where they belong:
+  // a same-page ACTIVE<->CONTEXT transition, never a route change. Audio
+  // only (no haptic pairing fabricated here — `audio.js`'s own 8-event
+  // set names CONTEXT_OPEN/CONTEXT_CLOSE for exactly this; no dedicated
+  // haptic pattern exists for a dock open/close in `haptics.js`'s 5).
+  const audioRef = useRef(null);
+  if (!audioRef.current) audioRef.current = createSpatialAudio();
+  audioRef.current.setEnabled(FEATURE_FLAGS.SPATIAL_MODULE_DEPTH && FEATURE_FLAGS.SPATIAL_AUDIO);
+  const prevShowRef = useRef(show);
+  useEffect(() => {
+    if (prevShowRef.current === show) return;
+    prevShowRef.current = show;
+    if (!FEATURE_FLAGS.SPATIAL_MODULE_DEPTH) return;
+    audioRef.current.play(show ? "CONTEXT_OPEN" : "CONTEXT_CLOSE");
   }, [show]);
 
   const activeVisual = reduced
