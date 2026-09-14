@@ -53,21 +53,29 @@ export default function SpatialWorldFrame({ children }) {
     [hasWebgl, webglQuality, node]
   );
 
+  // Disabled optional subsystems should not even mount React effects. Their
+  // own internal feature guards remain as defence-in-depth for direct tests or
+  // future reuse, but the production frame avoids creating dormant component
+  // instances for route-transition, sensory and debug capabilities.
+  const routeTransitionsEnabled = FEATURE_FLAGS.SPATIAL_ROUTE_TRANSITIONS;
+  const sensoryEnabled = FEATURE_FLAGS.SPATIAL_AUDIO || FEATURE_FLAGS.SPATIAL_HAPTICS;
+  const diagnosticsEnabled = FEATURE_FLAGS.SPATIAL_DEBUG;
+
   return (
     <div className="relative min-h-screen overflow-hidden" data-testid="spatial-world-frame">
       <ReturnPositionTracker />
       <SpatialFocusManager />
-      <SpatialCameraIntentCapture />
-      <SpatialCameraBridge />
-      <SpatialSensoryBridge />
-      <SpatialRuntimeDiagnostics />
+      {routeTransitionsEnabled ? <SpatialCameraIntentCapture /> : null}
+      {routeTransitionsEnabled ? <SpatialCameraBridge /> : null}
+      {sensoryEnabled ? <SpatialSensoryBridge /> : null}
+      {diagnosticsEnabled ? <SpatialRuntimeDiagnostics /> : null}
       {webglEligible ? (
         <SpatialWebGLBackground pathname={location.pathname} stade={user?.stade} quality={webglQuality} />
       ) : (
         <SpatialBackground pathname={location.pathname} stade={user?.stade} />
       )}
       <SpatialModuleEnvironmentBridge />
-      <SpatialSharedElementLayer />
+      {routeTransitionsEnabled ? <SpatialSharedElementLayer /> : null}
       <div className="relative z-10 min-h-screen">{children}</div>
       <SpatialModuleDock />
     </div>
