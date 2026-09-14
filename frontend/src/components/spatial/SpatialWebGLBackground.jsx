@@ -33,7 +33,13 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
   const reduced = useReducedMotion();
   const { node, scene } = sceneForPathname(pathname);
   const environment = useMemo(() => environmentForStade(stade), [stade]);
-  const backgroundUrl = backgroundForNode(node);
+  // Captured once at mount, same rationale as `quality` below: viewport
+  // class does not change mid-session for what matters here (a rotation
+  // still renders fine at the smaller asset's resolution, see
+  // webglSceneMap.js). Picks the ~38%-of-desktop-weight "-mobile" asset on
+  // a narrow viewport instead of shipping the full 1570px source to a phone.
+  const [viewportWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1440));
+  const backgroundUrl = backgroundForNode(node, { viewportWidth });
   const enabled = FEATURE_FLAGS.SPATIAL_WEBGL && quality !== SPATIAL_QUALITY.LITE && Boolean(backgroundUrl);
   const [engineReady, setEngineReady] = useState(0);
 

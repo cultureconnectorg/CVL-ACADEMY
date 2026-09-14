@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router-dom";
 import { CheckCircle, Erase, EditPencil } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
+import { invalidateLegalAcceptance } from "@/lib/legalGateCache";
 import { toast } from "sonner";
 
 export default function LegalAcceptance() {
@@ -117,6 +118,9 @@ export default function LegalAcceptance() {
         signer_name: signerName.trim(),
       });
       toast.success(`Accord enregistré · ${data.bundle_version}`);
+      // The session cache would otherwise still say "required" until its TTL
+      // expires -- force LegalGuard's very next check back to the server.
+      invalidateLegalAcceptance();
       nav(user.onboarding_completed ? "/dashboard" : "/onboarding", { replace: true });
     } catch (e) {
       const detail = e?.response?.data?.detail;

@@ -22,8 +22,14 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      await refreshMe();
-      const [p, m, b, s, lp] = await Promise.all([
+      // refreshMe() used to be awaited before firing the 5 dashboard calls
+      // below, serializing a full network round trip in front of them for
+      // no reason: none of those 5 endpoints take anything from the fresh
+      // `user` object (each is scoped server-side by the auth token via
+      // get_current_user), so there is nothing for them to wait on. Firing
+      // all 6 together removes that avoidable wait from every Dashboard load.
+      const [, p, m, b, s, lp] = await Promise.all([
+        refreshMe(),
         api.get("/frek/profile").then(r => r.data),
         api.get("/missions").then(r => r.data),
         api.get("/badges/mine").then(r => r.data),

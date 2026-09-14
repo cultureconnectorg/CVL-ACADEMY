@@ -6,7 +6,7 @@ import "@/cvln-cinematic.css";
 
 import { AuthProvider, useAuth } from "@/lib/auth.jsx";
 import { I18nProvider } from "@/lib/i18n.jsx";
-import { api } from "@/lib/api";
+import { fetchLegalAcceptance, peekLegalAcceptance } from "@/lib/legalGateCache";
 import { Toaster } from "@/components/ui/sonner";
 import Layout from "@/components/Layout";
 import LegalFooter from "@/components/LegalFooter";
@@ -86,9 +86,18 @@ function GateFailure({ sessionExpired = false, onRetry, onLogout }) {
 
 function LegalGuard({ children }) {
   const { user, loading, logout } = useAuth();
-  const [state, setState] = useState("checking");
-  const [retryKey, setRetryKey] = useState(0);
   const userId = user?.id || null;
+  // LegalGuard is mounted per-<Route>, so React Router remounts it on every
+  // navigation between protected pages. Seed from the session cache (see
+  // legalGateCache.js) so a navigation within the freshness window renders
+  // straight to "accepted"/"required" instead of a network round trip behind
+  // a blocking "checking" render every single time.
+  const [state, setState] = useState(() => {
+    const cached = peekLegalAcceptance(userId);
+    if (!cached) return "checking";
+    return cached.accepted ? "accepted" : "required";
+  });
+  const [retryKey, setRetryKey] = useState(0);
 
   useEffect(() => {
     let alive = true;
@@ -98,12 +107,17 @@ function LegalGuard({ children }) {
       return undefined;
     }
 
+    const cached = peekLegalAcceptance(userId);
+    if (cached) {
+      setState(cached.accepted ? "accepted" : "required");
+      return undefined;
+    }
+
     setState("checking");
-    api
-      .get("/legal/requirements")
-      .then(({ data }) => {
+    fetchLegalAcceptance(userId)
+      .then((result) => {
         if (!alive) return;
-        setState(data.accepted ? "accepted" : "required");
+        setState(result.accepted ? "accepted" : "required");
       })
       .catch((error) => {
         if (!alive) return;

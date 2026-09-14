@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { api, getToken, setSession, clearSession } from "./api";
+import { invalidateLegalAcceptance } from "./legalGateCache";
 
 const AuthCtx = createContext(null);
 
@@ -45,6 +46,9 @@ export function AuthProvider({ children }) {
     api.post("/auth/logout").catch(() => {});
     clearSession();
     setUser(null);
+    // Never let a different account that logs in on this same tab inherit
+    // the previous account's cached legal-acceptance verdict.
+    invalidateLegalAcceptance();
   };
 
   return (
