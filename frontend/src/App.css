@@ -1,2 +1,4 @@
+@import "./cvln-mobile-polish.css";
+
 /* App-level overrides kept minimal — global styling lives in index.css */
 .App { min-height: 100vh; }
