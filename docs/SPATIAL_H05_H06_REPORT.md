@@ -7,6 +7,14 @@ Nothing in frontend/src, backend/, or the database was touched.
 git status --porcelain on the repo is empty after this work.
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1_PRODUCTION_INTEGRATION`
+> est désormais **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ** : la grammaire de
+> profondeur/mouvement validée ici (H0.5/H0.6) est réellement montée sur
+> Dashboard et Roadmap, derrière flags (défaut off). Ce rapport reste le
+> compte-rendu historique du prototype — voir
+> `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md` pour l'état
+> réel en production.
+
 ## Deliverables
 
 - **Prototype (interactive)**: [Spatial Console Prototype](https://claude.ai/code/artifact/2d3f3418-c06c-436d-8951-b9ce5f574006)

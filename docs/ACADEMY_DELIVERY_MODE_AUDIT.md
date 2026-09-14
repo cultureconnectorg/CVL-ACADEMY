@@ -1,6 +1,18 @@
 # CVLN Academy — Delivery Mode Audit (E_LEARNING / PHYSICAL / HYBRID)
 
 ```
+ADDENDUM (2026-09-04, ACA-0004): the "AMBIGUOUS" headline finding below
+is RESOLVED. The Founder's ACA-0004 decision makes `db.formations.
+contexts` (INTERNAL/EXTERNAL/BRIDGE) — not `catalog_cartography.
+DELIVERY_FORMATS` — the authoritative delivery-architecture source going
+forward. `delivery_formats` is left exactly as-is (untouched); it is
+simply no longer read by the new derivation. See
+`docs/ACADEMY_ACA0004_DELIVERY_ARCHITECTURE_TRUTH_REPORT.md` and
+`backend/fms_canonical/delivery_architecture.py`. The rest of this audit
+(method, other findings) remains accurate as a historical record.
+```
+
+```
 MODE = AUDIT_ONLY. No product code changed to produce this document.
 Every claim below cites a specific file/line read this session. Where a
 keyword search returned zero real hits, that is stated explicitly as a

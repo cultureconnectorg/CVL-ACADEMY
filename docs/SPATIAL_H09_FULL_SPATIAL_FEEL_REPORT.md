@@ -10,6 +10,20 @@ Nothing in frontend/src, backend/, or the database was touched.
 git status --porcelain on the repo is empty after this work (only docs).
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1` est désormais
+> **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**. Le moteur construit et vérifié
+> ici — `physics.js` (ressort `rAF`, STIFFNESS=280/DAMPING=33),
+> `cadence.js`, `audio.js`, `haptics.js` — a été extrait tel quel
+> (W-FUNNEL-1) puis réellement branché en production sur Dashboard
+> (rail `SpatialHub`) et Roadmap (profondeur continue) par Rail 3,
+> derrière les flags `SPATIAL_HUB_ENABLED`/`SPATIAL_AUDIO`/
+> `SPATIAL_HAPTICS` (défaut `false`), avec preuve en direct (retarget
+> réel, mesuré sur 40 frames). Voir
+> `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`. Restent au
+> niveau prototype : topology/environmental continuity au-delà de
+> `RouteTransition.jsx`, et le moteur caméra-follow (H0.8) — non portés
+> sur les vraies routes.
+
 ## Deliverables
 
 - **Prototype (interactive)**: [Spatial Console — H0.9](https://claude.ai/code/artifact/850da556-71ba-4737-8521-adcbd3f313bb) — `spatial-console-h09.html`, scratchpad only, never committed.

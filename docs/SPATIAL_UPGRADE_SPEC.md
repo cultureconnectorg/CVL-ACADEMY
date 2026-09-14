@@ -6,6 +6,21 @@ standalone prototype. Nothing here has been wired into frontend/src.
 H1_PRODUCTION_INTEGRATION = NOT_AUTHORIZED.
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1_PRODUCTION_INTEGRATION`
+> est désormais **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**, pas seulement
+> conçu. Le moteur décrit ici (`spatial/attention.js`, `physics.js`,
+> `cadence.js`, `audio.js`, `haptics.js`) est réellement monté sur
+> Dashboard (rail `SpatialHub`) et Roadmap (profondeur continue), branché
+> sur le vrai graphe pédagogique (`pedagogicalGraph.js`), derrière les
+> flags `SPATIAL_HUB_ENABLED`/`SPATIAL_ENVIRONMENT`/`SPATIAL_AUDIO`/
+> `SPATIAL_HAPTICS` (défaut `false`). Ce document reste la référence de
+> conception — il n'est pas réécrit — mais son statut d'autorisation est
+> périmé pour ces deux surfaces. Voir
+> `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md` pour la
+> preuve d'exécution et le détail de ce qui reste `NOT_AUTHORIZED`
+> (Missions/Badges/FrekProfile/ModuleJourney, swipe mobile, transitions
+> FLIP, assets d'environnement réels, persistance vraie inter-route).
+
 This is the single source of truth for the Spatial Console upgrade so
 that any future implementer (Claude or human) does not have to
 improvise the transition/depth/token vocabulary per screen. It responds

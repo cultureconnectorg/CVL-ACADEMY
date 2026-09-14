@@ -10,6 +10,18 @@ Nothing in frontend/src, backend/, or the database was touched.
 git status --porcelain on the repo is empty after this work (only docs).
 ```
 
+> **STATUT MIS À JOUR (2026-09-07, Rail 3)** — `H1` est désormais
+> **PARTIELLEMENT AUTORISÉ ET EXÉCUTÉ**. La hiérarchie d'attention à 4
+> paliers calibrée ici (`attention.js`, `attentionWeight`,
+> `computeDepthStyle`) est celle réellement montée en production sur
+> Dashboard/Roadmap par Rail 3 — formules non modifiées, seule une
+> `distance` réelle (issue de `pedagogicalGraph.js`) lui est désormais
+> fournie au lieu d'un index de tableau. Voir
+> `docs/ACADEMY_RAIL3_SPATIAL_PEDAGOGICAL_WIRING_REPORT.md`. Le calibrage
+> son/haptique décrit ici (§6) est également branché (real, gated par
+> `SPATIAL_AUDIO`/`SPATIAL_HAPTICS`), mais la continuité environnementale
+> et le moteur caméra restent au niveau prototype.
+
 ## Deliverables
 
 - **Prototype (interactive)**: [Spatial Console — H0.10](https://claude.ai/code/artifact/aace6209-6466-4a94-a5c3-ed9c24403570) — `spatial-console-h10.html`, scratchpad only, never committed.

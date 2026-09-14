@@ -27,9 +27,20 @@ mode local/fallback — documenté au cas par cas.
 | **KORA** | idem (`kora`) | Interface prête, non configurée. | `KORA_URL` + `_API_KEY` |
 | **Factory Maker Studio** | idem (`factory_maker_studio`) | Interface prête, non configurée. | `FACTORY_MAKER_STUDIO_URL` + `_API_KEY` |
 | **CVLN Wallet** (interne) | `wallet/` | **Implémenté et actif**, pas seulement une interface : grand livre JCC/tokens (`wallet_transactions`, append-only), soldes cachés (`wallet_accounts`), déjà crédité par les badges (+10 JCC) et les certifications réussies (+50 JCC). Voir la section Wallet ci-dessous pour ce qui reste externe (Apple/Google réels). | Rien à activer côté interne — fonctionne dès le premier déploiement |
+| **CVLN Wallet (djsayd, externe)** | `services/integrations/registry.py` (`wallet`) | ACA-0029 — **à ne jamais confondre avec la ligne « CVLN Wallet (interne) » ci-dessus** : ceci est le vrai produit externe `djsayd/CVLN-Wallet` (son propre dépôt, son propre `backend/server.py` — voir `docs/wal/README.md` et les formations WAL-2X, construites directement contre son code réel), pas le grand livre interne. Interface prête **et câblée à un événement réel** : `academy_badge_awarded` (émis par `badges_engine.py` à chaque badge obtenu — nouveau dans cette passe) le notifie en best-effort dès qu'il sera configuré — voir `services/integrations/subscribers.py`. | `CVLN_WALLET_URL` + `_API_KEY` |
 | **Good Mood** | `services/integrations/registry.py` (`good_mood`) | Interface prête, non configurée. | `GOOD_MOOD_URL` + `_API_KEY` |
 | **Culture Connect** | idem (`culture_connect`) | Interface prête, non configurée. | `CULTURE_CONNECT_URL` + `_API_KEY` |
 | **Kiltikonet** | idem (`kiltikonet`) | Interface prête, non configurée. | `KILTIKONET_URL` + `_API_KEY` |
+
+**ACA-0029 — événements réels désormais câblés à des handoffs** (avant
+cette passe, un seul événement, `academy.certification.passed`, avait
+le moindre abonné — deux autres événements réels
+(`academy_activation_completed`, `academy_first_value_reached`) étaient
+déjà publiés dans `db.event_log` mais n'avaient AUCUN abonné) :
+- `academy.certification.passed` → Brain + Command Center (déjà réel)
+- `academy_activation_completed` → Command Center
+- `academy_first_value_reached` → Command Center
+- `academy_badge_awarded` (nouveau) → CVLN Wallet (djsayd, externe) + Command Center
 
 ---
 
