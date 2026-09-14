@@ -47,9 +47,47 @@ function PageFallback() {
   return <div className="p-10 text-[--cvln-ink-2]">…</div>;
 }
 
+function GateFailure({ sessionExpired = false, onRetry, onLogout }) {
+  return (
+    <main
+      className="min-h-[60vh] px-6 py-16 md:px-12"
+      data-testid="legal-gate-error"
+      role="alert"
+    >
+      <div className="mx-auto max-w-xl rounded-3xl border border-black/10 bg-white p-7 text-[--cvln-ink] shadow-sm">
+        <div className="text-xs font-bold uppercase tracking-[0.2em] text-[--cvln-orange]">
+          {sessionExpired ? "Session expirée" : "Service momentanément indisponible"}
+        </div>
+        <h1 className="mt-3 font-display text-3xl font-black tracking-tight">
+          {sessionExpired
+            ? "Reconnecte-toi pour continuer."
+            : "Impossible de vérifier ton accès pour le moment."}
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-[--cvln-ink-2]">
+          {sessionExpired
+            ? "Ta session n’est plus valide. Aucune donnée de parcours n’a été modifiée."
+            : "CVLN Academy ne transforme plus une panne technique en demande d’acceptation juridique. Réessaie lorsque le service répond à nouveau."}
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {sessionExpired ? (
+            <button type="button" className="btn-primary" onClick={onLogout}>
+              Se reconnecter
+            </button>
+          ) : (
+            <button type="button" className="btn-primary" onClick={onRetry} data-testid="legal-gate-retry">
+              Réessayer
+            </button>
+          )}
+        </div>
+      </div>
+    </main>
+  );
+}
+
 function LegalGuard({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const [state, setState] = useState("checking");
+  const [retryKey, setRetryKey] = useState(0);
   const userId = user?.id || null;
 
   useEffect(() => {
@@ -59,18 +97,41 @@ function LegalGuard({ children }) {
       setState("anonymous");
       return undefined;
     }
+
     setState("checking");
     api
       .get("/legal/requirements")
-      .then(({ data }) => alive && setState(data.accepted ? "accepted" : "required"))
-      .catch(() => alive && setState("required"));
+      .then(({ data }) => {
+        if (!alive) return;
+        setState(data.accepted ? "accepted" : "required");
+      })
+      .catch((error) => {
+        if (!alive) return;
+        const status = error?.response?.status;
+        setState(status === 401 ? "session_expired" : "unavailable");
+      });
+
     return () => {
       alive = false;
     };
-  }, [userId, loading]);
+  }, [userId, loading, retryKey]);
 
   if (loading || state === "checking") return null;
   if (!user || state === "anonymous") return <Navigate to="/" replace />;
+  if (state === "session_expired") {
+    return (
+      <GateFailure
+        sessionExpired
+        onLogout={() => {
+          logout();
+          window.location.assign("/login");
+        }}
+      />
+    );
+  }
+  if (state === "unavailable") {
+    return <GateFailure onRetry={() => setRetryKey((value) => value + 1)} />;
+  }
   if (state === "required") return <Navigate to="/legal/accept" replace />;
   return children;
 }
