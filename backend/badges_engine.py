@@ -11,6 +11,7 @@ import uuid
 
 from db import db, utc_now_iso
 from pymongo.errors import DuplicateKeyError
+from services.events import events
 from services.frek_core import frek_core
 from wallet import credit as wallet_credit
 
@@ -57,3 +58,23 @@ async def award_threshold_badges(user_id: str, cc: int) -> None:
             badge_code=b["code"],
             effect_key=f"badge:{b['code']}",
         )
+
+        if newly_awarded:
+            # RECONCILE-2 Groupe 5 (ACA-0029, r35l31) — real ecosystem
+            # handoff: any configured external system (Wallet app,
+            # Command Center, ...) can react. Gated on `newly_awarded`,
+            # unlike the wallet_credit retry above: `events.publish` has
+            # no idempotency key of its own (unlike wallet_credit's
+            # effect_key), so re-publishing on every healing retry would
+            # re-notify external systems for a badge they already saw —
+            # only the state transition itself should ever emit this.
+            # See services/integrations/subscribers.py's
+            # `_on_badge_awarded`.
+            await events.publish(
+                "academy_badge_awarded",
+                {
+                    "user_id": user_id,
+                    "badge_code": b["code"],
+                    "jcc_reward": BADGE_JCC_REWARD,
+                },
+            )

@@ -11,6 +11,7 @@ from auth import get_current_user, user_public
 from badges_engine import award_threshold_badges
 from db import db, utc_now_iso
 from models import OnboardingInput, OnboardingResult, User
+from services.events import events
 from services.frek_core import frek_core
 
 router = APIRouter(prefix="/onboarding", tags=["onboarding"])
@@ -155,6 +156,30 @@ async def onboarding_complete(
     # 7) Reload user for accurate public payload
     doc = await db.users.find_one({"id": current.id}, {"_id": 0})
     reloaded = User(**doc) if doc else current
+
+    # ACA-0013 — the real convergence payload built above (recommended
+    # formation/mission, badge, FREK-TIME signals) IS the activation
+    # moment (docs/ACADEMY_FUNNEL_EVENT_TAXONOMY.md: "same response —
+    # real convergence payload already exists"). No new computation,
+    # just emitting what already exists.
+    await events.publish(
+        "academy_activation_completed",
+        {
+            "user_id": current.id,
+            "metier_vise": inp.metier_vise,
+            "territoire": inp.territoire,
+            "lang": inp.lang,
+            "recommended_formation_code": (
+                recommended_formation["code"] if recommended_formation else None
+            ),
+            "recommended_mission_code": (
+                recommended_mission["code"] if recommended_mission else None
+            ),
+            "badge_earned_code": badge_earned["code"] if badge_earned else None,
+            "signals_emitted": signals_emitted,
+        },
+    )
+
     return OnboardingResult(
         user=user_public(reloaded),
         recommended_formation=recommended_formation,

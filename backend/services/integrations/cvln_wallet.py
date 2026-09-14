@@ -14,6 +14,8 @@ from typing import Any, Dict, Optional
 
 import httpx
 
+from .base import IntegrationNotConfigured
+
 
 class CVLNWalletNotConfigured(RuntimeError):
     pass
@@ -24,7 +26,13 @@ class CVLNWalletAmbiguousResult(RuntimeError):
 
 
 class CVLNWalletIntegration:
-    name = "CVLN Wallet"
+    # RECONCILE-2 Groupe 5: "(djsayd, external)" disambiguates this from
+    # `wallet/` — Academy's own internal CC/JCC ledger — the same
+    # distinction r35l31's parallel `EcosystemIntegration("CVLN Wallet
+    # (djsayd, external)", ...)` drew (see registry.py's module
+    # docstring); docs/INTEGRATIONS_REPORT.md's own row already uses
+    # this exact name.
+    name = "CVLN Wallet (djsayd, external)"
     env_prefix = "CVLN_WALLET"
 
     def __init__(self) -> None:
@@ -127,6 +135,27 @@ class CVLNWalletIntegration:
             "/api/v1/entity/transfer",
             {"to": to, "amount": amount_cc, "note": note},
         )
+
+    async def request(
+        self, path: str, payload: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """RECONCILE-2 Groupe 5: generic-integration compatibility shim.
+
+        `services/integrations/subscribers.py` (r35l31, ACA-0029) treats
+        every ecosystem handoff uniformly through
+        `EcosystemIntegration.request(path, payload)`, catching the shared
+        `IntegrationNotConfigured` to skip the side-effect when unset. This
+        client predates that pattern and exposes typed methods instead
+        (`charge`/`transfer`/`balance`/...); this shim makes it satisfy the
+        same generic contract for that one caller, without touching any of
+        the typed methods real commerce/billing code already depends on.
+        Raises the shared `IntegrationNotConfigured` (not
+        `CVLNWalletNotConfigured`) so the generic caller's except clause
+        matches.
+        """
+        if not self.is_remote_enabled():
+            raise IntegrationNotConfigured(self.name, self.env_prefix)
+        return await self._request("POST", path, payload or {})
 
 
 cvln_wallet = CVLNWalletIntegration()

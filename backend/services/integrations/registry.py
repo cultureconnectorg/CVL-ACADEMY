@@ -9,6 +9,20 @@ here as generic clients.
 CVLN Wallet is the group's financial core. Academy integrates with Wallet,
 not directly with external PSPs, so payment rails remain centralized and
 provider-agnostic at group level.
+
+RECONCILE-2 Groupe 5 (2026-09-14): r35l31 independently built the same
+real external handoff (the outbound djsayd/CVLN-Wallet product — see
+ACA-0029, `subscribers.py`'s `_on_badge_awarded`) as a plain generic
+`EcosystemIntegration` named `wallet`, appended to `_GENERIC`. main's
+`cvln_wallet` (this file, richer typed httpx client, idempotency-aware)
+is the same real system, built to this file's own stated preference
+("richer clients with real behavior, not just a gate" — see FrekCore/
+Agent Factory above). Kept main's richer client as canonical; `wallet`
+below is an alias onto it so `subscribers.py`'s existing
+`from .registry import brain, command_center, wallet` keeps working
+unchanged, now backed by the stronger implementation. Not added to
+`_GENERIC`/`all_integrations()` a second time — `cvln_wallet.describe()`
+already reports this system once.
 """
 
 from __future__ import annotations
@@ -67,3 +81,7 @@ def all_integrations() -> List[Dict[str, Any]]:
         }
     )
     return rows
+
+
+# Alias for subscribers.py's `_on_badge_awarded` — see module docstring.
+wallet = cvln_wallet

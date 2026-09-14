@@ -20,6 +20,8 @@ import os
 from typing import Any, Dict, Optional
 
 import httpx
+from pymongo import ReturnDocument
+
 from db import db, utc_now_iso
 
 FREK_CORE_BASE_URL = os.environ.get("FREK_CORE_BASE_URL", "").rstrip("/")
@@ -235,6 +237,51 @@ class FrekCoreClient:
             if cc_credits >= threshold:
                 return name
         return "graine"
+
+    async def credit_cc(self, user_id: str, amount: int) -> "tuple[int, str]":
+        """ECON-03 (Audit Chirurgical 2026-09-07, r35l31) — the one safe way to
+        change a user's `cc_credits`. Every caller that used to do
+        `new_cc = current.cc_credits + amount` then `$set: {cc_credits:
+        new_cc}` was a read-modify-write race: two concurrent requests
+        (a replayed request, a genuine double-submit, or just two
+        legitimate rewards landing at once) each read the same stale
+        snapshot and the second write silently clobbers the first's
+        credit instead of adding to it.
+
+        `$inc` is MongoDB's own atomic increment — the database, not
+        this process, does the add, so concurrent callers compose
+        correctly no matter how they interleave. `find_one_and_update`
+        with `ReturnDocument.AFTER` hands back the authoritative
+        post-increment balance in the same round trip, so `stade` is
+        always derived from a value nothing could have raced against.
+
+        `amount=0` is a safe, common no-op call (an idempotent-reward
+        caller that determined no new credit is due still wants the
+        current authoritative balance/stade back, never a fabricated
+        one) — it still round-trips through `$inc` rather than a plain
+        read, so it never itself introduces a second read-then-write
+        window.
+
+        RECONCILE-2 Groupe 5 (2026-09-14): this method is unrelated to
+        the sovereign-identity work above (`mint_frek_id`/`identity_
+        authority`) — main added the identity rewrite, r35l31 added this
+        atomic CC-credit fix, to the same file for different reasons.
+        Both kept; this is the ECON-01/ECON-02 quiz/mission idempotency
+        fixes' one shared dependency (`api/quizzes.py`, `api/missions.py`
+        both call this instead of a direct `cc_credits` read-then-write).
+        """
+        updated = await db.users.find_one_and_update(
+            {"id": user_id},
+            {"$inc": {"cc_credits": amount}},
+            return_document=ReturnDocument.AFTER,
+        )
+        if not updated:
+            raise ValueError(f"credit_cc: user {user_id} not found")
+        new_cc = updated["cc_credits"]
+        new_stade = self.resolve_stade(new_cc)
+        if updated.get("stade") != new_stade:
+            await db.users.update_one({"id": user_id}, {"$set": {"stade": new_stade}})
+        return new_cc, new_stade
 
 
 frek_core = FrekCoreClient()
