@@ -4,9 +4,9 @@ Same "decoupled interface, local fallback" pattern as frek_core.py and
 agent_factory.py: CVLN Academy never talks to a mail/SMS provider directly
 from route handlers — everything goes through this one boundary. Until a
 real transport is configured (SMTP, SES, Postmark, ...), messages are
-logged and archived to `db.notification_outbox` so anything that "would
-have sent an email" (password reset, email verification, invitations) is
-still inspectable — useful for local dev and for tests.
+archived to `db.notification_outbox` so anything that "would have sent an
+email" (password reset, email verification, invitations) remains inspectable
+without exposing credential-bearing links in application logs.
 
 Public methods:
     send_password_reset(email, token, lang) -> None
@@ -38,16 +38,19 @@ class NotificationService:
         return bool(NOTIFICATIONS_PROVIDER_URL)
 
     async def _dispatch(self, kind: str, email: str, payload: Dict[str, Any]) -> None:
-        """Local fallback: log + archive. Swap for a real provider call once
-        NOTIFICATIONS_PROVIDER_URL / NOTIFICATIONS_API_KEY are configured —
-        no caller of send_* needs to change."""
-        logger.info("notification[%s] -> %s: %s", kind, email, payload)
+        """Archive the notification payload without logging secret-bearing links.
+
+        The outbox remains the local fallback. A real transport still needs to be
+        implemented/configured before production email delivery can be claimed.
+        """
+        sent_via = "local_log" if not self.is_remote_enabled() else "remote"
+        logger.info("notification[%s] queued for %s via %s", kind, email, sent_via)
         await db.notification_outbox.insert_one(
             {
                 "kind": kind,
                 "to": email,
                 "payload": payload,
-                "sent_via": "local_log" if not self.is_remote_enabled() else "remote",
+                "sent_via": sent_via,
                 "created_at": utc_now_iso(),
             }
         )
