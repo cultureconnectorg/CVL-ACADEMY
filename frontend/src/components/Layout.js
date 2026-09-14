@@ -16,11 +16,14 @@ import {
   PeopleTag,
   Settings,
   Building,
+  CreditCard,
+  Hammer,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { api } from "@/lib/api";
 import MentorPanel from "@/components/MentorPanel";
+import AcademyBackdrop from "@/components/AcademyBackdrop";
 import { isPedagogicalContext } from "@/lib/mentorPresence";
 import { captureRouteDepth, restoreRouteDepth } from "@/lib/depthMemory";
 
@@ -32,8 +35,16 @@ const STUDENT_NAV = [
   { to: "/badges", key: "badges", Icon: Medal1st },
   { to: "/skills", key: "skills", Icon: Sparks },
   { to: "/certifications", key: "certifications", Icon: ShieldCheck },
+  // ACA-0025/W-FUNNEL-2 "Conversion" — the real DECIDED_V1 commercial
+  // catalogue (RECONCILE-2 Groupe 5: r35l31 built this nav entry
+  // alongside the /offers route Groupe 4 already mounted in App.js).
+  { to: "/offers", key: "offers", Icon: CreditCard },
   { to: "/wallet", key: "wallet", Icon: WalletIcon },
   { to: "/frek-profile", key: "frek_profile", Icon: Fingerprint },
+  // ACA-0030 — Ecosystem Builder surface (RECONCILE-2 Groupe 5: same
+  // pairing as /offers above — Groupe 4 already routed
+  // /ecosystem-builder in App.js, this is its nav entry).
+  { to: "/ecosystem-builder", key: "ecosystem_builder", Icon: Hammer },
 ];
 
 const STAFF_NAV = [
@@ -89,6 +100,19 @@ export default function Layout({ children }) {
 
   return (
     <div className="cvln-app-shell" data-testid="app-layout">
+      {/* RAIL 3 (RECONCILE-2 Groupe 5) — real, data-driven environmental
+          tint (see AcademyBackdrop.jsx's own docstring). `position:
+          fixed`, pointer-events-none, z-index:0 — purely decorative,
+          zero layout impact. Its own docstring's "mounts once for the
+          whole in-section navigation" continuity claim assumes an
+          Outlet-based single layout route (App.js's `LayoutRoute`);
+          this branch still wraps each route with its own <Layout>
+          individually (Groupe 4's App.js), so Layout — and this
+          backdrop — remounts per navigation like the rest of the shell
+          today. Renders correctly per-page either way; the
+          continuity-across-navigation upgrade is deferred to the
+          broader SpatialHub Outlet-based wiring pass. */}
+      <AcademyBackdrop />
       <header className="cvln-app-topbar" data-testid="sidebar">
         <NavLink to="/dashboard" className="cvln-wordmark shrink-0" aria-label="CVLN Academy">
           <div className="cvln-wordmark-mark" aria-hidden="true">
