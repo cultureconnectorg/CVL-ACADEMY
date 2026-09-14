@@ -27,7 +27,25 @@ Listes exactes (chemin par ligne) : `only_main.txt`, `only_r35l31.txt`,
 `git diff --name-status origin/main origin/claude/cvln-academy-production-r35l31`,
 sans aucune interprétation.
 
-## 2. Découverte qui élargit le périmètre initial
+## 2. Domaines P0 confirmés par le Founder (2026-09-14, après revue de la matrice)
+
+Les trois domaines backend découverts en §2bis sont **officiellement promus
+au même rang P0 que FRK/KORA/Kiltikonet/etc.** Ils ne sont plus comptés
+dans `APP_CORE` ni `OTHER` — la classification par domaine
+(`domain_classification.json`, `*_by_domain.tsv`) les isolait déjà
+correctement ; c'est la présentation en §3 qui est mise à jour pour les
+sortir explicitement du reste :
+
+1. **LEGAL_PRIVACY_GOVERNANCE_SECURITY** — `legal_*`, `privacy_*`,
+   `governance_*`, `risk_*`, `security_*`, `quality_*`, conformité
+   réglementaire, et les routes API associées.
+2. **ECOSYSTEM_PROFESSIONAL_ACCOUNTING** — comptabilité, profils
+   professionnels, gouvernance professionnelle, ecosystem builder, accès
+   expert, validations expert, et la logique métier associée.
+3. **COMMERCE_PAYMENTS** — `backend/payments/*`, `backend/commerce/*`,
+   services/schémas/routes associés.
+
+## 2bis. Découverte qui élargit le périmètre initial
 
 Le plan de domaines demandé (FRK, KORA, Kiltikonet, GMD, CVE, AGF, Wallet,
 FMS, canonical backends, master packages, frontend/spatial, auth, mobile,
