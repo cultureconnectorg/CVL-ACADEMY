@@ -158,12 +158,21 @@
   animation-duration: calc(var(--spatial-quality-duration, 1s) * 1.45);
 }
 
-.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds--near,
-.spatial-background[data-spatial-quality="lite"] .spatial-background__particles,
+/* Lite preserves the authored world as a static composition while removing the
+   continuous GPU work most likely to stall mobile Safari. */
+.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__globe-core,
 .spatial-background[data-spatial-quality="lite"] .spatial-background__globe-ring,
-.spatial-background[data-spatial-quality="lite"] .spatial-background__water-shimmer {
+.spatial-background[data-spatial-quality="lite"] .spatial-background__water-shimmer,
+.spatial-background[data-spatial-quality="lite"] .spatial-background__particles {
   animation: none !important;
   will-change: auto;
+}
+
+.spatial-background[data-spatial-quality="lite"] .spatial-background__clouds {
+  mix-blend-mode: normal;
+  filter: none;
 }
 
 .spatial-background[data-spatial-quality="lite"] .spatial-background__clouds--near,
@@ -172,12 +181,8 @@
 }
 
 .spatial-background[data-spatial-quality="lite"] .spatial-background__globe {
-  animation-duration: 22s;
-  filter: drop-shadow(0 0 18px rgba(69,166,255,.18));
-}
-
-.spatial-background[data-spatial-quality="lite"] .spatial-background__globe-core {
-  animation-duration: 14s;
+  filter: drop-shadow(0 0 12px rgba(69,166,255,.14));
+  transform: translateX(-50%);
 }
 
 .spatial-background[data-spatial-motion="reduced"] .spatial-background__clouds,

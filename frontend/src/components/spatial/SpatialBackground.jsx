@@ -6,7 +6,7 @@ import { makeRailPhysics } from "@/lib/spatial/physics";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { directSpatialExperience } from "@/lib/spatial/spatialDirector";
 import { environmentForStade } from "@/lib/spatial/environmentState";
-import { detectSpatialQuality, spatialQualityProfile } from "@/lib/spatial/devicePerformancePolicy";
+import { detectSpatialQuality, spatialQualityProfile, SPATIAL_QUALITY } from "@/lib/spatial/devicePerformancePolicy";
 import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
 import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import "./spatial-background.css";
@@ -31,7 +31,7 @@ export default function SpatialBackground({ pathname = "/", stade }) {
     () => directSpatialExperience({ node, scene, reducedMotion: reduced, signal: activeSignal }),
     [node, scene, reduced, activeSignal]
   );
-  const motionEnabled = spatialEnabled && !reduced;
+  const motionEnabled = spatialEnabled && !reduced && quality !== SPATIAL_QUALITY.LITE;
   const cameraFollowEnabled = motionEnabled && FEATURE_FLAGS.SPATIAL_ROUTE_TRANSITIONS;
   const publicUrl = process.env.PUBLIC_URL || "";
   const worldImage = `url("${publicUrl}/spatial/cvln-academy-spatial-world.svg")`;

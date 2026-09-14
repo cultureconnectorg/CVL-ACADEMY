@@ -1,5 +1,6 @@
 import {
   SPATIAL_QUALITY,
+  detectSpatialQuality,
   spatialQualityFromCapabilities,
   spatialQualityProfile,
 } from "./devicePerformancePolicy";
@@ -26,6 +27,33 @@ describe("devicePerformancePolicy", () => {
       .toBe(SPATIAL_QUALITY.BALANCED);
     expect(spatialQualityFromCapabilities({ deviceMemory: 8, hardwareConcurrency: 4 }))
       .toBe(SPATIAL_QUALITY.BALANCED);
+  });
+
+  test("coarse small-screen devices select lite even when browser memory hints are missing", () => {
+    const nav = { hardwareConcurrency: 6 };
+    const win = {
+      innerWidth: 390,
+      matchMedia: () => ({ matches: true }),
+    };
+    expect(detectSpatialQuality(nav, win)).toBe(SPATIAL_QUALITY.LITE);
+  });
+
+  test("coarse large-screen devices keep balanced rendering", () => {
+    const nav = { hardwareConcurrency: 8 };
+    const win = {
+      innerWidth: 1024,
+      matchMedia: () => ({ matches: true }),
+    };
+    expect(detectSpatialQuality(nav, win)).toBe(SPATIAL_QUALITY.BALANCED);
+  });
+
+  test("desktop-class clients retain full rendering", () => {
+    const nav = { deviceMemory: 8, hardwareConcurrency: 8 };
+    const win = {
+      innerWidth: 1440,
+      matchMedia: () => ({ matches: false }),
+    };
+    expect(detectSpatialQuality(nav, win)).toBe(SPATIAL_QUALITY.FULL);
   });
 
   test("quality profiles only scale perception, never domain semantics", () => {
