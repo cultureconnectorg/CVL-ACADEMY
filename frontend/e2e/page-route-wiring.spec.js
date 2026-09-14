@@ -75,6 +75,25 @@ test.describe("authenticated page route wiring", () => {
     await expect(page.getByTestId("onboarding-page")).toBeVisible();
   });
 
+  test("legal gate backend failure stays technical instead of faking legal acceptance", async ({ page }) => {
+    await mockAuthenticatedSession(page, {
+      user: { ...FIXTURE_USER, onboarding_completed: false },
+    });
+    await page.route("**/api/legal/requirements", (route) =>
+      route.fulfill({
+        status: 503,
+        contentType: "application/json",
+        body: JSON.stringify({ detail: "temporarily unavailable" }),
+      })
+    );
+
+    await page.goto("/onboarding");
+
+    await expect(page).toHaveURL(/\/onboarding$/);
+    await expect(page.getByTestId("legal-gate-error")).toBeVisible();
+    await expect(page).not.toHaveURL(/\/legal\/accept$/);
+  });
+
   test("/trainer resolves for trainer role with an organisation", async ({ page }) => {
     await prepareStudent(page, {
       user: { ...FIXTURE_USER, role: "trainer", org_id: "org-fixture-1" },
