@@ -1,0 +1,51 @@
+/* Fixed, not absolute: SpatialWorldFrame's wrapper is sized by normal
+   document flow (it contains the routed page), which is routinely taller
+   than one viewport. A CSS gradient div costs nothing extra stretched to
+   that height; a WebGL canvas does — every extra pixel is real GPU work.
+   Pinning to the viewport keeps the canvas exactly viewport-sized (cheap,
+   constant cost regardless of page length) and reads as a true cinematic
+   backdrop the page scrolls over, rather than scrolling away with it. */
+.spatial-webgl-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  isolation: isolate;
+  background: #04101e;
+}
+
+.spatial-webgl-background__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Same readability/vignette/grain treatment as the CSS world
+   (spatial-background.css) so authenticated content stays legible and the
+   two rendering paths feel like one continuous product, not two skins. */
+.spatial-webgl-background::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(90deg, rgba(4, 10, 18, 0.5) 0%, rgba(4, 10, 18, 0.3) 34%, rgba(4, 10, 18, 0.08) 60%, rgba(4, 10, 18, 0.26) 100%),
+    linear-gradient(180deg, rgba(3, 8, 16, 0.2) 0%, transparent 46%, rgba(3, 7, 12, 0.56) 100%);
+}
+
+.spatial-webgl-background::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: radial-gradient(circle at 50% 42%, transparent 0 32%, rgba(0, 0, 0, 0.22) 66%, rgba(0, 0, 0, 0.52) 100%);
+}
+
+@media (max-width: 768px) {
+  .spatial-webgl-background::before {
+    background: linear-gradient(180deg, rgba(3, 8, 16, 0.46) 0%, rgba(3, 8, 16, 0.24) 48%, rgba(2, 6, 10, 0.68) 100%);
+  }
+}

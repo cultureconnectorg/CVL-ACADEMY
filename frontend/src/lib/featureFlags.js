@@ -12,6 +12,11 @@ const DEFAULTS = Object.freeze({
   SPATIAL_ENGINE: true,
   SPATIAL_ROUTE_TRANSITIONS: false,
   SPATIAL_ENVIRONMENT: true,
+  // Real WebGL world (docs/ADR_W5_WEBGL_REOPENED.md, Founder-authorized).
+  // Defaults ON like SPATIAL_ENGINE/SPATIAL_ENVIRONMENT; LITE-tier devices
+  // and no-WebGL browsers still fall back to the CSS world automatically
+  // (SpatialWorldFrame.jsx), independent of this flag.
+  SPATIAL_WEBGL: true,
   SPATIAL_AUDIO: false,
   SPATIAL_HAPTICS: false,
   SPATIAL_DEBUG: false,
@@ -35,6 +40,9 @@ export const FEATURE_FLAGS = Object.freeze({
   },
   get SPATIAL_ENVIRONMENT() {
     return readFlag("SPATIAL_ENVIRONMENT");
+  },
+  get SPATIAL_WEBGL() {
+    return readFlag("SPATIAL_WEBGL");
   },
   get SPATIAL_AUDIO() {
     return readFlag("SPATIAL_AUDIO");
