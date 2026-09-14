@@ -14,6 +14,8 @@ Relis `REFERENTIAL.md` §Grounding (`GRP-01-M02`) à côté de la copie.
    correction.
 4. Insère-t-il un contenu juridique/fiscal spécifique comme règle
    standard ? Applique la règle éliminatoire sans exception si oui.
+5. Les 3 opportunités présentées sont-elles réellement distinctes, ou
+   des variations cosmétiques d'une même idée (Cas N2-4) ?
 
 ## Ce que tu ne fais pas
 

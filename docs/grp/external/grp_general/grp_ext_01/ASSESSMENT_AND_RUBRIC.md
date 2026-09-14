@@ -10,6 +10,7 @@ Structure identique à `../../../../gmd/gmd21/ASSESSMENT_AND_RUBRIC.md`
 | C1 | Cadre de détection d'opportunité, citant `GRP-01-M02` |
 | C2 | Plan de go-to-market approfondi, niveau spécialisation |
 | C3 | Discipline profondeur/survol + collision de code + périmètre juridique |
+| C4 | Diversité réelle des 3 opportunités présentées (jamais des variations cosmétiques d'une même idée) |
 
 ## Rubric (0–4 par compétence)
 

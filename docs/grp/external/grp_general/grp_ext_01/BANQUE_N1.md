@@ -31,3 +31,15 @@ Sourced against legacy GRP-01's real module definition
    it matter? (`GRP-EXT-01` — kept distinct from the legacy runtime
    `GRP-01` formation code, to prevent any future build from silently
    conflating or overwriting the legacy formation)
+5. Why must the 3 candidate opportunities presented in M1 be
+   genuinely distinct from one another, rather than three variations
+   on the same underlying idea? (Because the exercise tests the
+   candidate's ability to scan a real opportunity space broadly before
+   narrowing — three near-identical ideas would demonstrate only one
+   act of pattern-matching, not a genuine discovery framework)
+6. A candidate asks whether GRP-EXT-01 certifies them to actually
+   launch a CVLN entity. What is the correct answer, and why? (No —
+   mission eligibility is explicitly none; no real opportunity-
+   discovery role exists to staff through this Academy, and launching
+   an entity is an operational decision far outside a documentary
+   certification's scope)

@@ -29,3 +29,9 @@ cadres, jamais des règles juridiques précises.
 Ne confonds jamais les codes `GRP-01`/`GRP-EXT-01`, et n'invente
 jamais de contenu juridique/fiscal spécifique présenté comme règle
 standard — élimination automatique.
+
+## Diversité des opportunités
+
+Tes 3 opportunités doivent être réellement distinctes (marché,
+proposition de valeur) — trois variations cosmétiques de la même idée
+ne démontrent pas le cadre de détection.

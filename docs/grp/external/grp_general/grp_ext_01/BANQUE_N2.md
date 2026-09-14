@@ -33,3 +33,15 @@ n'est enseigné ici (réservé à `NEEDS_EXPERT_REVIEW`, `GRP-11`) ; ce
 cluster enseigne des cadres et process, jamais des règles
 juridiques précises. Élimination si le candidat maintient le contenu
 juridique inventé comme règle standard.
+
+## Cas N2-4 — Trois opportunités quasi identiques
+
+Un candidat présente 3 opportunités qui sont en réalité trois
+variations mineures de la même idée de base (même marché, même
+proposition de valeur, détails cosmétiques différents).
+
+**Critères de notation:** identifie que ceci ne démontre pas un vrai
+balayage de l'espace d'opportunités — le cadre exige une diversité
+réelle entre les 3 opportunités présentées. Pas d'élimination
+automatique (pas une invention), mais note réduite pour absence de
+démonstration réelle du cadre de détection.
