@@ -1,0 +1,128 @@
+/* Mobile cinematic convergence pass — keeps domain/auth/state untouched. */
+
+/* Onboarding belongs to the same world: never paint an opaque white page over Spatial. */
+[data-testid="onboarding-page"] {
+  --cvln-bg: #06111b;
+  --cvln-bg-warm: rgba(255,255,255,.055);
+  --cvln-surface: rgba(7,15,24,.78);
+  --cvln-ink: #f8fbff;
+  --cvln-ink-2: rgba(236,244,250,.68);
+  --cvln-orange: #ff7a2f;
+  color: var(--cvln-ink);
+  background: linear-gradient(180deg, rgba(2,8,14,.24), rgba(2,8,14,.62)) !important;
+  position: relative;
+  isolation: isolate;
+}
+
+[data-testid="onboarding-page"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 76% 18%, rgba(255,122,47,.16), transparent 32%),
+    linear-gradient(90deg, rgba(2,8,14,.74) 0%, rgba(2,8,14,.34) 52%, rgba(2,8,14,.58) 100%);
+}
+
+[data-testid="onboarding-page"] > header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding-top: max(18px, env(safe-area-inset-top));
+  border-color: rgba(255,255,255,.1) !important;
+  background: linear-gradient(180deg, rgba(3,10,18,.9), rgba(3,10,18,.58));
+  backdrop-filter: blur(22px) saturate(130%);
+  -webkit-backdrop-filter: blur(22px) saturate(130%);
+}
+
+[data-testid="onboarding-page"] > header + div {
+  background: rgba(255,255,255,.08) !important;
+}
+
+[data-testid="onboarding-page"] main > div {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 30px;
+  padding: clamp(24px, 5vw, 52px);
+  background: linear-gradient(180deg, rgba(8,17,28,.82), rgba(4,11,18,.72));
+  box-shadow: 0 30px 90px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.05);
+  backdrop-filter: blur(24px) saturate(125%);
+  -webkit-backdrop-filter: blur(24px) saturate(125%);
+}
+
+[data-testid="onboarding-page"] button[class*="border-2"],
+[data-testid="onboarding-page"] [class*="rounded-2xl"][class*="border-black"] {
+  color: var(--cvln-ink);
+  background: rgba(6,14,23,.72) !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+[data-testid="onboarding-page"] button[class*="border-[--cvln-orange]"],
+[data-testid="onboarding-page"] button:focus-visible {
+  border-color: rgba(255,122,47,.9) !important;
+  background: rgba(255,122,47,.1) !important;
+}
+
+[data-testid="onboarding-page"] textarea,
+[data-testid="onboarding-page"] input {
+  color: var(--cvln-ink) !important;
+  background: rgba(6,14,23,.76) !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+[data-testid="onboarding-page"] textarea::placeholder,
+[data-testid="onboarding-page"] input::placeholder { color: rgba(236,244,250,.42); }
+
+/* Global legal footer must continue the world instead of cutting to white. */
+.cvln-legal-footer {
+  position: relative;
+  z-index: 20;
+  color: rgba(236,244,250,.62);
+  background: linear-gradient(180deg, rgba(3,10,18,.9), #030912);
+  border-color: rgba(255,255,255,.09) !important;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+}
+.cvln-legal-footer a,
+.cvln-legal-footer button { color: rgba(236,244,250,.62); }
+.cvln-legal-footer a:hover,
+.cvln-legal-footer button:hover { color: #fff; }
+
+/* Mobile top rail: readable, scrollable and not visually clipped by the logout control. */
+@media (max-width: 700px) {
+  .cvln-app-topbar {
+    padding: 10px 10px 10px max(10px, env(safe-area-inset-left));
+    gap: 8px;
+  }
+  .cvln-app-topbar .cvln-wordmark { gap: 0; }
+  .cvln-app-topbar .cvln-wordmark-mark { width: 40px; height: 40px; }
+  .cvln-app-topbar nav {
+    gap: 3px;
+    scroll-padding-inline: 8px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .cvln-app-topbar nav a {
+    gap: 6px;
+    padding: 8px 9px;
+    font-size: 11px;
+  }
+  .cvln-app-topbar nav a svg { width: 14px; height: 14px; }
+  .cvln-app-topbar > div:last-child > button { width: 40px; height: 40px; }
+
+  [data-testid="onboarding-page"] main {
+    align-items: flex-start !important;
+    padding: 22px 14px max(40px, env(safe-area-inset-bottom)) !important;
+  }
+  [data-testid="onboarding-page"] main > div {
+    border-radius: 24px;
+    padding: 24px 18px;
+  }
+  [data-testid="onboarding-page"] h1 { font-size: clamp(38px, 11vw, 54px) !important; }
+  [data-testid="onboarding-page"] .grid.grid-cols-2 { gap: 10px; }
+  [data-testid="onboarding-page"] button[class*="p-5"] { padding: 16px !important; }
+
+  /* Mobile density: preserve premium scale while keeping the hub scannable. */
+  .cvln-page { padding: 14px; }
+  .cvln-page-hero { padding: 24px 18px; margin-bottom: 18px; }
+  .cvln-kpi { min-height: 108px; padding: 16px; }
+  .cvln-kpi strong { margin-top: 12px; font-size: 27px; }
+}
