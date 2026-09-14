@@ -24,9 +24,30 @@ d'intégrité d'inscription pré-existant (identique sur `main` et
 r35l31) a été trouvé et corrigé en combinant SEC-02 — voir la fiche
 `api/auth.py` ci-dessous.
 
-**Reste : 83 des 95 fichiers `BOTH_DIFFERENT`.**
-- **Groupe 3 (wallet/commerce/paiements)** — `backend/wallet/*`,
-  `backend/commercial.py`, `backend/billing*.py`, etc. Pas commencé.
+**Groupe 3 — wallet/commerce/paiements : COMPLET (5/5 fichiers
+`BOTH_DIFFERENT` du périmètre).** `backend/wallet/models.py`,
+`backend/wallet/service.py`, `backend/wallet/__init__.py`,
+`backend/api/wallet.py`, `frontend/src/pages/Wallet.js` — tous résolus
+avec preuve de test réelle (création wallet, lecture balance,
+transaction valide, duplicate/idempotency, unauthorized, cross-tenant,
+currency invalide, provider indisponible, reconciliation après
+désynchronisation). `backend/infra_indexes.py` (`BOTH_DIFFERENT`, mais
+un fichier d'infrastructure partagé bien au-delà du périmètre wallet/
+paiements) **partiellement réconcilié** : uniquement ses sections
+wallet + payments, le reste (canonical_progress, fms_resource_
+provenance, physical_sessions/enrollments, professional_profile_
+settings) marqué `BLOCKED_BY_GROUP_5`. `backend/certification/
+service.py` (`BOTH_DIFFERENT`, hors périmètre Groupe 3) a reçu un
+correctif d'une ligne, minimal et documenté, pour rester compatible
+avec le nouveau contrat obligatoire de `wallet.credit()` — voir sa
+fiche ci-dessous. `backend/commerce/`, `backend/payments/`
+(ONLY_R35L31, déjà importés RECONCILE-1) et `backend/commercial.py` /
+`backend/billing*.py` (ONLY_MAIN) ne sont **pas** `BOTH_DIFFERENT` —
+aucun conflit à résoudre, mais vérifiés en profondeur (auth/legal
+gates, cross-tenant, secrets Stripe, DB persistence) car explicitement
+dans le périmètre demandé.
+
+**Reste : 78 des 95 fichiers `BOTH_DIFFERENT`.**
 - **Groupe 4 (spatial/frontend core)** — `frontend/src/App.js`,
   `SpatialHub.jsx`, `attention.js`, `featureFlags.js`, `i18n.jsx`, les
   17 pages nouvellement récupérées, etc. Pas commencé — c'est là que
@@ -491,3 +512,347 @@ spatial/App.js.
 - ✅ Aucune décision non documentée — y compris le bug d'intégrité
   trouvé hors périmètre SEC-01/SEC-02 initial, et les deux
   `KEEP_MAIN (provisoire)` avec leur dépendance explicite sur Groupe 4.
+
+---
+
+## Groupe 3 — Wallet / Commerce / Paiements
+
+Invariants vérifiés en priorité sur chaque fichier : aucune double
+transaction, idempotence, montant > 0 quand requis, devise explicite,
+balance jamais mutée silencieusement, permissions user/org, aucune
+fuite cross-tenant, cohérence en cas d'échec, aucun secret codé en dur.
+
+### `backend/wallet/models.py`
+
+- **MAIN_BEHAVIOR** : ajoute `WalletTransaction.effect_key: Optional[str]
+  = None`, décrit comme "should be stable for retryable business
+  effects... reusing the same key returns the original transaction".
+- **R35L31_BEHAVIOR** (WAL-01, Audit Chirurgical 2026-09-07) : ajoute
+  `WalletTransaction.economic_event_id: Optional[str] = None` — même
+  concept, nom différent, docstring plus détaillée (référence explicite
+  à l'index unique `(user_id, economic_event_id)` dans
+  `infra_indexes.py` et au caractère `Optional` uniquement pour la
+  compatibilité de lecture avec les lignes pré-fix).
+- **MERGE_BASE** : aucun champ d'idempotence.
+- **DÉCISION : COMBINE** — garder le **nom de champ de main**
+  (`effect_key`), car c'est celui que les deux seuls appelants actuels
+  de `wallet.credit()` (`badges_engine.py`, `certification/service.py`
+  — tous deux `BOTH_DIFFERENT`, non touchés par ce groupe, toujours à
+  la version main dans la branche) utilisent déjà comme kwarg ; renommer
+  le champ aurait cassé ces deux fichiers hors périmètre sans raison
+  (voir la fiche `service.py` ci-dessous pour la vérification complète
+  des appelants). La **docstring adoptée est celle de r35l31**,
+  renommée `effect_key` — plus rigoureuse et plus honnête sur la
+  garantie réelle offerte.
+- **TEST_EVIDENCE** : voir `service.py`.
+
+### `backend/wallet/service.py`
+
+- **MAIN_BEHAVIOR** :
+  - `_get_or_create_account` : gère `DuplicateKeyError` sur la création
+    concurrente de compte (race condition fermée, r35l31 ne le fait
+    pas).
+  - `_reconcile_account` (privée) : recalcule intégralement le solde
+    depuis l'historique des transactions — appelée automatiquement à
+    **chaque** `get_summary()`, donc le solde affiché ne peut jamais
+    être obsolète, quel que soit l'état du cache.
+  - `credit(effect_key: Optional[str] = None)` : idempotence
+    **optionnelle** — un appelant peut oublier de la fournir.
+  - Le catch `DuplicateKeyError` de `credit()` est strict : si la
+    transaction "gagnante" n'est pas retrouvée après l'erreur, il
+    relève l'exception plutôt que de fabriquer un succès silencieux.
+- **R35L31_BEHAVIOR** (WAL-01) :
+  - `_get_or_create_account` : pas de gestion de `DuplicateKeyError`
+    (gap réel sur la création concurrente de compte).
+  - `credit(economic_event_id: str)` : idempotence **obligatoire**
+    (paramètre requis, sans défaut) — impossible d'oublier de la
+    fournir. Ajoute un **pré-check** `find_one` avant l'insertion (évite
+    une tentative d'insert vouée à l'échec dans le cas courant du retry
+    non concurrent).
+  - `reconcile_wallet_balance()` : fonction **publique**, séparée,
+    appelable explicitement — mais **pas** invoquée automatiquement à
+    chaque lecture (`get_summary()` utilise juste `_get_or_create_
+    account`). Le docstring de r35l31 documente honnêtement ce vrai
+    trou : "a crash between the ledger insert and the cached-balance
+    update... only a cached balance that undercounts... until
+    reconcile_wallet_balance() recomputes it".
+  - Le catch `DuplicateKeyError` retombe sur le `txn` construit
+    (jamais inséré) si la "gagnante" n'est pas retrouvée — un vrai
+    succès fabriqué dans un cas limite, contrairement à main.
+- **MERGE_BASE** : `credit()` sans paramètre d'idempotence ni gestion
+  de race ; balance mise à jour par `$inc` seul, jamais recalculée.
+- **DÉCISION : COMBINE — le meilleur des deux, pas un choix de camp** :
+  - Discipline d'obligation de r35l31 (`effect_key` **sans défaut**,
+    obligatoire) — la garantie structurelle la plus forte contre
+    l'oubli d'idempotence, conforme à l'invariant n°1 du Founder
+    ("aucune double transaction"). Sous le nom `effect_key` (voir
+    fiche `models.py`).
+  - Pré-check `find_one` de r35l31 avant l'insertion (défense en
+    profondeur, en plus du `DuplicateKeyError` catch, pas à sa place).
+  - Gestion `DuplicateKeyError` de `_get_or_create_account` de main
+    (r35l31 n'a rien d'équivalent — capacité perdue sinon).
+  - Catch `DuplicateKeyError` de `credit()` : comportement strict de
+    main (relève si la "gagnante" introuvable) — jamais le fallback
+    silencieux de r35l31, qui pourrait fabriquer un succès sur un état
+    réellement anormal.
+  - `_reconcile_account` de main, **appelée automatiquement à chaque
+    lecture** (`get_summary()`) — strictement plus robuste que
+    l'`_get_or_create_account` simple de r35l31 : aucune lecture ne
+    peut jamais renvoyer un solde caché périmé, peu importe l'historique
+    des crashs.
+  - `reconcile_wallet_balance()` de r35l31 **ajoutée en plus**, comme
+    fine enveloppe publique de `_reconcile_account` (outil ops/admin
+    explicite) — aucune capacité perdue, exportée dans `__init__.py`.
+- **BUG D'INTÉGRITÉ HORS PÉRIMÈTRE TROUVÉ ET CORRIGÉ (rendre `effect_key`
+  obligatoire l'a révélé)** : `backend/certification/service.py`
+  (`BOTH_DIFFERENT`, hors périmètre Groupe 3, non touché autrement)
+  appelait `wallet_credit()` sur la voie main **sans aucune clé
+  d'idempotence** — un retry ou un double traitement d'une réussite de
+  certification pouvait créditer deux fois les mêmes JCC. r35l31 avait
+  déjà fermé exactement cette faille sur ce même site d'appel
+  (`economic_event_id=f"certification-pass:{attempt_id}"`). Rendre
+  `effect_key` obligatoire dans `credit()` aurait fait planter cet appel
+  (`TypeError`) sans un correctif minimal, chirurgical, d'une ligne :
+  `effect_key=f"certification-pass:{attempt_id}"`, reprenant
+  **exactement** la convention de nommage déjà prouvée correcte par
+  r35l31. Aucune autre ligne de `certification/service.py` n'a été
+  touchée — le reste du fichier demeure `BOTH_DIFFERENT`, non résolu,
+  à la charge d'un futur groupe. Le second et dernier appelant de
+  `credit()` (`badges_engine.py`, aussi hors périmètre) fournissait déjà
+  `effect_key=f"badge:{b['code']}"` sur les deux branches — aucun
+  changement nécessaire là.
+- **TEST_EVIDENCE** :
+  - Suite complète `pytest tests/` : **82 failed / 2521 passed / 34
+    errors**, contre l'état de fin de Groupe 2 (**82 failed / 2513
+    passed / 35 errors** sur les mêmes fichiers non modifiés — comparaison
+    directe par `git stash`). Diff exact des listes FAILED triées :
+    **vide dans les deux sens** (aucun test cassé, aucun nouvellement
+    réparé parmi les FAILED). Diff des listes ERROR : une seule ligne
+    corrigée (`test_wallet_and_badges_atomicity.py` — `ImportError` sur
+    `reconcile_wallet_balance`, qui n'existait pas encore), zéro
+    nouvelle erreur.
+  - `pytest tests/test_wallet_and_badges_atomicity.py tests/
+    test_academy_wallet.py tests/test_payments.py tests/
+    test_commerce_catalog.py tests/test_commercial_wallet_policy.py
+    tests/test_commercial_wallet_runtime.py tests/
+    test_cvln_wallet_integration.py` → **73 passed**, couvrant WAL-01
+    (idempotence, reconciliation) et ECON-03 (atomicité badge) de bout
+    en bout.
+  - Script de parcours critique dédié (`TestClient` + `MOCK_DB=1`,
+    contre l'app réelle) : création wallet (premier appel `/api/
+    wallet/me`, solde à 0) → lecture balance → accès non authentifié
+    rejeté (401) → transaction valide (crédit réel via le service) →
+    balance mise à jour → **appel dupliqué avec le même `effect_key`**
+    → même transaction retournée, **balance non doublée** →
+    `credit()` sans `effect_key` → `TypeError` (garantie structurelle
+    vérifiée à l'exécution) → devise invalide (`"usd"`) rejetée par la
+    contrainte `Literal` du modèle → **cross-tenant** : le crédit de
+    l'utilisateur B n'affecte jamais le solde de l'utilisateur A, et
+    vice-versa ; aucune route wallet n'accepte de `user_id` en
+    paramètre (toujours dérivé du token) → checkout sur une offre
+    inconnue → 404 (jamais de session fabriquée) → provider Stripe
+    correctement signalé "non configuré" (aucun credential réel dans
+    ce sandbox) → simulation de crash (ligne de ledger insérée
+    directement, sans passer par le `$inc` de `credit()`) → **la
+    lecture suivante de `/api/wallet/me` répare seule le cache
+    désynchronisé** (preuve directe que `_reconcile_account` sur
+    chaque lecture fonctionne) → forme du contrat `WalletSummary`/
+    `WalletAccount`/`WalletTransaction` vérifiée. **Tous les contrôles
+    passent.**
+  - `import server` réel : **515 routes**, inchangé depuis Groupe 1 ;
+    routes wallet (`/api/wallet/me`, `/api/wallet/transactions`, `/api/
+    wallet/pass/{apple,google}`), payments (`/api/payments/checkout`,
+    `/api/payments/mine`, `/api/payments/webhook/stripe`) et commerce
+    (`/api/commerce/offers`, `/api/commerce/offers/internal`, `/api/
+    commerce/policies`) toutes montées.
+
+### `backend/wallet/__init__.py`
+
+- **MAIN_BEHAVIOR** : docstring clarifiée (distingue explicitement le
+  mini-wallet Academy du produit CVLN-Wallet de groupe) ; exporte
+  `credit, get_summary, list_transactions`.
+- **R35L31_BEHAVIOR** : exporte en plus `reconcile_wallet_balance`.
+- **MERGE_BASE** : docstring d'origine, sans `reconcile_wallet_balance`.
+- **DÉCISION : COMBINE** — docstring de main conservée, export de
+  `reconcile_wallet_balance` de r35l31 ajouté (adossé à
+  l'implémentation combinée de `service.py`, pas dupliqué).
+- **TEST_EVIDENCE** : `from wallet.service import credit,
+  reconcile_wallet_balance` (déjà utilisé par
+  `test_wallet_and_badges_atomicity.py`) réussit ; voir la suite
+  complète ci-dessus.
+
+### `backend/api/wallet.py`
+
+- **MAIN_BEHAVIOR** : docstring clarifiée (mini-wallet Academy, pas le
+  produit CVLN-Wallet de groupe, pas un rail PSP production), tag
+  OpenAPI renommé `academy-mini-wallet`, réordonnancement d'imports.
+  Aucun changement de route, de logique ou de garde d'auth.
+- **R35L31_BEHAVIOR** : identique au merge-base — jamais touché depuis
+  la divergence (diff vide, vérifié).
+- **MERGE_BASE** : docstring/tag d'origine.
+- **DÉCISION : KEEP_MAIN** — r35l31 n'apporte rien sur ce fichier.
+  Vérifié que `/wallet/me` et `/wallet/pass/{provider}` restent gardés
+  par `Depends(get_current_user)`, aucune route n'accepte de `user_id`
+  en paramètre (toujours dérivé du token — aucune fuite cross-tenant
+  possible par construction).
+- **TEST_EVIDENCE** : fichier déjà identique à `main` dans la branche
+  reconcile avant toute intervention — confirmé qu'aucune modification
+  n'était nécessaire. Routes vérifiées vivantes dans le parcours
+  critique ci-dessus.
+
+### `frontend/src/pages/Wallet.js`
+
+- **MAIN_BEHAVIOR** : ajoute un état public/non-authentifié complet
+  (aucun appel à `/wallet/me` tant que `user` est absent — aucune
+  donnée financière n'est jamais demandée pour un visiteur anonyme,
+  contrairement à avant) et corrige l'affichage des montants négatifs
+  (`tx.amount >= 0 ? "+" : ""` au lieu d'un `+` systématique qui
+  masquait un débit comme un crédit).
+- **R35L31_BEHAVIOR** : identique au merge-base — jamais touché depuis
+  la divergence (diff vide, vérifié).
+- **MERGE_BASE** : appelait `/wallet/me` inconditionnellement, y
+  compris pour un visiteur non connecté (fuite d'intention, sinon de
+  données) ; affichait toujours `+{montant}`.
+- **DÉCISION : KEEP_MAIN** — r35l31 n'apporte rien sur ce fichier ; main
+  contient une vraie correction de confidentialité (jamais de requête
+  financière avant authentification) et une vraie correction
+  d'affichage (signe correct sur les débits).
+- **TEST_EVIDENCE** : fichier déjà identique à `main` dans la branche
+  reconcile avant toute intervention — confirmé qu'aucune modification
+  n'était nécessaire.
+
+### `backend/infra_indexes.py` (partiel — wallet + payments uniquement)
+
+- **Portée** : ce fichier `BOTH_DIFFERENT` est un registre
+  d'infrastructure partagé par de nombreux domaines (identité, wallet,
+  paiements physiques, FMS canonique, profil professionnel...), pas
+  propre au Groupe 3. Seules ses sections **wallet** et **payments**
+  sont traitées ici ; le reste (canonical_progress,
+  fms_resource_provenance, physical_sessions/enrollments/attendance,
+  professional_profile_settings — tous propres à r35l31) est
+  explicitement **`BLOCKED_BY_GROUP_5`** : contrat attendu = ces
+  index devront être portés tels quels (r35l31 les a déjà écrits et
+  documentés, notamment le partial-index anti-double-réservation
+  `physical_enrollments` avec sa justification) quand le groupe qui
+  couvre le domaine physique/professionnel/canonique-FMS s'en charge —
+  aucune régression connue à traiter d'ici là puisque ces collections
+  ne sont pas encore utilisées par du code monté.
+- **MAIN_BEHAVIOR (section wallet)** : index unique **partiel** sur
+  `(user_id, effect_key)`, filtré sur `{"$type": "string"}` — ne
+  s'applique jamais aux lignes sans `effect_key`, donc **aucune
+  migration/backfill requis** pour un déploiement réel portant déjà des
+  lignes historiques.
+- **R35L31_BEHAVIOR (section wallet)** : index unique **plein** sur
+  `(user_id, economic_event_id)`, sans filtre partiel — son propre
+  commentaire documente honnêtement le gap : "a real production
+  deployment carrying pre-existing rows with no economic_event_id...
+  must run a one-time backfill... before this index build".
+- **DÉCISION (wallet) : KEEP_MAIN** — la technique d'index partiel de
+  main ferme un vrai risque de migration que r35l31 documentait mais
+  ne fermait pas ; adopter le nom de champ `effect_key` (voir fiche
+  `models.py`) rend ce choix cohérent de bout en bout.
+- **R35L31_BEHAVIOR (section payments, absente de main)** : index sur
+  `payment_checkout_sessions.idempotency_key` (unique),
+  `.provider_session_id`, `(user_id, created_at)` ; `payments.
+  checkout_session_id` (unique), `(user_id, created_at)`, et
+  `(checkout_session_id, last_provider_event_id)` (unique, partiel) —
+  ce dernier documenté par `payments/service.py` comme "not the primary
+  idempotency check... only catches a genuine race between two
+  concurrent deliveries".
+- **DÉCISION (payments) : IMPORT (r35l31, aucun équivalent main)** —
+  `backend/payments/service.py` (déjà importé RECONCILE-1, ONLY_R35L31)
+  s'appuie explicitement sur ces index dans ses propres commentaires,
+  mais ils n'avaient jamais été portés dans `infra_indexes.py` — sans
+  cet ajout, `create_checkout()`/`handle_stripe_webhook()` n'avaient
+  **aucune** protection anti-doublon au niveau base de données, la
+  seule protection réelle en pré-check applicatif restant fonctionnelle
+  mais privée de son filet de sécurité contre une vraie course
+  concurrente. Ajouté verbatim (r35l31 les avait déjà correctement
+  conçus, y compris le choix du partial-index pour la même raison
+  anti-migration que le cas wallet).
+- **TEST_EVIDENCE** : `import server` reste vert (515 routes). Les
+  suites `test_payments.py`/`test_commerce_catalog.py` (mongomock,
+  n'exercent pas les index réels de `infra_indexes.py` — comportement
+  déjà établi par tout le reste de la suite de tests de ce dépôt)
+  passent inchangées. La correction ferme un vrai trou de protection
+  DB, documentée ici plutôt que silencieusement laissée non détectée.
+
+### `backend/certification/service.py` (hors périmètre — correctif d'une ligne uniquement)
+
+- **Portée** : ce fichier `BOTH_DIFFERENT` n'est **pas** dans le
+  périmètre Groupe 3 et n'a reçu **aucune** autre modification — sa
+  réconciliation complète reste à faire par un futur groupe (probablement
+  Groupe 5, engine de certification).
+- **Changement appliqué** : un seul paramètre ajouté à son unique appel
+  à `wallet_credit()`, `effect_key=f"certification-pass:{attempt_id}"`
+  — requis pour rester compilable/exécutable après que `wallet.credit()`
+  a rendu ce paramètre obligatoire (voir fiche `service.py` ci-dessus),
+  et fermant au passage une vraie faille de double-crédit que ce site
+  d'appel avait sur `main` et que r35l31 avait déjà fermée avec la même
+  convention de clé.
+- **TEST_EVIDENCE** : voir la suite complète ci-dessus (0 régression,
+  0 nouvelle erreur). Pas de test dédié à ce site d'appel précis dans
+  ce dépôt (aucun des deux côtés n'en avait un avant cette
+  réconciliation) — noté ici plutôt que silencieusement laissé sans
+  couverture ; un futur test `certification-pass credits JCC exactly
+  once under retry` serait une extension naturelle lors de la
+  réconciliation complète de ce fichier.
+
+### NEEDS_REVIEW — deux systèmes commerce/paiement parallèles, non intégrés
+
+Découverte faite en vérifiant "commerce routes / billing interactions"
+comme demandé : `main` a construit son propre système commercial
+(`backend/commercial.py` + `backend/api/commercial.py` +
+`backend/billing*.py`, ONLY_MAIN) — commandes en EUR converties en JCC
+via `services/integrations/cvln_wallet.py` (le produit CVLN-Wallet de
+**groupe**, externe, pas le mini-wallet Academy local), avec un pipeline
+de facturation/Factur-X propre. r35l31 a construit un système
+**entièrement séparé** (`backend/commerce/` + `backend/payments/`,
+ONLY_R35L31) — catalogue `DECIDED_V1` + checkout/webhook Stripe réel.
+**Aucun des deux systèmes ne référence l'autre** (vérifié par grep :
+zéro import croisé, zéro collection Mongo partagée). Ce n'est pas un
+conflit Git (aucun des deux ensembles de fichiers n'est
+`BOTH_DIFFERENT`) donc rien à "résoudre" ici, mais c'est une vraie
+question d'architecture produit qui dépasse le mandat de réconciliation :
+les deux catalogues/pipelines doivent-ils coexister durablement (un
+canal EUR→JCC→CVLN-Wallet, un canal EUR→Stripe direct), l'un doit-il
+remplacer l'autre, ou doivent-ils converger ? **Décision de
+monétisation, pas technique — laissée au Founder plutôt que devinée**,
+comme pour la question `require_commercial_learning_access` du Groupe 1.
+
+### Critères de sortie du Groupe 3 — statut
+
+- ✅ Tous les `BOTH_DIFFERENT` du périmètre Groupe 3 résolus (5/5 :
+  `wallet/models.py`, `wallet/service.py`, `wallet/__init__.py`,
+  `api/wallet.py`, `Wallet.js`). `infra_indexes.py` partiellement
+  résolu (wallet+payments), reste `BLOCKED_BY_GROUP_5` documenté.
+  `certification/service.py` : correctif minimal documenté, fichier
+  lui-même non résolu, hors périmètre.
+- ✅ Zéro double-écriture connue — `effect_key` obligatoire +
+  pré-check + index partiel + `DuplicateKeyError` catch (avec re-raise
+  strict, jamais de fallback silencieux) ; badge et certification-pass
+  crédités exactement une fois sous 100 appels concurrents/retry
+  (`test_wallet_and_badges_atomicity.py`, `test_award_threshold_
+  badges_awards_exactly_once`).
+- ✅ Zéro rupture d'idempotence connue — `effect_key` rendu obligatoire
+  structurellement (pas seulement documentée), fermant le seul
+  appelant qui en était dépourvu (`certification/service.py`).
+- ✅ Zéro accès cross-user/cross-tenant connu — vérifié à l'exécution
+  (crédit de B n'affecte jamais A), aucune route wallet/payments
+  n'accepte de `user_id` en paramètre client.
+- ✅ Zéro secret en dur — `payments/provider.py` (Stripe) entièrement
+  gated par `STRIPE_SECRET_KEY`/`STRIPE_WEBHOOK_SECRET`, vérifié par
+  grep ciblé sur les fichiers modifiés.
+- ✅ Imports backend complets OK (`import server` → 515 routes,
+  inchangé).
+- ✅ Routes montées (wallet, payments, commerce — listées ci-dessus).
+- ✅ Contrats frontend/backend cohérents (`WalletSummary`/
+  `WalletAccount`/`WalletTransaction` vérifiés par le parcours
+  critique ; `Wallet.js` déjà aligné sur le contrat main inchangé).
+- ✅ Suites ciblées passantes (73/73 wallet+payments+commerce ; suite
+  complète 0 régression, 12+8 tests précédemment en échec désormais
+  passants entre Groupes 2 et 3) — écarts documentés (les 82 échecs/34
+  erreurs restants sont pré-existants, hors périmètre, vérifiés un par
+  un).
+- ✅ `main` et r35l31 toujours inchangés aux SHA gelés
+  (`c5dddc8.../f9763b6...`), reconfirmé après chaque commit.

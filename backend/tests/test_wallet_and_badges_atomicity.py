@@ -4,7 +4,7 @@ atomicity.
 Real, exploitable gaps this suite closes and proves closed:
 
   - `wallet.service.credit()` had no idempotency key at all
-    (`economic_event_id`) — a retried or duplicated call for the same
+    (`effect_key`) — a retried or duplicated call for the same
     real-world event minted a second ledger transaction and
     double-incremented the cached balance.
   - `wallet.service.credit()` inserted the ledger row then updated the
@@ -44,7 +44,7 @@ async def wal_db(monkeypatch):
     client = AsyncMongoMockClient()
     mock_db = client["cvln_wallet_econ03_test"]
     await mock_db.wallet_transactions.create_index(
-        [("user_id", 1), ("economic_event_id", 1)], unique=True
+        [("user_id", 1), ("effect_key", 1)], unique=True
     )
     await mock_db.user_badges.create_index(
         [("user_id", 1), ("badge_code", 1)], unique=True
@@ -71,7 +71,7 @@ async def wal_db(monkeypatch):
 @pytest.mark.asyncio
 async def test_credit_creates_transaction_and_updates_balance(wal_db):
     txn = await credit(
-        "u1", "jcc_earned", 15.0, economic_event_id="ev-1", currency="jcc"
+        "u1", "jcc_earned", 15.0, effect_key="ev-1", currency="jcc"
     )
     assert txn.amount == 15.0
     account = await wal_db.wallet_accounts.find_one({"user_id": "u1"}, {"_id": 0})
@@ -83,13 +83,13 @@ async def test_credit_x100_same_event_id_credits_exactly_once(wal_db):
     """The audit's own required proof pattern, applied to the wallet
     ledger directly."""
     results = [
-        await credit("u1", "jcc_earned", 15.0, economic_event_id="ev-1", currency="jcc")
+        await credit("u1", "jcc_earned", 15.0, effect_key="ev-1", currency="jcc")
         for _ in range(100)
     ]
     assert all(r.id == results[0].id for r in results)  # same transaction returned
 
     count = await wal_db.wallet_transactions.count_documents(
-        {"user_id": "u1", "economic_event_id": "ev-1"}
+        {"user_id": "u1", "effect_key": "ev-1"}
     )
     assert count == 1
     account = await wal_db.wallet_accounts.find_one({"user_id": "u1"}, {"_id": 0})
@@ -100,21 +100,21 @@ async def test_credit_x100_same_event_id_credits_exactly_once(wal_db):
 async def test_credit_different_event_ids_both_apply(wal_db):
     """Not over-blocking — two genuinely different events for the same
     user both credit."""
-    await credit("u1", "jcc_earned", 10.0, economic_event_id="ev-a", currency="jcc")
-    await credit("u1", "jcc_earned", 20.0, economic_event_id="ev-b", currency="jcc")
+    await credit("u1", "jcc_earned", 10.0, effect_key="ev-a", currency="jcc")
+    await credit("u1", "jcc_earned", 20.0, effect_key="ev-b", currency="jcc")
     account = await wal_db.wallet_accounts.find_one({"user_id": "u1"}, {"_id": 0})
     assert account["jcc_balance"] == 30.0
 
 
 @pytest.mark.asyncio
 async def test_credit_event_ids_are_scoped_per_user(wal_db):
-    """The same economic_event_id string for two different users must
+    """The same effect_key string for two different users must
     not collide — the unique index is compound on (user_id, event_id)."""
     await credit(
-        "u1", "jcc_earned", 10.0, economic_event_id="ev-shared", currency="jcc"
+        "u1", "jcc_earned", 10.0, effect_key="ev-shared", currency="jcc"
     )
     await credit(
-        "u2", "jcc_earned", 10.0, economic_event_id="ev-shared", currency="jcc"
+        "u2", "jcc_earned", 10.0, effect_key="ev-shared", currency="jcc"
     )
     acc1 = await wal_db.wallet_accounts.find_one({"user_id": "u1"}, {"_id": 0})
     acc2 = await wal_db.wallet_accounts.find_one({"user_id": "u2"}, {"_id": 0})
@@ -145,7 +145,7 @@ async def test_reconcile_repairs_a_desynced_cached_balance(wal_db):
             "type": "jcc_earned",
             "amount": 15.0,
             "currency": "jcc",
-            "economic_event_id": "ev-1",
+            "effect_key": "ev-1",
         }
     )
     await wal_db.wallet_transactions.insert_one(
@@ -155,7 +155,7 @@ async def test_reconcile_repairs_a_desynced_cached_balance(wal_db):
             "type": "jcc_earned",
             "amount": 10.0,
             "currency": "token",
-            "economic_event_id": "ev-2",
+            "effect_key": "ev-2",
         }
     )
 
@@ -166,7 +166,7 @@ async def test_reconcile_repairs_a_desynced_cached_balance(wal_db):
 
 @pytest.mark.asyncio
 async def test_reconcile_is_idempotent(wal_db):
-    await credit("u1", "jcc_earned", 5.0, economic_event_id="ev-1", currency="jcc")
+    await credit("u1", "jcc_earned", 5.0, effect_key="ev-1", currency="jcc")
     first = await reconcile_wallet_balance("u1")
     second = await reconcile_wallet_balance("u1")
     assert first.jcc_balance == second.jcc_balance == 5.0
@@ -193,7 +193,7 @@ async def test_award_threshold_badges_awards_exactly_once(wal_db):
     assert count == 1
 
     txn_count = await wal_db.wallet_transactions.count_documents(
-        {"user_id": "u1", "economic_event_id": "badge:BADGE-1"}
+        {"user_id": "u1", "effect_key": "badge:BADGE-1"}
     )
     assert txn_count == 1
     account = await wal_db.wallet_accounts.find_one({"user_id": "u1"}, {"_id": 0})
