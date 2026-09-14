@@ -161,3 +161,53 @@ async def ensure_indexes() -> None:
     await db.careops_maintenance.create_index("incident_id", unique=True)
     await db.careops_maintenance.create_index([("status", 1), ("created_at", 1)])
     await db.careops_learnings.create_index([("product", 1), ("created_at", -1)])
+
+    # RECONCILE-2 Groupe 5 (2026-09-14): the four sections below were
+    # marked BLOCKED_BY_GROUP_5 in Groupe 3's decision sheet (r35l31-only,
+    # out of Groupe 3's wallet/payments scope). Ported verbatim — r35l31
+    # had already written and justified them; no rework needed.
+
+    # ACA-0006 — Canonical FMS runtime binding.
+    # Canonical progress: a collection *separate* from db.progress by
+    # construction, not just by convention — see fms_canonical/progress.py.
+    await db.canonical_progress.create_index(
+        [("user_id", 1), ("canonical_module_code", 1)], unique=True
+    )
+    await db.canonical_progress.create_index(
+        [("user_id", 1), ("canonical_formation_code", 1)]
+    )
+    # Source-file provenance ledger (Founder blocking correction,
+    # 2026-09-03): one row per real ZIP entry, parsed or not — see
+    # fms_canonical/provenance.py.
+    await db.fms_resource_provenance.create_index(
+        [("original_path", 1), ("canonical_version", 1)], unique=True
+    )
+    await db.fms_resource_provenance.create_index("sha256")
+    await db.fms_resource_provenance.create_index("parsing_status")
+    await db.fms_resource_provenance.create_index(
+        [("formation_code", 1), ("resource_type", 1)]
+    )
+
+    # ACA-0007/ACA-0008 — Physical/hybrid delivery (physical_delivery.py).
+    await db.physical_sessions.create_index([("formation_code", 1), ("starts_at", 1)])
+    await db.physical_sessions.create_index("status")
+    # PHY-01 (Audit Chirurgical 2026-09-07) — real, DB-enforced guard
+    # against double-booking: unique per (session_id, user_id), but only
+    # across "active" statuses (partialFilterExpression). Scoping it to
+    # enrolled/waitlisted — never a plain unique index — is deliberate:
+    # a user who cancels and later re-enrolls must be allowed to (a new
+    # document, since cancel_enrollment never deletes the cancelled
+    # record — see its own docstring), and a bare unique index would
+    # reject that legitimate second enrollment as a duplicate of the
+    # first, now-cancelled one.
+    await db.physical_enrollments.create_index(
+        [("session_id", 1), ("user_id", 1)],
+        unique=True,
+        partialFilterExpression={"status": {"$in": ["enrolled", "waitlisted"]}},
+    )
+    await db.physical_enrollments.create_index([("user_id", 1), ("status", 1)])
+    await db.physical_attendance.create_index([("session_id", 1), ("user_id", 1)])
+
+    # ACA-0028 — Professional FREK profile visibility (services/
+    # professional_profile.py). Additive, never touches db.users.
+    await db.professional_profile_settings.create_index("user_id", unique=True)
