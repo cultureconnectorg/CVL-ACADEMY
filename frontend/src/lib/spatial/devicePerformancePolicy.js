@@ -31,13 +31,39 @@ export function spatialQualityFromCapabilities({
   return SPATIAL_QUALITY.FULL;
 }
 
-export function detectSpatialQuality(nav = typeof navigator !== "undefined" ? navigator : null) {
-  if (!nav) return SPATIAL_QUALITY.FULL;
-  return spatialQualityFromCapabilities({
-    deviceMemory: nav.deviceMemory,
-    hardwareConcurrency: nav.hardwareConcurrency,
-    saveData: Boolean(nav.connection?.saveData),
+function pointerIsCoarse(win) {
+  try {
+    return Boolean(win?.matchMedia?.("(pointer: coarse)")?.matches);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Browser hints such as navigator.deviceMemory are missing on iOS Safari.
+ * Without a fallback, phones can therefore be misclassified as FULL and pay
+ * for every ambient animation/filter. Viewport + coarse-pointer detection is
+ * used only as a rendering-cost fallback; application behavior is unchanged.
+ */
+export function detectSpatialQuality(
+  nav = typeof navigator !== "undefined" ? navigator : null,
+  win = typeof window !== "undefined" ? window : null
+) {
+  const capabilityQuality = spatialQualityFromCapabilities({
+    deviceMemory: nav?.deviceMemory,
+    hardwareConcurrency: nav?.hardwareConcurrency,
+    saveData: Boolean(nav?.connection?.saveData),
   });
+
+  if (capabilityQuality === SPATIAL_QUALITY.LITE) return capabilityQuality;
+
+  const width = finitePositive(win?.innerWidth);
+  const coarse = pointerIsCoarse(win);
+
+  if (coarse && width !== null && width <= 900) return SPATIAL_QUALITY.LITE;
+  if (coarse || (width !== null && width <= 768)) return SPATIAL_QUALITY.BALANCED;
+
+  return capabilityQuality;
 }
 
 export function spatialQualityProfile(quality) {
