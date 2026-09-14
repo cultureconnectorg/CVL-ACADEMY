@@ -120,3 +120,50 @@ noyau backend / auth / wallet / spatial / App.js).
   prod + liste explicite → acceptée). Dépendances externes installées
   dans ce sandbox pour permettre ce test (`factur-x`, `mcp`) — absentes
   par défaut ici, sans lien avec cette réconciliation.
+
+### `backend/models.py`
+
+- **MAIN_BEHAVIOR** : identique au merge-base (main n'a pas touché ce
+  fichier). `Mission` sans champ d'éligibilité, aucune matrice
+  inviteur->rôles autorisés.
+- **R35L31_BEHAVIOR** : ajoute `INVITER_ALLOWED_INVITED_ROLES` (SEC-01 —
+  matrice explicite empêchant un `trainer` de forger une invitation
+  `role="founder"`) et `Mission.required_qualification_codes` (RAIL2,
+  liste vide par défaut = comportement identique à avant pour toute
+  mission existante).
+- **MERGE_BASE** : identique à MAIN_BEHAVIOR.
+- **DÉCISION : KEEP_R35L31** — strict superset. Ces deux ajouts sont
+  des données inertes tant qu'elles ne sont pas lues : `Mission.
+  required_qualification_codes` n'a d'effet que si `api/missions.py`
+  le lit (c'est le cas côté r35l31, via `qualification.has_any_of` —
+  mais `api/missions.py` est lui-même `BOTH_DIFFERENT`, donc son
+  câblage réel reste à faire) ; `INVITER_ALLOWED_INVITED_ROLES` n'a
+  d'effet que si `api/orgs.py` le consulte (également `BOTH_DIFFERENT`,
+  câblage réel à faire). Ajouter la donnée maintenant est sûr et
+  débloque group 2 (auth : `api/orgs.py`) et le futur travail sur
+  `api/missions.py` sans attendre.
+- **TEST_EVIDENCE** : `import server` reste vert (515 routes) après ce
+  remplacement. Vérifié directement que `Mission.model_fields` contient
+  `required_qualification_codes` et que `INVITER_ALLOWED_INVITED_ROLES`
+  est bien un dict avec les 6 rôles attendus.
+
+### `backend/db.py`
+
+- **MAIN_BEHAVIOR** : identique au merge-base — connexion Motor directe
+  et inconditionnelle vers `MONGO_URL`.
+- **R35L31_BEHAVIOR** : ajoute un embranchement `MOCK_DB=1` optionnel
+  vers `mongomock_motor.AsyncMongoMockClient` (in-memory, non
+  persistant) pour permettre de lancer l'app réelle sans Mongo — déjà
+  le mécanisme utilisé par toute la suite de tests existante.
+- **MERGE_BASE** : identique à MAIN_BEHAVIOR.
+- **DÉCISION : KEEP_R35L31** — superset strict, chemin par défaut
+  (`MOCK_DB` absent ou différent de `"1"`) rigoureusement identique à
+  avant.
+- **TEST_EVIDENCE** : `import server` reste vert avec `MOCK_DB` absent
+  (comportement par défaut inchangé). `MOCK_DB=1` testé isolément :
+  prend bien la branche mongomock plutôt que d'essayer une vraie
+  connexion réseau (vérifié via `mongomock_motor.AsyncMongoMockClient`
+  directement -- la bibliothèque construit son objet en se faisant
+  passer pour `AsyncIOMotorClient` en interne, comportement documenté
+  de la bibliothèque, déjà éprouvé par toute la suite de tests
+  existante qui s'appuie dessus).
