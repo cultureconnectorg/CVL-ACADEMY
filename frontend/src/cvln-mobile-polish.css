@@ -125,4 +125,13 @@
   .cvln-page-hero { padding: 24px 18px; margin-bottom: 18px; }
   .cvln-kpi { min-height: 108px; padding: 16px; }
   .cvln-kpi strong { margin-top: 12px; font-size: 27px; }
+
+  /* Safari/iOS browser chrome must not cover the module phase controller. */
+  .spatial-module-dock {
+    bottom: max(84px, calc(env(safe-area-inset-bottom) + 18px)) !important;
+    width: calc(100vw - 24px) !important;
+  }
+  [data-testid="module-journey"] {
+    padding-bottom: calc(150px + env(safe-area-inset-bottom));
+  }
 }
