@@ -6,6 +6,29 @@ actuelle de main ET a une preuve de test réelle — pas seulement "ça
 compile". Commits séparés par zone critique (aucun commit ne mélange
 noyau backend / auth / wallet / spatial / App.js).
 
+## État d'avancement (2026-09-14, cette passe)
+
+**Groupe 1 — Noyau backend : COMPLET (5/5 fichiers).** `fms_import/
+importer.py`, `api/__init__.py`, `server.py`, `models.py`, `db.py` —
+tous réconciliés avec preuve de test réelle. `import server` réussit de
+bout en bout : **515 routes**, dont les 53 nouveaux routers, garde
+`require_legal_acceptance` vérifiée sur un échantillon.
+
+**Reste : 90 des 95 fichiers `BOTH_DIFFERENT`.**
+- **Groupe 2 (auth)** — `backend/auth.py`, `backend/api/auth.py`,
+  `backend/api/orgs.py`, `frontend/src/lib/auth.jsx`, etc. Pas
+  commencé. Zone sensible (risque de régression sur le bug de connexion
+  récemment corrigé) — mérite sa propre passe dédiée plutôt qu'une
+  réconciliation hâtive en fin de session.
+- **Groupe 3 (wallet/commerce/paiements)** — `backend/wallet/*`,
+  `backend/commercial.py`, `backend/billing*.py`, etc. Pas commencé.
+- **Groupe 4 (spatial/frontend core)** — `frontend/src/App.js`,
+  `SpatialHub.jsx`, `attention.js`, `featureFlags.js`, `i18n.jsx`, les
+  17 pages nouvellement récupérées, etc. Pas commencé — c'est là que
+  les 17 pages seront routées/déclarées explicitement (2e critère de
+  sortie de RECONCILE-2).
+- **Groupe 5 (reste d'APP_CORE)** — le reliquat, par dépendance réelle.
+
 ---
 
 ## Groupe 1 — Noyau backend
