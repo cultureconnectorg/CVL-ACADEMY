@@ -364,11 +364,14 @@ async def test_end_to_end_register_with_mismatched_targeted_invite_rejected(inv_
         )
     assert exc.value.status_code == 400
 
-    # No account and no invitation-consumption trace left behind by the
-    # rejected attempt (register() inserts the user first, then applies
-    # the invite — the failed apply must not leave the role escalated).
+    # AUTH-group reconciliation (2026-09-14): register() used to insert
+    # the user first, then apply the invite — a failed apply left an
+    # orphaned account behind (unpromoted, but real and loginable) despite
+    # the 400 the caller saw. That was tightened to all-or-nothing: a
+    # rejected register() now has no side effect at all, matching the
+    # error the client actually receives. See RECONCILE_2_DECISIONS.md,
+    # Groupe 2 — api/auth.py.
     attacker = await inv_db.users.find_one({"email": "attacker@example.com"}, {"_id": 0})
-    assert attacker is not None
-    assert attacker["role"] == "student"  # never promoted to "trainer"
+    assert attacker is None
     stored_inv = await inv_db.invitations.find_one({"code": "REGCODE"}, {"_id": 0})
     assert stored_inv["used_by"] is None

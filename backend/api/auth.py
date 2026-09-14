@@ -53,8 +53,18 @@ def _provider_env_configured(provider: str) -> bool:
     return bool(os.environ.get(f"OAUTH_{provider.upper()}_CLIENT_ID"))
 
 
-async def _apply_invitation(user_id: str, invite_code: str) -> None:
-    """Consume an org/cohort invitation at signup time."""
+async def _apply_invitation(
+    user_id: str, invite_code: str, registering_email: str
+) -> None:
+    """Consume an org/cohort invitation at signup time.
+
+    SEC-02 (r35l31, audit chirurgical 2026-09-07): possession of the code
+    alone used to be sufficient — an invitation targeted at one address
+    could be consumed by signing up with any other. When the invitation
+    names an email, the registering address must match it
+    (case-insensitive); an email-less invitation stays open to anyone
+    holding the code, exactly as before.
+    """
     inv = await db.invitations.find_one({"code": invite_code}, {"_id": 0})
     if not inv:
         raise HTTPException(status_code=400, detail="Code d'invitation invalide")
@@ -66,6 +76,11 @@ async def _apply_invitation(user_id: str, invite_code: str) -> None:
             expires_at = expires_at.replace(tzinfo=timezone.utc)
         if expires_at < datetime.now(timezone.utc):
             raise HTTPException(status_code=400, detail="Code d'invitation expiré")
+    if inv.get("email") and inv["email"].lower() != registering_email.lower():
+        raise HTTPException(
+            status_code=400,
+            detail="Cette invitation est réservée à une autre adresse email.",
+        )
 
     await db.users.update_one(
         {"id": user_id},
@@ -118,7 +133,23 @@ async def register(inp: RegisterInput):
     await db.users.insert_one(user.model_dump())
 
     if inp.invite_code:
-        await _apply_invitation(user.id, inp.invite_code)
+        try:
+            await _apply_invitation(user.id, inp.invite_code, user.email)
+        except HTTPException:
+            # Registration-integrity fix (found while combining SEC-02 into
+            # this AUTH group): an invitation failure here (invalid/expired/
+            # already-used, or now also email-mismatched) used to leave the
+            # just-inserted user row behind despite the 400/403 response the
+            # client sees — a client retry then hit "Email déjà utilisé" for
+            # an account it was told was never created, and (pre-SEC-02) an
+            # attacker probing a targeted invite code would get a real,
+            # usable account out of a "rejected" registration. Registration
+            # must be all-or-nothing: undo the insert before re-raising the
+            # exact same error, so a rejected register() never has a side
+            # effect. No external contract changes — same status codes and
+            # error bodies as before.
+            await db.users.delete_one({"id": user.id})
+            raise
         refreshed = await db.users.find_one({"id": user.id}, {"_id": 0})
         if refreshed:
             user = User(**refreshed)
