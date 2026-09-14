@@ -108,6 +108,18 @@ router = APIRouter(prefix="/api")
 for module in (health, auth, legal):
     router.include_router(module.router)
 
+# RECONCILE-2 Groupe 4 (2026-09-14): each of these modules also exports a
+# `router` mounted below with the blanket require_legal_acceptance gate. This
+# `public_router` is only the one or two routes each module's own docstring/
+# code already documents as deliberately not requiring an Academy session —
+# see professional_profile.py's and governance_advanced.py's own comments for
+# each route's real, independent authorization (an opt-in public profile
+# lookup; an external expert's own X-CVLN-Expert-Key header). Mounting them
+# here, ungated, restores each route's originally-intended contract without
+# touching the (correctly gated) rest of either module.
+for module in (professional_profile, governance_advanced):
+    router.include_router(module.public_router)
+
 for module in (
     accelerators,
     orgs,

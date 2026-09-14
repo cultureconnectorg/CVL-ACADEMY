@@ -17,6 +17,19 @@ from services import (
 )
 
 router = APIRouter(prefix="/governance-advanced", tags=["governance"])
+# RECONCILE-2 Groupe 4 (2026-09-14): split out of `router` below.
+# api/__init__.py's registry mounts every non-health/auth/legal router with a
+# blanket `Depends(require_legal_acceptance)` at the router level — correct
+# for every admin-role route in this file (Admin = Depends(require_role(...))
+# already assumes a logged-in Academy staff member), but it silently broke
+# `expert_workspace`'s own, deliberately different auth model just below: an
+# external expert authenticates with `X-CVLN-Expert-Key` (`_expert_key`),
+# never an Academy session, so they can never satisfy
+# `require_legal_acceptance` (it needs `get_current_user`, i.e. a bearer JWT
+# this caller was never meant to have). `public_router` is mounted ungated
+# (alongside health/auth/legal) so only this one route keeps its own
+# independent, already-real key-based authorization — see api/__init__.py.
+public_router = APIRouter(prefix="/governance-advanced", tags=["governance"])
 Admin = Depends(require_role("admin", "super_admin", "founder"))
 
 
@@ -69,7 +82,7 @@ def _expert_key(x_cvln_expert_key: str | None = Header(default=None)) -> str:
     return x_cvln_expert_key
 
 
-@router.get("/expert-workspace/{case_id}")
+@public_router.get("/expert-workspace/{case_id}")
 async def expert_workspace(case_id: str, raw_key: str = Depends(_expert_key)):
     try:
         return await professional_workspace.get_workspace(raw_key=raw_key, case_id=case_id)
