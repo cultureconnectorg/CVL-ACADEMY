@@ -58,6 +58,12 @@ export default function SpatialSensoryBridge() {
   const optedInRef = useRef(false);
 
   useEffect(() => {
+    // Production defaults keep both capabilities disabled. In that state the
+    // bridge must be truly dormant: no AudioContext helpers, no vibration
+    // helper, no global event listeners, and no visibility listener. The
+    // feature flags are deployment-time constants for the lifetime of this
+    // bundle, so there is no need to keep an idle subscriber graph alive.
+    if (!FEATURE_FLAGS.SPATIAL_AUDIO && !FEATURE_FLAGS.SPATIAL_HAPTICS) return undefined;
     if (typeof window === "undefined") return undefined;
 
     let cadenceState = "STOPPED";
