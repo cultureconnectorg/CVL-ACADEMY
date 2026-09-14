@@ -150,6 +150,13 @@ async def grade_attempt(
             attempt.user_id,
             "jcc_earned",
             CERTIFICATION_JCC_REWARD,
+            # WAL-01 (RECONCILE-2 Groupe 3): wallet.credit() now requires an
+            # idempotency key on every call. This call had none before —
+            # a retried/duplicated certification-pass processing could
+            # double-credit JCC. Same event-key convention r35l31 proved
+            # correct (certification-pass:<attempt_id>) for the exact same
+            # call site — see wallet/service.py's own docstring.
+            effect_key=f"certification-pass:{attempt_id}",
             currency="jcc",
             ref=attempt.certification_code,
             description=f"Certification {attempt.certification_code} réussie",
