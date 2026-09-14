@@ -8,6 +8,7 @@ import { SPATIAL_QUALITY } from "@/lib/spatial/devicePerformancePolicy";
 import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
 import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import { backgroundForNode } from "@/lib/spatial/webglSceneMap";
+import SpatialMobileLivingBackground from "./SpatialMobileLivingBackground.jsx";
 import "./spatial-webgl-background.css";
 
 export default function SpatialWebGLBackground({ pathname = "/", stade, quality = SPATIAL_QUALITY.BALANCED }) {
@@ -22,8 +23,15 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
   const enabled = FEATURE_FLAGS.SPATIAL_WEBGL && quality !== SPATIAL_QUALITY.LITE && Boolean(backgroundUrl);
   const [engineReady, setEngineReady] = useState(0);
 
+  // On BALANCED/mobile, preserve the source photograph's aspect ratio with
+  // cover-based layers and still react to scroll/touch/camera/learning events.
+  // FULL desktop keeps the Three.js perspective engine.
+  if (enabled && quality === SPATIAL_QUALITY.BALANCED) {
+    return <SpatialMobileLivingBackground pathname={pathname} />;
+  }
+
   useEffect(() => {
-    if (!enabled || typeof window === "undefined") return undefined;
+    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
     let cancelled = false;
 
     import("@/lib/spatial/webglEngine").then((mod) => {
@@ -41,46 +49,43 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
       engineRef.current?.dispose?.();
       engineRef.current = null;
     };
-    // quality is captured once at mount; reduced motion changes live below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [enabled, quality]);
 
   useEffect(() => {
     engineRef.current?.setReducedMotion?.(reduced);
   }, [reduced]);
 
   useEffect(() => {
-    if (!enabled || !backgroundUrl) return;
+    if (!enabled || quality !== SPATIAL_QUALITY.FULL || !backgroundUrl) return;
     engineRef.current?.transitionTo?.({ url: backgroundUrl, scene, environment, node });
-  }, [enabled, backgroundUrl, scene, environment, node, engineReady]);
+  }, [enabled, quality, backgroundUrl, scene, environment, node, engineReady]);
 
   useEffect(() => {
-    if (!enabled || typeof window === "undefined") return undefined;
+    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
     const onCamera = (event) => engineRef.current?.onCameraEvent?.(event?.detail);
     window.addEventListener(SPATIAL_CAMERA_EVENT, onCamera);
     return () => window.removeEventListener(SPATIAL_CAMERA_EVENT, onCamera);
-  }, [enabled]);
+  }, [enabled, quality]);
 
   useEffect(() => {
-    if (!enabled || typeof window === "undefined") return undefined;
+    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
     const onContext = (event) => engineRef.current?.setContextActive?.(Boolean(event?.detail?.active));
     window.addEventListener(SPATIAL_CONTEXT_EVENT, onContext);
     return () => window.removeEventListener(SPATIAL_CONTEXT_EVENT, onContext);
-  }, [enabled]);
+  }, [enabled, quality]);
 
-  // Backend-owned learning events now make the world breathe briefly.
-  // This remains perceptual only: no unlock, progression or domain state is written here.
   useEffect(() => {
-    if (!enabled || typeof window === "undefined") return undefined;
+    if (!enabled || quality !== SPATIAL_QUALITY.FULL || typeof window === "undefined") return undefined;
     const onSignal = (event) => {
       const profile = spatialSignalProfile(event?.detail?.type);
       if (profile) engineRef.current?.onLearningSignal?.(profile);
     };
     window.addEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
     return () => window.removeEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
-  }, [enabled]);
+  }, [enabled, quality]);
 
-  if (!enabled) return null;
+  if (!enabled || quality !== SPATIAL_QUALITY.FULL) return null;
 
   return (
     <div
