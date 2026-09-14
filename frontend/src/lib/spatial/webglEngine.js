@@ -4,39 +4,22 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPass.js";
 import { SPATIAL_QUALITY } from "./devicePerformancePolicy";
 
-/**
- * Vanilla three.js world engine (no react-three-fiber — matches the rest
- * of frontend/src/lib/spatial/*: plain functions/classes the React layer
- * calls into, same shape as makeRailPhysics/cameraFollow). Dynamically
- * imported by SpatialWebGLBackground.jsx so `three` never lands in the
- * main bundle for a session that never enables SPATIAL_WEBGL or that
- * falls back to the CSS world (LITE tier, no WebGL, reduced-motion-off
- * path is unaffected — reduced motion still renders this engine, just
- * with drift/parallax disabled, see setReducedMotion).
- *
- * Two textured planes per scene — the full photograph on a far plane,
- * and the same photograph's bottom band (water/rock/foliage in every
- * supplied reference image) UV-cropped onto a nearer plane — is a real,
- * long-established single-photo parallax technique (side-scroller
- * background layering, extended to a full photograph). Because both
- * planes sit at different distances from a real perspective camera,
- * pointer/idle camera movement produces genuine differential
- * parallax — not a CSS translate3d approximation.
- */
-
 const CAMERA_FOV = 50;
 const CAMERA_Z = 6;
 const FAR_Z = 0;
 const NEAR_Z = 2.1;
-const NEAR_BAND = 0.4; // bottom 40% of each photograph
-const OVERSCAN_FAR = 1.06;
-const OVERSCAN_NEAR = 1.32;
+const NEAR_BAND = 0.4;
+const OVERSCAN_FAR = 1.08;
+const OVERSCAN_NEAR = 1.38;
 const CROSSFADE_MS = 900;
 const POINTER_RANGE = 0.34;
+const TOUCH_RANGE = 0.22;
 const POINTER_LERP = 0.06;
+const SCROLL_RANGE = 0.22;
 const IDLE_DRIFT_AMPLITUDE = 0.05;
 const IDLE_DRIFT_PERIOD_MS = 26000;
 const EXPOSURE_BASE = 1.0;
+const SIGNAL_DECAY_MS = 2200;
 
 function planeSize(camera, distance) {
   const vFov = (camera.fov * Math.PI) / 180;
@@ -46,7 +29,6 @@ function planeSize(camera, distance) {
 }
 
 function makeLayer(texture, { distanceFromCamera, band, overscan }) {
-  const size = { width: 1, height: 1 };
   const geometry = new THREE.PlaneGeometry(1, 1);
   const material = new THREE.MeshBasicMaterial({
     map: texture,
@@ -63,7 +45,7 @@ function makeLayer(texture, { distanceFromCamera, band, overscan }) {
     texture.repeat.set(1, band);
     texture.offset.set(0, 0);
   }
-  return { mesh, material, geometry, distanceFromCamera, overscan, size };
+  return { mesh, material, geometry, distanceFromCamera, overscan };
 }
 
 function resizeLayer(layer, camera) {
@@ -81,14 +63,13 @@ function disposeLayerSet(set) {
   });
 }
 
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(max, value));
+}
+
 export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   const full = quality === SPATIAL_QUALITY.FULL;
-  // MSAA and a >1x pixel ratio both multiply fragment-shader work — real
-  // cost on any GPU, more so on a phone's. BALANCED (the only tier touch
-  // devices reach — see detectWebglQuality) skips both: at typical mobile
-  // viewing distance a single un-antialiased 1x-DPR photograph reads as
-  // sharp, and the saved fragment work is exactly what a phone GPU is
-  // tightest on.
+  const balanced = quality === SPATIAL_QUALITY.BALANCED;
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: full,
@@ -114,11 +95,20 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   let crossfadeStart = 0;
   let disposed = false;
   let reduced = Boolean(reducedMotion);
+  let baseExposure = EXPOSURE_BASE;
+  let stageGrowth = 0;
 
   const pointer = { x: 0, y: 0 };
   const pointerTarget = { x: 0, y: 0 };
+  const pan = { x: 0, y: 0 };
   const panTarget = { x: 0, y: 0 };
+  let scrollTarget = 0;
+  let scrollCurrent = 0;
   let contextActive = false;
+  let touchStart = null;
+  let signalStart = 0;
+  let signalIntensity = 0;
+  let signalBreath = 0;
 
   let composer = null;
   let bloomPass = null;
@@ -138,9 +128,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
     composer?.setSize(width, height);
-    [currentSet, incomingSet].forEach((set) => {
-      set?.layers.forEach((layer) => resizeLayer(layer, camera));
-    });
+    [currentSet, incomingSet].forEach((set) => set?.layers.forEach((layer) => resizeLayer(layer, camera)));
     requestFrame();
   }
 
@@ -150,23 +138,20 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
         url,
         (texture) => {
           texture.colorSpace = THREE.SRGBColorSpace;
-          // Anisotropic filtering only pays for itself at a grazing viewing
-          // angle; this photograph is viewed near head-on. Real sampling
-          // cost, so BALANCED skips it same as antialiasing/DPR above.
           texture.anisotropy = full ? Math.min(4, renderer.capabilities.getMaxAnisotropy()) : 1;
           const layers = [
             makeLayer(texture, { distanceFromCamera: CAMERA_Z - FAR_Z, band: null, overscan: OVERSCAN_FAR }),
           ];
-          if (full) {
+          // BALANCED now keeps one inexpensive foreground plane too. This is
+          // what makes mobile feel spatial instead of like a static wallpaper.
+          if (full || balanced) {
             const nearTexture = texture.clone();
             nearTexture.needsUpdate = true;
-            layers.push(
-              makeLayer(nearTexture, {
-                distanceFromCamera: CAMERA_Z - NEAR_Z,
-                band: NEAR_BAND,
-                overscan: OVERSCAN_NEAR,
-              })
-            );
+            layers.push(makeLayer(nearTexture, {
+              distanceFromCamera: CAMERA_Z - NEAR_Z,
+              band: NEAR_BAND,
+              overscan: OVERSCAN_NEAR,
+            }));
           }
           layers.forEach((layer) => {
             resizeLayer(layer, camera);
@@ -180,16 +165,19 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     });
   }
 
-  function applyEnvironment(scene0) {
-    if (!scene0) return;
-    renderer.toneMappingExposure = EXPOSURE_BASE * (scene0.light ?? 1);
-    panTarget.x = ((scene0.focusX ?? 50) - 50) / 100;
-    panTarget.y = -((scene0.focusY ?? 50) - 50) / 100;
+  function applyEnvironment(scene0, environment) {
+    if (scene0) {
+      baseExposure = EXPOSURE_BASE * (scene0.light ?? 1);
+      panTarget.x = ((scene0.focusX ?? 50) - 50) / 100;
+      panTarget.y = -((scene0.focusY ?? 50) - 50) / 100;
+    }
+    stageGrowth = clamp(environment?.growth ?? environment?.worldGrowth ?? 0, 0, 1);
+    renderer.toneMappingExposure = baseExposure * (1 + stageGrowth * 0.035);
   }
 
-  async function transitionTo({ url, scene: scene0 }) {
+  async function transitionTo({ url, scene: scene0, environment }) {
     if (disposed || !url) return;
-    applyEnvironment(scene0);
+    applyEnvironment(scene0, environment);
     let built;
     try {
       built = await buildLayerSet(url);
@@ -202,9 +190,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     }
     if (incomingSet) disposeLayerSet(incomingSet);
     incomingSet = built;
-    incomingSet.layers.forEach((layer) => {
-      layer.material.opacity = 0;
-    });
+    incomingSet.layers.forEach((layer) => { layer.material.opacity = 0; });
     crossfadeStart = performance.now();
     requestFrame();
   }
@@ -224,12 +210,51 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     requestFrame();
   }
 
+  function onLearningSignal(profile) {
+    if (!profile || reduced) return;
+    signalStart = performance.now();
+    signalIntensity = clamp(profile.intensity ?? 0.2, 0, 1);
+    signalBreath = clamp(profile.worldBreath ?? 0.1, 0, 1);
+    requestFrame();
+  }
+
   function onPointerMove(event) {
     if (reduced) return;
     pointerTarget.x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * POINTER_RANGE;
     pointerTarget.y = -(event.clientY / Math.max(window.innerHeight, 1) - 0.5) * POINTER_RANGE;
     requestFrame();
   }
+
+  function onTouchStart(event) {
+    if (reduced || !event.touches?.[0]) return;
+    touchStart = { x: event.touches[0].clientX, y: event.touches[0].clientY };
+  }
+
+  function onTouchMove(event) {
+    if (reduced || !touchStart || !event.touches?.[0]) return;
+    const touch = event.touches[0];
+    const dx = clamp((touch.clientX - touchStart.x) / Math.max(window.innerWidth, 1), -1, 1);
+    const dy = clamp((touch.clientY - touchStart.y) / Math.max(window.innerHeight, 1), -1, 1);
+    pointerTarget.x = dx * TOUCH_RANGE;
+    pointerTarget.y = -dy * TOUCH_RANGE;
+    requestFrame();
+  }
+
+  function onTouchEnd() {
+    touchStart = null;
+    pointerTarget.x *= 0.35;
+    pointerTarget.y *= 0.35;
+    requestFrame();
+  }
+
+  function onScroll() {
+    if (reduced) return;
+    const maxScroll = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+    const progress = clamp(window.scrollY / maxScroll, 0, 1);
+    scrollTarget = (progress - 0.5) * 2 * SCROLL_RANGE;
+    requestFrame();
+  }
+
   function onPointerLeave() {
     pointerTarget.x = 0;
     pointerTarget.y = 0;
@@ -238,46 +263,39 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
 
   if (typeof window !== "undefined") {
     window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     document.documentElement.addEventListener("mouseleave", onPointerLeave, { passive: true });
   }
 
   let rafId = null;
-  let lastT = performance.now();
-  // Idle-stop: once the scene has fully settled (no pending crossfade, camera
-  // not meaningfully moving), rendering the exact same pixels forever wastes
-  // GPU/CPU and — on a phone — battery/thermal headroom for zero visible
-  // benefit. Touch devices never fire pointermove without an active drag, so
-  // on BALANCED (the only tier touch reaches, see detectWebglQuality) this
-  // routinely settles within a handful of frames after any scene/camera
-  // change and goes fully dormant until the next real trigger (see
-  // requestFrame(), called from every event handler below that can move the
-  // camera or swap the photograph). FULL keeps its continuous idle drift —
-  // desktop is untouched.
   let lastRenderedX = null;
   let lastRenderedY = null;
+  let lastRenderedZ = null;
   let idleFrames = 0;
-  const IDLE_STOP_AFTER = 6;
+  const IDLE_STOP_AFTER = 8;
   const STILL_EPSILON = 0.0004;
 
   function requestFrame() {
-    if (rafId === null && !disposed) {
-      lastT = performance.now();
-      rafId = requestAnimationFrame(frame);
-    }
+    if (rafId === null && !disposed) rafId = requestAnimationFrame(frame);
   }
 
-  const resizeObserver =
-    typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => resize()) : null;
+  const resizeObserver = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => resize()) : null;
   resizeObserver?.observe(canvas.parentElement || canvas);
   window.addEventListener("resize", resize);
   resize();
+  onScroll();
 
   function frame(t) {
     if (disposed) return;
-    lastT = t;
 
     pointer.x += (pointerTarget.x - pointer.x) * POINTER_LERP;
     pointer.y += (pointerTarget.y - pointer.y) * POINTER_LERP;
+    pan.x += (panTarget.x - pan.x) * 0.045;
+    pan.y += (panTarget.y - pan.y) * 0.045;
+    scrollCurrent += (scrollTarget - scrollCurrent) * 0.055;
 
     let driftX = 0;
     let driftY = 0;
@@ -287,21 +305,42 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
       driftY = Math.cos(phase * Math.PI * 2) * IDLE_DRIFT_AMPLITUDE * 0.6;
     }
 
+    let signal = 0;
+    if (!reduced && signalStart > 0) {
+      const elapsed = t - signalStart;
+      if (elapsed < SIGNAL_DECAY_MS) {
+        const normalized = 1 - elapsed / SIGNAL_DECAY_MS;
+        signal = Math.sin(normalized * Math.PI) * signalIntensity;
+      } else {
+        signalStart = 0;
+      }
+    }
+
     const contextScale = contextActive ? 0.3 : 1;
-    camera.position.x = (pointer.x + panTarget.x * 0.6 + driftX) * contextScale;
-    camera.position.y = (pointer.y + panTarget.y * 0.6 + driftY) * contextScale;
-    camera.lookAt(camera.position.x * 0.4, camera.position.y * 0.4, FAR_Z);
+    camera.position.x = (pointer.x + pan.x * 0.62 + driftX) * contextScale;
+    camera.position.y = (pointer.y + pan.y * 0.62 + driftY + scrollCurrent * 0.52) * contextScale;
+    camera.position.z = CAMERA_Z - signal * (0.16 + signalBreath * 0.22);
+    camera.lookAt(camera.position.x * 0.35, camera.position.y * 0.35, FAR_Z);
+
+    renderer.toneMappingExposure = baseExposure * (1 + stageGrowth * 0.035 + signal * 0.08);
+    if (bloomPass) bloomPass.strength = 0.55 + signal * 0.38;
+
+    // Different layer speeds make scroll/touch/camera motion perceptually real.
+    [currentSet, incomingSet].forEach((set) => {
+      if (!set) return;
+      const near = set.layers[1];
+      if (near) {
+        near.mesh.position.x = -camera.position.x * 0.12;
+        near.mesh.position.y = -camera.position.y * 0.16 - scrollCurrent * 0.13;
+        near.mesh.scale.z = 1;
+      }
+    });
 
     const crossfading = Boolean(incomingSet);
     if (crossfading) {
-      const elapsed = t - crossfadeStart;
-      const p = Math.min(1, elapsed / CROSSFADE_MS);
-      incomingSet.layers.forEach((layer) => {
-        layer.material.opacity = p;
-      });
-      currentSet?.layers.forEach((layer) => {
-        layer.material.opacity = 1 - p;
-      });
+      const p = Math.min(1, (t - crossfadeStart) / CROSSFADE_MS);
+      incomingSet.layers.forEach((layer) => { layer.material.opacity = p; });
+      currentSet?.layers.forEach((layer) => { layer.material.opacity = 1 - p; });
       if (p >= 1) {
         disposeLayerSet(currentSet);
         currentSet = incomingSet;
@@ -313,43 +352,32 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     else renderer.render(scene, camera);
 
     const settled =
-      !full &&
-      !crossfading &&
+      !full && !crossfading && signalStart === 0 &&
       lastRenderedX !== null &&
       Math.abs(camera.position.x - lastRenderedX) < STILL_EPSILON &&
-      Math.abs(camera.position.y - lastRenderedY) < STILL_EPSILON;
+      Math.abs(camera.position.y - lastRenderedY) < STILL_EPSILON &&
+      Math.abs(camera.position.z - lastRenderedZ) < STILL_EPSILON;
     lastRenderedX = camera.position.x;
     lastRenderedY = camera.position.y;
+    lastRenderedZ = camera.position.z;
+    idleFrames = settled ? idleFrames + 1 : 0;
 
-    if (settled) {
-      idleFrames += 1;
-    } else {
-      idleFrames = 0;
-    }
-
-    if (idleFrames >= IDLE_STOP_AFTER) {
-      rafId = null; // dormant — requestFrame() wakes it back up on demand
-    } else {
-      rafId = requestAnimationFrame(frame);
-    }
+    if (idleFrames >= IDLE_STOP_AFTER) rafId = null;
+    else rafId = requestAnimationFrame(frame);
   }
-  // The loop is already running: the initial resize() call above (before
-  // frame() existed textually, but function declarations hoist) already
-  // called requestFrame() and scheduled the first frame.
 
   function handleVisibility() {
     if (document.hidden) {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = null;
-    } else if (!disposed) {
-      requestFrame();
-    }
+    } else if (!disposed) requestFrame();
   }
   document.addEventListener("visibilitychange", handleVisibility);
 
   return {
     transitionTo,
     onCameraEvent,
+    onLearningSignal,
     setContextActive(active) {
       contextActive = Boolean(active);
       requestFrame();
@@ -359,6 +387,8 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
       if (reduced) {
         pointerTarget.x = 0;
         pointerTarget.y = 0;
+        scrollTarget = 0;
+        signalStart = 0;
       }
       requestFrame();
     },
@@ -366,6 +396,10 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
       disposed = true;
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("scroll", onScroll);
       document.documentElement.removeEventListener("mouseleave", onPointerLeave);
       window.removeEventListener("resize", resize);
       document.removeEventListener("visibilitychange", handleVisibility);
