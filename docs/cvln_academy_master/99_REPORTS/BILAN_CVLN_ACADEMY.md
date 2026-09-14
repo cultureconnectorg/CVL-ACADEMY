@@ -1,0 +1,216 @@
+# CVLN Academy — Inventaire & Bilan (2026-09-06)
+
+```
+Photo d'ensemble du chantier de reconciliation/pedagogie documentaire
+(branche claude/cvln-academy-canonical-fms). Construit entièrement à
+partir des fichiers déjà existants et de leurs statuts déjà déclarés —
+aucun ré-audit, aucune réouverture de décision, aucune reconstruction.
+```
+
+## 1. Ce que ce chantier est (et n'est pas)
+
+- **Est** : un chantier documentaire (`docs/`) de réconciliation puis
+  de construction pédagogique réelle (référentiels, modules,
+  assessments, certification), 100% markdown, jamais de code/seed/
+  runtime touché (`NO_RUNTIME_BINDING`, `NO_DB_MUTATION`,
+  `NO_SEED_MUTATION`).
+- **N'est pas** : le chantier "Production Hardening" (durcissement
+  plateforme, backend/frontend réels) qui vit sur une autre branche
+  (`claude/cvln-academy-production-r35l31`) — les deux sont
+  indépendants, jamais mélangés ici.
+
+## 2. Réconciliation (couche fondatrice) — 812/812 lignes
+
+Source : `CVLN_Academy_Cartographie_2D_Master.xlsx` (812 lignes, 11
+sheets). **`FOUNDER_DECISION_REQUIRED = 0`** — les 3 décisions Founder
+qui ont existé sont toutes closes :
+
+| Décision | Objet | Clôture |
+|---|---|---|
+| `FD-CVE-001` | Méthodologie CVE (Cultural Value Engine) | Source réelle vérifiée (`kora2024/Kora-app/memory/KORA_CVE_Specification_Mathematique_v1.0.md`) → `FORMALIZED_METHODOLOGY`/`SOURCE_OBSERVED` |
+| `FD-CIP-001` | Identité CIP Foundation vs. Fondation Cœurvolan | Deux objets distincts, jamais fusionnés |
+| `FRK-71` (architecture FREK v3) | Statut de maturité réel | Vérifié sur repo (`frekcoreAout2026`) → `ARCHITECTURE_LEVEL_2`, jamais gonflé en "production-proven" |
+
+**0 rejet sur 812 lignes** — chaque candidat porte un poids
+professionnel ou architectural réel (méthode à deux dimensions :
+couverture curriculaire × distinction professionnelle,
+`CONTENT_OVERLAP != PROFESSIONAL_DUPLICATE`).
+
+## 3. Repos réels audités (preuve directe, pas de mémoire)
+
+| Repo | Produit | Maturité réelle | Domaines ancrés |
+|---|---|---|---|
+| `cultureconnectorg/CVL-ACADEMY` (self) | CVLN Academy OS | `PRODUCTION_MVP` | source de vérité runtime Academy |
+| `kora2024/Kora-app` | KORA / CVE Spec | `FORMALIZED_METHODOLOGY` (CVE) | CVE-01→15 |
+| `fms-os/fms` | Factory Maker Studio OS | Partiel, réel | FMS-07→18 |
+| `gmfest972/goodmooddjsayd` | Good Mood OS | `PRODUCTION_MVP` | GMD-21→34, SAY-01→50 |
+| `cultureconnectorg/frekcoreAout2026` | FREKCORE v3 | `ARCHITECTURE_LEVEL_2` | FRK-71→75 |
+| `cultureconnectorg/Cvln-ios-v.1` | Intelligence OS | Architecture/gouvernance réelle, non déployée | IOS-01→25, BRN-15, CMD-15, AF-16/17 |
+| `metacvln-spec/MetaCVLN` | CVLN Brain / Command Center | `IMPLEMENTED` (gouvernance), non-kernel | BRN-01→15, CMD-01→15 |
+| `frekcore/CVLNAgentfactory` | Agent Factory | `IMPLEMENTED`, ADL v1/v2 réel | AF-01→25, AF-X-01→09 |
+| `cultureconnectorg/Laurent.ia` | Laurentia (IA multi-services) | `PRODUCTION_MVP` | LAU-01→10, IOS-07, pont LabelOS |
+| `cultureconnectorg/Kiltikonet-Aout2026` (canonique) vs. `Kiltikonet` (legacy) | Réseau Kiltikonet | Superset strict, 4 mois plus récent | KLT-09→20 |
+| `djsayd/CVLN-Wallet` | CVLN Wallet | `PRODUCTION_MVP`, financial-core-grade | WAL-19→28 (WAL-22/23/25/26/27), WAL-X |
+| `cultureconnectorg/culutureconnect2026` | CultureConnect (ombrelle) | `NOT_FULLY_AUDITED` | à approfondir avant Agent Factory/Brain/Wallet/Kiltikonet |
+
+**Repos encore introuvables** (`NO_REPO_FOUND_YET`, pas permanent) :
+LabelOS (contrat d'interface trouvé via Laurentia, repo lui-même
+absent), Gala Cook & Food, CyberSecure, Blockchain/Tokenomics,
+Fondation Cœurvolan — chacun garde sa formation legacy réelle
+(`LOS-01`, `HOS-01`, `BCH-01`, `CIP-01`) comme seul ancrage à ce jour.
+
+## 4. Construction pédagogique W6 — 5 vagues livrées
+
+| Vague | Corpus | Formations | Profondeur réelle |
+|---|---|---|---|
+| **1 — Good Mood** | `docs/gmd/` | GMD-21→33 (13) + GMD-34 | 13/13 `PACKAGE_COMPLETE` ; GMD-34 `BLOCKED` (gap produit réel, jamais simulé) |
+| **2 — Wallet** | `docs/wal/` | WAL-19→28 (10) | WAL-19 `PACKAGE_COMPLETE` (flagship) ; 9/10 `MODULE_CONTENT_DRAFTED` (dont WAL-22/23/25/26/27, re-vérifiées contre le vrai `djsayd/CVLN-Wallet` — checkpoint Founder G15) |
+| **3 — CVE** | `docs/cve/` | CVE-01→15 (15) | CVE-02 `PACKAGE_COMPLETE` (flagship) ; 14/15 `MODULE_CONTENT_DRAFTED` ; CVE-06/08 `FORMALIZATION_PENDING` (jamais comblées par une formule inventée) |
+| **4 — FMS étendu** | `docs/fms/` | FMS-07→18 → 9 parcours après fusions (FMS-07 absorbe 14/16, FMS-18 absorbe 17) | FMS-07 `PACKAGE_COMPLETE` (flagship) ; 8/9 `MODULE_CONTENT_DRAFTED` |
+| **5 — FREK (domaine complet)** | `docs/frk/` | 75/75 comptabilisées | 54/75 `PACKAGE_COMPLETE` (passe de deepening complète Batches A→I + reclassification FRK-16 sur audit `Cvln-ios-v.1`) ; 3/75 `MODULE_CONTENT_DRAFTED` (FRK-10/14/73, `NEEDS_EXPERT_REVIEW` non levé, jamais promues sans revue humaine réelle) ; 10/75 `BLOCKED_PRODUCT_DEPENDENCY` (`GAP.md`, gaps produit réels, re-vérifiés) ; 8/75 `EXTEND_EXISTING` (rattachées à un sibling, sans fichier séparé) |
+| **6 — Agent Factory/IOS/Brain/CMD/Laurentia** | `docs/agf/` (séparation stricte `external/`/`internal/`) | 109/109 comptabilisées | 59/109 `PACKAGE_COMPLETE` (passe de deepening complète cette session : les 5 clusters `external/` — af01_03/af04_15/lau01_10/brn01_14/cmd01_14, 53 lignes — et les 6 formations `internal/` — CMD-15 flagship + AF-16/17/AF-X-03/BRN-15/IOS-07, 6 lignes — chaque interne grondée uniquement sur `CVLNAgentfactory`/`Cvln-ios-v.1`/`Laurent.ia`/`MetaCVLN`, jamais extrapolée, clusters externes sur disciplines marché-général réelles) ; 39/109 `BLOCKED_PRODUCT_DEPENDENCY` (repos réels non branchés à l'Academy, inchangées) ; 11/109 `EXTEND_EXISTING` (inchangées) |
+| **7 — KORA interne/cross** | `docs/kor_op/` | 19/19 comptabilisées | 1/19 `PACKAGE_COMPLETE` (KOR-OP-12, seule ligne sans ancrage 1:1, package neuf construit sur les compétences réelles KOR-03/KOR-04) ; 18/19 `EXTEND_EXISTING`/index convergé (11 notes de cadrage KOR-OP pointant vers `docs/kor/korXX/` déjà bâti, 7 ponts KOR-X convergés dont 4 identiques à un pont déjà construit sous un autre numéro de ligne — `FRK-56`/`LOS-X-03`/`WAL-X-01`) ; `docs/kor/kor01→15` non touché |
+| **8 — CyberSecure+Blockchain+Gala+Hospitality+LabelOS** | `docs/cyb/`+`docs/bci/`+`docs/gcf/`+`docs/hos/`+`docs/los/` | 214/214 comptabilisées | 1/214 `PACKAGE_COMPLETE` (CYB-32, grondé sur le vrai `backend/auth.py`) ; 139/214 contenu réel construit (137 `MODULE_CONTENT_DRAFTED` + 2 modules de pont neufs) ; 13/214 index convergé/citation seule ; 1/214 préservé verbatim (`HOS-GAP`) ; 60/214 `BLOCKED_PRODUCT_DEPENDENCY` ; aucune formation legacy (`BCH-01`/`HOS-01`/`LOS-01`/`AGR-01`) reconstruite, chacune citée par référence ; résout `G3` et `G8` |
+| **9 — Founder/CEO+CVLN Group+Fondation Cœurvolan** | `docs/ceo/`+`docs/grp/`+`docs/fdc/` | 158/158 comptabilisées | 0/158 `PACKAGE_COMPLETE` (aucun flagship cette vague) ; 88/158 contenu réel construit (12 CEO + 39 GRP + 37 FDC) ; 9/158 ponts citation-seule (FDC-X) ; 25/158 `NEEDS_EXPERT_REVIEW` (10 GRP + 15 FDC, légal/fiscal/philanthropique, jamais de recette universelle) ; 27/158 `BLOCKED_PRODUCT_DEPENDENCY` (14 GRP + 13 FDC) ; 9/158 signalées non énumérées dans la source (`docs/grp/GRP_GAP_NOTE.md`, jamais inventées) ; aucune formation legacy (`GRP-01`/`GRP-02`/`CIP-01`) reconstruite ; `FD-CIP-001` (CIP Foundation ≠ Fondation Cœurvolan) appliqué sans exception |
+| **10 — Cross-CVLN (RAIL 1 FERMÉ)** | `docs/xcv/` | 67/67 comptabilisées | 0/67 `PACKAGE_COMPLETE` (par construction — couche transversale, convergence pure) ; 66/67 `EXTEND_EXISTING`/`MERGE` (10 notes de cadrage fondationnelles + 46 index d'étapes de pipeline + 10 fusionnées avec `SYS-01→10`) ; 1/67 `BLOCKED_PRODUCT_DEPENDENCY` (`XCV-67`, opérateur capstone, aucune infrastructure de pipeline réelle à superviser) — **ferme l'intégralité du Rail 1** |
+
+**Pré-existant, jamais reconstruit** : KOR-01/02 (`PACKAGE_COMPLETE`),
+KOR-03→10 (`PARTIAL_PACKAGE`), KOR-11→15 (`DRAFTED`), KLT-01→05
+(`PACKAGE_COMPLETE`), KLT-06→08 (`PARTIAL_PACKAGE`, auto-déclaré),
+FMS-01→06 (`PACKAGE_COMPLETE`-équivalent, code réel).
+
+**Total formations/lignes à contenu réel écrit ce chantier (waves
+1-16) : ~390** (13 GMD + 10 WAL + 15 CVE + 9 FMS + 55 FRK + 59 AGF + 1
+KOR-OP-12 + 140 CyberSecure/Blockchain/Gala/Hospitality/LabelOS + 88
+Founder/CEO/Group/Fondation à contenu construit, plus 11 FRK + 39 AGF
++ 60 CYB/BCI/GCF/LOS + 27 GRP/FDC + 1 XCV-67 déclarées `GAP.md`/
+`BLOCKED_CANDIDATES.md`, plus 18 lignes KORA + 13 lignes CYB/BCI/GCF/LOS
++ 9 lignes FDC-X + 66 lignes XCV `EXTEND_EXISTING`/index convergé sans
+formation séparée, plus 1 ligne `HOS-GAP` préservée verbatim, plus 3
+FRK + 25 GRP/FDC `NEEDS_EXPERT_REVIEW`, plus 9 lignes GRP signalées non
+énumérées dans la source), dont désormais **11 formations/clusters
+AGF + CMD-15 + FRK flagships + KOR-OP-12 + CYB-32** `PACKAGE_COMPLETE`
+(GMD couvre 13 flagships en fait — voir détail
+`docs/gmd/QUALITY_GATES.md`) et le reste honnêtement
+`MODULE_CONTENT_DRAFTED`/`BLOCKED`/`NEEDS_EXPERT_REVIEW`/
+`EXTEND_EXISTING` selon la preuve réelle disponible — **aucun statut
+jamais gonflé** (discipline `WAVE_PROCESSED`/`RECONCILED` ≠
+`PACKAGE_COMPLETE` ≠ `FULLY_COMPLETE`, voir `W6_GLOBAL_STATUS.md`).
+
+**RAIL 1 FERMÉ (2026-09-06)** — les 6 priorités explicites du Founder
+("FREK deepening final → Agent Factory → KORA interne/cross →
+CyberSecure/Blockchain/LabelOS/Gala/Hospitality → Founder/Group/
+Fondation → Cross-CVLN") ont chacune un statut propre par formation :
+classée + corpus construit ou blocage explicite, jamais artificiel.
+
+**GATE DE SORTIE COMPLET ATTEINT (2026-09-06)** — sur remarque du
+Founder que le travail n'était pas terminé, les deux derniers domaines
+hors Rail 1 (Good Mood/DJ Sayd côté marché, Wallet côté marché) ont
+été fermés à leur tour (`docs/gmd/` étendu, `docs/say/` neuf,
+`docs/wal/` étendu). **Le gate de sortie du chantier ("812 objets =
+chacun classé + corpus construit ou blocage explicite") est désormais
+atteint sur l'intégralité des 812 lignes** — voir §5 ci-dessous pour
+le détail domaine par domaine.
+
+## 5. Ce qui reste dans le périmètre W6 (domaines encore à zéro corpus)
+
+D'après `99_REPORTS/W6_GLOBAL_STATUS.md` (état réel par domaine) :
+
+| Domaine | Rows | État |
+|---|---|---|
+| FREK (FRK-01→75) | 75 | **Couverture 75/75 complète, corpus au maximum de profondeur atteignable sans lever `NEEDS_EXPERT_REVIEW`** — vague 5 complète + passe de deepening complète (Batches A→I) + une reclassification ponctuelle sur preuve repo nouvelle (FRK-16, `docs/frk/`), aucun candidat restant `RECONCILED_NOT_BUILT`. FRK-16 (FREK Digital Notary) est passé de `BLOCKED_PRODUCT_DEPENDENCY` à `PACKAGE_COMPLETE` après audit de `cultureconnectorg/Cvln-ios-v.1` (repo non croisé par la réconciliation initiale pour ce candidat), qui documente un vrai système `IMPLEMENTED` de notarisation + ancrage externe dans MetaCVLN — jamais un notariat légal, jamais confondu avec `frek_core.py`/FRK-13 (voir `docs/frk/frk16/INTEGRATION_NOTE.md`). État canonique final : 54 `PACKAGE_COMPLETE` / 3 `MODULE_CONTENT_DRAFTED` (`NEEDS_EXPERT_REVIEW` : FRK-10 EUDI/eIDAS2, FRK-14 chaîne de custody, FRK-73 cryptographie appliquée — 8/8 fichiers de support écrits pour chacune, jamais promues sans revue humaine réelle documentée) / 10 `BLOCKED_PRODUCT_DEPENDENCY` (re-vérifiés contre `Cvln-ios-v.1` et confirmés inchangés) / 8 `EXTEND_EXISTING` — jamais résumé autrement que ce décompte exact (54+3+10+8=75). |
+| Agent Factory/AF-X/Laurentia/IOS/Brain/CMD | 109 | **Couverture complète (vague 6 + passe de deepening, `docs/agf/`)** — 59 `PACKAGE_COMPLETE` (5 clusters `external/` + 6 formations `internal/`, deepening achevé cette session) / 39 `BLOCKED_PRODUCT_DEPENDENCY` (inchangées) / 11 `EXTEND_EXISTING` (inchangées) — jamais résumé comme domaine `FULLY_COMPLETE` |
+| CyberSecure+Blockchain+Gala+Hospitality+LabelOS | 214 | **Couverture complète (vague 8-12, `docs/cyb/`+`docs/bci/`+`docs/gcf/`+`docs/hos/`+`docs/los/`)** — 1 `PACKAGE_COMPLETE` (CYB-32) / 139 contenu réel construit / 13 index convergé/citation / 1 préservé verbatim (`HOS-GAP`) / 60 `BLOCKED_PRODUCT_DEPENDENCY` — résout `G3` (LabelOS) et `G8` (frontière sécurité), aucune formation legacy (`BCH-01`/`HOS-01`/`LOS-01`/`AGR-01`) reconstruite |
+| Founder/CEO+Group+Fondation | 158 | **Couverture complète (vague 13-15, `docs/ceo/`+`docs/grp/`+`docs/fdc/`)** — 0 `PACKAGE_COMPLETE` / 88 contenu réel construit / 9 citation-seule / 25 `NEEDS_EXPERT_REVIEW` (légal/fiscal/philanthropique, jamais de recette universelle) / 27 `BLOCKED_PRODUCT_DEPENDENCY` / 9 signalées non énumérées dans la source (`docs/grp/GRP_GAP_NOTE.md`, jamais inventées) |
+| KORA interne/cross | 19 | **Couverture complète (vague 7, `docs/kor_op/`)** — 1 `PACKAGE_COMPLETE` (KOR-OP-12) / 18 `EXTEND_EXISTING`/index convergé (aucune formation séparée, `docs/kor/kor01→15` non touché) |
+| Kiltikonet KLT-09→20 | 12 | `BLOCKED` — hérite du `STOP=TRUE` de `docs/klt/` (gate d'autorisation Founder, jamais contourné) |
+| Cross-CVLN (XCV-01→67) | 67 | **Couverture complète (vague 16, `docs/xcv/`) — RAIL 1 FERMÉ** — 0 `PACKAGE_COMPLETE` (par construction) / 66 `EXTEND_EXISTING`/`MERGE` / 1 `BLOCKED_PRODUCT_DEPENDENCY` (`XCV-67`) |
+| Good Mood/DJ Sayd (domaine complet, 94 lignes) | 94 | **Couverture complète (vague 17-18, `docs/gmd/` étendu + `docs/say/` neuf)** — 14 `PACKAGE_COMPLETE` (13 GMD-21→33 + `SAY-LAB` capstone flagship) / le reste `MODULE_CONTENT_DRAFTED`/`SPECIALIZE_EXISTING`/`MERGE`/`BLOCKED` — aucune formation legacy FMS-01→06 reconstruite |
+| Wallet + CVE (domaine complet, 52 lignes) | 52 | **Couverture complète (vague 19, `docs/wal/` étendu + `docs/cve/`)** — 2 `PACKAGE_COMPLETE` (WAL-19, CVE-02) / 25 `MODULE_CONTENT_DRAFTED` (9 interne + 16 externe) / 14 `MODULE_CONTENT_DRAFTED` (CVE) / 1 `EXTEND_EXISTING` (WAL-14) / 1 `NEEDS_EXPERT_REVIEW` (WAL-15) / 7 WAL-X résolues / 2 `BLOCKED_PRODUCT_DEPENDENCY` — résout la fermeture complète du domaine |
+
+**Plus aucun domaine `RECONCILED_NOT_BUILT` : le gate de sortie réel du
+chantier ("812 objets = chacun classé + corpus construit ou blocage
+explicite") est désormais atteint sur l'intégralité du périmètre W6.**
+
+## 6. Les 4 chantiers transversaux évoqués — état réel de chacun
+
+### Modèle économique
+`100_ECONOMY/ECONOMIC_MODEL.md` — **`DECIDED_V1` pour 811/812 lignes**
+(`DECIDED_HOLD` pour la seule ligne `HOS-GAP`, cohérent avec le gap
+déjà loggé). 7 moteurs de revenu, `ECO-001→045`, 20 offres tarifées
+(`Offres_Economiques.csv`/`Pricing_V1.csv`/`Unit_Economics.csv`),
+frontière `MARKET != SYSTEM_CVLN` / `CVE != Wallet != JCC != Tokenomics`
+tenue explicitement. **C'est une couche de tarification/packaging sur
+la cartographie déjà réconciliée — elle ne re-classe rien.** Statut :
+**décidé et documenté, pas rejoué à chaque vague** ; ce qui reste :
+appliquer cette grille aux nouvelles vagues W6 (FREK, Agent Factory,
+etc.) au fur et à mesure qu'elles se construisent, ce qui n'a pas
+encore été fait formation par formation pour les vagues 1-4 livrées.
+
+### Spatial
+`90_SPATIAL/SPATIAL_RELATIONSHIP_MAP.md` — **`NOT_STARTED`,
+délibérément**. Le principe directeur (position = relation à
+l'apprenant) et les 9 relations attendues par objet pédagogique
+(`prerequisite_relationship`, `progression_relationship`, etc.) sont
+posés, mais `SPATIAL_INTEGRATION = LATER_PHASE` reste en vigueur : le
+moteur spatial réel (`frontend/src/lib/spatial/`) n'est pas touché par
+ce chantier (`ADDITIVE FIRST`). La réconciliation des 27 domaines a
+stabilisé *quoi* enseigner — condition nécessaire avant de décider *où*
+le placer spatialement — mais **ne lève pas** elle-même ce statut :
+c'est un chantier séparé, explicitement postérieur, non entamé.
+
+### Sécurité
+Deux couches, jamais dupliquées (`G8`, fermé) : CyberSecure externe
+(`CYB-01→30`, marché) + couche opérateur interne pour l'infra CVLN
+elle-même (`CYB-31→42`, ancrée sur le vrai `backend/auth.py`). Toute
+ligne sécurité par produit (FREK security FRK-48→51/70, Kiltikonet
+KLT-17, Wallet WAL-14) pointe vers `CYB-31→42` plutôt que d'être
+réenseignée. **Statut : frontière tranchée, contenu `RECONCILED_NOT_
+BUILT`** — CyberSecure elle-même n'a pas encore de corpus W6
+(`docs/cyb/` n'existe pas).
+
+### Branchement (runtime binding)
+Doctrine constante depuis le début du chantier :
+`NO_RUNTIME_BINDING`/`NO_DB_MUTATION`/`NO_SEED_MUTATION` — tout ce
+corpus est markdown-only, jamais lié au runtime réel de l'Academy.
+Chaque `INTEGRATION_NOTE.md` de chaque formation le déclare
+explicitement (`NO_RUNTIME_BINDING`, Skill IDs "réservés" jamais
+implémentés). **Une future intégration réelle exigerait** (répété dans
+chaque `INTEGRATION_NOTE.md`) : une entrée de registre de
+certification/compétences par formation, une surface candidat réelle
+(ce corpus n'en a aucune), et une décision séparée sur l'octroi d'accès
+write en production — **jamais automatique, jamais décidée par ce
+chantier documentaire seul**. Statut : **volontairement non entamé**,
+en attente d'une décision Founder explicite pour lancer cette phase.
+
+## 7. Discipline appliquée sur tout le chantier (rappel)
+
+- `WAVE_PROCESSED`/`RECONCILED` ≠ `PACKAGE_COMPLETE` ≠
+  `FULLY_COMPLETE` — jamais confondus, dans aucun rapport.
+- Aucune capacité, formule, ou repo inventé — absence de code =
+  `GAP.md`/`BLOCKED_PRODUCT_DEPENDENCY`/`FORMALIZATION_PENDING` déclaré
+  honnêtement, jamais comblé.
+- `NO_REPO_FOUND_YET` n'est jamais une conclusion permanente — l'audit
+  repo est repris avant chaque vague qui en dépend (`REPO_REGISTRY.md`,
+  registre vivant).
+- Aucune réconciliation déjà validée n'est refaite ; seuls les deltas
+  révélés par une preuve nouvelle sont appliqués (5 checkpoints Founder
+  de ce type à ce jour : G12, G13, G14, G15, et la vérification anti-
+  collision CVE avant la vague Wallet).
+
+## 8. Prochaine étape recommandée
+
+FREK (FRK-01→75) et Agent Factory/IOS/Brain/CMD/Laurentia (109 lignes)
+ont désormais une **couverture** complète (vagues 5 et 6) — à ne
+jamais résumer comme "terminé" ou `PACKAGE_COMPLETE` : les états
+canoniques restent respectivement 8/47/11/8 et 1/58/39/11. Par ordre de
+solidité d'ancrage réel (`W6_GLOBAL_STATUS.md`), suite recommandée :
+CyberSecure/Blockchain/Hospitality (ancrages legacy réels), puis
+Founder/CEO. Le Spatial, le
+Branchement runtime, et l'application fine du modèle économique
+formation-par-formation restent des chantiers **explicitement
+postérieurs** à la stabilisation du corpus pédagogique W6 — non
+entamés par choix, pas par oubli.
+
+`STATUS = LIVE BILAN`, à ré-établir (pas reconstruit) après chaque
+vague W6 significative.
