@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 from contextlib import asynccontextmanager
+from time import perf_counter
 
 from fastapi import FastAPI, Request
 from starlette.middleware.cors import CORSMiddleware
@@ -36,11 +37,22 @@ logging.basicConfig(
 logger = logging.getLogger("cvln")
 
 
+async def _timed_startup_step(name, factory):
+    """Run one startup coroutine without changing ordering, while measuring it."""
+    started = perf_counter()
+    try:
+        return await factory()
+    finally:
+        elapsed_ms = (perf_counter() - started) * 1000
+        logger.info("startup step completed: %s duration_ms=%.1f", name, elapsed_ms)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Own Academy startup/shutdown and both MCP session managers."""
     app.state.startup_ready = False
     app.state.startup_error = None
+    startup_started = perf_counter()
 
     # This gate intentionally runs outside the seed try/except. Production must
     # not accept paid Academy orders if legal invoice issuance is not configured.
@@ -54,17 +66,20 @@ async def lifespan(app: FastAPI):
 
     register_integration_subscribers()
     try:
-        await ensure_indexes()
-        await ensure_mcp_indexes()
-        await seed_if_empty()
-        await seed_default_definitions()
-        inserted, skipped = await seed_initial_matrix()
+        await _timed_startup_step("ensure_indexes", ensure_indexes)
+        await _timed_startup_step("ensure_mcp_indexes", ensure_mcp_indexes)
+        await _timed_startup_step("seed_if_empty", seed_if_empty)
+        await _timed_startup_step("seed_default_definitions", seed_default_definitions)
+        inserted, skipped = await _timed_startup_step("seed_initial_matrix", seed_initial_matrix)
         logger.info(
             "module_lineage initial matrix: %d inserted, %d already present",
             inserted,
             skipped,
         )
-        workbook_status = await ensure_workbook_runtimes(db)
+        workbook_status = await _timed_startup_step(
+            "ensure_workbook_runtimes",
+            lambda: ensure_workbook_runtimes(db),
+        )
         if not workbook_status["all_ready"]:
             raise RuntimeError("workbook runtime reconciliation incomplete")
         logger.info(
@@ -72,10 +87,17 @@ async def lifespan(app: FastAPI):
             sorted(workbook_status["imported"]),
         )
         app.state.startup_ready = True
-        logger.info("Seed done; application ready.")
+        logger.info(
+            "Seed done; application ready. startup_duration_ms=%.1f",
+            (perf_counter() - startup_started) * 1000,
+        )
     except Exception as exc:  # noqa: BLE001
         app.state.startup_error = f"{type(exc).__name__}: {exc}"
-        logger.exception("Startup initialization failed: %s", exc)
+        logger.exception(
+            "Startup initialization failed after %.1fms: %s",
+            (perf_counter() - startup_started) * 1000,
+            exc,
+        )
 
     async with academy_mcp.session_manager.run(), private_academy_mcp.session_manager.run():
         try:

@@ -74,8 +74,13 @@ export default function SpatialFocusManager() {
   const location = useLocation();
   const guardRef = useRef(null);
   if (!guardRef.current) guardRef.current = createAutofocusGuard();
+  const topologyActive = Boolean(routeToTopologyNode(location.pathname));
 
   useEffect(() => {
+    // Auth, legal, recovery and other non-topology routes do not participate
+    // in spatial focus restoration. Keep them free of document-wide input
+    // capture instead of paying three global listeners for the whole session.
+    if (!topologyActive || typeof window === "undefined") return undefined;
     const note = () => guardRef.current.noteExplicitIntent();
     window.addEventListener("pointerdown", note, true);
     window.addEventListener("keydown", note, true);
@@ -85,10 +90,10 @@ export default function SpatialFocusManager() {
       window.removeEventListener("keydown", note, true);
       window.removeEventListener("touchstart", note, true);
     };
-  }, []);
+  }, [topologyActive]);
 
   useEffect(() => {
-    if (!routeToTopologyNode(location.pathname)) return undefined;
+    if (!topologyActive) return undefined;
     let cancelled = false;
     let pendingTarget = null;
     let pendingSnapshot = null;
@@ -123,7 +128,7 @@ export default function SpatialFocusManager() {
       // with <body>, making browser Back unable to restore explicit focus.
       snapshotCurrentRoute(location.pathname);
     };
-  }, [location.pathname]);
+  }, [location.pathname, topologyActive]);
 
   return null;
 }
