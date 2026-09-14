@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth.jsx";
 import SpatialBackground from "@/components/spatial/SpatialBackground.jsx";
 import SpatialWebGLBackground from "@/components/spatial/SpatialWebGLBackground.jsx";
 import { FEATURE_FLAGS } from "@/lib/featureFlags";
-import { detectSpatialQuality, SPATIAL_QUALITY } from "@/lib/spatial/devicePerformancePolicy";
+import { detectSpatialQuality, detectWebglQuality, SPATIAL_QUALITY } from "@/lib/spatial/devicePerformancePolicy";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { backgroundForNode } from "@/lib/spatial/webglSceneMap";
 import { webglSupported } from "@/lib/spatial/webglSupport";
@@ -31,16 +31,26 @@ export default function SpatialWorldFrame({ children }) {
   // mid-session. A route with no reference photograph yet
   // (backgroundForNode returns null — e.g. legal pages, auth recovery)
   // always keeps the CSS world, same as it does today.
+  //
+  // Two independent tiers, deliberately: `quality` (detectSpatialQuality)
+  // still gates the CSS world exactly as it did before this file existed
+  // (unchanged — the mobile-freeze fix). `webglQuality` (detectWebglQuality)
+  // is real capability only, uncapped by viewport/pointer except a safety
+  // cap to BALANCED on touch — so a capable phone gets the lightweight
+  // single-plane WebGL scene instead of the flat CSS world, while hardware
+  // that is genuinely weak (low memory/cores/Data Saver) still never pays
+  // for WebGL at all and falls through to the CSS branch below.
   const [quality] = useState(() => detectSpatialQuality());
+  const [webglQuality] = useState(() => detectWebglQuality());
   const [hasWebgl] = useState(() => webglSupported());
   const { node } = sceneForPathname(location.pathname);
   const webglEligible = useMemo(
     () =>
       FEATURE_FLAGS.SPATIAL_WEBGL &&
       hasWebgl &&
-      quality !== SPATIAL_QUALITY.LITE &&
+      webglQuality !== SPATIAL_QUALITY.LITE &&
       Boolean(backgroundForNode(node)),
-    [hasWebgl, quality, node]
+    [hasWebgl, webglQuality, node]
   );
 
   return (
@@ -52,7 +62,7 @@ export default function SpatialWorldFrame({ children }) {
       <SpatialSensoryBridge />
       <SpatialRuntimeDiagnostics />
       {webglEligible ? (
-        <SpatialWebGLBackground pathname={location.pathname} stade={user?.stade} />
+        <SpatialWebGLBackground pathname={location.pathname} stade={user?.stade} quality={webglQuality} />
       ) : (
         <SpatialBackground pathname={location.pathname} stade={user?.stade} />
       )}

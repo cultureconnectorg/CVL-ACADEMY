@@ -66,6 +66,39 @@ export function detectSpatialQuality(
   return capabilityQuality;
 }
 
+/**
+ * WebGL-specific tier (frontend/src/lib/spatial/webglEngine.js). Unlike
+ * detectSpatialQuality — which the CSS/SVG world's ambient-animation cost
+ * model conservatively forces to LITE for ANY narrow touch device
+ * regardless of real capability, the fix for the mobile freeze (2ae1282)
+ * — a single textured WebGL plane with no bloom/near-layer is cheap
+ * enough that a genuinely capable phone should not be excluded outright.
+ * Real capability (deviceMemory/hardwareConcurrency/saveData) still gates
+ * LITE here exactly as it does above: weak hardware never gets WebGL,
+ * full stop. A capable device on a coarse (touch) pointer is capped at
+ * BALANCED, never FULL — webglEngine.js only builds the near-layer
+ * parallax plane and enables UnrealBloomPass at FULL, so this keeps
+ * every touch device unconditionally on the cheap single-plane,
+ * no-bloom path regardless of how capable it is. Viewport width is
+ * deliberately not consulted here (unlike detectSpatialQuality): a
+ * narrow *desktop* browser window with a mouse is not battery/thermal
+ * constrained, so it keeps its real capability tier.
+ */
+export function detectWebglQuality(
+  nav = typeof navigator !== "undefined" ? navigator : null,
+  win = typeof window !== "undefined" ? window : null
+) {
+  const capabilityQuality = spatialQualityFromCapabilities({
+    deviceMemory: nav?.deviceMemory,
+    hardwareConcurrency: nav?.hardwareConcurrency,
+    saveData: Boolean(nav?.connection?.saveData),
+  });
+
+  if (capabilityQuality === SPATIAL_QUALITY.LITE) return capabilityQuality;
+  if (pointerIsCoarse(win)) return SPATIAL_QUALITY.BALANCED;
+  return capabilityQuality;
+}
+
 export function spatialQualityProfile(quality) {
   if (quality === SPATIAL_QUALITY.LITE) {
     return Object.freeze({ motionScale: 0.38, pointerScale: 0.32, atmosphereScale: 0.72, breathScale: 0.34 });

@@ -1,6 +1,7 @@
 import {
   SPATIAL_QUALITY,
   detectSpatialQuality,
+  detectWebglQuality,
   spatialQualityFromCapabilities,
   spatialQualityProfile,
 } from "./devicePerformancePolicy";
@@ -54,6 +55,33 @@ describe("devicePerformancePolicy", () => {
       matchMedia: () => ({ matches: false }),
     };
     expect(detectSpatialQuality(nav, win)).toBe(SPATIAL_QUALITY.FULL);
+  });
+
+  test("detectWebglQuality: a capable narrow-touch phone gets balanced WebGL, not lite", () => {
+    const nav = { hardwareConcurrency: 6 };
+    const win = { innerWidth: 390, matchMedia: () => ({ matches: true }) };
+    expect(detectWebglQuality(nav, win)).toBe(SPATIAL_QUALITY.BALANCED);
+    // Same device is still forced to LITE for the CSS world's ambient-
+    // animation cost model — the two tiers are deliberately independent.
+    expect(detectSpatialQuality(nav, win)).toBe(SPATIAL_QUALITY.LITE);
+  });
+
+  test("detectWebglQuality: genuinely weak hardware stays lite (no WebGL) regardless of pointer", () => {
+    const nav = { hardwareConcurrency: 2 };
+    const win = { innerWidth: 1440, matchMedia: () => ({ matches: false }) };
+    expect(detectWebglQuality(nav, win)).toBe(SPATIAL_QUALITY.LITE);
+  });
+
+  test("detectWebglQuality: a narrow desktop window with a mouse keeps its real capability tier", () => {
+    const nav = { deviceMemory: 8, hardwareConcurrency: 8 };
+    const win = { innerWidth: 500, matchMedia: () => ({ matches: false }) };
+    expect(detectWebglQuality(nav, win)).toBe(SPATIAL_QUALITY.FULL);
+  });
+
+  test("detectWebglQuality: capable desktop with a mouse reaches full richness (bloom eligible)", () => {
+    const nav = { deviceMemory: 8, hardwareConcurrency: 8 };
+    const win = { innerWidth: 1600, matchMedia: () => ({ matches: false }) };
+    expect(detectWebglQuality(nav, win)).toBe(SPATIAL_QUALITY.FULL);
   });
 
   test("quality profiles only scale perception, never domain semantics", () => {

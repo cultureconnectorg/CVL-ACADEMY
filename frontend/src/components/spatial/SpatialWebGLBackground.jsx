@@ -4,7 +4,7 @@ import { useReducedMotion } from "@/lib/useReducedMotion";
 import { SPATIAL_CONTEXT_EVENT } from "@/lib/ContextFrame";
 import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { environmentForStade } from "@/lib/spatial/environmentState";
-import { detectSpatialQuality, SPATIAL_QUALITY } from "@/lib/spatial/devicePerformancePolicy";
+import { SPATIAL_QUALITY } from "@/lib/spatial/devicePerformancePolicy";
 import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
 import { backgroundForNode } from "@/lib/spatial/webglSceneMap";
 import "./spatial-webgl-background.css";
@@ -26,12 +26,11 @@ import "./spatial-webgl-background.css";
  * photograph — the DOM/CSS world could only ever translate3d one flat
  * layer per element; this one has actual camera-distance-driven depth.
  */
-export default function SpatialWebGLBackground({ pathname = "/", stade }) {
+export default function SpatialWebGLBackground({ pathname = "/", stade, quality = SPATIAL_QUALITY.BALANCED }) {
   const mountRef = useRef(null);
   const canvasRef = useRef(null);
   const engineRef = useRef(null);
   const reduced = useReducedMotion();
-  const [quality] = useState(() => detectSpatialQuality());
   const { node, scene } = sceneForPathname(pathname);
   const environment = useMemo(() => environmentForStade(stade), [stade]);
   const backgroundUrl = backgroundForNode(node);
