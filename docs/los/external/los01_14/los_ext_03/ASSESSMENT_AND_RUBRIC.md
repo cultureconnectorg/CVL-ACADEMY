@@ -10,6 +10,7 @@ Structure identique à `../../../../gmd/gmd21/ASSESSMENT_AND_RUBRIC.md`
 | C1 | Rapport royalties trimestriel approfondi, citant `LOS-01-M06` |
 | C2 | Mécanique de split-agreement, niveau spécialisation |
 | C3 | Discipline profondeur/survol + collision de code (`LOS-EXT-03` ≠ `LOS-03`/legacy `LOS-01`) |
+| C4 | Traçabilité d'audit réelle du worksheet — chaque ligne retraçable à son accord de split |
 
 ## Rubric (0–4 par compétence)
 

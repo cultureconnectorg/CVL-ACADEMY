@@ -35,3 +35,16 @@ production distribue réellement des royalties — la couche opérateur
 interne (`LOS-OP-01→15`) reste entièrement `BLOCKED_PRODUCT_
 DEPENDENCY`. Élimination si le candidat maintient l'affirmation d'un
 système de production.
+
+## Cas N2-4 — Worksheet sans traçabilité d'audit
+
+Un candidat soumet un worksheet de split-agreement qui répartit
+correctement le montant total mais ne montre aucune traçabilité —
+impossible de retracer une ligne du rapport jusqu'à l'accord de split
+source correspondant.
+
+**Critères de notation:** identifie que ceci ne démontre pas la
+profondeur professionnelle attendue au-delà de `LOS-01-M06` — la
+traçabilité d'audit est l'élément de spécialisation central de cette
+formation. Pas d'élimination automatique (pas une invention), mais
+note fortement réduite, équivalente au Cas N2-1.

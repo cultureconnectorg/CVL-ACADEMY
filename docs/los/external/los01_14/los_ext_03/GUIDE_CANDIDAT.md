@@ -21,7 +21,9 @@ worksheet de split-agreement, et ne jamais confondre le code
 ## Piège le plus fréquent
 
 Recopier `LOS-01-M06` sans y ajouter de profondeur professionnelle
-réelle (traçabilité d'audit, mécanique de répartition détaillée).
+réelle (traçabilité d'audit, mécanique de répartition détaillée) —
+un worksheet qui répartit correctement le total mais sans traçabilité
+ligne-par-ligne vers l'accord de split source reste incomplet.
 
 ## Règle absolue
 

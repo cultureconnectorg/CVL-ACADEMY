@@ -28,3 +28,22 @@ Sourced against legacy LOS-01's real module definition
    it matter? (`LOS-EXT-03` — never bare `LOS-03`, to prevent
    collision with the legacy runtime `LOS-01` formation's own
    numbering)
+5. What does "professional depth" concretely add to `LOS-01-M06`'s
+   survey-level royalty report template that a verbatim copy would
+   not demonstrate? (A documented audit trail — how each line of the
+   report traces back to its source split agreement — something a
+   survey-level template does not itself provide)
+6. Why does `LOS-OP-01→15` (the internal operator layer) staying
+   `BLOCKED_PRODUCT_DEPENDENCY` matter for how a candidate should
+   frame their split-agreement worksheet? (Because the worksheet must
+   be framed as a market-general accounting exercise, never as
+   evidence that this Academy or CVLN operates a real royalty-
+   distribution system — no such system exists to operate)
+
+## M4 — prerequisite discipline
+
+7. Why must a candidate hold `LOS-EXT-01` before attempting this
+   formation? (`LOS-EXT-01` establishes the foundation cross-reference
+   to legacy `LOS-01`'s 8 real modules — without it, a candidate risks
+   re-deriving or misattributing content that formation already
+   grounds correctly)

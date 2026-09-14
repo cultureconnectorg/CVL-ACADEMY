@@ -8,7 +8,8 @@ Relis `REFERENTIAL.md` §Grounding (`LOS-01-M06`) à côté de la copie.
 
 1. Le rapport ajoute-t-il une profondeur réelle par rapport à
    `LOS-01-M06`, ou est-il recopié verbatim ?
-2. Le worksheet de split-agreement est-il correct et original ?
+2. Le worksheet de split-agreement est-il correct et original, avec
+   une traçabilité d'audit réelle (Cas N2-4) ?
 3. Confond-il les codes `LOS-EXT-03`/`LOS-03`/legacy `LOS-01` ?
    Applique la règle éliminatoire sans exception si la confusion
    persiste après correction.
