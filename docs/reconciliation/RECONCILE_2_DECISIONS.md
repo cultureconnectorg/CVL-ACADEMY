@@ -14,12 +14,17 @@ tous réconciliés avec preuve de test réelle. `import server` réussit de
 bout en bout : **515 routes**, dont les 53 nouveaux routers, garde
 `require_legal_acceptance` vérifiée sur un échantillon.
 
-**Reste : 90 des 95 fichiers `BOTH_DIFFERENT`.**
-- **Groupe 2 (auth)** — `backend/auth.py`, `backend/api/auth.py`,
-  `backend/api/orgs.py`, `frontend/src/lib/auth.jsx`, etc. Pas
-  commencé. Zone sensible (risque de régression sur le bug de connexion
-  récemment corrigé) — mérite sa propre passe dédiée plutôt qu'une
-  réconciliation hâtive en fin de session.
+**Groupe 2 — AUTH : COMPLET (7/7 fichiers).** `backend/auth.py`,
+`backend/api/auth.py`, `backend/api/orgs.py`, `frontend/src/lib/
+auth.jsx`, `frontend/src/lib/api.js`, `frontend/e2e/auth-guards.spec.js`,
+`frontend/e2e/fixtures/auth-fixture.js` — tous résolus avec preuve de
+test réelle (parcours register→login→requête authentifiée→navigation
+post-auth complet, plus toute la suite SEC-01/SEC-02). Un bug
+d'intégrité d'inscription pré-existant (identique sur `main` et
+r35l31) a été trouvé et corrigé en combinant SEC-02 — voir la fiche
+`api/auth.py` ci-dessous.
+
+**Reste : 83 des 95 fichiers `BOTH_DIFFERENT`.**
 - **Groupe 3 (wallet/commerce/paiements)** — `backend/wallet/*`,
   `backend/commercial.py`, `backend/billing*.py`, etc. Pas commencé.
 - **Groupe 4 (spatial/frontend core)** — `frontend/src/App.js`,
@@ -190,3 +195,299 @@ bout en bout : **515 routes**, dont les 53 nouveaux routers, garde
   passer pour `AsyncIOMotorClient` en interne, comportement documenté
   de la bibliothèque, déjà éprouvé par toute la suite de tests
   existante qui s'appuie dessus).
+
+---
+
+## Groupe 2 — Auth
+
+Ordre suivi : `backend/auth.py` (bas niveau, aucune décision propre) →
+`backend/api/auth.py` (register/login/session) → `backend/api/orgs.py`
+(invitations, dépend de `INVITER_ALLOWED_INVITED_ROLES` déjà posé en
+Groupe 1) → fichiers frontend (`auth.jsx`, `api.js`) → tests e2e
+(`auth-guards.spec.js`, `auth-fixture.js`). Chaque commit reste
+strictement dans cette zone — aucun mélangé avec noyau backend/wallet/
+spatial/App.js.
+
+### `backend/auth.py`
+
+- **MAIN_BEHAVIOR** : réécrit `next_frek_id()` pour accepter
+  `email`/`metadata` et faire remonter les erreurs FrekCore
+  (`FrekCoreConfigurationError`/`FrekCoreUnavailableError`) en 503
+  explicites plutôt que de les laisser fuiter comme 500. Ajoute
+  l'atomicité de consommation à usage unique (`revoked=False`/`used=
+  False` dans le filtre `update_one`, `modified_count != 1` → 401/400)
+  sur `rotate_refresh_token`, `consume_password_reset_token`,
+  `consume_email_verification_token` — protège contre une double
+  consommation concurrente du même jeton. Nettoyage de docstrings/
+  commentaires de section.
+- **R35L31_BEHAVIOR** : ajoute **exactement la même** atomicité de
+  consommation à usage unique sur les trois mêmes fonctions (logique et
+  formulation du docstring identiques à main — convergence
+  indépendante, pas une divergence). `next_frek_id()` garde sa
+  signature d'origine (pas d'`email`/`metadata`, pas de mapping
+  d'erreurs FrekCore).
+- **MERGE_BASE** : `next_frek_id()` sans paramètres ; aucune des trois
+  fonctions de consommation de jeton n'est atomique (`update_one` sans
+  filtre `revoked`/`used`, `find_one` puis `update_one` séparés —
+  fenêtre de course exploitable).
+- **DÉCISION : KEEP_MAIN** — main est un **strict superset** de
+  r35l31 sur ce fichier : diff direct `r35l31 → main` ne contient
+  **aucune** suppression de capacité r35l31, seulement des ajouts
+  (mapping d'erreurs FrekCore) et du nettoyage cosmétique. Confirmé par
+  diff explicite `main` vs `r35l31` (voir ci-dessus) : chaque ligne
+  ajoutée par r35l31 par rapport au merge-base est présente à
+  l'identique dans main. Rien à combiner, rien à perdre.
+- **TEST_EVIDENCE** : fichier déjà identique à `main` dans la branche
+  reconcile avant toute intervention (`diff backend/auth.py
+  <main> → aucune différence`) — confirmé qu'aucune modification
+  n'était nécessaire. `pytest tests/test_auth_token_atomicity.py` → 2
+  passed (rotation atomique sous réutilisation concurrente). Voir aussi
+  le parcours critique ci-dessous (register→login→refresh→logout) qui
+  exerce `next_frek_id`, `rotate_refresh_token` et
+  `issue_refresh_token` en conditions réelles.
+
+### `backend/api/auth.py`
+
+- **MAIN_BEHAVIOR** : `register()` dérive `email` une seule fois,
+  appelle `next_frek_id(email, metadata=...)`, rejette un FREK-ID déjà
+  lié à un compte Academy (409 — collision improbable mais gérée
+  explicitement plutôt qu'un crash d'index unique). `_apply_invitation`
+  prend `(user_id, invite_code)` — aucune vérification de l'email de
+  l'inscrivant. Docstrings nettoyées, commentaires de section
+  supprimés.
+- **R35L31_BEHAVIOR** : `_apply_invitation` prend en plus
+  `registering_email` (SEC-02, audit chirurgical 2026-09-07) — si
+  l'invitation porte un email cible, l'email d'inscription doit
+  correspondre (insensible à la casse) ou l'inscription échoue en 400 ;
+  une invitation sans email reste ouverte à quiconque détient le code,
+  comportement inchangé. `next_frek_id()` appelé sans email/metadata
+  (signature d'origine côté r35l31, cohérent avec `auth.py`
+  R35L31_BEHAVIOR ci-dessus).
+- **MERGE_BASE** : `_apply_invitation(user_id, invite_code)`, aucune
+  vérification d'email ; `next_frek_id()` sans paramètres ; pas de
+  contrôle de collision FREK-ID.
+- **DÉCISION : COMBINE** — base = main (email/metadata vers
+  `next_frek_id`, contrôle de collision FREK-ID 409, docstrings à jour)
+  + ajout de la correction SEC-02 de r35l31 (`_apply_invitation` prend
+  `registering_email`, vérifie la correspondance, lève 400 en cas de
+  mismatch) sur le call-site de `register()`. Les deux capacités sont
+  strictement compatibles (aucun chevauchement de code touché).
+  **Aucun changement de contrat API non nécessaire** : mêmes routes,
+  mêmes codes de statut existants conservés, seul un nouveau cas 400
+  (email non concordant) est ajouté — c'est la correction demandée, pas
+  une modernisation gratuite.
+- **BUG D'INTÉGRITÉ TROUVÉ ET CORRIGÉ (hors périmètre SEC-01/SEC-02
+  mais découvert en le combinant)** : `register()` insère
+  l'utilisateur en base **avant** d'appliquer l'invitation
+  (`await db.users.insert_one(...)` puis `if inp.invite_code: await
+  _apply_invitation(...)`). Cet ordre est **identique sur `main`,
+  r35l31 et le merge-base** — un bug latent pré-existant aux deux
+  branches, pas introduit par cette réconciliation. Avant SEC-02, une
+  invitation invalide/expirée/déjà utilisée laissait déjà un compte
+  orphelin (non promu, mais réel et utilisable) malgré la réponse 400
+  vue par l'appelant. Avec SEC-02, ce même défaut devenait exploitable
+  différemment : un attaquant utilisant délibérément le code
+  d'invitation ciblé de quelqu'un d'autre avec sa propre adresse email
+  se voyait refuser la promotion de rôle (SEC-02 fonctionne), **mais
+  obtenait quand même un compte "student" bien réel** en réponse à une
+  inscription que l'API lui rapportait comme rejetée — contrat API
+  incohérent (400 renvoyé, effet de bord silencieux produit). Corrigé
+  en enveloppant l'appel à `_apply_invitation` dans un `try/except
+  HTTPException` qui supprime la ligne utilisateur tout juste insérée
+  avant de relever exactement la même exception — l'inscription
+  redevient tout-ou-rien, sans aucun changement de code de statut ni de
+  corps d'erreur côté client. `tests/test_invitations_rbac.py::
+  test_end_to_end_register_with_mismatched_targeted_invite_rejected`
+  (déjà importé en RECONCILE-1, écrit du point de vue de l'ancien
+  contrat plus faible) mis à jour pour asserter le nouveau contrat
+  (`attacker is None` au lieu de `attacker["role"] == "student"`) —
+  changement de test documenté ici, pas une décision silencieuse.
+- **TEST_EVIDENCE** :
+  - Suite complète `pytest tests/` : **82 failed / 2513 passed / 35
+    errors**, contre une base **94 failed / 2501 passed / 35 errors**
+    avant cette réconciliation (même worktree, mêmes fichiers, avant
+    modification — comparaison directe par `git stash`). **Zéro
+    nouvelle régression** (`comm -13` entre les deux listes de FAILED
+    triées : vide) ; **12 tests précédemment en échec passent
+    désormais** (11 par la réconciliation SEC-01/SEC-02 elle-même +
+    1 par la correction du test d'intégrité ci-dessus). Les 82 échecs
+    et 35 erreurs restants sont pré-existants, hors périmètre AUTH
+    (formations canoniques, notifications, certification, tests
+    `requests`-only nécessitant un serveur HTTP réel non lancé dans ce
+    sandbox) — vérifié un par un qu'aucun ne touche `auth`/`orgs`/
+    `invitations` au-delà de ceux déjà listés ci-dessus.
+  - `pytest tests/test_invitations_rbac.py tests/
+    test_auth_token_atomicity.py tests/
+    test_frek_core_identity_authority.py` → **30 passed**, incluant
+    tout SEC-01 (rôle/portée d'organisation) et SEC-02 (fuite d'email,
+    consommation liée à l'email) de bout en bout.
+  - Script de parcours critique dédié (voir ci-dessous, exécuté contre
+    l'app réelle via `fastapi.testclient.TestClient` + `MOCK_DB=1`) :
+    register → doublon rejeté → login → mauvais mot de passe rejeté →
+    route protégée sans jeton rejetée → route protégée avec jeton
+    acceptée → route métier bloquée avant acceptation légale (428) →
+    acceptation légale → route métier accessible après → rôle
+    étudiant refusé sur route admin-only (403) → refresh (rotation) →
+    réutilisation du jeton révoqué rejetée (401) → logout → jeton de
+    refresh révoqué après logout (401) → JWT d'accès reste valide
+    jusqu'à expiration naturelle (comportement stateless documenté,
+    pas une régression) → OAuth "configured:false" sans credentials →
+    CORS `allow_credentials=True` confirmé → admin crée une invitation
+    trainer → inscription avec cette invitation obtient le rôle
+    trainer → **SEC-01** : trainer tentant d'inviter un founder → 403 ;
+    trainer tentant d'inviter dans une autre org → 403 → trainer invite
+    un student ciblé par email → **SEC-02** : preview publique
+    n'expose pas l'email, `email_required=true` ; inscription avec un
+    email différent → 400 **et aucun compte laissé derrière** ;
+    inscription avec l'email correct → 200, rôle/org hérités. **Tous
+    les contrôles passent.**
+
+### `backend/api/orgs.py`
+
+- **MAIN_BEHAVIOR** : `create_cohort` assouplie (admin OU trainer dans
+  sa propre org, au lieu d'admin uniquement). `create_invitation` :
+  vérification **ad-hoc et à usage unique** — si `current.role ==
+  "trainer"`, alors `inp.role` doit valoir `"student"` (littéral, non
+  extensible) et `inp.org_id` doit être fourni par le client et
+  correspondre à `current.org_id`. Contrôle de cohérence cohorte/org
+  (`cohort.org_id == inp.org_id`). `get_invitation` renvoie
+  `"email": inv.get("email")` **en clair** dans la réponse publique.
+- **R35L31_BEHAVIOR** (SEC-01 + SEC-02) : `create_cohort` inchangée
+  (admin uniquement, pas de capacité trainer). `create_invitation`
+  utilise `INVITER_ALLOWED_INVITED_ROLES.get(current.role, ())` — table
+  de rôles pilotée par les données (déjà posée par `models.py` en
+  Groupe 1), couvrant tout rôle inviteur atteignant cette route
+  aujourd'hui ou demain, pas seulement `trainer→student`. `org_id`
+  effectif **dérivé de `current.org_id`** pour un inviteur non-admin
+  (jamais lu depuis le corps de la requête au-delà d'une vérification
+  de cohérence) — protection plus forte qu'un simple contrôle
+  d'égalité côté main contre un `org_id` usurpé dans le payload.
+  Contrôle de cohérence cohorte/org équivalent. `get_invitation`
+  renvoie `"email_required": bool(inv.get("email"))` — **ne fuite
+  jamais l'email cible** (SEC-02).
+- **MERGE_BASE** : `create_cohort` admin uniquement ; `create_invitation`
+  sans aucun contrôle de rôle/org spécifique aux inviteurs non-admin
+  (`inp.org_id` utilisé tel quel) ; `get_invitation` fuite l'email brut.
+- **DÉCISION : COMBINE** — base = r35l31 (SEC-01 générique par table de
+  données + SEC-02 sans fuite d'email, tous deux strictement plus
+  robustes que l'équivalent ad-hoc de main) + capacité `create_cohort`
+  propre à main (trainer peut créer une cohorte dans sa propre org —
+  absente de r35l31, aucun conflit) portée telle quelle par-dessus.
+  Justification du choix SEC-01 : le contrôle de main
+  (`if current.role == "trainer": if inp.role != "student"...`) est un
+  cas particulier strictement subsumé par la table
+  `INVITER_ALLOWED_INVITED_ROLES` déjà posée en Groupe 1
+  (`trainer: ("student",)` — même règle métier, exprimée de façon
+  extensible plutôt que codée en dur) ; le conserver en plus aurait été
+  une redondance sans valeur, pas une capacité perdue. Justification du
+  choix SEC-02 : main **fuit l'email cible en clair** sur un endpoint
+  public non authentifié — une vraie régression de confidentialité
+  absente de r35l31 ; aucune raison de la garder.
+- **TEST_EVIDENCE** : voir la suite `test_invitations_rbac.py` et le
+  parcours critique ci-dessus (fiche `api/auth.py`) — les deux
+  couvrent `orgs.py` de bout en bout (création d'invitation par
+  trainer/admin, portée d'organisation, rôle autorisé/refusé, preview
+  publique, cohérence cohorte/org). Vérifié séparément que
+  `create_cohort` reste accessible à un trainer dans sa propre org et
+  refusée hors de celle-ci (comportement de main préservé à
+  l'identique, aucun test dédié préexistant sur ce point mais logique
+  inchangée donc aucun risque de régression introduit par ce combine).
+
+### `frontend/src/lib/api.js`
+
+- **MAIN_BEHAVIOR** : ajoute `normalizeBackendApiBase()` (corrige les
+  configurations `REACT_APP_BACKEND_URL` malformées — URL avec `/api`
+  déjà inclus, avec un chemin d'endpoint complet, etc. — fix du bug de
+  connexion en production mentionné dans les instructions du Founder)
+  et un hook d'émission de signal spatial en perception seule
+  (`emitSpatialSignalFromResponse`, ne bloque/modifie jamais la réponse
+  métier).
+- **R35L31_BEHAVIOR** : identique au merge-base — **jamais touché**
+  depuis la divergence (diff `merge-base..r35l31` vide, vérifié).
+- **MERGE_BASE** : `API_BASE` construit naïvement par concaténation de
+  chaîne, sans normalisation.
+- **DÉCISION : KEEP_MAIN** — r35l31 n'apporte rien sur ce fichier ;
+  main contient le correctif de production le plus significatif de
+  toute la zone auth. Rien à combiner.
+- **TEST_EVIDENCE** : fichier déjà identique à `main` dans la branche
+  reconcile avant toute intervention — confirmé qu'aucune modification
+  n'était nécessaire.
+
+### `frontend/src/lib/auth.jsx`
+
+- **MAIN_BEHAVIOR** : ajoute `invalidateLegalAcceptance()` à
+  `logout()` — empêche qu'un second compte se connectant dans le même
+  onglet hérite du verdict d'acceptation légale mis en cache du compte
+  précédent (PHASE-COST-3, cache de garde légale).
+- **R35L31_BEHAVIOR** : identique au merge-base — jamais touché depuis
+  la divergence (diff vide, vérifié).
+- **MERGE_BASE** : `logout()` sans invalidation de cache.
+- **DÉCISION : KEEP_MAIN** — r35l31 n'apporte rien sur ce fichier.
+- **TEST_EVIDENCE** : fichier déjà identique à `main` dans la branche
+  reconcile avant toute intervention — confirmé qu'aucune modification
+  n'était nécessaire.
+
+### `frontend/e2e/auth-guards.spec.js` et `frontend/e2e/fixtures/auth-fixture.js`
+
+- **MAIN_BEHAVIOR** : `auth-guards.spec.js` reflète la surface de
+  découverte publique la plus large de main (roadmap/missions/badges/
+  frek-profile/wallet/skills/certifications tous publics, seuls
+  dashboard/admin/trainer/jury/partner/institution/stakeholder-claim et
+  le contenu de module restent protégés). `auth-fixture.js` mocke en
+  plus le legal-gate et les entitlements commerciaux propres à main.
+- **R35L31_BEHAVIOR** : `auth-guards.spec.js` ne rend public que
+  `/formations` et `/formations/:code` (ACA-0009), garde
+  roadmap/missions/badges/etc. protégés — reflète l'état de routage
+  de r35l31 à la divergence, pas celui de main aujourd'hui.
+  `auth-fixture.js` mocke en plus badges/physical-sessions/
+  certifications-rubrics/professional-profile/ecosystem-builder — des
+  routes propres aux domaines r35l31 pas encore câblées dans
+  `frontend/src/App.js` (toujours celui de main à ce stade, `App.js`
+  est explicitement Groupe 4).
+- **MERGE_BASE** : version antérieure aux deux évolutions.
+- **DÉCISION : KEEP_MAIN (provisoire, dépendance déclarée sur Groupe
+  4)** — ces deux fichiers ne sont des "fichiers auth" que par leur
+  nom ; leur contenu réel dépend de `frontend/src/App.js` (routage) et
+  des domaines métier exposés, qui restent non réconciliés (`App.js`
+  est explicitement Groupe 4, hors périmètre de ce groupe AUTH). Tant
+  que `App.js` est celui de main, la suite de test doit rester
+  cohérente avec lui — utiliser les attentes de r35l31 ferait échouer
+  la suite contre le code réellement actif. **Ne pas fusionner
+  aveuglément les mocks de fixtures de fonctionnalités non liées à
+  l'auth (badges/physical-sessions/commerce/legal) sans le contexte des
+  groupes 3/4/5** — noté explicitement ici comme
+  `BLOCKED_BY_RECONCILE_2` (Groupe 4, réconciliation de `App.js`) plutôt
+  que perdu silencieusement : quand `App.js` sera réconcilié, revisiter
+  `PROTECTED_PATHS`/`PUBLIC_DISCOVERY_PATHS` et les routes mockées
+  propres à r35l31 dans `auth-fixture.js`.
+- **TEST_EVIDENCE** : fichiers déjà identiques à `main` dans la branche
+  reconcile avant toute intervention — confirmé qu'aucune modification
+  n'était nécessaire pour rester cohérent avec l'`App.js` actuellement
+  actif.
+
+### Critères de sortie du Groupe AUTH — statut
+
+- ✅ Tous les fichiers auth `BOTH_DIFFERENT` résolus (7/7, décisions
+  documentées ci-dessus, y compris les deux `KEEP_MAIN (provisoire)`
+  avec dépendance déclarée sur Groupe 4).
+- ✅ Import backend complet OK (`import server` → 515 routes, inchangé
+  depuis Groupe 1).
+- ✅ register OK ; ✅ login OK ; ✅ bad password rejeté ; ✅ duplicate
+  account rejeté (et sans effet de bord depuis la correction
+  d'intégrité) ; ✅ session/token (émission + rotation + révocation)
+  OK ; ✅ protected routes (avec/sans jeton) OK ; ✅ permissions
+  (rôle autorisé/refusé) OK ; ✅ parcours post-auth (légal → route
+  métier → navigation) OK ; ✅ logout/révocation OK ; ✅ OAuth
+  "ready but not configured" vérifié ; ✅ CORS `allow_credentials`
+  vérifié.
+- ✅ Aucun secret codé en dur (vérifié par grep ciblé sur les fichiers
+  modifiés).
+- ✅ Aucune régression CORS connue (middleware/garde production
+  inchangés depuis Groupe 1, revérifiés ici).
+- ✅ Aucune régression de production connue — suite complète : 0
+  nouvelle régression, 12 tests précédemment en échec désormais
+  passants (comparaison avant/après par `git stash`, preuve dans la
+  fiche `api/auth.py` ci-dessus).
+- ✅ Aucune décision non documentée — y compris le bug d'intégrité
+  trouvé hors périmètre SEC-01/SEC-02 initial, et les deux
+  `KEEP_MAIN (provisoire)` avec leur dépendance explicite sur Groupe 4.
