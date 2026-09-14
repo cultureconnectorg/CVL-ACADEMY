@@ -6,26 +6,10 @@ import { sceneForPathname } from "@/lib/spatial/worldSceneMap";
 import { environmentForStade } from "@/lib/spatial/environmentState";
 import { SPATIAL_QUALITY } from "@/lib/spatial/devicePerformancePolicy";
 import { SPATIAL_CAMERA_EVENT } from "@/lib/spatial/cameraRuntime";
+import { SPATIAL_SIGNAL_EVENT, spatialSignalProfile } from "@/lib/spatial/spatialLearningSignals";
 import { backgroundForNode } from "@/lib/spatial/webglSceneMap";
 import "./spatial-webgl-background.css";
 
-/**
- * Real WebGL world — ADR W4 (docs/ADR_W4_WEBGL_DECISION.md, NO_WEBGL_REQUIRED)
- * is superseded for this layer by explicit Founder authorization; see
- * docs/ADR_W5_WEBGL_REOPENED.md for the record. `SpatialBackground.jsx`
- * (the CSS/SVG world) is UNCHANGED and stays the fallback: LITE-tier
- * devices, `prefers-reduced-motion`'s hard-off path (kept fully static
- * here instead, see below), no-WebGL browsers, and every existing route
- * not covered by BACKGROUND_BY_SCENE all still render it — see the
- * mount switch in SpatialWorldFrame.jsx. This file owns rendering only;
- * DOMAIN_STATE, routing, and auth remain entirely outside it, same
- * contract as SpatialBackground.jsx.
- *
- * Two textured planes per scene (full photograph + a UV-cropped bottom
- * band on a closer plane) give real perspective parallax from a single
- * photograph — the DOM/CSS world could only ever translate3d one flat
- * layer per element; this one has actual camera-distance-driven depth.
- */
 export default function SpatialWebGLBackground({ pathname = "/", stade, quality = SPATIAL_QUALITY.BALANCED }) {
   const mountRef = useRef(null);
   const canvasRef = useRef(null);
@@ -33,22 +17,11 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
   const reduced = useReducedMotion();
   const { node, scene } = sceneForPathname(pathname);
   const environment = useMemo(() => environmentForStade(stade), [stade]);
-  // Captured once at mount, same rationale as `quality` below: viewport
-  // class does not change mid-session for what matters here (a rotation
-  // still renders fine at the smaller asset's resolution, see
-  // webglSceneMap.js). Picks the ~38%-of-desktop-weight "-mobile" asset on
-  // a narrow viewport instead of shipping the full 1570px source to a phone.
   const [viewportWidth] = useState(() => (typeof window !== "undefined" ? window.innerWidth : 1440));
   const backgroundUrl = backgroundForNode(node, { viewportWidth });
   const enabled = FEATURE_FLAGS.SPATIAL_WEBGL && quality !== SPATIAL_QUALITY.LITE && Boolean(backgroundUrl);
   const [engineReady, setEngineReady] = useState(0);
 
-  // Mount the renderer once. Cleaned up on unmount only — scene content is
-  // swapped in-place by the effect below, never torn down on route change.
-  // `import()` is always async, so the very first paint's scene-transition
-  // effect (below) can run before engineRef.current exists yet — bumping
-  // engineReady once the engine is actually constructed re-fires that
-  // effect instead of silently missing the initial texture load.
   useEffect(() => {
     if (!enabled || typeof window === "undefined") return undefined;
     let cancelled = false;
@@ -68,27 +41,19 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
       engineRef.current?.dispose?.();
       engineRef.current = null;
     };
-    // quality is captured once at mount (device tier does not change mid-session);
-    // reduced can change live and is applied via the effect below instead of remounting.
+    // quality is captured once at mount; reduced motion changes live below.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled]);
 
-  // Apply reduced-motion live (toggle mid-session without recreating the renderer).
   useEffect(() => {
     engineRef.current?.setReducedMotion?.(reduced);
   }, [reduced]);
 
-  // Scene change: crossfade to the new background + camera framing.
-  // engineReady re-fires this once the async engine import above resolves,
-  // so the very first paint's texture load isn't silently dropped by the
-  // mount-order race between the two effects.
   useEffect(() => {
     if (!enabled || !backgroundUrl) return;
     engineRef.current?.transitionTo?.({ url: backgroundUrl, scene, environment, node });
   }, [enabled, backgroundUrl, scene, environment, node, engineReady]);
 
-  // Camera intent events — same bridge SpatialBackground.jsx listens to,
-  // so both worlds react identically to LOCK/FOLLOW/RETURN/CANCEL.
   useEffect(() => {
     if (!enabled || typeof window === "undefined") return undefined;
     const onCamera = (event) => engineRef.current?.onCameraEvent?.(event?.detail);
@@ -101,6 +66,18 @@ export default function SpatialWebGLBackground({ pathname = "/", stade, quality 
     const onContext = (event) => engineRef.current?.setContextActive?.(Boolean(event?.detail?.active));
     window.addEventListener(SPATIAL_CONTEXT_EVENT, onContext);
     return () => window.removeEventListener(SPATIAL_CONTEXT_EVENT, onContext);
+  }, [enabled]);
+
+  // Backend-owned learning events now make the world breathe briefly.
+  // This remains perceptual only: no unlock, progression or domain state is written here.
+  useEffect(() => {
+    if (!enabled || typeof window === "undefined") return undefined;
+    const onSignal = (event) => {
+      const profile = spatialSignalProfile(event?.detail?.type);
+      if (profile) engineRef.current?.onLearningSignal?.(profile);
+    };
+    window.addEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
+    return () => window.removeEventListener(SPATIAL_SIGNAL_EVENT, onSignal);
   }, [enabled]);
 
   if (!enabled) return null;
