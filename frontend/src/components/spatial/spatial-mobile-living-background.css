@@ -1,0 +1,65 @@
+.spatial-mobile-living-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: #04101e;
+  --mobile-world-x: 0px;
+  --mobile-world-y: 0px;
+  --mobile-world-near-x: 0px;
+  --mobile-world-near-y: 0px;
+}
+
+.spatial-mobile-living-background__far,
+.spatial-mobile-living-background__near {
+  position: absolute;
+  inset: -5%;
+  background-image: var(--mobile-world-image);
+  background-repeat: no-repeat;
+  background-position: 50% 50%;
+  background-size: cover;
+  will-change: transform, filter;
+}
+
+.spatial-mobile-living-background__far {
+  transform: translate3d(var(--mobile-world-x), var(--mobile-world-y), 0) scale(calc(1.08 + (var(--mobile-world-breath, 0) * .018)));
+  transition: transform 180ms cubic-bezier(.2,.7,.2,1), filter 320ms ease;
+}
+
+.spatial-mobile-living-background__near {
+  inset: auto -8% -8% -8%;
+  height: 52%;
+  background-position: 50% 100%;
+  background-size: cover;
+  transform: translate3d(var(--mobile-world-near-x), var(--mobile-world-near-y), 0) scale(calc(1.16 + (var(--mobile-world-breath, 0) * .035)));
+  opacity: .28;
+  filter: saturate(1.06) contrast(1.03);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.36) 24%, #000 62%);
+  mask-image: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,.36) 24%, #000 62%);
+  transition: transform 180ms cubic-bezier(.2,.7,.2,1), opacity 320ms ease;
+}
+
+.spatial-mobile-living-background[data-signal-active="true"] .spatial-mobile-living-background__far {
+  filter: brightness(1.04) saturate(1.05);
+}
+
+.spatial-mobile-living-background[data-signal-active="true"] .spatial-mobile-living-background__near {
+  opacity: .36;
+}
+
+.spatial-mobile-living-background__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(3,8,16,.36) 0%, rgba(3,8,16,.16) 44%, rgba(2,6,10,.62) 100%),
+    radial-gradient(circle at 50% 42%, transparent 0 34%, rgba(0,0,0,.16) 68%, rgba(0,0,0,.46) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spatial-mobile-living-background__far,
+  .spatial-mobile-living-background__near {
+    transform: none !important;
+    transition: none !important;
+  }
+}
