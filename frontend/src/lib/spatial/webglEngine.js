@@ -5,30 +5,23 @@ import { UnrealBloomPass } from "three/examples/jsm/postprocessing/UnrealBloomPa
 import { SPATIAL_QUALITY } from "./devicePerformancePolicy";
 
 /**
- * Vanilla three.js world engine (no react-three-fiber — matches the rest
- * of frontend/src/lib/spatial/*: plain functions/classes the React layer
- * calls into, same shape as makeRailPhysics/cameraFollow). Dynamically
- * imported by SpatialWebGLBackground.jsx so `three` never lands in the
- * main bundle for a session that never enables SPATIAL_WEBGL or that
- * falls back to the CSS world (LITE tier, no WebGL, reduced-motion-off
- * path is unaffected — reduced motion still renders this engine, just
- * with drift/parallax disabled, see setReducedMotion).
+ * Vanilla three.js world engine. Dynamically imported so `three` never lands
+ * in the main bundle for sessions that stay on the CSS world.
  *
- * Two textured planes per scene — the full photograph on a far plane,
- * and the same photograph's bottom band (water/rock/foliage in every
- * supplied reference image) UV-cropped onto a nearer plane — is a real,
- * long-established single-photo parallax technique (side-scroller
- * background layering, extended to a full photograph). Because both
- * planes sit at different distances from a real perspective camera,
- * pointer/idle camera movement produces genuine differential
- * parallax — not a CSS translate3d approximation.
+ * PERFORMANCE CONTRACT
+ * - visual fidelity stays route-compatible with the existing world;
+ * - FULL keeps bloom + near-layer parallax;
+ * - BALANCED stays single-plane/no-bloom;
+ * - the renderer is paced adaptively instead of burning 60fps forever;
+ * - hidden tabs stop completely;
+ * - route-transition races cannot resurrect stale textures.
  */
 
 const CAMERA_FOV = 50;
 const CAMERA_Z = 6;
 const FAR_Z = 0;
 const NEAR_Z = 2.1;
-const NEAR_BAND = 0.4; // bottom 40% of each photograph
+const NEAR_BAND = 0.4;
 const OVERSCAN_FAR = 1.06;
 const OVERSCAN_NEAR = 1.32;
 const CROSSFADE_MS = 900;
@@ -37,6 +30,12 @@ const POINTER_LERP = 0.06;
 const IDLE_DRIFT_AMPLITUDE = 0.05;
 const IDLE_DRIFT_PERIOD_MS = 26000;
 const EXPOSURE_BASE = 1.0;
+const ACTIVE_WINDOW_MS = 1400;
+const ACTIVE_FPS = 60;
+const FULL_IDLE_FPS = 30;
+const BALANCED_IDLE_FPS = 24;
+const FULL_DPR_CAP = 1.5;
+const BALANCED_DPR_CAP = 1.25;
 
 function planeSize(camera, distance) {
   const vFov = (camera.fov * Math.PI) / 180;
@@ -83,6 +82,8 @@ function disposeLayerSet(set) {
 
 export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   const full = quality === SPATIAL_QUALITY.FULL;
+  const idleFps = full ? FULL_IDLE_FPS : BALANCED_IDLE_FPS;
+  const dprCap = full ? FULL_DPR_CAP : BALANCED_DPR_CAP;
   const renderer = new THREE.WebGLRenderer({
     canvas,
     antialias: true,
@@ -92,7 +93,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = EXPOSURE_BASE;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, full ? 2 : 1.5));
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, dprCap));
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x04101e);
@@ -108,11 +109,13 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   let crossfadeStart = 0;
   let disposed = false;
   let reduced = Boolean(reducedMotion);
+  let transitionSerial = 0;
 
   const pointer = { x: 0, y: 0 };
   const pointerTarget = { x: 0, y: 0 };
   const panTarget = { x: 0, y: 0 };
   let contextActive = false;
+  let activeUntil = performance.now() + ACTIVE_WINDOW_MS;
 
   let composer = null;
   let bloomPass = null;
@@ -121,6 +124,10 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     composer.addPass(new RenderPass(scene, camera));
     bloomPass = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.55, 0.6, 0.82);
     composer.addPass(bloomPass);
+  }
+
+  function markActive(duration = ACTIVE_WINDOW_MS) {
+    activeUntil = Math.max(activeUntil, performance.now() + duration);
   }
 
   function resize() {
@@ -135,6 +142,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     [currentSet, incomingSet].forEach((set) => {
       set?.layers.forEach((layer) => resizeLayer(layer, camera));
     });
+    markActive(500);
   }
 
   function buildLayerSet(url) {
@@ -179,14 +187,16 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
 
   async function transitionTo({ url, scene: scene0 }) {
     if (disposed || !url) return;
+    const serial = ++transitionSerial;
     applyEnvironment(scene0);
+    markActive(CROSSFADE_MS + 400);
     let built;
     try {
       built = await buildLayerSet(url);
     } catch {
       return;
     }
-    if (disposed) {
+    if (disposed || serial !== transitionSerial) {
       disposeLayerSet(built);
       return;
     }
@@ -200,6 +210,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
 
   function onCameraEvent(detail) {
     if (!detail?.kind) return;
+    markActive();
     if (detail.cameraOriginFrom && (detail.kind === "LOCK" || detail.kind === "RETURN_LOCK")) {
       panTarget.x = (detail.cameraOriginFrom.x - 50) / 100;
       panTarget.y = -(detail.cameraOriginFrom.y - 50) / 100;
@@ -216,10 +227,13 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     if (reduced) return;
     pointerTarget.x = (event.clientX / Math.max(window.innerWidth, 1) - 0.5) * POINTER_RANGE;
     pointerTarget.y = -(event.clientY / Math.max(window.innerHeight, 1) - 0.5) * POINTER_RANGE;
+    markActive(500);
   }
+
   function onPointerLeave() {
     pointerTarget.x = 0;
     pointerTarget.y = 0;
+    markActive(500);
   }
 
   if (typeof window !== "undefined") {
@@ -234,15 +248,26 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
   resize();
 
   let rafId = null;
-  let lastT = performance.now();
+  let lastAnimationT = performance.now();
+  let lastRenderT = 0;
 
   function frame(t) {
     if (disposed) return;
-    const dt = Math.min(t - lastT, 100);
-    lastT = t;
 
-    pointer.x += (pointerTarget.x - pointer.x) * POINTER_LERP;
-    pointer.y += (pointerTarget.y - pointer.y) * POINTER_LERP;
+    const targetFps = t < activeUntil || incomingSet ? ACTIVE_FPS : idleFps;
+    const minFrameMs = 1000 / targetFps;
+    if (t - lastRenderT < minFrameMs) {
+      rafId = requestAnimationFrame(frame);
+      return;
+    }
+    lastRenderT = t;
+
+    const dt = Math.min(t - lastAnimationT, 100);
+    lastAnimationT = t;
+
+    const lerpScale = Math.max(1, dt / (1000 / 60));
+    pointer.x += (pointerTarget.x - pointer.x) * Math.min(1, POINTER_LERP * lerpScale);
+    pointer.y += (pointerTarget.y - pointer.y) * Math.min(1, POINTER_LERP * lerpScale);
 
     let driftX = 0;
     let driftY = 0;
@@ -278,6 +303,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
 
     rafId = requestAnimationFrame(frame);
   }
+
   rafId = requestAnimationFrame(frame);
 
   function handleVisibility() {
@@ -285,7 +311,9 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
       if (rafId) cancelAnimationFrame(rafId);
       rafId = null;
     } else if (!rafId && !disposed) {
-      lastT = performance.now();
+      lastAnimationT = performance.now();
+      lastRenderT = 0;
+      markActive(500);
       rafId = requestAnimationFrame(frame);
     }
   }
@@ -296,9 +324,11 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     onCameraEvent,
     setContextActive(active) {
       contextActive = Boolean(active);
+      markActive();
     },
     setReducedMotion(value) {
       reduced = Boolean(value);
+      markActive(500);
       if (reduced) {
         pointerTarget.x = 0;
         pointerTarget.y = 0;
@@ -306,6 +336,7 @@ export function createSpatialWorldEngine({ canvas, quality, reducedMotion }) {
     },
     dispose() {
       disposed = true;
+      transitionSerial += 1;
       if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("pointermove", onPointerMove);
       document.documentElement.removeEventListener("mouseleave", onPointerLeave);
