@@ -111,10 +111,31 @@ async def normalize_duplicate_leading_slashes(request: Request, call_next):
     return await call_next(request)
 
 
+# 2026-09-14 main<->r35l31 reconciliation: r35l31 independently added a
+# production CORS hard-gate that main never had -- ENVIRONMENT=production
+# with an unset or wildcard CORS_ORIGINS is a security misconfiguration,
+# not a default to silently serve. Restored here; main's own CORS_ORIGINS
+# parsing/env var and every other middleware/route below is unchanged.
+_ENVIRONMENT = os.environ.get("ENVIRONMENT", "development").strip().lower()
+_cors_origins_raw = os.environ.get("CORS_ORIGINS", "*").strip()
+
+if _ENVIRONMENT == "production":
+    if not _cors_origins_raw or _cors_origins_raw == "*":
+        raise RuntimeError(
+            "ENVIRONMENT=production requires a real, explicit CORS_ORIGINS "
+            "allowlist (comma-separated origins, e.g. "
+            "\"https://academy.cvln.example,https://admin.cvln.example\") — "
+            "an unset or wildcard CORS_ORIGINS in production is a security "
+            "misconfiguration, not a default to silently fall back to."
+        )
+    _cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()]
+else:
+    _cors_origins = [o.strip() for o in _cors_origins_raw.split(",") if o.strip()] or ["*"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get("CORS_ORIGINS", "*").split(","),
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["Mcp-Session-Id", "WWW-Authenticate"],

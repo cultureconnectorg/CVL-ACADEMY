@@ -69,3 +69,54 @@ noyau backend / auth / wallet / spatial / App.js).
   programmatiquement que `require_legal_acceptance` figure bien dans
   les dépendances résolues d'une route échantillon
   (`/api/accounting-advanced/connectors`).
+
+### `backend/server.py`
+
+- **MAIN_BEHAVIOR** : `lifespan` async context manager moderne
+  (remplace `@app.on_event`, déprécié) ; enregistre l'OAuth MCP
+  (`mcp_oauth_router`), les deux serveurs MCP (public `academy_mcp` +
+  privé `private_academy_mcp`), la porte de préparation facturation
+  (`assert_billing_production_ready`, échoue avant même le bloc
+  seed/index si la facturation prod n'est pas configurée), les index
+  MCP, le runtime workbook (`ensure_workbook_runtimes`, échoue si
+  incomplet), suit `app.state.startup_ready/startup_error` (dégrade
+  proprement plutôt que crash-loop sur un échec de seed non
+  bloquant), middleware de normalisation des doubles slashes, CORS
+  **sans aucune garde production** — juste
+  `os.environ.get("CORS_ORIGINS", "*").split(",")`.
+- **R35L31_BEHAVIOR** : `@app.on_event` (pattern hérité), pas de MCP/
+  billing/workbook (n'existaient pas encore sur cette branche à la
+  divergence), **garde CORS production réelle** (voir fiche
+  `api/__init__.py` ci-dessus — même logique), gate `architecture_reuse.
+  sync_manifest` (PG-13, verrou anti-duplication d'architecture) au
+  démarrage, hook `MOCK_DB=1` de pré-import des corpus canoniques pour
+  le dev.
+- **MERGE_BASE** : `@app.on_event`, CORS sans garde, aucun des deux
+  ajouts (MCP/billing/workbook côté main ; garde CORS/PG-13/MOCK_DB
+  côté r35l31).
+- **DÉCISION : COMBINE (partiel)** — structure `lifespan`/MCP/billing/
+  workbook/startup_ready de main **entièrement conservée**, inchangée.
+  Garde CORS production de r35l31 **restaurée** (seule capacité perdue
+  identifiée sur ce fichier — un vrai trou de sécurité sur main, main
+  ne rejetait jamais un déploiement `ENVIRONMENT=production` avec
+  `CORS_ORIGINS` non configuré).
+- **NEEDS_REVIEW (non appliqué ici, à trancher séparément)** :
+  - `architecture_reuse.sync_manifest` — gate PG-13 conçue pour
+    verrouiller les décisions REUSE/EXTEND/BUILD-ONCE des nouveaux
+    domaines (legal/privacy/governance/accounting/professional/
+    ecosystem) qu'on vient tout juste de câbler. La wirer maintenant,
+    avant que RECONCILE-2 groupes 2-5 n'aient fini de réconcilier ces
+    domaines, risquerait un `raise RuntimeError` de démarrage sur un
+    état encore partiel — pas dans le périmètre des critères de sortie
+    (les 53 routes/17 pages), donc laissé en attente plutôt que câblé
+    à l'aveugle.
+  - Hook `MOCK_DB=1` — commodité de dev, faible risque, faible
+    priorité, non câblé faute de temps dans cette passe.
+- **TEST_EVIDENCE** : `import server` réel, bout en bout, réussit —
+  **515 routes/mounts** au total (502 de `api.router` + les montages
+  OAuth/MCP publics/privés de main). Testé la garde CORS aux 3 cas
+  (dev sans `CORS_ORIGINS` → `["*"]` ; prod + wildcard → `RuntimeError`
+  levée dès l'import du module, avant tout autre code de démarrage ;
+  prod + liste explicite → acceptée). Dépendances externes installées
+  dans ce sandbox pour permettre ce test (`factur-x`, `mcp`) — absentes
+  par défaut ici, sans lien avec cette réconciliation.
