@@ -67,18 +67,45 @@ async def credit(
     user_id: str,
     transaction_type: TransactionType,
     amount: float,
+    effect_key: str,
     currency: Currency = "jcc",
     ref: Optional[str] = None,
     description: str = "",
     badge_code: Optional[str] = None,
-    effect_key: Optional[str] = None,
 ) -> WalletTransaction:
-    """Record one Academy-side balance movement.
+    """Record one Academy-side balance movement. `amount` is always positive
+    here — `reward_redeemed` records are logged with a negative amount by the
+    caller if it represents a spend.
 
-    ``effect_key`` should be stable for retryable business effects. Reusing the
-    same key for the same learner returns the original transaction and does not
-    apply the balance movement twice.
+    WAL-01 (Audit Chirurgical 2026-09-07) — `effect_key` is mandatory: a
+    deterministic id naming the real-world Academy-side effect being paid out
+    (e.g. ``"badge:BADGE-CODE"``, ``"certification-pass:<attempt_id>"``). A
+    ``(user_id, effect_key)`` partial unique index (``infra_indexes.py``,
+    scoped to documents where the field is an actual string, so it never
+    collides on legacy pre-fix rows without one) makes a retried or
+    duplicated call for the same event a safe no-op — it returns the
+    original transaction instead of minting a second one, whether the
+    duplicate is caught by this function's own pre-check (the common,
+    non-concurrent retry case) or, under real concurrency, by the database
+    rejecting the second insert outright.
+
+    The ledger insert happens before the cached-balance update and is itself
+    idempotent — a crash between the two never produces a fabricated credit,
+    only a cached balance that undercounts a real ledger entry until the next
+    read (`get_summary` always calls `_reconcile_account`, so this self-heals
+    on the very next balance view) or an explicit `reconcile_wallet_balance`
+    call. That is the actual, honestly-scoped guarantee this module makes:
+    not a multi-document ACID transaction (this sandbox has no replica-set
+    MongoDB to build or test one against), but an idempotent, append-only
+    source of truth plus a real, tested, always-applied repair path for its
+    derived cache.
     """
+    existing = await db.wallet_transactions.find_one(
+        {"user_id": user_id, "effect_key": effect_key}, {"_id": 0}
+    )
+    if existing:
+        return WalletTransaction(**existing)
+
     txn = WalletTransaction(
         user_id=user_id,
         type=transaction_type,
@@ -91,8 +118,12 @@ async def credit(
     try:
         await db.wallet_transactions.insert_one(txn.model_dump(exclude_none=True))
     except DuplicateKeyError:
-        if not effect_key:
-            raise
+        # Lost a race against a concurrent identical credit (or the
+        # pre-check above missed it under real concurrency) — the
+        # transaction that won is now the source of truth for this
+        # event; never mint a second one. A missing winner here (the
+        # index rejected the insert but a fresh read can't find it) is
+        # a genuinely unexpected state, not silently swallowed.
         existing = await db.wallet_transactions.find_one(
             {"user_id": user_id, "effect_key": effect_key}, {"_id": 0}
         )
@@ -117,6 +148,17 @@ async def credit(
     await db.wallet_accounts.update_one({"user_id": user_id}, mongo_update)
 
     return txn
+
+
+async def reconcile_wallet_balance(user_id: str) -> WalletAccount:
+    """WAL-01 — public repair entry point for `_reconcile_account`: recomputes
+    `jcc_balance`/`token_balance` directly from the append-only transaction
+    history and overwrites the cache, so a stale/undercounted cache is always
+    fixable, never a silent, permanent drift. `credit()` and `get_summary()`
+    already call the same underlying reconciliation on every write and read
+    respectively — this is the explicit, externally-callable form for
+    ops/admin tooling that wants to force a repair outside that normal flow."""
+    return await _reconcile_account(user_id)
 
 
 async def get_summary(user_id: str, limit: int = 50) -> WalletSummary:

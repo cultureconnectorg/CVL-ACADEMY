@@ -33,14 +33,27 @@ def _now() -> str:
 
 
 class WalletTransaction(BaseModel):
-    """Append-only Academy mini-wallet history entry.
+    """Append-only Academy mini-wallet history entry — a wallet's balance is
+    always the sum of its transactions, never mutated directly.
 
-    ``effect_key`` identifies the Academy-side business effect that produced
-    the entry (for example ``badge:{badge_code}``).  When supplied, it is used
-    to make retries idempotent per learner.
+    ``effect_key`` (WAL-01, Audit Chirurgical 2026-09-07) is the real
+    idempotency key: a deterministic string naming the real-world
+    Academy-side business effect being paid out (e.g. ``"badge:BADGE-
+    CODE"``, ``"certification-pass:<attempt_id>"``). ``wallet.service.
+    credit()`` requires every caller to supply one — a compound
+    ``(user_id, effect_key)`` partial unique index (``infra_indexes.py``,
+    scoped to documents where ``effect_key`` is an actual string, so it
+    never collides on legacy rows that predate this field) makes a
+    retried or duplicated call for the same event a safe no-op: it
+    returns the original transaction instead of minting a second one.
+    ``Optional`` only so this model can still deserialize an older,
+    pre-this-fix ledger row that has no such key (read-compatibility,
+    never a new write path — ``credit()`` itself always sets it).
 
-    ``wallet_accounts`` is only a cached read model; transaction history is the
-    auditable source used to explain and rebuild Academy-side balances.
+    ``wallet_accounts`` is only a cached read model, rebuilt from this
+    history on every read (see ``service._reconcile_account``); the
+    transaction history here is the auditable source used to explain and
+    rebuild Academy-side balances.
     """
 
     id: str = Field(default_factory=_uid)
