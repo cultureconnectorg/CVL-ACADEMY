@@ -76,7 +76,12 @@ test.describe("landing spatial learning (W2-B)", () => {
     await page.getByTestId("auth-toggle").click();
     const heading = page.locator('[data-testid="auth-form"]').locator("..").locator("h2");
     await expect(heading).toBeVisible();
-    const opacity = await heading.evaluate((el) => getComputedStyle(el).opacity);
-    expect(opacity).toBe("1");
+    // Real, sub-20ms reduced-motion transition (never literally instant by
+    // design, same as module-journey-context.spec.js's identical race) --
+    // a single-shot evaluate() immediately after the toggle click can
+    // observe the pre-animation frame. Poll instead of reading once.
+    await expect
+      .poll(() => heading.evaluate((el) => getComputedStyle(el).opacity))
+      .toBe("1");
   });
 });
