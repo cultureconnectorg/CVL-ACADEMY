@@ -334,6 +334,41 @@ async function mockAuthenticatedSession(page, overrides = {}) {
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
 
+  // PhysicalSessionsPanel (frontend/src/components/PhysicalSessionsPanel.js)
+  // is unconditionally rendered at the bottom of FormationDetail for every
+  // formation, authenticated or not. It calls
+  // GET /formations/{code}/physical-sessions and GET /physical-locations
+  // unconditionally, then (when a user is present) also
+  // GET /physical-sessions/mine, GET /certifications/rubrics and
+  // GET /certifications/attempts/mine. Real backend contracts
+  // (backend/api/physical_sessions.py) are all `List[...]` -- i.e. `[]`
+  // for "no sessions scheduled yet", never `{}`. None of these five
+  // routes were mocked here, so they all fell through to the generic
+  // "{}" fallback above; PhysicalSessionsPanel's `sessions.map(...)`
+  // (and its sibling `.map`/`.find` calls) then threw
+  // "sessions.map is not a function" with no error boundary catching
+  // it, unmounting the ENTIRE FormationDetail tree -- not just the
+  // physical-sessions panel. Every test that navigated to a formation
+  // detail page as an authenticated learner (billing-invoice.spec.js,
+  // commercial-purchase.spec.js, spatial-camera-follow.spec.js) lost
+  // the whole page, including CommercialPurchaseCard/BillingInvoicePanel
+  // that have nothing to do with physical sessions.
+  await page.route("**/api/formations/*/physical-sessions", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/physical-locations", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/physical-sessions/mine", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/certifications/rubrics", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+  await page.route("**/api/certifications/attempts/mine", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
+  );
+
   let quizJustPassed = false;
   await page.route("**/api/modules/*/*", (route) => {
     if (route.request().method() !== "GET") return route.fallback();
