@@ -22,7 +22,12 @@ LEGAL_DOCUMENTS = [
         "label": "Conditions générales d’utilisation",
         "mode": "accept",
         "url": "/legal/cgu",
-        "canonical": "Usage loyal; sécurité; droits des tiers; interdiction fraude, usurpation, extraction abusive, code malveillant, harcèlement et contenus illicites; règles de suspension, responsabilité, propriété intellectuelle et litiges selon l’entité contractante.",
+        "canonical": (
+            "Usage loyal; sécurité; droits des tiers; interdiction fraude, "
+            "usurpation, extraction abusive, code malveillant, harcèlement et "
+            "contenus illicites; règles de suspension, responsabilité, propriété "
+            "intellectuelle et litiges selon l’entité contractante."
+        ),
     },
     {
         "id": "reglement-academy",
@@ -30,7 +35,12 @@ LEGAL_DOCUMENTS = [
         "label": "Règlement & accord Academy",
         "mode": "accept",
         "url": "/legal/reglement-academy",
-        "canonical": "Assiduité; sécurité; respect; locaux et équipements; confidentialité; propriété intellectuelle; IA responsable; fraude; évaluations; sanctions; réclamations; parcours financés; contrôle humain des décisions engageantes.",
+        "canonical": (
+            "Assiduité; sécurité; respect; locaux et équipements; confidentialité; "
+            "propriété intellectuelle; IA responsable; fraude; évaluations; "
+            "sanctions; réclamations; parcours financés; contrôle humain des "
+            "décisions engageantes."
+        ),
     },
     {
         "id": "charte-ia",
@@ -38,7 +48,12 @@ LEGAL_DOCUMENTS = [
         "label": "Charte IA & transparence",
         "mode": "acknowledge",
         "url": "/legal/charte-ia",
-        "canonical": "Transparence des interactions IA lorsque requise; Human Authority; aucune décision finale autonome d’admission, certification, sanction, finance ou contrat; signalement des contenus générés/manipulés lorsque requis.",
+        "canonical": (
+            "Transparence des interactions IA lorsque requise; Human Authority; "
+            "aucune décision finale autonome d’admission, certification, sanction, "
+            "finance ou contrat; signalement des contenus générés/manipulés lorsque "
+            "requis."
+        ),
     },
     {
         "id": "confidentialite",
@@ -46,7 +61,12 @@ LEGAL_DOCUMENTS = [
         "label": "Politique de confidentialité",
         "mode": "acknowledge",
         "url": "/legal/confidentialite",
-        "canonical": "Information RGPD sur finalités, bases juridiques, droits, minimisation, conservation, destinataires, sous-traitants, transferts éventuels et contrôle humain; cette prise de connaissance n’est pas un consentement global au traitement.",
+        "canonical": (
+            "Information RGPD sur finalités, bases juridiques, droits, minimisation, "
+            "conservation, destinataires, sous-traitants, transferts éventuels et "
+            "contrôle humain; cette prise de connaissance n’est pas un consentement "
+            "global au traitement."
+        ),
     },
 ]
 
