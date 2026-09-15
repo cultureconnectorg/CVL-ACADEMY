@@ -23,6 +23,7 @@ from mcp_private import private_academy_mcp, private_mcp_http_app
 import mcp_journey  # noqa: E402,F401
 from mcp_server import academy_mcp, mcp_http_app
 from seed import seed_if_empty
+from services import architecture_reuse
 from services.integrations.subscribers import (
     register as register_integration_subscribers,
 )
@@ -53,8 +54,25 @@ async def lifespan(app: FastAPI):
     )
 
     register_integration_subscribers()
+
+    # OPS-01 (RECONCILE-3 Phase 1) — correctness/security invariants fail
+    # closed, deliberately outside the seed/best-effort try/except below.
+    # r35l31's original on_startup() enforced exactly this (a raise here
+    # is an ASGI "lifespan.startup.failed" event — the app never starts
+    # accepting connections); it was lost when this file's CORS section was
+    # reconciled onto this lifespan()/readiness-gate structure without
+    # restoring the fail-closed half of the same historical contract.
+    # ensure_indexes() creates every unique/partial index the ECON-01/02/03
+    # and PHY-01 atomicity fixes depend on; architecture_reuse.sync_manifest()
+    # locks the PG-13 no-duplicate-architecture manifest. Neither is a
+    # default to silently degrade past — an index-creation failure must not
+    # let the app accept traffic as though startup were healthy.
+    await ensure_indexes()
+    manifest = await architecture_reuse.sync_manifest(actor_id="SYSTEM_STARTUP")
+    if manifest.get("status") != "LOCKED":
+        raise RuntimeError("PG-13 deduplication manifest failed to lock")
+
     try:
-        await ensure_indexes()
         await ensure_mcp_indexes()
         await seed_if_empty()
         await seed_default_definitions()
