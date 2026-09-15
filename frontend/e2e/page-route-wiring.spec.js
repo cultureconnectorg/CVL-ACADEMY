@@ -99,6 +99,16 @@ test.describe("authenticated page route wiring", () => {
       user: { ...FIXTURE_USER, role: "trainer", org_id: "org-fixture-1" },
     });
     await jsonRoute(page, "**/api/orgs/org-fixture-1/cohorts", []);
+    // TrainerDashboard.js's loadPhysicalSessions() unconditionally fetches
+    // these two alongside the cohorts list above; real backend contracts
+    // (backend/api/physical_sessions.py, backend/api/certification.py) are
+    // both `List[...]`. Without these, they fell through to the generic
+    // "{}" fallback and `pending.filter(...)` (backend/api/certification.py's
+    // GET /attempts/pending consumer) threw "pending.filter is not a
+    // function", crashing the whole TrainerDashboard tree before
+    // "trainer-dashboard-page" could ever be found.
+    await jsonRoute(page, "**/api/physical-sessions/assigned", []);
+    await jsonRoute(page, "**/api/certifications/attempts/pending", []);
     await page.goto("/trainer");
     await expect(page).toHaveURL(/\/trainer$/);
     await expect(page.getByTestId("trainer-dashboard-page")).toBeVisible();
@@ -127,6 +137,19 @@ test.describe("authenticated page route wiring", () => {
     await jsonRoute(page, "**/api/orgs", []);
     await jsonRoute(page, "**/api/formations", []);
     await jsonRoute(page, "**/api/institutional/connectors", []);
+    // RubricImportPanel (frontend/src/pages/admin/AdminDashboard.js's
+    // RUBRIC_DOMAINS) unconditionally fetches all three canonical-formation
+    // list routes on mount. Real backend contracts (backend/api/canonical.py,
+    // klt_canonical.py, kor_canonical.py) are all `List[...]`. Without these
+    // mocks they fell through to the generic "{}" fallback, and
+    // `(formationsByDomain[d.key] || []).map(...)` threw "... .map is not a
+    // function" (since `{}` is truthy, `|| []` never kicks in), crashing the
+    // whole AdminDashboard tree shortly after its first render -- late enough
+    // for "admin-dashboard-page" to be briefly visible but "fms-import-panel"
+    // to already be gone by the next assertion.
+    await jsonRoute(page, "**/api/canonical/formations", []);
+    await jsonRoute(page, "**/api/klt-canonical/formations", []);
+    await jsonRoute(page, "**/api/kor-canonical/formations", []);
     await page.goto("/admin");
     await expect(page).toHaveURL(/\/admin$/);
     await expect(page.getByTestId("admin-dashboard-page")).toBeVisible();
