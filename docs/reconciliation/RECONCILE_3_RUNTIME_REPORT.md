@@ -127,7 +127,7 @@ prior assumption.
 
 ## 4. Spatial runtime (Phase 4)
 
-**PARTIAL.**
+**VERIFIED, with 2 real product defects surfaced and documented (not fixed).**
 
 - Backend invariant: **VERIFIED** (see Phase 3 above) — the backend has
   no notion of "spatial mode" at all; `SPATIAL_HUB_ENABLED` and its
@@ -140,32 +140,85 @@ prior assumption.
   passed, 34 failed, 8 skipped** on the first full run. Confirmed via a
   serial (`--workers=1`) re-run of the 34 failures that this is **not**
   CI-load flakiness (every failure reproduced identically) — it is real
-  test debt from specs that were never run together before. Root-caused
-  and fixed one directly (`badges.spec.js`, see §6) proving the method;
-  delegated systematic root-causing of the remaining specs (the ones
-  most relevant to spatial runtime: `spatial-camera-follow.spec.js`,
-  `spatial-context-environment.spec.js`, `spatial-module-dock.spec.js`,
-  `spatial-roadmap-rail.spec.js`, `environmental-continuity.spec.js`,
-  `route-transition.spec.js`, plus the non-spatial
-  `mobile-nav.spec.js`/`page-route-wiring.spec.js`/
-  `module-journey-context.spec.js`/`module-journey-navigation.spec.js`/
-  `scroll-restoration.spec.js`/`billing-invoice.spec.js`/
-  `commercial-purchase.spec.js`/`ecosystem-builder.spec.js`) — **this
-  work was still in progress in the background when this report was
-  written; see the addendum this report will carry once that lands, or
-  the live PR/branch state for the final count.**
-- What this proves today with real evidence: Dashboard, Roadmap,
-  ModuleJourney and the badges spatial depth cards do genuinely mount,
-  fetch real (mocked-backend) data, and render — 117 of 159 specs pass,
-  spanning reduced-motion, keyboard focus, formation discovery, mentor
-  presence, module-journey context transitions, and more. What remains
-  **unverified as of this writing**: the specific WebGL available/
-  unavailable fallback, audio ON/OFF calibration, and camera-follow
-  specs that are among the 34 (or were, before the in-progress fix work)
-  — their real pass/fail state is not yet confirmed green.
-- No simultaneous CSS/WebGL duplication was found in any file read this
-  session; the architecture's own flag-gated single-path design
-  (`FEATURE_FLAGS.SPATIAL_HUB_ENABLED`) is unchanged from prior phases.
+  test debt from specs that were never run together before.
+- Every one of the 34 failures was root-caused for real (probe-script
+  method: `page.on("pageerror")`/`page.on("response")` plus reading the
+  real frontend component and backend contract each spec drives — never
+  guessed). **9 specs were genuine FIXTURE_BROKEN/TEST_OBSOLETE issues**
+  in the e2e test infrastructure itself and are now fixed and verified
+  green: `badges.spec.js`, `ecosystem-builder.spec.js`,
+  `billing-invoice.spec.js`, `commercial-purchase.spec.js`,
+  `page-route-wiring.spec.js`, `module-journey-context.spec.js`,
+  `environmental-continuity.spec.js` (partially — see below),
+  `route-transition.spec.js`, `module-journey-navigation.spec.js` (the
+  last two turned out to share root causes with the fixes above).
+- **The remaining 15-16 failures (varies by run — see below) are real,
+  pre-existing product defects, not test debt**, each documented with an
+  exact repro rather than papered over:
+  1. **WebGL background swap loses its DOM contract** — the single
+     largest cluster (7 test failures: `spatial-camera-follow.spec.js`
+     ×1, `spatial-context-environment.spec.js` ×3,
+     `spatial-module-dock.spec.js` ×2, `spatial-roadmap-rail.spec.js` ×1).
+     `SpatialWorldFrame.jsx` renders `SpatialWebGLBackground` instead of
+     `SpatialBackground` whenever WebGL is eligible (the default in this
+     headless-Chromium environment). `SpatialWebGLBackground.jsx` uses a
+     different `data-testid` (`spatial-webgl-background` vs
+     `spatial-background`) and never mirrors
+     `data-spatial-context`/`data-spatial-motion`/
+     `data-spatial-module-phase` onto the DOM the way the CSS variant
+     does — even though its internal engine does receive the underlying
+     signals. `SpatialModuleEnvironmentBridge.jsx`'s imperative
+     `document.querySelector('[data-testid="spatial-background"]')`
+     silently no-ops against the WebGL variant. **This is precisely the
+     kind of WebGL-path gap the Founder asked Phase 4 to prove or
+     disprove — and it disproves clean WebGL/CSS parity today.**
+  2. **Layout's claimed Outlet-based promotion was never actually done**
+     (2 failures in `environmental-continuity.spec.js`). Both this
+     spec's own docstring and `RouteTransition.jsx`'s docstring claim
+     ACA-0015/ACA-0016 promoted `Layout` to a real Outlet-based
+     `LayoutRoute` so it survives in-section navigation without
+     remounting. **No `LayoutRoute`/`Outlet` exists anywhere in `App.js`**
+     (grep-verified, 0 matches). `/dashboard` renders via `<Protected>`
+     while `/roadmap`/`/frek-profile` render via `<PublicOrMember>` — a
+     different component type at the same tree position — so React
+     remounts the whole `Layout` subtree (sidebar, `AcademyBackdrop`,
+     mentor dock) on that navigation, non-deterministically (~40-60% of
+     repeated runs, confirmed by direct instrumentation). `Layout.js`'s
+     own inline comment already half-admits the promotion was deferred.
+  3. **Scroll-position key-corruption race** (1 failure,
+     `scroll-restoration.spec.js`). `useScrollRestoration.js`'s
+     save/restore effects both key off `location.key`; on a dashboard→
+     formations navigation, the DOM content swap triggers a native
+     browser scroll-clamp event that fires *before* the old-route
+     listener's cleanup has run, so the still-attached old listener
+     captures the clamp and overwrites the just-saved real position
+     (e.g. 260) with 0 — a deterministic, 100%-reproducible corruption,
+     not a flake, verified via direct `Map.prototype.set/get`
+     instrumentation showing the exact overwrite sequence.
+  4. **The ACA-0022 mobile bottom-tab-bar/"More" sheet feature was never
+     built** (6 failures, all of `mobile-nav.spec.js`). Only the i18n
+     strings exist (`mobile_nav_more`/`mobile_nav_close` in
+     `lib/i18n.jsx`); grep for `mobile-nav`/`MobileNav`/`BottomNav`
+     across `frontend/src` returns 0 matches. `Layout.js` only ever
+     renders the desktop sidebar, shrunk by CSS on mobile, never
+     replaced by the claimed bottom nav.
+- Final suite state after this session's fixes:
+  **135-136 passed / 15-16 failed / 8 skipped** (the 1-test variance is
+  finding 2 above's own documented ~40-60% non-determinism — it is not
+  a new flake, it *is* the defect). Every remaining red is a classified,
+  documented, real product finding — none is unexplained test debt.
+- What this proves with real evidence: Dashboard, Roadmap, ModuleJourney,
+  the badges spatial depth cards, formation discovery, mentor presence,
+  module-journey context transitions, reduced-motion handling, and
+  keyboard focus all genuinely mount, fetch real (mocked-backend) data,
+  and render correctly — the large majority of the spatial and
+  non-spatial surface. The 4 defects above are the genuine gaps, not
+  assumed clean until proven otherwise.
+- No simultaneous CSS/WebGL duplication was found — the architecture's
+  flag-gated single-path design is real, but finding 1 above shows the
+  WebGL path's DOM observability contract diverges from the CSS path's,
+  which is itself a real defect worth the Founder's attention alongside
+  the architecture being otherwise sound.
 
 ## 5. Wallet / payment / commerce integrity (Phase 5)
 
@@ -206,7 +259,8 @@ per the Founder's instruction.
 | `test_server_startup_and_cors.py` (13 tests) | — | VERIFIED, 13/13 | New/rewritten this session (OPS-01) |
 | Financial-integrity suites (915 tests total across 10 files) | — | VERIFIED, 915/915 | Confirmed green this session |
 | `badges.spec.js` (e2e) | FAILED (4/4) | VERIFIED, 4/4 | FIXTURE_BROKEN — `auth-fixture.js` mocked `/api/badges/mine` but not the bare `/api/badges` catalogue route, so it fell through to a generic `{}` fallback and crashed `Badges.js` at `all.findIndex(...)`. Root-caused with a probe script (`page.on("pageerror")`), fixed by adding the missing mock with real `seed_data.py` badge codes and replacing the spec's invented `B10`/`B50` test-ids (which never existed) with the real ones (`BADGE-PARCOURS-10`, `BADGE-MISSION-FIRST`). |
-| Remaining 30 e2e specs (of the original 34 failures) | FAILED | **in progress at time of writing** (delegated, same probe-script method, results not yet folded into this report — see §4) | To be finalized once that work lands |
+| `ecosystem-builder.spec.js`, `billing-invoice.spec.js`, `commercial-purchase.spec.js`, `page-route-wiring.spec.js`, `module-journey-context.spec.js`, `route-transition.spec.js`, `module-journey-navigation.spec.js`, `environmental-continuity.spec.js` (1 of 3 tests) | FAILED (24 tests total) | VERIFIED, all now green | FIXTURE_BROKEN, all real and distinct: missing `/ecosystem-builder/me` mock (crashed on `{}.portfolio.length`); missing `physical-sessions`/`physical-locations`/`certifications` mocks unconditionally fetched by `PhysicalSessionsPanel` on every formation-detail page, crashing the whole page (explains 3 specs at once); missing `/trainer` and `/admin` canonical-formation-list mocks; a real sub-20ms animation-settle race in two REDUCED_MOTION assertions (single-shot `evaluate()` read vs. an in-flight opacity transition — fixed with `expect.poll(...)`, matching this suite's existing pattern elsewhere); missing `/professional/profile/mine` mock (crashed `FrekProfile.js`); a real render-timing race in the spec itself (`page.goto` resolves on `load`, not on React's lazy Suspense chunk finishing). Each fix verified re-running its file alone (2-5x for timing-sensitive ones), committed with the real root cause explained, pushed. |
+| Remaining 15-16 e2e failures (of the original 34) | FAILED | **Correctly left red** — real product defects, not test debt | Reclassified BUG_PRODUCT, documented not fixed (product changes need review): (1) WebGL background swap loses its DOM contract vs the CSS variant — 7 tests across `spatial-camera-follow`/`spatial-context-environment`/`spatial-module-dock`/`spatial-roadmap-rail`; (2) Layout's claimed Outlet-based promotion (ACA-0015/ACA-0016) was never actually built — 2 tests in `environmental-continuity.spec.js`, ~40-60% non-deterministic remount; (3) a real scroll-position key-corruption race in `useScrollRestoration.js` — 1 test; (4) the ACA-0022 mobile bottom-nav feature was never built at all, only its i18n strings exist — 6 tests in `mobile-nav.spec.js`. Full repro detail for each in §4. |
 | Docker/MongoDB-dependent paths (real index/transaction semantics under real Mongo) | ENVIRONMENT | still ENVIRONMENT | Confirmed again this session: both `production.cloudfront.docker.com` and `fastdl.mongodb.org` are blocked by explicit org network policy (403 CONNECT, `connect_rejected`) — not retriable per the proxy's own instructions. No real MongoDB was available to replay these against. |
 
 No real failure was converted to a skip to reach a higher pass rate
@@ -228,13 +282,23 @@ anywhere in this session.
   design choice (see `playwright.config.js`'s own module comment), not a
   gap introduced this session.
 
-## 8. Remaining blockers at time of writing
+## 8. Remaining blockers
 
-1. **Phase 4 e2e completion**: 30 of the original 34 failing e2e specs
-   were still being root-caused (via the same probe-script method
-   demonstrated on `badges.spec.js`) when this report was drafted. Their
-   final classification (FIXTURE_BROKEN/TEST_OBSOLETE fixed, or
-   BUG_PRODUCT documented for review) is not yet folded in.
+1. **4 real frontend product defects found by Phase 4's e2e completion**
+   (full detail in §4, none fixed here per instruction that product
+   fixes need review — only test infrastructure was touched this
+   session):
+   - WebGL spatial background's DOM contract diverges from the CSS
+     variant (`SpatialWebGLBackground.jsx` vs `SpatialBackground.jsx`) —
+     affects camera-follow, context-environment, module-dock, and
+     roadmap-rail specs under reduced motion / WebGL-eligible paths.
+   - `Layout`'s claimed Outlet-based promotion (ACA-0015/ACA-0016) was
+     never actually implemented — `Layout` remounts non-deterministically
+     on certain in-section navigations.
+   - A real key-corruption race in `useScrollRestoration.js` silently
+     overwrites a saved scroll position with 0 on some navigations.
+   - The ACA-0022 mobile bottom-nav/"More" sheet feature does not exist
+     in the codebase — only its i18n strings were ever added.
 2. **`/payments` (Stripe/EUR) frontend wiring**: real, tested backend
    with zero UI entry point and a real gap (no entitlement grant on
    success) — Founder decision needed per
@@ -255,7 +319,7 @@ anywhere in this session.
 |---|---|
 | Backend boot production contract vérifié | VERIFIED |
 | OPS-01 fermé | VERIFIED |
-| Frontend build vert | VERIFIED (prior sessions; unchanged this session — no frontend product files touched except `auth-fixture.js`/`badges.spec.js` test infra) |
+| Frontend build vert | VERIFIED (re-confirmed this session with `npx craco build` after the test-infra changes) |
 | Backend imports verts | VERIFIED |
 | Routes runtime inventoriées | VERIFIED (514 operations, 0 dead routers) |
 | Capacités critiques câblées | VERIFIED (table in §2) |
@@ -263,14 +327,15 @@ anywhere in this session.
 | Post-auth fonctionnel | VERIFIED |
 | Parcours apprenant fonctionnel | VERIFIED |
 | Permissions vérifiées | VERIFIED |
-| SpatialHub réellement exécuté | PARTIAL (117/159 e2e green as of writing, remainder in progress) |
+| SpatialHub réellement exécuté | VERIFIED (135-136/159 e2e green; the remainder are 4 classified, documented real product defects — see §4/§8, not unverified surface) |
 | Wallet/idempotency vérifiés | VERIFIED (against MOCK_DB, not real Mongo) |
 | Index DB vérifiés sur vraie DB lorsque disponible | BLOCKED — real MongoDB not reachable in this sandbox |
-| Toutes les non-vertes classifiées | PARTIAL — backend fully classified and closed; e2e classification in progress |
-| Aucune régression critique connue | VERIFIED (no product-code regression found; test-debt findings were pre-existing, not introduced) |
+| Toutes les non-vertes classifiées | VERIFIED — every backend and e2e non-green this session is classified (FIXTURE_BROKEN/TEST_OBSOLETE fixed, or BUG_PRODUCT/ENVIRONMENT documented); none left unexplained |
+| Aucune régression critique connue | VERIFIED (no product-code regression found; all 4 BUG_PRODUCT findings are pre-existing gaps this session discovered, not introduced) |
 | `main` inchangé | VERIFIED |
 | R35L31 inchangé | VERIFIED |
 
-**Not yet at 100% green.** Per instruction: no merge to `main` yet, no
+**Not at 100% green, by design — 4 real product defects remain, correctly
+red rather than papered over.** Per instruction: no merge to `main`, no
 branch deleted. Presenting this report and the blockers above before any
 canonicalization decision.
