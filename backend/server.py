@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
@@ -67,22 +68,70 @@ async def lifespan(app: FastAPI):
     # locks the PG-13 no-duplicate-architecture manifest. Neither is a
     # default to silently degrade past — an index-creation failure must not
     # let the app accept traffic as though startup were healthy.
+    step_started = time.monotonic()
+    logger.info("startup step begin: ensure_indexes")
     await ensure_indexes()
+    logger.info(
+        "startup step done: ensure_indexes elapsed=%.3fs",
+        time.monotonic() - step_started,
+    )
+
+    step_started = time.monotonic()
+    logger.info("startup step begin: architecture_reuse.sync_manifest")
     manifest = await architecture_reuse.sync_manifest(actor_id="SYSTEM_STARTUP")
+    logger.info(
+        "startup step done: architecture_reuse.sync_manifest elapsed=%.3fs status=%s",
+        time.monotonic() - step_started,
+        manifest.get("status"),
+    )
     if manifest.get("status") != "LOCKED":
         raise RuntimeError("PG-13 deduplication manifest failed to lock")
 
     try:
+        step_started = time.monotonic()
+        logger.info("startup step begin: ensure_mcp_indexes")
         await ensure_mcp_indexes()
+        logger.info(
+            "startup step done: ensure_mcp_indexes elapsed=%.3fs",
+            time.monotonic() - step_started,
+        )
+
+        step_started = time.monotonic()
+        logger.info("startup step begin: seed_if_empty")
         await seed_if_empty()
+        logger.info(
+            "startup step done: seed_if_empty elapsed=%.3fs",
+            time.monotonic() - step_started,
+        )
+
+        step_started = time.monotonic()
+        logger.info("startup step begin: seed_default_definitions")
         await seed_default_definitions()
+        logger.info(
+            "startup step done: seed_default_definitions elapsed=%.3fs",
+            time.monotonic() - step_started,
+        )
+
+        step_started = time.monotonic()
+        logger.info("startup step begin: seed_initial_matrix")
         inserted, skipped = await seed_initial_matrix()
         logger.info(
             "module_lineage initial matrix: %d inserted, %d already present",
             inserted,
             skipped,
         )
+        logger.info(
+            "startup step done: seed_initial_matrix elapsed=%.3fs",
+            time.monotonic() - step_started,
+        )
+
+        step_started = time.monotonic()
+        logger.info("startup step begin: ensure_workbook_runtimes")
         workbook_status = await ensure_workbook_runtimes(db)
+        logger.info(
+            "startup step done: ensure_workbook_runtimes elapsed=%.3fs",
+            time.monotonic() - step_started,
+        )
         if not workbook_status["all_ready"]:
             raise RuntimeError("workbook runtime reconciliation incomplete")
         logger.info(
