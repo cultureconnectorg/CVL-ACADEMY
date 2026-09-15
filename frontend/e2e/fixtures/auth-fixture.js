@@ -264,6 +264,38 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   await page.route("**/api/missions", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
+  // ACA-0030 -- backend/api/ecosystem_builder.py's GET /ecosystem-builder/me
+  // (backend/services/ecosystem_builder.py's EcosystemBuilderSurface) was
+  // never mocked here despite ecosystem-builder.spec.js's own comment
+  // claiming "auth-fixture.js's default mock ... returns an empty
+  // 'consumer' stage surface" -- that mock never actually existed, so the
+  // route fell through to the generic "{}" fallback above.
+  // EcosystemBuilder.js (frontend/src/pages/EcosystemBuilder.js) treats
+  // any truthy response as a loaded surface and immediately reads
+  // `surface.portfolio.length` / `surface.credentials.length` / etc.,
+  // so `{}` crashed with "Cannot read properties of undefined (reading
+  // 'length')" on every test relying on the default (real) consumer-stage
+  // shape -- the two tests that override this route per-test already
+  // passed. Default stage is "consumer" per compute_ecosystem_builder_
+  // surface's own doc: no engagement signal yet, exactly what a freshly
+  // authenticated fixture learner has.
+  await page.route("**/api/ecosystem-builder/me", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        stage: "consumer",
+        frek_id: user.frek_id,
+        display_name: user.display_name,
+        is_public: false,
+        portfolio: [],
+        credentials: [],
+        verified_proofs: [],
+        missions_completed: [],
+        ecosystem_history: [],
+      }),
+    })
+  );
   // Real seed_data.py BADGES codes (backend/seed_data.py) -- the bare
   // catalogue route was previously missing here, so it fell through to
   // the generic "{}" fallback above and crashed Badges.js's
