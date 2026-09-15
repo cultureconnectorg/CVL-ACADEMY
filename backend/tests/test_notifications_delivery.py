@@ -204,3 +204,116 @@ async def test_raw_token_never_logged(notif_db, monkeypatch, caplog):
         await svc.send_password_reset("user@example.com", "LOGGED-SECRET-TOKEN")
 
     assert "LOGGED-SECRET-TOKEN" not in caplog.text
+
+
+# --------------------------------------------------------------------
+# RECONCILE-4 — real Resend backend (recovered from `main`, real
+# rendered content, same NOTIF-01/NOTIF-02 discipline as the generic
+# provider path above)
+# --------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_resend_not_configured_is_local_only(notif_db, monkeypatch):
+    monkeypatch.setattr(notifications_module, "NOTIFICATIONS_PROVIDER_URL", None)
+    monkeypatch.setattr(notifications_module, "RESEND_API_KEY", None)
+    monkeypatch.setattr(notifications_module, "EMAIL_FROM", None)
+    svc = NotificationService()
+    assert svc.is_resend_enabled() is False
+    assert svc.is_remote_enabled() is False
+
+    result = await svc.send_password_reset("user@example.com", "raw-token-abc123")
+    assert result["status"] == "LOCAL_ONLY"
+
+
+@pytest.mark.asyncio
+async def test_resend_configured_sends_real_rendered_content(notif_db, monkeypatch):
+    monkeypatch.setattr(notifications_module, "NOTIFICATIONS_PROVIDER_URL", None)
+    monkeypatch.setattr(notifications_module, "RESEND_API_KEY", "re_fake_key")
+    monkeypatch.setattr(notifications_module, "EMAIL_FROM", "CVLN Academy <academy@cvln.test>")
+    captured = []
+    _install_mock_transport(monkeypatch, status_code=200, capture=captured)
+
+    svc = NotificationService()
+    assert svc.is_resend_enabled() is True
+    assert svc.is_remote_enabled() is True
+
+    result = await svc.send_password_reset("user@example.com", "raw-token-abc123", lang="fr")
+    assert result["status"] == "SENT"
+
+    # A real Resend request really happened, with real rendered content
+    # (subject/html/text), carrying the real (unredacted) token -- the
+    # actual link recipients need to click.
+    assert len(captured) == 1
+    body = captured[0]
+    assert body["from"] == "CVLN Academy <academy@cvln.test>"
+    assert body["to"] == ["user@example.com"]
+    assert "Réinitialise ton mot de passe" in body["subject"]
+    assert "raw-token-abc123" in body["html"]
+    assert "raw-token-abc123" in body["text"]
+
+    # NOTIF-02 discipline still holds: the outbox never gets the raw token.
+    stored = await notif_db.notification_outbox.find_one({"id": result["id"]}, {"_id": 0})
+    assert "raw-token-abc123" not in json.dumps(stored)
+    assert stored["status"] == "SENT"
+
+
+@pytest.mark.asyncio
+async def test_resend_configured_but_errors_reaches_failed(notif_db, monkeypatch):
+    monkeypatch.setattr(notifications_module, "NOTIFICATIONS_PROVIDER_URL", None)
+    monkeypatch.setattr(notifications_module, "RESEND_API_KEY", "re_fake_key")
+    monkeypatch.setattr(notifications_module, "EMAIL_FROM", "academy@cvln.test")
+    _install_mock_transport(monkeypatch, status_code=500)
+
+    svc = NotificationService()
+    result = await svc.send_email_verification("user@example.com", "raw-token-xyz")
+    assert result["status"] == "FAILED"
+
+    stored = await notif_db.notification_outbox.find_one({"id": result["id"]}, {"_id": 0})
+    assert stored["status"] == "FAILED"
+
+
+@pytest.mark.asyncio
+async def test_resend_preferred_over_generic_provider_for_templated_kinds(notif_db, monkeypatch):
+    """When both backends are configured, the three real-templated auth-
+    link kinds go through Resend (real content), not the generic
+    passthrough (which has no template and would send raw JSON)."""
+    monkeypatch.setattr(notifications_module, "NOTIFICATIONS_PROVIDER_URL", "https://fake-provider.test")
+    monkeypatch.setattr(notifications_module, "RESEND_API_KEY", "re_fake_key")
+    monkeypatch.setattr(notifications_module, "EMAIL_FROM", "academy@cvln.test")
+    captured = []
+    _install_mock_transport(monkeypatch, status_code=200, capture=captured)
+
+    svc = NotificationService()
+    result = await svc.send_invitation("user@example.com", "SECRET-CODE", org_name="CVLN Test Org")
+    assert result["status"] == "SENT"
+    assert len(captured) == 1
+    # Resend's real request shape (from/to/subject/html/text), not the
+    # generic provider's raw {"kind":..., "to":..., **payload}.
+    assert "from" in captured[0] and "html" in captured[0]
+    assert "CVLN Test Org" in captured[0]["html"]
+
+
+@pytest.mark.asyncio
+async def test_operational_event_never_uses_resend_even_when_configured(notif_db, monkeypatch):
+    """send_operational_event's governed, non-auth-link notifications
+    have no Resend template -- they always use the generic provider,
+    even when Resend is configured for the three auth-link kinds."""
+    monkeypatch.setattr(notifications_module, "NOTIFICATIONS_PROVIDER_URL", "https://fake-provider.test")
+    monkeypatch.setattr(notifications_module, "RESEND_API_KEY", "re_fake_key")
+    monkeypatch.setattr(notifications_module, "EMAIL_FROM", "academy@cvln.test")
+    captured = []
+    _install_mock_transport(monkeypatch, status_code=200, capture=captured)
+
+    svc = NotificationService()
+    result = await svc.send_operational_event(
+        kind="legal_deadline",
+        email="owner@example.com",
+        subject="Test deadline",
+        data={"deadline_id": "d1"},
+    )
+    assert result["status"] == "SENT"
+    assert len(captured) == 1
+    # Generic provider's real request shape, not Resend's.
+    assert captured[0]["kind"] == "legal_deadline"
+    assert "from" not in captured[0]
