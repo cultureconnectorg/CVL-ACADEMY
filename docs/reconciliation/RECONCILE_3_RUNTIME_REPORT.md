@@ -172,19 +172,25 @@ prior assumption.
      silently no-ops against the WebGL variant. **This is precisely the
      kind of WebGL-path gap the Founder asked Phase 4 to prove or
      disprove — and it disproves clean WebGL/CSS parity today.**
-  2. **Layout's claimed Outlet-based promotion was never actually done**
-     (2 failures in `environmental-continuity.spec.js`). Both this
-     spec's own docstring and `RouteTransition.jsx`'s docstring claim
-     ACA-0015/ACA-0016 promoted `Layout` to a real Outlet-based
-     `LayoutRoute` so it survives in-section navigation without
-     remounting. **No `LayoutRoute`/`Outlet` exists anywhere in `App.js`**
-     (grep-verified, 0 matches). `/dashboard` renders via `<Protected>`
-     while `/roadmap`/`/frek-profile` render via `<PublicOrMember>` — a
-     different component type at the same tree position — so React
-     remounts the whole `Layout` subtree (sidebar, `AcademyBackdrop`,
-     mentor dock) on that navigation, non-deterministically (~40-60% of
-     repeated runs, confirmed by direct instrumentation). `Layout.js`'s
-     own inline comment already half-admits the promotion was deferred.
+  2. ~~**Layout's claimed Outlet-based promotion was never actually
+     done**~~ **FIXED** (post-report addendum, RECONCILE-CANONICAL-FMS
+     pass): both this spec's own docstring and `RouteTransition.jsx`'s
+     docstring claimed ACA-0015/ACA-0016 promoted `Layout` to a real
+     Outlet-based `LayoutRoute` so it survives in-section navigation
+     without remounting, but no `LayoutRoute`/`Outlet` existed anywhere
+     in `App.js`. The abandoned `claude/cvln-academy-canonical-fms`
+     branch (compared exhaustively against this branch immediately
+     after this report was first delivered) turned out to have a real,
+     working implementation of exactly this pattern that this branch's
+     App.js had never actually built. Ported semantically (adapted to
+     this branch's more complex guard structure — LegalGuard,
+     GateFailure, the Authenticated/Protected/PublicOrMember split, none
+     of which existed in canonical-fms's simpler version) — see
+     `docs/reconciliation/RECONCILE_CANONICAL_FMS_COMPARISON.md` for the
+     full finding and `git log` on this branch for the fix commit.
+     `environmental-continuity.spec.js`'s two previously-flaky tests are
+     now 3/3 solid green; full e2e suite re-verified with zero new
+     regressions.
   3. **Scroll-position key-corruption race** (1 failure,
      `scroll-restoration.spec.js`). `useScrollRestoration.js`'s
      save/restore effects both key off `location.key`; on a dashboard→
@@ -260,7 +266,7 @@ per the Founder's instruction.
 | Financial-integrity suites (915 tests total across 10 files) | — | VERIFIED, 915/915 | Confirmed green this session |
 | `badges.spec.js` (e2e) | FAILED (4/4) | VERIFIED, 4/4 | FIXTURE_BROKEN — `auth-fixture.js` mocked `/api/badges/mine` but not the bare `/api/badges` catalogue route, so it fell through to a generic `{}` fallback and crashed `Badges.js` at `all.findIndex(...)`. Root-caused with a probe script (`page.on("pageerror")`), fixed by adding the missing mock with real `seed_data.py` badge codes and replacing the spec's invented `B10`/`B50` test-ids (which never existed) with the real ones (`BADGE-PARCOURS-10`, `BADGE-MISSION-FIRST`). |
 | `ecosystem-builder.spec.js`, `billing-invoice.spec.js`, `commercial-purchase.spec.js`, `page-route-wiring.spec.js`, `module-journey-context.spec.js`, `route-transition.spec.js`, `module-journey-navigation.spec.js`, `environmental-continuity.spec.js` (1 of 3 tests) | FAILED (24 tests total) | VERIFIED, all now green | FIXTURE_BROKEN, all real and distinct: missing `/ecosystem-builder/me` mock (crashed on `{}.portfolio.length`); missing `physical-sessions`/`physical-locations`/`certifications` mocks unconditionally fetched by `PhysicalSessionsPanel` on every formation-detail page, crashing the whole page (explains 3 specs at once); missing `/trainer` and `/admin` canonical-formation-list mocks; a real sub-20ms animation-settle race in two REDUCED_MOTION assertions (single-shot `evaluate()` read vs. an in-flight opacity transition — fixed with `expect.poll(...)`, matching this suite's existing pattern elsewhere); missing `/professional/profile/mine` mock (crashed `FrekProfile.js`); a real render-timing race in the spec itself (`page.goto` resolves on `load`, not on React's lazy Suspense chunk finishing). Each fix verified re-running its file alone (2-5x for timing-sensitive ones), committed with the real root cause explained, pushed. |
-| Remaining 15-16 e2e failures (of the original 34) | FAILED | **Correctly left red** — real product defects, not test debt | Reclassified BUG_PRODUCT, documented not fixed (product changes need review): (1) WebGL background swap loses its DOM contract vs the CSS variant — 7 tests across `spatial-camera-follow`/`spatial-context-environment`/`spatial-module-dock`/`spatial-roadmap-rail`; (2) Layout's claimed Outlet-based promotion (ACA-0015/ACA-0016) was never actually built — 2 tests in `environmental-continuity.spec.js`, ~40-60% non-deterministic remount; (3) a real scroll-position key-corruption race in `useScrollRestoration.js` — 1 test; (4) the ACA-0022 mobile bottom-nav feature was never built at all, only its i18n strings exist — 6 tests in `mobile-nav.spec.js`. Full repro detail for each in §4. |
+| Remaining 14 e2e failures (of the original 34) | FAILED | **Correctly left red** — real product defects, not test debt | Reclassified BUG_PRODUCT, documented not fixed (product changes need review): (1) WebGL background swap loses its DOM contract vs the CSS variant — 7 tests across `spatial-camera-follow`/`spatial-context-environment`/`spatial-module-dock`/`spatial-roadmap-rail`; (2) a real scroll-position key-corruption race in `useScrollRestoration.js` — 1 test; (3) the ACA-0022 mobile bottom-nav feature was never built at all, only its i18n strings exist — 6 tests in `mobile-nav.spec.js`. Full repro detail for each in §4. Layout's claimed Outlet-based promotion (originally a 4th finding here, 2 tests) has since been **fixed** — see the §4 addendum and `RECONCILE_CANONICAL_FMS_COMPARISON.md`. |
 | Docker/MongoDB-dependent paths (real index/transaction semantics under real Mongo) | ENVIRONMENT | still ENVIRONMENT | Confirmed again this session: both `production.cloudfront.docker.com` and `fastdl.mongodb.org` are blocked by explicit org network policy (403 CONNECT, `connect_rejected`) — not retriable per the proxy's own instructions. No real MongoDB was available to replay these against. |
 
 No real failure was converted to a skip to reach a higher pass rate
