@@ -1,5 +1,6 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import { Horizon } from "@/lib/motion-primitives";
@@ -47,6 +48,20 @@ export default function Roadmap() {
     initialIndex: currentIdx >= 0 ? currentIdx : 0,
   });
   const currentStageCode = currentIdx >= 0 ? STAGE_CODES[currentIdx] : null;
+
+  // CAN-01/CAN-02 convergence (P0-G backend) — GLOBAL_PROGRESS: canonical
+  // content viewed, honestly distinct from validated legacy stage
+  // progression above, never blended into it. Skipped entirely on the
+  // public (unauthenticated) view since /progression/summary requires a
+  // session, same as FrekProfile.js's canonical-progress card.
+  const [canonical, setCanonical] = useState(null);
+  useEffect(() => {
+    if (!user) {
+      setCanonical(null);
+      return;
+    }
+    api.get("/progression/summary").then((r) => setCanonical(r.data.canonical));
+  }, [user]);
 
   useEffect(() => {
     const railElement = railRef.current;
@@ -151,6 +166,25 @@ export default function Roadmap() {
       <div className="sr-only" aria-live="polite" data-testid="roadmap-spatial-status">
         {currentStageCode ? `${t(`stades.${currentStageCode}`)} · ${rail.focusedIndex + 1}/${STAGES.length}` : `Roadmap publique · ${rail.focusedIndex + 1}/${STAGES.length}`}
       </div>
+
+      {canonical?.canonical_modules_total > 0 && (
+        <div className="mt-8 max-w-md cvln-card p-6" data-testid="roadmap-canonical-progress">
+          <div className="flex items-center justify-between text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2]">
+            <span>{t("canonical_progress")}</span>
+            <span className="text-[--cvln-orange]">{canonical.canonical_progress_pct}%</span>
+          </div>
+          <div className="stage-line mt-3">
+            <div style={{ width: `${canonical.canonical_progress_pct}%` }} />
+          </div>
+          <div className="mt-2 text-xs text-[--cvln-ink-2]">
+            {canonical.canonical_modules_viewed}/{canonical.canonical_modules_total}{" "}
+            {t("canonical_modules_viewed")}
+          </div>
+          <div className="mt-1 text-[10px] text-[--cvln-ink-2]">
+            {t("canonical_progress_hint")}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
