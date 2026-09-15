@@ -7,8 +7,13 @@ import os
 os.environ.setdefault("MONGO_URL", "mongodb://localhost:27017")
 os.environ.setdefault("DB_NAME", "cvln_academy_test")
 
-from services.careops import autonomy_policy, classify_message, make_fingerprint
-from services.careops_incidents import INCIDENT_THRESHOLD, incident_action_type
+# These imports intentionally follow the test environment setup above because
+# their dependency graph imports db.py at module import time.
+from services.careops import autonomy_policy, classify_message, make_fingerprint  # noqa: E402
+from services.careops_incidents import (  # noqa: E402
+    INCIDENT_THRESHOLD,
+    incident_action_type,
+)
 
 
 def test_regular_question_goes_to_support():
