@@ -334,6 +334,35 @@ async function mockAuthenticatedSession(page, overrides = {}) {
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
 
+  // ACA-0028 -- backend/api/professional_profile.py's GET
+  // /professional/profile/mine (backend/services/professional_profile.py's
+  // ProfessionalProfile) was never mocked here, so it fell through to the
+  // generic "{}" fallback above. FrekProfile.js (frontend/src/pages/
+  // FrekProfile.js) unconditionally reads `proProfile.acquired_skills.
+  // length` and `proProfile.certifications.length` once the fetch
+  // resolves, so `{}` crashed with "Cannot read properties of undefined
+  // (reading 'length')" on every /frek-profile visit. Shape matches
+  // services/professional_profile.py's ProfessionalProfile model exactly
+  // (empty acquired_skills/certifications is the real shape for a freshly
+  // authenticated fixture learner with no acquired skills or passed
+  // certification attempts yet).
+  await page.route("**/api/professional/profile/mine", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        frek_id: user.frek_id,
+        display_name: user.display_name,
+        stade: user.stade || "decouverte",
+        acquired_skills: [],
+        certifications: [],
+        badges_count: 0,
+        total_evidence_count: 0,
+        is_public: false,
+      }),
+    })
+  );
+
   // PhysicalSessionsPanel (frontend/src/components/PhysicalSessionsPanel.js)
   // is unconditionally rendered at the bottom of FormationDetail for every
   // formation, authenticated or not. It calls

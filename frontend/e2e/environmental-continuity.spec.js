@@ -43,6 +43,13 @@ test.describe("environmental continuity (ACA-0015/ACA-0016)", () => {
     // (it does NOT survive a real remount) rather than trivially true.
     await mockAuthenticatedSession(page);
     await page.goto("/dashboard");
+    // Wait for the real render before stamping the marker — page.goto only
+    // resolves on the "load" event, not on React finishing its lazy-loaded
+    // Suspense boundary; without this wait, evaluate() can run while
+    // app-layout hasn't mounted yet and querySelector returns null
+    // ("Cannot set properties of null"), same race the first test in this
+    // file already guards against.
+    await expect(page.getByTestId("app-layout")).toBeVisible();
     await page.evaluate(() => {
       document.querySelector('[data-testid="app-layout"]').__continuityMarker = "still-here";
     });
@@ -66,6 +73,9 @@ test.describe("environmental continuity (ACA-0015/ACA-0016)", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await mockAuthenticatedSession(page);
     await page.goto("/dashboard");
+    // Same real render-timing race as the control-case test above — wait
+    // for app-layout before stamping the marker.
+    await expect(page.getByTestId("app-layout")).toBeVisible();
     await page.evaluate(() => {
       document.querySelector('[data-testid="app-layout"]').__continuityMarker = "still-here";
     });
