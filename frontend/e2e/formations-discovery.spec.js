@@ -120,3 +120,77 @@ test.describe("formations discovery — authenticated (W2-D)", () => {
     expect(mutations).toEqual([]);
   });
 });
+
+// ACA-0009 (2026-09-07) — public formation discovery: a signed-out
+// visitor reaches the real catalogue and a real formation page, not a
+// redirect to "/". No auth fixture here (deliberately no token, no
+// `/auth/me` mock) — this is the actual anonymous path, intercepting
+// only the two endpoints api/formations.py already serves without auth
+// (`GET /formations`, `GET /formations/:code`) and `GET /poles`.
+test.describe("formations discovery — signed-out visitor (ACA-0009)", () => {
+  const PUBLIC_FORMATION = {
+    code: "FMS-01",
+    name: "Fixture Formation One",
+    pole: "FMS",
+    pole_name: "Formation & Savoirs",
+    pole_color: "#D9631E",
+    duration_h: 12,
+    stades: ["graine", "pousse"],
+    cc: 4,
+    badge_name: "Fixture Badge",
+    description: "Une formation publique de démonstration.",
+    modules_count: 6,
+    content_status: "published",
+  };
+
+  async function mockPublicCatalogue(page) {
+    await page.route("**/api/poles", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([{ code: "FMS", name: "Formation & Savoirs", color: "#D9631E" }]),
+      })
+    );
+    await page.route("**/api/formations/FMS-01", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          ...PUBLIC_FORMATION,
+          modules: [],
+          is_unlocked: true,
+          lock_reason: "",
+          objective_strategic: "",
+          prerequisites: "",
+          debouches: "",
+        }),
+      })
+    );
+    await page.route("**/api/formations", (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify([PUBLIC_FORMATION]),
+      })
+    );
+  }
+
+  test("PUBLIC_ROUTE: an unauthenticated visitor reaches /formations directly, no redirect", async ({
+    page,
+  }) => {
+    await mockPublicCatalogue(page);
+    await page.goto("/formations");
+    await expect(page).toHaveURL(/\/formations$/);
+    await expect(page.getByTestId("formations-page")).toBeVisible();
+    await expect(page.getByTestId("formation-FMS-01")).toBeVisible();
+  });
+
+  test("PUBLIC_ROUTE: an unauthenticated visitor reaches a formation detail page directly", async ({
+    page,
+  }) => {
+    await mockPublicCatalogue(page);
+    await page.goto("/formations/FMS-01");
+    await expect(page).toHaveURL(/\/formations\/FMS-01$/);
+    await expect(page.getByTestId("formation-detail")).toBeVisible();
+  });
+});

@@ -1,14 +1,80 @@
-// Playwright config — W1-E regression baseline + portable CI browser.
+// Playwright config — W1-E regression baseline.
+//
+// Scope, honestly stated: this sandbox has no running MongoDB and no
+// backend process available (confirmed: no `mongod`/`docker` daemon, see
+// the W1-E tranche report). So these specs cover only the journeys that
+// are provably correct against the frontend alone — unauthenticated
+// routing/auth-guard/keyboard/reduced-motion behavior, which is exactly
+// what AuthProvider (frontend/src/lib/auth.jsx) resolves synchronously
+// from `localStorage` with zero network call when no token is present.
+// Authenticated journeys (login, ModuleJourney, quiz, certification —
+// anything needing the backend + MongoDB) are out of reach in this
+// sandbox and are NOT claimed as tested here; see e2e/README.md.
+//
+// `webServer` boots the existing CRA/craco dev server (no new tooling
+// dependency beyond @playwright/test itself) on a dedicated port so it
+// never collides with a developer's own `yarn start` on 3000.
+const fs = require("fs");
 const path = require("path");
 
-const chromiumPath = process.env.PLAYWRIGHT_CHROMIUM_PATH;
+// ACA-0031 — the pinned sandbox path below is real for the dev sandbox
+// this config was originally written in (Chrome for Testing pre-
+// installed under PLAYWRIGHT_BROWSERS_PATH, `playwright install`
+// forbidden from re-fetching a different revision there) but does NOT
+// exist on a GitHub Actions runner, where the `e2e` CI job instead runs
+// `npx playwright install --with-deps chromium` to fetch Playwright's
+// own managed browser. Hardcoding the sandbox path unconditionally
+// broke that job outright ("Failed to launch chromium because
+// executable doesn't exist at /opt/pw-browsers/chromium" — every one
+// of the 86 specs failed the same way). Only pin the explicit path
+// when it's real on this machine; otherwise leave `executablePath`
+// undefined so Playwright resolves its own installed browser, exactly
+// what `playwright install` puts there.
+const SANDBOX_CHROMIUM_PATH = "/opt/pw-browsers/chromium";
+const explicitChromiumPath =
+  process.env.PLAYWRIGHT_CHROMIUM_PATH ||
+  (fs.existsSync(SANDBOX_CHROMIUM_PATH) ? SANDBOX_CHROMIUM_PATH : undefined);
 
 module.exports = {
   testDir: "./e2e",
   timeout: 30_000,
+  // ACA-0031 — real CI-load variance, observed directly: distinct
+  // single-assertion failures (module-journey-context.spec.js's
+  // quiz-result visibility, scroll-restoration.spec.js's scrollY
+  // poll) have each independently exceeded Playwright's 5000ms
+  // default `expect` timeout on GitHub Actions' shared 2-worker
+  // runners, on different commits, never reproducible locally
+  // (--repeat-each passes reliably in this project's own dev
+  // sandbox). Neither ever asserted a WRONG final value — always
+  // "not yet visible/settled" under load, the signature of a timeout
+  // that's simply tighter than this CI environment's real headroom,
+  // not a logic defect. A per-assertion override (tried first, on
+  // just the quiz-result case) still weakened under a heavier-loaded
+  // run, so this raises the one global default instead of chasing
+  // each flaky assertion individually — real slack for demonstrated
+  // variance, costs nothing on the (overwhelmingly common) fast path
+  // where an assertion already resolves in well under 5s regardless
+  // of the ceiling.
+  expect: {
+    timeout: 15_000,
+  },
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 1 : 0,
+  // ACA-0031 — round 3 of the CI-load-flake investigation: raising the
+  // global expect.timeout above still wasn't enough on a heavier-loaded
+  // run (module-journey-context.spec.js's quiz-result assertion took
+  // 17.9s once, past the 15s ceiling). Since this suite's network calls
+  // are all Playwright route mocks (instant fulfill(), no real backend/
+  // network latency — see auth-fixture.js), the actual bottleneck is
+  // main-thread/CPU scheduling on the shared runner (React's setState ->
+  // re-render commit competing for CPU), not a logic race or a fixed
+  // amount of network time a bigger constant can reliably outrun.
+  // Retrying a failed test on a fresh attempt is Playwright's own
+  // documented remedy for exactly this shape of flake — it absorbs a
+  // one-off contention spike without inflating every test's timeout
+  // ceiling further, and costs nothing on a clean CI run. Local dev
+  // keeps 0 retries (a local failure should stay a hard signal).
+  retries: process.env.CI ? 2 : 0,
   reporter: [["list"]],
   use: {
     baseURL: "http://127.0.0.1:4173",
@@ -18,10 +84,9 @@ module.exports = {
     {
       name: "chromium",
       use: {
-        // Local sandbox can keep using its preinstalled executable through
-        // PLAYWRIGHT_CHROMIUM_PATH. GitHub Actions leaves this unset and uses
-        // the browser installed by `npx playwright install chromium`.
-        launchOptions: chromiumPath ? { executablePath: chromiumPath } : {},
+        launchOptions: explicitChromiumPath
+          ? { executablePath: explicitChromiumPath }
+          : {},
       },
     },
   ],
@@ -34,9 +99,16 @@ module.exports = {
     env: {
       PORT: "4173",
       BROWSER: "none",
+      // Deliberately unreachable — no backend is available in this
+      // sandbox. Every API call the app makes on these unauthenticated
+      // pages fails fast and is already caught (see auth.jsx / api.js),
+      // so the pages under test still render deterministically without
+      // one; pointing at a real nothing-here port instead of leaving
+      // this unset keeps that failure fast and explicit.
       REACT_APP_BACKEND_URL: "http://127.0.0.1:4174",
-      // Camera-follow stays production-flagged, but every Playwright runtime
-      // pass exercises it so experimental Spatial code cannot silently rot.
+      // Camera-follow stays production-flagged, but every Playwright
+      // runtime pass exercises it so experimental Spatial code cannot
+      // silently rot.
       REACT_APP_ACADEMY_SPATIAL_ROUTE_TRANSITIONS: "true",
     },
   },
