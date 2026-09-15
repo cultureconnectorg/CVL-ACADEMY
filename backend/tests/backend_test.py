@@ -35,6 +35,34 @@ if not BASE_URL:
         pass
 API = f"{BASE_URL}/api"
 
+# A minimal, schema-valid PNG data URL (real backend regex:
+# ^data:image/png;base64,[A-Za-z0-9+/=\r\n]+$, min 100 chars) -- the
+# real signature_data_url the frontend's own LegalAcceptance.jsx sends.
+_FAKE_SIGNATURE_DATA_URL = (
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk"
+    "+A8AAQUBAScY42YAAAAASUVORK5CYIIA=="
+)
+
+
+def _accept_legal(http, headers):
+    """Real legal-acceptance flow (backend/api/legal.py): every gated
+    route 428s with LEGAL_ACCEPTANCE_REQUIRED until this runs. This
+    file predates that gate (RECONCILE-3 finding) -- every fixture that
+    registers a user must call this before hitting a gated route."""
+    r = http.get(f"{API}/legal/requirements", headers=headers)
+    assert r.status_code == 200, r.text
+    documents = r.json()["documents"]
+    r = http.post(
+        f"{API}/legal/accept",
+        headers=headers,
+        json={
+            "documents": {d["id"]: d["version"] for d in documents},
+            "signature_data_url": _FAKE_SIGNATURE_DATA_URL,
+            "signer_name": "QA Test",
+        },
+    )
+    assert r.status_code == 200, r.text
+
 
 # ---------------- fixtures ----------------
 @pytest.fixture(scope="session")
@@ -72,6 +100,7 @@ def registered(http, unique_credentials):
     r = http.post(f"{API}/auth/register", json=unique_credentials)
     assert r.status_code == 200, f"register failed: {r.status_code} {r.text}"
     data = r.json()
+    _accept_legal(http, {"Authorization": f"Bearer {data['token']}"})
     return {"token": data["token"], "user": data["user"], "creds": unique_credentials}
 
 
@@ -273,8 +302,10 @@ class TestFormations:
 
 # ---------------- QUIZ ----------------
 class TestQuiz:
-    def test_get_quiz_no_leaked_correct_flag(self, http):
-        r = http.get(f"{API}/formations/FMS-01/modules/FMS-01-M01/quiz")
+    def test_get_quiz_no_leaked_correct_flag(self, http, auth_headers):
+        # P0-F AUTH-01 (RECONCILE history) made every learning route
+        # auth-gated by default -- this route is no longer anonymous.
+        r = http.get(f"{API}/formations/FMS-01/modules/FMS-01-M01/quiz", headers=auth_headers)
         assert r.status_code == 200
         payload = r.json()
         assert "quiz" in payload and "module" in payload
@@ -381,15 +412,17 @@ class TestQuiz:
 
 # ---------------- MISSIONS ----------------
 class TestMissions:
-    def test_list_missions_min_6(self, http):
-        r = http.get(f"{API}/missions")
+    def test_list_missions_min_6(self, http, auth_headers):
+        # P0-F AUTH-01 (RECONCILE history) made every learning route
+        # auth-gated by default -- this route is no longer anonymous.
+        r = http.get(f"{API}/missions", headers=auth_headers)
         assert r.status_code == 200
         arr = r.json()
         assert len(arr) >= 6, f"expected >=6 missions, got {len(arr)}"
 
     def test_accept_then_submit_mission(self, http, auth_headers, registered):
         # pick MIS-KLT-01 if exists, else first mission
-        all_m = http.get(f"{API}/missions").json()
+        all_m = http.get(f"{API}/missions", headers=auth_headers).json()
         codes = [m["code"] for m in all_m]
         code = "MIS-KLT-01" if "MIS-KLT-01" in codes else codes[0]
         mission = next(m for m in all_m if m["code"] == code)
@@ -455,8 +488,10 @@ class TestProgression:
 
 # ---------------- MENTOR ----------------
 class TestMentor:
-    def test_list_agents(self, http):
-        r = http.get(f"{API}/mentor/agents")
+    def test_list_agents(self, http, auth_headers):
+        # P0-F AUTH-01 (RECONCILE history) made every learning route
+        # auth-gated by default -- this route is no longer anonymous.
+        r = http.get(f"{API}/mentor/agents", headers=auth_headers)
         assert r.status_code == 200
         arr = r.json()
         assert any(a["code"] == "mentor-cvln" for a in arr)
@@ -503,6 +538,7 @@ def onboarding_user(http):
     r = http.post(f"{API}/auth/register", json=creds)
     assert r.status_code == 200, r.text
     data = r.json()
+    _accept_legal(http, {"Authorization": f"Bearer {data['token']}"})
     return {"token": data["token"], "user": data["user"], "creds": creds}
 
 
@@ -512,8 +548,10 @@ def ob_headers(onboarding_user):
 
 
 class TestOnboarding:
-    def test_options_shape(self, http):
-        r = http.get(f"{API}/onboarding/options")
+    def test_options_shape(self, http, ob_headers):
+        # P0-F AUTH-01 (RECONCILE history) made every learning route
+        # auth-gated by default -- this route is no longer anonymous.
+        r = http.get(f"{API}/onboarding/options", headers=ob_headers)
         assert r.status_code == 200
         j = r.json()
         assert len(j["langs"]) == 4
@@ -680,6 +718,7 @@ def lx_user(http):
     assert r.status_code == 200, r.text
     data = r.json()
     headers = {"Authorization": f"Bearer {data['token']}"}
+    _accept_legal(http, headers)
     # Onboard as FMS
     ob = http.post(
         f"{API}/onboarding/complete",
@@ -718,6 +757,7 @@ def lx_fresh_headers(http):
     r = http.post(f"{API}/auth/register", json=creds)
     assert r.status_code == 200
     headers = {"Authorization": f"Bearer {r.json()['token']}"}
+    _accept_legal(http, headers)
     http.post(
         f"{API}/onboarding/complete",
         headers=headers,
@@ -938,6 +978,7 @@ class TestLXv2LearningPath:
         r = http.post(f"{API}/auth/register", json=creds)
         assert r.status_code == 200
         headers = {"Authorization": f"Bearer {r.json()['token']}"}
+        _accept_legal(http, headers)
         http.post(
             f"{API}/onboarding/complete",
             headers=headers,
@@ -1015,6 +1056,7 @@ class TestLXv2FormationLockRules:
         }
         r = http.post(f"{API}/auth/register", json=creds)
         headers = {"Authorization": f"Bearer {r.json()['token']}"}
+        _accept_legal(http, headers)
         http.post(
             f"{API}/onboarding/complete",
             headers=headers,
@@ -1041,6 +1083,7 @@ class TestLXv2FormationLockRules:
         }
         r = http.post(f"{API}/auth/register", json=creds)
         headers = {"Authorization": f"Bearer {r.json()['token']}"}
+        _accept_legal(http, headers)
         http.post(
             f"{API}/onboarding/complete",
             headers=headers,
