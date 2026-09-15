@@ -39,6 +39,11 @@ jobs:
           MONGO_URL: mongodb://localhost:27017
           DB_NAME: cvln_academy_ci
           JWT_SECRET: ci-test-secret-not-a-real-secret
+          # The full regression suite is intentionally self-contained: this is
+          # the same MOCK_DB mode used by the reconciled 2701/2701 baseline.
+          # Real Mongo lifecycle/startup is covered separately by the
+          # academy-runtime-autonomy job below against a MongoDB service.
+          MOCK_DB: "1"
         run: python -m pytest tests/ -q --ignore=tests/backend_test.py
 
   security:
