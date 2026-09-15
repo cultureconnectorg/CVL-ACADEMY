@@ -18,8 +18,8 @@ test.describe("badges (ACA-0014/ACA-0017 spatial depth cards)", () => {
     await page.goto("/badges");
     await expect(page).toHaveURL(/\/badges$/);
     await expect(page.getByTestId("badges-page")).toBeVisible();
-    await expect(page.getByTestId("badge-B10")).toBeVisible();
-    await expect(page.getByTestId("badge-B50")).toBeVisible();
+    await expect(page.getByTestId("badge-BADGE-PARCOURS-10")).toBeVisible();
+    await expect(page.getByTestId("badge-BADGE-MISSION-FIRST")).toBeVisible();
   });
 
   test("an earned badge shows the obtained marker; an unearned one does not", async ({
@@ -31,13 +31,13 @@ test.describe("badges (ACA-0014/ACA-0017 spatial depth cards)", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify([
-          { code: "B10", name: "Première étincelle", earned_at: "2026-01-01T00:00:00Z" },
+          { code: "BADGE-PARCOURS-10", name: "Premier parcours", earned_at: "2026-01-01T00:00:00Z" },
         ]),
       })
     );
     await page.goto("/badges");
-    await expect(page.getByTestId("badge-B10")).toContainText("Obtenu");
-    await expect(page.getByTestId("badge-B50")).not.toContainText("Obtenu");
+    await expect(page.getByTestId("badge-BADGE-PARCOURS-10")).toContainText("Obtenu");
+    await expect(page.getByTestId("badge-BADGE-MISSION-FIRST")).not.toContainText("Obtenu");
   });
 
   test("PROGRESS_NOT_MUTATED_BY_ANIMATION: viewing the catalogue sends zero mutating requests", async ({
@@ -66,15 +66,15 @@ test.describe("badges (ACA-0014/ACA-0017 spatial depth cards)", () => {
         status: 200,
         contentType: "application/json",
         body: JSON.stringify([
-          { code: "B10", name: "Première étincelle", earned_at: "2026-01-01T00:00:00Z" },
+          { code: "BADGE-PARCOURS-10", name: "Premier parcours", earned_at: "2026-01-01T00:00:00Z" },
         ]),
       })
     );
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/badges");
-    await expect(page.getByTestId("badge-B10")).toBeVisible();
+    await expect(page.getByTestId("badge-BADGE-PARCOURS-10")).toBeVisible();
     const opacity = await page
-      .getByTestId("badge-B10")
+      .getByTestId("badge-BADGE-PARCOURS-10")
       .evaluate((el) => getComputedStyle(el).opacity);
     expect(opacity).toBe("1");
   });

@@ -264,6 +264,40 @@ async function mockAuthenticatedSession(page, overrides = {}) {
   await page.route("**/api/missions", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
+  // Real seed_data.py BADGES codes (backend/seed_data.py) -- the bare
+  // catalogue route was previously missing here, so it fell through to
+  // the generic "{}" fallback above and crashed Badges.js's
+  // `all.findIndex(...)` (`{}` has no .findIndex), a 100%-reproducible
+  // page crash the badges.spec.js tests below exist specifically to
+  // catch but could never actually observe passing without this mock.
+  await page.route("**/api/badges", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify([
+        {
+          code: "BADGE-PARCOURS-10",
+          name: "Premier parcours",
+          tier: "decouverte",
+          color: "#F59E0B",
+          description: "10 CC accumulés — la voie s'ouvre.",
+          cc_threshold: 10,
+          pole: null,
+          icon: "path",
+        },
+        {
+          code: "BADGE-MISSION-FIRST",
+          name: "Première mission",
+          tier: "pole",
+          color: "#15803D",
+          description: "50 CC — première mission freelance dans une entité CVLN.",
+          cc_threshold: 50,
+          pole: null,
+          icon: "briefcase",
+        },
+      ]),
+    })
+  );
   await page.route("**/api/badges/mine", (route) =>
     route.fulfill({ status: 200, contentType: "application/json", body: "[]" })
   );
