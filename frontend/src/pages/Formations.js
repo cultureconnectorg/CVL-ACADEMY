@@ -39,6 +39,19 @@ export default function Formations() {
     return [...path.own_pole, ...path.other_poles];
   }, [path, publicFormations, user]);
 
+  // ACA-0019 (Founder decision, 2026-09-07) — CANONICAL_CURRICULUM_
+  // RUNTIME = AUTHORITATIVE: real canonical progress, keyed by legacy
+  // formation_code, so each card below can show real canonical module
+  // counts instead of the legacy doc's own (frozen) progress once a
+  // canonical_authority redirect exists for that code.
+  const canonicalByCode = useMemo(() => {
+    const map = {};
+    for (const f of path?.canonical?.canonical_formations ?? []) {
+      map[f.formation_code] = f;
+    }
+    return map;
+  }, [path]);
+
   const totalModules = allFormations.reduce((n, f) => n + (f.modules_count || 0), 0);
   const visible = pole === "ALL" ? allFormations : allFormations.filter(f => f.pole === pole);
 
@@ -68,7 +81,7 @@ export default function Formations() {
               <span className="text-[--cvln-ink-2] font-normal"> · {path.next_action.formation_name}</span>
             </div>
           </div>
-          <Link to={`/formations/${path.next_action.formation_code}/modules/${path.next_action.module_code}`} data-testid="next-action-cta" className="btn-primary text-sm">
+          <Link to={path.next_action.route || `/formations/${path.next_action.formation_code}/modules/${path.next_action.module_code}`} data-testid="next-action-cta" className="btn-primary text-sm">
             Continuer <ArrowRight width={16} height={16} className="ml-1.5" />
           </Link>
         </div>
@@ -108,7 +121,7 @@ export default function Formations() {
               <div className="cvln-section-heading"><h2>Ta voie · {path.metier_vise}</h2><span>Parcours séquentiel</span></div>
               <div className="cvln-formation-grid">
                 {visible.filter(f => f.is_recommended).map(f => (
-                  <FormationCard key={f.code} f={f} t={t} focusedId={cardFocus.focusedId} onCardFocus={cardFocus.focus} onCardBlur={cardFocus.clear} />
+                  <FormationCard key={f.code} f={f} t={t} canonical={canonicalByCode[f.code]} focusedId={cardFocus.focusedId} onCardFocus={cardFocus.focus} onCardBlur={cardFocus.clear} />
                 ))}
               </div>
             </>
@@ -118,7 +131,7 @@ export default function Formations() {
               <div className="cvln-section-heading"><h2>Explorer les autres territoires</h2><span>Se débloquent en progressant</span></div>
               <div className="cvln-formation-grid">
                 {visible.filter(f => !f.is_recommended).map(f => (
-                  <FormationCard key={f.code} f={f} t={t} focusedId={cardFocus.focusedId} onCardFocus={cardFocus.focus} onCardBlur={cardFocus.clear} />
+                  <FormationCard key={f.code} f={f} t={t} canonical={canonicalByCode[f.code]} focusedId={cardFocus.focusedId} onCardFocus={cardFocus.focus} onCardBlur={cardFocus.clear} />
                 ))}
               </div>
             </>
@@ -129,12 +142,24 @@ export default function Formations() {
   );
 }
 
-function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur, publicMode = false }) {
+const CANONICAL_ROUTE_LABEL = { FMS: "FMS canonique", KLT: "Kiltikonet canonique", KOR: "KORA canonique" };
+
+function FormationCard({ f, t, canonical, focusedId, onCardFocus, onCardBlur, publicMode = false }) {
   const locked = !publicMode && !f.is_unlocked;
   const validated = !publicMode && f.validated_count > 0 && f.validated_count === f.modules_count;
+  // ACA-0019 — when this legacy formation has a real canonical
+  // successor, cards route straight there instead of this doc's own
+  // (frozen) module list. The legacy doc/route are never deleted; this
+  // is purely a forward pointer, same contract as FormationDetail.js's
+  // own canonical_authority redirect.
+  const authority = f.canonical_authority;
+  const destination = authority ? authority.route : `/formations/${f.code}`;
+  const canonicalPct = authority && canonical && canonical.modules_total
+    ? Math.round((canonical.modules_viewed / canonical.modules_total) * 100)
+    : 0;
   return (
     <FocusFieldItem id={f.code} focusedId={focusedId} className="h-full">
-      <Link to={`/formations/${f.code}`} data-testid={`formation-${f.code}`} data-locked={locked ? "true" : "false"} onFocus={() => onCardFocus?.(f.code)} onBlur={() => onCardBlur?.()} className={`cvln-formation-card group flex flex-col h-full ${locked ? "opacity-75" : ""}`}>
+      <Link to={destination} data-testid={`formation-${f.code}`} data-locked={locked ? "true" : "false"} data-canonical-domain={authority?.domain || undefined} onFocus={() => onCardFocus?.(f.code)} onBlur={() => onCardBlur?.()} className={`cvln-formation-card group flex flex-col h-full ${locked ? "opacity-75" : ""}`}>
         {locked && <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center text-white" data-testid={`lock-${f.code}`}><Lock width={14} height={14} /></div>}
         {validated && <div className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#15803D] flex items-center justify-center text-white"><CheckCircle width={16} height={16} /></div>}
         <div className="relative z-10 flex items-center justify-between pr-10">
@@ -143,15 +168,22 @@ function FormationCard({ f, t, focusedId, onCardFocus, onCardBlur, publicMode = 
         </div>
         <h3 className="relative z-10 font-display font-bold text-2xl tracking-tight mt-8 leading-tight" data-spatial-shared-source={`formation:${f.code}`}>{f.name}</h3>
         {publicMode && <p className="relative z-10 mt-3 text-sm text-[--cvln-ink-2] line-clamp-3">{f.description}</p>}
-        {f.modules_count > 0 && !locked && !publicMode && (
-          <div className="relative z-10 mt-6">
-            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-[--cvln-orange]" style={{ width: `${f.progress_pct}%` }} /></div>
-            <div className="mt-2 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">{f.validated_count}/{f.modules_count} modules · {f.progress_pct}%</div>
+        {authority && canonical ? (
+          <div className="relative z-10 mt-6" data-testid={`canonical-progress-${f.code}`}>
+            <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-[--cvln-orange]" style={{ width: `${canonicalPct}%` }} /></div>
+            <div className="mt-2 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">{canonical.modules_viewed}/{canonical.modules_total} modules · {CANONICAL_ROUTE_LABEL[authority.domain]}</div>
           </div>
+        ) : (
+          f.modules_count > 0 && !locked && !publicMode && (
+            <div className="relative z-10 mt-6">
+              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden"><div className="h-full bg-[--cvln-orange]" style={{ width: `${f.progress_pct}%` }} /></div>
+              <div className="mt-2 text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">{f.validated_count}/{f.modules_count} modules · {f.progress_pct}%</div>
+            </div>
+          )
         )}
         {locked && <div className="relative z-10 mt-6 text-xs text-[--cvln-ink-2] leading-relaxed">{f.lock_reason}</div>}
         <div className="formation-footer relative z-10 flex items-center justify-between">
-          <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">{f.modules_count} {t("modules")}</div>
+          <div className="text-[10px] mono uppercase tracking-wider text-[--cvln-ink-2]">{authority ? CANONICAL_ROUTE_LABEL[authority.domain] : `${f.modules_count} ${t("modules")}`}</div>
           <div className="text-[--cvln-orange] group-hover:translate-x-1 transition"><ArrowRight width={16} height={16} /></div>
         </div>
       </Link>
