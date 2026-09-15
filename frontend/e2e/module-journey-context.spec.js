@@ -116,8 +116,11 @@ test.describe("quiz context (W3-B)", () => {
     await page.getByTestId("phase-quiz-open").click();
     const wrapper = page.getByTestId("phase-quiz-questions").locator("..");
     await expect(wrapper).toHaveAttribute("data-context-state", "context");
-    const opacity = await wrapper.evaluate((el) => getComputedStyle(el).opacity);
-    expect(opacity).toBe("1");
+    // See the identical note on the mentor REDUCED_MOTION test below:
+    // ContextFrame's reduced-motion opacity transition is real (sub-20ms,
+    // never instant by design -- motion-tokens.js), so a single evaluate()
+    // read immediately after the attribute flips can race it. Poll.
+    await expect.poll(() => wrapper.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
   });
 });
 
@@ -193,7 +196,16 @@ test.describe("mentor contextual panel (W3-B/W3-C)", () => {
     await page.getByTestId("mentor-fab").click();
     const panel = page.getByTestId("mentor-panel");
     await expect(panel).toHaveAttribute("data-context-state", "context");
-    const opacity = await panel.evaluate((el) => getComputedStyle(el).opacity);
-    expect(opacity).toBe("1");
+    // ContextFrame (frontend/src/lib/ContextFrame.jsx) still animates to
+    // opacity:1 over motion-tokens.js's reduced-motion floor (never
+    // exactly 0ms, deliberately, so framer-motion's onAnimationComplete
+    // reliably fires) -- a real, sub-20ms transition, not an instant
+    // style write. A single evaluate() read immediately after the
+    // data-context-state attribute flips (itself synchronous with the
+    // state change, ahead of the animation frame) can therefore observe
+    // opacity:"0" for one paint before it settles. Poll like every other
+    // CSS-settling assertion in this suite (scroll-restoration.spec.js,
+    // spatial-roadmap-rail.spec.js) instead of reading it once.
+    await expect.poll(() => panel.evaluate((el) => getComputedStyle(el).opacity)).toBe("1");
   });
 });
