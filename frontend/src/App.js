@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import "@/App.css";
 import "@/index.css";
 import "@/cvln-cinematic.css";
@@ -179,13 +179,18 @@ function LegalGuard({ children }) {
   return children;
 }
 
-function Authenticated({ children, roles, withLayout = true }) {
+// ACA-0015/ACA-0016 — `Layout` used to be mounted here, per-route, by
+// every `Authenticated` instance (a fresh element tree per `<Route>`
+// match, remounting sidebar/AcademyBackdrop/mentor dock on every
+// in-section navigation — see `LayoutRoute` below for the fix). Now
+// purely an auth/role/legal-acceptance guard; Layout itself is hoisted
+// to the one shared `LayoutRoute` that wraps this component's callers.
+function Authenticated({ children, roles }) {
   const { user, loading } = useAuth();
   if (loading) return null;
   if (!user) return <Navigate to="/" replace />;
   if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
-  const content = withLayout ? <Layout>{children}</Layout> : children;
-  return <LegalGuard>{content}</LegalGuard>;
+  return <LegalGuard>{children}</LegalGuard>;
 }
 
 function Protected({ children, roles }) {
@@ -202,6 +207,32 @@ function PublicOrMember({ children }) {
   if (!user) return <PublicDiscoveryLayout>{children}</PublicDiscoveryLayout>;
   if (!user.onboarding_completed) return <Navigate to="/onboarding" replace />;
   return <Authenticated>{children}</Authenticated>;
+}
+
+// ACA-0015/ACA-0016 — the real Outlet-based layout route
+// (SPATIAL_H1_INTEGRATION_PLAN.md's own REPLACE-BLOCKED item; see
+// RouteTransition.jsx's own module docstring, which has documented
+// this exact structure since it was authorized, 2026-09-08 — this is
+// that promotion finally wired into the route tree it always
+// described). Every authenticated-shell route below nests under this
+// one `<Route>`, so the SAME mounted `Layout` instance (sidebar,
+// AcademyBackdrop, mentor dock) persists across an in-section
+// navigation instead of each route wrapping a fresh one.
+//
+// `Layout` still only renders for a real session: an anonymous visitor
+// on a `PublicOrMember` route (e.g. /formations, /roadmap) must keep
+// getting `PublicDiscoveryLayout`, which `PublicOrMember` already wraps
+// itself below this Outlet — rendering `Layout` here too for that case
+// would double-wrap. This mirrors exactly what `Authenticated` decided
+// per-route before this promotion: Layout only when `user` exists.
+function LayoutRoute() {
+  const { user } = useAuth();
+  const content = (
+    <RouteTransition>
+      <Outlet />
+    </RouteTransition>
+  );
+  return user ? <Layout>{content}</Layout> : content;
 }
 
 function App() {
@@ -239,99 +270,104 @@ function App() {
                   <Route
                     path="/stakeholder/claim/:code"
                     element={
-                      <Authenticated withLayout={false}>
+                      <Authenticated>
                         <StakeholderClaim />
                       </Authenticated>
                     }
                   />
-                  <Route
-                    path="/partner"
-                    element={
-                      <Authenticated>
-                        <StakeholderPortal expectedType="partner" />
-                      </Authenticated>
-                    }
-                  />
-                  <Route
-                    path="/institution"
-                    element={
-                      <Authenticated>
-                        <StakeholderPortal expectedType="institution" />
-                      </Authenticated>
-                    }
-                  />
-                  <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
-                  <Route path="/roadmap" element={<PublicOrMember><Roadmap /></PublicOrMember>} />
-                  <Route path="/formations" element={<PublicOrMember><Formations /></PublicOrMember>} />
-                  <Route path="/formations/:code" element={<PublicOrMember><FormationDetail /></PublicOrMember>} />
-                  <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
-                  {/* RECONCILE-2 Groupe 4: AUTHENTICATED_ROUTED — the canonical curriculum
-                      routers (canonical/frk_canonical/kor_canonical/klt_canonical) are all
-                      gated with require_legal_acceptance in api/__init__.py (Groupe 1), unlike
-                      the legacy Formations/FormationDetail above (deliberately public,
-                      ACA-0009) — so these stay behind the authenticated-only guard, not the
-                      hybrid public-discovery one, to match what the backend actually requires. */}
-                  <Route path="/canonical" element={<Protected><CanonicalFormations /></Protected>} />
-                  <Route path="/canonical/:formationCode" element={<Protected><CanonicalFormationDetail /></Protected>} />
-                  <Route path="/canonical/:formationCode/:moduleCode" element={<Protected><CanonicalModuleView /></Protected>} />
-                  <Route path="/kiltikonet-canonical" element={<Protected><CanonicalKltFormations /></Protected>} />
-                  <Route path="/kiltikonet-canonical/:formationCode" element={<Protected><CanonicalKltFormationDetail /></Protected>} />
-                  <Route path="/kiltikonet-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKltModuleView /></Protected>} />
-                  <Route path="/kora-canonical" element={<Protected><CanonicalKorFormations /></Protected>} />
-                  <Route path="/kora-canonical/:formationCode" element={<Protected><CanonicalKorFormationDetail /></Protected>} />
-                  <Route path="/kora-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKorModuleView /></Protected>} />
-                  <Route path="/frek-canonical" element={<Protected><CanonicalFrkFormations /></Protected>} />
-                  <Route path="/frek-canonical/:formationCode" element={<Protected><CanonicalFrkFormationDetail /></Protected>} />
-                  <Route path="/frek-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalFrkModuleView /></Protected>} />
-                  <Route path="/missions" element={<PublicOrMember><Missions /></PublicOrMember>} />
-                  <Route path="/badges" element={<PublicOrMember><Badges /></PublicOrMember>} />
-                  <Route path="/frek-profile" element={<PublicOrMember><FrekProfile /></PublicOrMember>} />
-                  {/* RECONCILE-2 Groupe 4: AUTHENTICATED_ROUTED — GET /ecosystem-builder/me is
-                      a "me"-scoped, per-user endpoint; there is no anonymous view. */}
-                  <Route path="/ecosystem-builder" element={<Protected><EcosystemBuilder /></Protected>} />
-                  <Route path="/wallet" element={<PublicOrMember><Wallet /></PublicOrMember>} />
-                  {/* RECONCILE-2 Groupe 4: AUTHENTICATED_ROUTED, with a documented discrepancy —
-                      Offers.js's own docstring describes GET /commerce/offers as "real, public
-                      and fully tested"; that was true on r35l31 before Groupe 1's reconciled
-                      api/__init__.py put `commerce` in the same require_legal_acceptance-gated
-                      group as everything else (no domain in that 53-router import was exempted
-                      without a specific reason — see RECONCILE_1_REPORT.md). The route now
-                      actually requires login, so it is routed accordingly rather than routed as
-                      public against a contract the backend no longer honors. Whether the
-                      catalogue should be reopened to anonymous visitors (matching Formations'
-                      own public-discovery precedent) is a product decision for the Founder, not
-                      one to guess at here — flagged NEEDS_REVIEW in RECONCILE_2_DECISIONS.md. */}
-                  <Route path="/offers" element={<Protected><Offers /></Protected>} />
-                  <Route path="/skills" element={<PublicOrMember><Skills /></PublicOrMember>} />
-                  <Route path="/certifications" element={<PublicOrMember><Certifications /></PublicOrMember>} />
-                  <Route
-                    path="/trainer"
-                    element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
-                  />
-                  <Route
-                    path="/jury"
-                    element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
-                  />
-                  <Route
-                    path="/admin"
-                    element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
-                  />
-                  <Route
-                    path="/admin/stakeholders"
-                    element={
-                      <Protected roles={ADMIN_ROLES}>
-                        <div className="px-6 md:px-12 py-10 max-w-4xl">
-                          <StakeholderAccessPanel />
-                        </div>
-                      </Protected>
-                    }
-                  />
-                  {/* RECONCILE-2 Groupe 4: INTERNAL_ROUTED — same ADMIN_ROLES gate as every
-                      other admin surface above. */}
-                  <Route
-                    path="/admin/professional-workspace"
-                    element={<Protected roles={ADMIN_ROLES}><ProfessionalWorkspace /></Protected>}
-                  />
+                  {/* ACA-0015/ACA-0016 — every route below shares the one
+                      mounted `Layout` instance via `LayoutRoute`, instead of
+                      each wrapping a fresh one. */}
+                  <Route element={<LayoutRoute />}>
+                    <Route
+                      path="/partner"
+                      element={
+                        <Authenticated>
+                          <StakeholderPortal expectedType="partner" />
+                        </Authenticated>
+                      }
+                    />
+                    <Route
+                      path="/institution"
+                      element={
+                        <Authenticated>
+                          <StakeholderPortal expectedType="institution" />
+                        </Authenticated>
+                      }
+                    />
+                    <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+                    <Route path="/roadmap" element={<PublicOrMember><Roadmap /></PublicOrMember>} />
+                    <Route path="/formations" element={<PublicOrMember><Formations /></PublicOrMember>} />
+                    <Route path="/formations/:code" element={<PublicOrMember><FormationDetail /></PublicOrMember>} />
+                    <Route path="/formations/:fc/modules/:mc" element={<Protected><ModuleJourney /></Protected>} />
+                    {/* RECONCILE-2 Groupe 4: AUTHENTICATED_ROUTED — the canonical curriculum
+                        routers (canonical/frk_canonical/kor_canonical/klt_canonical) are all
+                        gated with require_legal_acceptance in api/__init__.py (Groupe 1), unlike
+                        the legacy Formations/FormationDetail above (deliberately public,
+                        ACA-0009) — so these stay behind the authenticated-only guard, not the
+                        hybrid public-discovery one, to match what the backend actually requires. */}
+                    <Route path="/canonical" element={<Protected><CanonicalFormations /></Protected>} />
+                    <Route path="/canonical/:formationCode" element={<Protected><CanonicalFormationDetail /></Protected>} />
+                    <Route path="/canonical/:formationCode/:moduleCode" element={<Protected><CanonicalModuleView /></Protected>} />
+                    <Route path="/kiltikonet-canonical" element={<Protected><CanonicalKltFormations /></Protected>} />
+                    <Route path="/kiltikonet-canonical/:formationCode" element={<Protected><CanonicalKltFormationDetail /></Protected>} />
+                    <Route path="/kiltikonet-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKltModuleView /></Protected>} />
+                    <Route path="/kora-canonical" element={<Protected><CanonicalKorFormations /></Protected>} />
+                    <Route path="/kora-canonical/:formationCode" element={<Protected><CanonicalKorFormationDetail /></Protected>} />
+                    <Route path="/kora-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalKorModuleView /></Protected>} />
+                    <Route path="/frek-canonical" element={<Protected><CanonicalFrkFormations /></Protected>} />
+                    <Route path="/frek-canonical/:formationCode" element={<Protected><CanonicalFrkFormationDetail /></Protected>} />
+                    <Route path="/frek-canonical/:formationCode/:moduleCode" element={<Protected><CanonicalFrkModuleView /></Protected>} />
+                    <Route path="/missions" element={<PublicOrMember><Missions /></PublicOrMember>} />
+                    <Route path="/badges" element={<PublicOrMember><Badges /></PublicOrMember>} />
+                    <Route path="/frek-profile" element={<PublicOrMember><FrekProfile /></PublicOrMember>} />
+                    {/* RECONCILE-2 Groupe 4: AUTHENTICATED_ROUTED — GET /ecosystem-builder/me is
+                        a "me"-scoped, per-user endpoint; there is no anonymous view. */}
+                    <Route path="/ecosystem-builder" element={<Protected><EcosystemBuilder /></Protected>} />
+                    <Route path="/wallet" element={<PublicOrMember><Wallet /></PublicOrMember>} />
+                    {/* RECONCILE-2 Groupe 4: AUTHENTICATED_ROUTED, with a documented discrepancy —
+                        Offers.js's own docstring describes GET /commerce/offers as "real, public
+                        and fully tested"; that was true on r35l31 before Groupe 1's reconciled
+                        api/__init__.py put `commerce` in the same require_legal_acceptance-gated
+                        group as everything else (no domain in that 53-router import was exempted
+                        without a specific reason — see RECONCILE_1_REPORT.md). The route now
+                        actually requires login, so it is routed accordingly rather than routed as
+                        public against a contract the backend no longer honors. Whether the
+                        catalogue should be reopened to anonymous visitors (matching Formations'
+                        own public-discovery precedent) is a product decision for the Founder, not
+                        one to guess at here — flagged NEEDS_REVIEW in RECONCILE_2_DECISIONS.md. */}
+                    <Route path="/offers" element={<Protected><Offers /></Protected>} />
+                    <Route path="/skills" element={<PublicOrMember><Skills /></PublicOrMember>} />
+                    <Route path="/certifications" element={<PublicOrMember><Certifications /></PublicOrMember>} />
+                    <Route
+                      path="/trainer"
+                      element={<Protected roles={TRAINER_ROLES}><TrainerDashboard /></Protected>}
+                    />
+                    <Route
+                      path="/jury"
+                      element={<Protected roles={JURY_ROLES}><JuryDashboard /></Protected>}
+                    />
+                    <Route
+                      path="/admin"
+                      element={<Protected roles={ADMIN_ROLES}><AdminDashboard /></Protected>}
+                    />
+                    <Route
+                      path="/admin/stakeholders"
+                      element={
+                        <Protected roles={ADMIN_ROLES}>
+                          <div className="px-6 md:px-12 py-10 max-w-4xl">
+                            <StakeholderAccessPanel />
+                          </div>
+                        </Protected>
+                      }
+                    />
+                    {/* RECONCILE-2 Groupe 4: INTERNAL_ROUTED — same ADMIN_ROLES gate as every
+                        other admin surface above. */}
+                    <Route
+                      path="/admin/professional-workspace"
+                      element={<Protected roles={ADMIN_ROLES}><ProfessionalWorkspace /></Protected>}
+                    />
+                  </Route>
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </RouteTransition>
