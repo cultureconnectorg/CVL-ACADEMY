@@ -84,6 +84,110 @@ function ImportPanel() {
   );
 }
 
+// ACA-0020 — real N1/N2/A01 assessment-chain runtime binding, admin-
+// facing surface. The three POST /{domain}/formations/{code}/rubric/
+// import routes already existed (fms_canonical/spec_rubric_import.py,
+// klt_canonical + kor_canonical/rubric_import.py) — this panel is the
+// only piece that was missing: a way for an admin to actually trigger
+// them without calling the API directly. Each domain's formation list
+// comes from its own real GET /formations endpoint; a formation with
+// no real ASSESSMENT_AND_RUBRIC.md/RUBRIC.md file (e.g. FMS-01..06,
+// which use the separate ZIP-import path) 404s — shown as an
+// informational "no real rubric" state, never as an error.
+const RUBRIC_DOMAINS = [
+  { key: "FMS", listRoute: "/canonical/formations", importPrefix: "/canonical/formations", codeField: "canonical_formation_code", nameField: "metier_name" },
+  { key: "KLT", listRoute: "/klt-canonical/formations", importPrefix: "/klt-canonical/formations", codeField: "klt_formation_code", nameField: "title" },
+  { key: "KOR", listRoute: "/kor-canonical/formations", importPrefix: "/kor-canonical/formations", codeField: "kor_formation_code", nameField: "title" },
+];
+
+function RubricImportPanel() {
+  const { t } = useI18n();
+  const [formationsByDomain, setFormationsByDomain] = useState({});
+  const [statusByCode, setStatusByCode] = useState({});
+
+  useEffect(() => {
+    RUBRIC_DOMAINS.forEach((d) => {
+      api
+        .get(d.listRoute)
+        .then((r) => setFormationsByDomain((prev) => ({ ...prev, [d.key]: r.data })))
+        .catch(() => setFormationsByDomain((prev) => ({ ...prev, [d.key]: [] })));
+    });
+  }, []);
+
+  const importRubric = async (domain, code) => {
+    setStatusByCode((prev) => ({ ...prev, [code]: "busy" }));
+    try {
+      const { data } = await api.post(`${domain.importPrefix}/${code}/rubric/import`);
+      setStatusByCode((prev) => ({ ...prev, [code]: { kind: "ok", count: data.criteria?.length || 0 } }));
+    } catch (err) {
+      if (err?.response?.status === 404) {
+        setStatusByCode((prev) => ({ ...prev, [code]: { kind: "not_found" } }));
+      } else {
+        setStatusByCode((prev) => ({ ...prev, [code]: { kind: "error" } }));
+        toast.error(t("admin_p.rubric_import_error"));
+      }
+    }
+  };
+
+  return (
+    <div className="cvln-card p-6 lg:col-span-2" data-testid="rubric-import-panel">
+      <h3 className="font-display font-bold text-xl tracking-tight mb-2">{t("admin_p.rubric_import_title")}</h3>
+      <p className="text-sm text-[--cvln-ink-2] mb-4">{t("admin_p.rubric_import_desc")}</p>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {RUBRIC_DOMAINS.map((d) => (
+          <div key={d.key}>
+            <div className="text-xs uppercase tracking-[0.2em] font-bold text-[--cvln-ink-2] mb-2">{d.key}</div>
+            <div className="space-y-1.5 max-h-72 overflow-y-auto">
+              {(formationsByDomain[d.key] || []).map((f) => {
+                const code = f[d.codeField];
+                const status = statusByCode[code];
+                return (
+                  <div
+                    key={code}
+                    className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-black/5"
+                    data-testid={`rubric-row-${code}`}
+                  >
+                    <div className="min-w-0">
+                      <div className="text-xs font-semibold mono truncate">{code}</div>
+                      {status && status !== "busy" && (
+                        <div
+                          className={`text-[11px] ${
+                            status.kind === "ok"
+                              ? "text-[--cvln-forest]"
+                              : status.kind === "not_found"
+                              ? "text-[--cvln-ink-2]"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {status.kind === "ok"
+                            ? `${t("admin_p.rubric_import_success")} — ${status.count} ${t("admin_p.rubric_import_criteria_suffix")}`
+                            : status.kind === "not_found"
+                            ? t("admin_p.rubric_import_not_found")
+                            : t("admin_p.rubric_import_error")}
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      className="btn-outline text-xs px-3 py-1.5 shrink-0"
+                      disabled={status === "busy"}
+                      onClick={() => importRubric(d, code)}
+                      data-testid={`rubric-import-btn-${code}`}
+                    >
+                      {status === "busy" ? t("admin_p.rubric_import_busy") : t("admin_p.rubric_import_btn")}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function StatusPill({ status }) {
   const styles = {
     success: "bg-[--cvln-forest] text-white",
@@ -279,6 +383,9 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
         <OrgsPanel />
         <CataloguePanel />
+      </div>
+      <div className="grid grid-cols-1 gap-6 mt-6">
+        <RubricImportPanel />
       </div>
       <div className="grid grid-cols-1 mt-6">
         <InstitutionalBridgePanel />
