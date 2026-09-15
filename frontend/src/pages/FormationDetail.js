@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import { Book, Trophy, MediaVideo, Coins, Lock, CheckCircle, PlaySolid, ArrowRight } from "iconoir-react";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
 import BackButton from "@/components/BackButton";
 import CommercialPurchaseCard from "@/components/CommercialPurchaseCard";
+import PhysicalSessionsPanel from "@/components/PhysicalSessionsPanel";
 
 const STADE_EMOJI = {
   graine: "🌱", pousse: "🌿", racine: "🌳",
@@ -37,6 +38,18 @@ export default function FormationDetail() {
   }, [code]);
 
   if (!f) return <div className="p-10 text-[--cvln-ink-2]">…</div>;
+
+  // ACA-0019 (Founder decision, 2026-09-07) — CANONICAL_CURRICULUM_RUNTIME =
+  // AUTHORITATIVE: when this formation_code has real canonical content,
+  // canonical is now the single active pedagogical source a learner is
+  // routed to. Redirect immediately instead of rendering this legacy doc's
+  // modules — "ne crée pas deux parcours concurrents dans l'UI". The legacy
+  // doc itself (and this route) still exist and are never deleted; a direct
+  // link/bookmark to it just forwards on, exactly like `get_module_journey`
+  // already does server-side for the module-level route.
+  if (f.canonical_authority) {
+    return <Navigate to={f.canonical_authority.route} replace />;
+  }
 
   const validatedCount = user ? (f.modules || []).filter(m => m.status === "validated").length : 0;
   const pct = user && f.modules?.length ? Math.round((validatedCount / f.modules.length) * 100) : 0;
@@ -140,6 +153,14 @@ export default function FormationDetail() {
           })}
         </div>
       </div>
+
+      {/* PHYSICAL/HYBRID assessment architecture (Founder decision,
+          2026-09-07) — real session → location/date/capacity →
+          enrollment → attendance → practical assessment when
+          required. Public: session data is legitimate discovery
+          info even for a signed-out visitor; the panel itself gates
+          enroll/attendance-dependent actions behind sign-in. */}
+      <PhysicalSessionsPanel formationCode={code} />
     </div>
   );
 }
