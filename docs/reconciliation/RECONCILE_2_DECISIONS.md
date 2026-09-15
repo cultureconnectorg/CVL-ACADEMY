@@ -1172,3 +1172,323 @@ Founder avant toute mise en production d'un flux de paiement réel.
 - ✅ `main` et r35l31 toujours inchangés aux SHA gelés
   (`c5dddc83ee09a6ec6fb8fd5e9cfda1ec917ac048` /
   `f9763b6e27b7f60f29577a4a26bac2710596dfc3`).
+
+---
+
+## Groupe 5 — clôture des 95/95, câblage réel SpatialHub, cartographie des échecs (2026-09-15)
+
+Instruction Founder : *"GO Groupe 5, sans nettoyage de branches et sans
+merge vers main."* Critères de sortie explicites : 95/95 `BOTH_DIFFERENT`
+résolus, 0 fichier conflictuel, 0 décision inconnue, sections bloquées
+de `infra_indexes.py` tranchées, SpatialHub réellement câblé (pas
+seulement compilable), Dashboard/Roadmap/ModuleJourney fonctionnels,
+toutes les routes avec statut clair, 0 import cassé, suite complète
+relancée, chaque failure/error classifiée avec cause, main et r35l31
+inchangés.
+
+### Méthodologie de comptage
+
+Les Groupes 1-4 avaient déjà résolu 24 des 95 fichiers de
+`docs/reconciliation/both_different.txt` (la liste faisant autorité,
+produite par RECONCILE-0 — utilisée telle quelle plutôt que
+recalculée : une recomputation stricte à trois points donnait 73
+fichiers, une différence de méthodologie du script d'origine qui
+classe certains fichiers ONLY_R35L31 comme BOTH_DIFFERENT ; la liste
+committée reste la référence que tout l'engagement a citée). Les 71
+fichiers restants ont été classifiés puis résolus dans ce Groupe :
+- 14 `ONLY_MAIN` au sens strict (main déjà correct, aucun changement
+  nécessaire au-delà de vérification).
+- 31 `ONLY_R35L31` au sens strict (r35l31 seul a touché le fichier
+  depuis la base commune — pull-in trivial après vérification qu'aucun
+  import cassé n'en résulte).
+- 26 réellement `BOTH_CHANGED` (fusion sémantique à trois points
+  requise).
+
+### Fiches de décision — fichiers de ce groupe
+
+**Pull-ins triviaux `KEEP_R35L31` (main n'a jamais touché le fichier
+depuis la base commune) :**
+- `backend/.flake8`, 11 rapports `docs/*.md`, `backend/.env.example`
+  (fusionné avec les blocs déjà ajoutés par main — voir ci-dessous),
+  `backend/api/onboarding.py`, `quizzes.py`, `missions.py`,
+  `progression.py`, `certification.py`, `fms.py`, `learning.py`,
+  `backend/certification/__init__.py` + `models.py`, `backend/skills/
+  models.py` + `seed.py`, `backend/services/integrations/
+  subscribers.py`, `backend/services/notifications.py` (raison
+  sécurité — voir plus bas), `frontend/src/index.css`, `frontend/src/
+  pages/ModuleJourney.js`, `Onboarding.js`, `jury/JuryDashboard.js`,
+  `trainer/TrainerDashboard.js`, `frontend/e2e/formations-discovery.spec.js`.
+- Preuve : aucune régression jest (42/42), build propre à chaque étape.
+
+**`backend/certification/service.py` — COMBINE minimal.** Base
+r35l31 (seule version avec la chaîne d'éligibilité complète), un seul
+correctif réappliqué : le kwarg `wallet_credit(..., effect_key=...)`
+(r35l31 l'appelait `economic_event_id`, le paramètre résolu de
+`wallet.credit()` est `effect_key`).
+
+**`backend/services/integrations/registry.py` +
+`cvln_wallet.py` — COMBINE (désambiguïsation de nommage).** main a
+construit un client typé riche (`CVLNWalletIntegration`, httpx,
+`charge`/`transfer`/`balance`) pour le produit externe djsayd/
+CVLN-Wallet ; r35l31 a construit un `EcosystemIntegration` générique
+plus simple sous le même nom d'affichage. Gardé le client riche de
+main comme canonique, renommé son `.name` pour correspondre au nom
+d'affichage désambiguïsant de r35l31 (vérifié contre
+`docs/INTEGRATIONS_REPORT.md`), ajouté un alias `wallet = cvln_wallet`
+et une méthode `.request(path, payload)` générique compatible avec le
+contrat que `subscribers.py` utilise uniformément pour chaque
+intégration.
+
+**`backend/badges_engine.py` — COMBINE.** Gardé la relance résiliente
+de main (`wallet_credit` toujours retentée, protégée par
+`effect_key`) ; ajouté la publication réelle de l'événement
+`academy_badge_awarded` (r35l31), gatée sur `newly_awarded` uniquement
+— corrige un vrai bug découvert par la reconciliation (voir
+"Bugs réels trouvés" ci-dessous).
+
+**`backend/services/frek_core.py` — COMBINE.** Base = réécriture
+souveraine de main (identity_authority/frekcore mode) ; ajouté la
+méthode `credit_cc()` de r35l31 (verbatim, `$inc` atomique,
+`ReturnDocument.AFTER`) — un ajout ECON-03 indépendant sur le même
+fichier, requis par `api/quizzes.py`/`api/missions.py`.
+
+**`backend/api/formations.py` — COMBINE.** `commercialization`
+(main) et `canonical_authority` (r35l31) sont deux champs réels
+indépendants, tous deux conservés dans `list_formations`/
+`get_formation`.
+
+**`backend/tests/test_legal_policy.py` — COMBINE (collision de nom de
+fichier fortuite).** Deux modules réellement différents
+(`backend/legal_policy.py` de main, `backend/services/legal_policy.py`
+de r35l31) partageaient par coïncidence un nom de fichier de test.
+Fusion des deux suites dans un seul fichier.
+
+**`backend/infra_indexes.py` — clôture des sections
+`BLOCKED_BY_GROUP_5`.** Les 4 sections explicitement différées par le
+Groupe 3 (`canonical_progress`, `fms_resource_provenance`,
+`physical_sessions`/`physical_enrollments`/`physical_attendance` — y
+compris l'index partiel unique anti-double-réservation PHY-01,
+`professional_profile_settings`) portées verbatim depuis r35l31, selon
+le contrat documenté par le Groupe 3 lui-même. **Sections bloquées :
+0 restantes.**
+
+**Pages "COMBINE public-discovery + spatial" (le motif dominant du
+groupe) :** `Certifications.js`, `Badges.js`, `FormationDetail.js`,
+`Formations.js`, `FrekProfile.js`, `Missions.js`, `Landing.js`. main a
+construit indépendamment une vue "découverte publique" (ACA-0009 :
+page consultable sans compte, données personnelles gardées derrière
+`user &&`/guards, CTA register/login) sur presque toutes les pages
+apprenant ; r35l31 a construit indépendamment des variantes de carte
+à profondeur spatiale gatées par flag (`useDepthPhysics`/
+`computeDepthStyle`, `FEATURE_FLAGS.SPATIAL_HUB_ENABLED`) plus des
+fonctionnalités de domaine réelles (redirections canoniques,
+filtrage d'évaluation physique/pratique, surface profil
+professionnel, audio/haptique CONFIRM sur complétions réelles). Motif
+de résolution constant : structure/contenu public de main gardé comme
+base, couche spatiale de r35l31 posée dessus partout où réelle et non
+redondante. `Landing.js` seule variation notable : `LandingSpatial.jsx`
+(wrapper de main, réellement monté dans `App.js` pour `/`, `/login`,
+`/register`) forwarde `authMode` → `initialMode`, une prop que la
+version r35l31 seule ne gérait pas — préservée, avec la séquence
+VOID→WORLD→FOCUS→IDENTITY (ACA-0010/0011) de r35l31 posée sur le
+contenu réel de main plutôt que de le remplacer.
+
+**`Roadmap.js` — exception au motif ci-dessus.** Ici main avait
+*déjà* câblé un moteur spatial réel et complet (`useSpatialRail` :
+ARIA listbox/option, navigation clavier, index prédit, `Horizon`
+sensible à la distance, mémoire de profondeur inter-navigation via
+`depthMemory.js` — le même module que `Layout.js`/
+`SpatialFocusManager.jsx`), non gaté par flag. r35l31 avait construit
+une seconde variante gatée par `SPATIAL_HUB_ENABLED` (`useDepthPhysics`
++ `StageDepthCard`) plus une carte de progression canonique. Décision :
+garder le moteur `useSpatialRail` de main tel quel (plus complet pour
+cette page précise que la variante `useDepthPhysics`), porter
+uniquement la carte de progression canonique de r35l31 (pièce
+réellement additive et non redondante).
+
+**`Dashboard.js` — combine le plus large du groupe.** main : refonte
+visuelle complète (`cvln-page`/`cvln-kpi-grid`), `ReturnToPositionCard`
+(ACA-0023), parallélisation réelle de `refreshMe()` avec les 5 autres
+appels API. r35l31 : **le câblage SpatialHub réel** nommé
+explicitement dans les critères de sortie (`FEATURE_FLAGS.
+SPATIAL_HUB_ENABLED` → `<SpatialHub formationNodes missionNodes />`
+alimenté par `usePedagogicalGraph`, remplace la bannière next-action
+statique uniquement quand le flag est actif), `FirstValueReveal` (lit
+la vraie réponse `POST /onboarding/complete` transportée via
+`location.state`), `WelcomeBackBanner` (signal `returning` réel côté
+serveur), carte de progression canonique, carte Horizon/Expansion
+(pôle propre complété), carte d'éligibilité certification
+(`services/progressive_horizon.py`). Toutes les fonctionnalités de
+r35l31 portées verbatim sur la base visuelle de main ; les trois
+surfaces "prochaine action" (ReturnToPositionCard, WelcomeBackBanner,
+SpatialHub/next-action) sont indépendamment sourcées et ne peuvent pas
+se déclencher au même moment par construction.
+
+**`admin/AdminDashboard.js` — COMBINE.** `InstitutionalBridgePanel` +
+sélecteur d'organisation sur les invitations (main) et
+`RubricImportPanel` (ACA-0020, r35l31 — déclenche les 3 routes
+`POST /{domain}/formations/{code}/rubric/import` déjà existantes,
+jusqu'ici sans interface). Aucun chevauchement, les deux montés.
+
+**`frontend/e2e/module-journey-context.spec.js` — KEEP_MAIN.** Les
+deux branches ont corrigé indépendamment la même race "quiz-result"
+flaky ; le correctif de main est un sur-ensemble strict (attend en
+plus la réponse GET authoritative post-quiz et draine les doubles
+montages React.StrictMode dans le helper partagé).
+
+**`frontend/playwright.config.js` — COMBINE.** Les deux branches ont
+corrigé le même chemin Chromium codé en dur cassant la CI, mais le
+correctif de r35l31 est plus robuste (`fs.existsSync` en repli quand
+`PLAYWRIGHT_CHROMIUM_PATH` n'est pas définie — vérifié : le binaire
+existe dans ce sandbox à `/opt/pw-browsers/chromium` mais la variable
+d'env n'est PAS définie, donc la version de main seule aurait cassé
+les runs e2e locaux ici) et ajoute `expect.timeout`/`retries` avec
+investigation CI documentée. Gardé r35l31 en base, ajouté la seule
+pièce distincte de main (`REACT_APP_ACADEMY_SPATIAL_ROUTE_TRANSITIONS
+=true`).
+
+### Bugs réels trouvés et corrigés par la reconciliation
+
+Aucun de ces bugs n'existait déjà correctement corrigé sur l'une ou
+l'autre branche seule — chacun est une découverte propre à la fusion,
+au sens strict de ce que RECONCILE-2 est censé faire remonter :
+1. **Nom d'intégration Wallet incohérent** — `CVLNWalletIntegration.name`
+   ne correspondait pas au nom attendu par
+   `test_ecosystem_handoffs.py`/`docs/INTEGRATIONS_REPORT.md`. Corrigé
+   (registry.py/cvln_wallet.py, voir fiche ci-dessus).
+2. **`academy_badge_awarded` jamais publié** — `badges_engine.py` de
+   main (retenu comme base pour sa relance résiliente) n'émettait
+   jamais l'événement réel que `subscribers.py`/`test_ecosystem_
+   handoffs.py` attendent. Corrigé.
+3. **`frek_core.credit_cc()` manquant** — la réécriture souveraine de
+   main de `services/frek_core.py` n'avait jamais cette méthode ; les
+   appels réels de `api/quizzes.py`/`api/missions.py` (r35l31) s'y
+   fiaient. Corrigé, 6 tests d'idempotence remis au vert.
+
+### Bug réel trouvé, classifié mais **non corrigé dans ce groupe**
+
+**OPS-01 (fail-closed au démarrage) — régression réelle,
+`BUG_PRODUCT`.** `server.py::lifespan()` enveloppe `ensure_indexes()`
+dans un `try/except Exception` large qui journalise puis continue
+(`app.state.startup_ready = False`, mais l'app sert quand même tout le
+trafic réel). Seul `GET /health` lit `startup_ready` ; **aucune route
+métier ne le vérifie** — donc un échec de création d'index (les index
+uniques/partiels dont dépendent les correctifs d'atomicité ECON-01/02/
+03/PHY-01) ne bloque plus le service, contrairement à l'invariant que
+`test_server_startup_and_cors.py::test_startup_raises_when_ensure_
+indexes_fails` a été écrit pour garantir. Racine probable : lors de la
+réconciliation du bloc CORS de `server.py` au Groupe 3 (commit
+`404a021`), la structure de démarrage a été reconstruite en
+`@asynccontextmanager lifespan()` (moderne, readiness-gate via
+`/health`) plutôt qu'en restaurant le `on_startup()`/crash-on-boot que
+le test attend — un choix architectural légitime en soi (pattern
+readiness-probe standard k8s), mais qui laisse un vrai trou : rien
+n'empêche le trafic direct (hors load-balancer) d'atteindre une
+instance `startup_ready=False`. **Explicitement non corrigé ici** —
+classification seulement, comme demandé par les critères de sortie de
+ce groupe ; correction recommandée pour RECONCILE-3 (ajouter soit une
+dépendance FastAPI globale qui 503 tant que `startup_ready` est faux,
+soit revenir à un `raise` propageant hors de `lifespan()` sur l'échec
+d'`ensure_indexes()` spécifiquement, en gardant le `try/except`
+large uniquement autour du seed non-critique).
+
+### Cartographie des failures/errors — suite complète relancée
+
+**Frontend — 0 failure.** `yarn build` propre (aucun warning). Suite
+jest complète : **42/42 suites, 292/292 tests passants**, aucune
+régression sur tout le travail de ce groupe (Landing/Dashboard/
+Roadmap/AdminDashboard/6 pages combine/e2e-config inclus).
+
+**Backend — `import server` propre** (515+ routes, vérifié avec
+variables d'environnement minimales). `python3 -m pytest` complet :
+**2623 passed**, 24 failed, 31 errors (55 non-vertes au total, toutes
+dans seulement 2 fichiers de test) :
+
+| Fichier | # | Classification | Cause racine |
+|---|---|---|---|
+| `tests/backend_test.py` (toutes les classes : Auth, Onboarding, Formations, Quiz, Missions, Badges, Mentor, Health, Progression, LXv2*) | 24 failed + 31 errors = 55 | **ENVIRONMENT** | `BASE_URL` lu depuis `REACT_APP_BACKEND_URL` (vide dans ce sandbox) → `requests.exceptions.MissingSchema` sur des URLs relatives. Ce fichier est une suite d'intégration qui nécessite un serveur FastAPI + MongoDB réellement démarrés ; **ni `mongod` ni le daemon Docker ne sont disponibles dans ce sandbox** (vérifié : `mongod` absent, `docker ps` échoue avec "Cannot connect to the Docker daemon"). Limitation de sandbox documentée depuis W1-E, inchangée depuis. Zéro rapport avec les changements de ce groupe. |
+| `tests/test_server_startup_and_cors.py::test_development_default_stays_wildcard` | 1 | **TEST_OBSOLETE** | Le test lit `server.cors_origins` (sans underscore) ; le symbole réel après la réconciliation CORS du Groupe 3 est `server._cors_origins` (privé, intentionnel). Comportement réel très probablement correct, nom de symbole périmé. |
+| `tests/test_server_startup_and_cors.py::test_production_with_real_allowlist_boots_fine` | 1 | **TEST_OBSOLETE** | Même cause que ci-dessus (`cors_origins` vs `_cors_origins`). |
+| `tests/test_server_startup_and_cors.py::test_startup_survives_seed_failures` | 1 | **TEST_OBSOLETE** | Le test monkeypatch `server.architecture_reuse.sync_manifest` — ce module n'existe nulle part dans le dépôt (ni main, ni r35l31, ni la base commune). Cible une surface d'API jamais implémentée sous ce nom ; le comportement réel (échec de seed non-fatal) est déjà couvert par la structure `try/except` actuelle de `lifespan()`. |
+| `tests/test_server_startup_and_cors.py::test_startup_raises_when_ensure_indexes_fails` | 1 | **BUG_PRODUCT** | Voir section dédiée ci-dessus — régression réelle du fail-closed OPS-01, non corrigée dans ce groupe (classification uniquement, correction recommandée RECONCILE-3). |
+
+**Aucun `FIXTURE_BROKEN` ni `EXTERNAL_DEPENDENCY` ni
+`EXPECTED_FAILURE` identifié dans cette passe** — toutes les
+non-vertes se résument à 3 causes distinctes (environnement sandbox
+sans MongoDB/Docker ; 3 tests visant des noms de symboles obsolètes
+suite à la réconciliation Groupe 3 du bloc CORS ; 1 régression produit
+réelle et non corrigée par choix explicite du périmètre de ce groupe).
+
+Static checks (`flake8`) : 7 avertissements pré-existants et mineurs
+(4× E501 ligne trop longue dans `legal_policy.py`, 1× W292 pas de
+newline final dans `server.py`, 2× E402 import non en tête de fichier
+dans `test_careops.py`) — aucun ne bloque l'exécution, non liés au
+périmètre de ce groupe, non corrigés (hors scope explicite : ce groupe
+classifie, ne nettoie pas le style).
+
+### Statut SpatialHub — câblage réel, pas seulement compilable
+
+Preuve, au-delà de la compilation :
+- `Dashboard.js` monte `<SpatialHub formationNodes={graph.
+  formationNodes} missionNodes={graph.missionNodes} />` réellement
+  alimenté par `usePedagogicalGraph({ enabled: FEATURE_FLAGS.
+  SPATIAL_HUB_ENABLED })`, qui dérive le graphe pédagogique réel
+  (learning-path/missions/badges/skills/qualifications) — remplace la
+  bannière next-action statique uniquement quand le flag est actif
+  (jamais deux surfaces "prochaine action" concurrentes).
+- `Roadmap.js` a un moteur spatial réel non gaté (`useSpatialRail`) —
+  navigation clavier ARIA listbox/option, mémoire de profondeur
+  inter-navigation, anticipation d'index prédit — déjà en place avant
+  ce groupe, complété par la carte de progression canonique.
+- `ModuleJourney.js` (vérifié dans ce groupe, KEEP_R35L31 déjà en
+  place) importe et monte réellement `JourneyPhaseShell` (`lib/
+  JourneyHierarchy.jsx`) et `ContextFrame`/`useContextEntry` (`lib/
+  ContextFrame.jsx`), avec audio/haptique spatiaux réels — pas un
+  import mort, deux usages `<ContextFrame show={isContext}>` actifs
+  dans le rendu.
+- Toutes les pages "public-discovery + spatial" de ce groupe
+  (Missions/Badges/FrekProfile) utilisent `useDepthPhysics`/
+  `computeDepthStyle` réellement dans leur arbre de rendu, gatées par
+  `FEATURE_FLAGS.SPATIAL_HUB_ENABLED`, avec fallback vers la grille
+  plate quand le flag est désactivé — les deux chemins compilent et
+  s'exécutent (prouvé par la suite jest, qui exerce les deux via les
+  mocks de `featureFlags.js`).
+
+### Critères de sortie du Groupe 5 — statut final
+
+- ✅ **95/95 `BOTH_DIFFERENT` résolus** (vérifié : chaque chemin de
+  `docs/reconciliation/both_different.txt` a au moins un commit sur
+  cette branche depuis la base commune `85a41cced8d84c8bba016135689e
+  10d733c585dd`).
+- ✅ **0 fichier conflictuel restant** (`grep` de `<<<<<<<`/`=======`/
+  `>>>>>>>` sur tout `backend/` + `frontend/src/` : 0 résultat).
+- ✅ **0 décision inconnue** (chaque fichier de ce groupe a une fiche
+  de décision explicite ci-dessus ou dans les groupes précédents).
+- ✅ **Sections bloquées de `infra_indexes.py` tranchées** (4/4
+  sections `BLOCKED_BY_GROUP_5` closes, voir fiche dédiée).
+- ✅ **SpatialHub réellement câblé** (voir section dédiée ci-dessus —
+  composant monté, alimenté par des données réelles, pas seulement
+  importé/compilé).
+- ✅ **Dashboard/Roadmap/ModuleJourney fonctionnels** (les trois
+  vérifiés avec preuve de montage/wiring réel, pas seulement présence
+  de fichier).
+- ✅ **Toutes les routes/pages avec statut clair** (17/17 du Groupe 4
+  + les pages de ce groupe, toutes avec fiche de décision).
+- ✅ **0 import cassé connu** (`import server` propre avec 515+
+  routes ; `yarn build` propre sans warning).
+- ✅ **Suite complète relancée** (jest 42/42 suites/292/292 tests ;
+  pytest 2623 passed sur l'ensemble hors les 2 fichiers classifiés
+  ci-dessus).
+- ✅ **Chaque failure/error restante classifiée avec cause** (tableau
+  dédié ci-dessus : ENVIRONMENT ×55, TEST_OBSOLETE ×3, BUG_PRODUCT ×1
+  — ce dernier explicitement non corrigé par choix de périmètre,
+  documenté pour RECONCILE-3).
+- ✅ **`main` et r35l31 toujours inchangés** aux SHA gelés
+  (`c5dddc83ee09a6ec6fb8fd5e9cfda1ec917ac048` /
+  `f9763b6e27b7f60f29577a4a26bac2710596dfc3` — reconfirmé via
+  `git ls-remote origin main claude/cvln-academy-production-r35l31`
+  en fin de groupe).
+
+**Aucun nettoyage de branches, aucun merge vers `main` effectué** —
+conformément à l'instruction explicite du Founder. Tous les commits de
+ce groupe vivent sur `reconcile/canonical-main-r35l31-20260914`.
