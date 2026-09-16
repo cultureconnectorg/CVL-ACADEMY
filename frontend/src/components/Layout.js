@@ -18,6 +18,8 @@ import {
   Building,
   CreditCard,
   Hammer,
+  Menu,
+  Xmark,
 } from "iconoir-react";
 import { useAuth } from "@/lib/auth.jsx";
 import { useI18n } from "@/lib/i18n.jsx";
@@ -35,15 +37,9 @@ const STUDENT_NAV = [
   { to: "/badges", key: "badges", Icon: Medal1st },
   { to: "/skills", key: "skills", Icon: Sparks },
   { to: "/certifications", key: "certifications", Icon: ShieldCheck },
-  // ACA-0025/W-FUNNEL-2 "Conversion" — the real DECIDED_V1 commercial
-  // catalogue (RECONCILE-2 Groupe 5: r35l31 built this nav entry
-  // alongside the /offers route Groupe 4 already mounted in App.js).
   { to: "/offers", key: "offers", Icon: CreditCard },
   { to: "/wallet", key: "wallet", Icon: WalletIcon },
   { to: "/frek-profile", key: "frek_profile", Icon: Fingerprint },
-  // ACA-0030 — Ecosystem Builder surface (RECONCILE-2 Groupe 5: same
-  // pairing as /offers above — Groupe 4 already routed
-  // /ecosystem-builder in App.js, this is its nav entry).
   { to: "/ecosystem-builder", key: "ecosystem_builder", Icon: Hammer },
 ];
 
@@ -54,12 +50,15 @@ const STAFF_NAV = [
   { to: "/admin/stakeholders", label: "Accès partenaires", Icon: Building, roles: ["admin", "super_admin", "founder"] },
 ];
 
+const MOBILE_PRIMARY_KEYS = ["dashboard", "roadmap", "formations", "missions"];
+
 export default function Layout({ children }) {
   const { user, logout } = useAuth();
   const { t } = useI18n();
   const nav = useNavigate();
   const location = useLocation();
   const [stakeholder, setStakeholder] = useState(null);
+  const [mobileMoreOpen, setMobileMoreOpen] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -90,7 +89,8 @@ export default function Layout({ children }) {
     ...stakeholderNav,
     ...STAFF_NAV.filter((item) => item.roles.includes(user?.role)),
   ];
-
+  const mobilePrimary = navItems.filter((item) => MOBILE_PRIMARY_KEYS.includes(item.key));
+  const mobileMore = navItems.filter((item) => !MOBILE_PRIMARY_KEYS.includes(item.key));
   const mentorAvailable = isPedagogicalContext(location.pathname);
 
   useEffect(() => {
@@ -98,20 +98,21 @@ export default function Layout({ children }) {
     return () => captureRouteDepth(location.pathname);
   }, [location.pathname]);
 
+  useEffect(() => {
+    setMobileMoreOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileMoreOpen) return undefined;
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") setMobileMoreOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mobileMoreOpen]);
+
   return (
     <div className="cvln-app-shell" data-testid="app-layout">
-      {/* RAIL 3 (RECONCILE-2 Groupe 5) — real, data-driven environmental
-          tint (see AcademyBackdrop.jsx's own docstring). `position:
-          fixed`, pointer-events-none, z-index:0 — purely decorative,
-          zero layout impact. Its own docstring's "mounts once for the
-          whole in-section navigation" continuity claim assumes an
-          Outlet-based single layout route (App.js's `LayoutRoute`);
-          this branch still wraps each route with its own <Layout>
-          individually (Groupe 4's App.js), so Layout — and this
-          backdrop — remounts per navigation like the rest of the shell
-          today. Renders correctly per-page either way; the
-          continuity-across-navigation upgrade is deferred to the
-          broader SpatialHub Outlet-based wiring pass. */}
       <AcademyBackdrop />
       <header className="cvln-app-topbar" data-testid="sidebar">
         <NavLink to="/dashboard" className="cvln-wordmark shrink-0" aria-label="CVLN Academy">
@@ -160,9 +161,91 @@ export default function Layout({ children }) {
         </div>
       </header>
 
-      <main className="cvln-app-main">
+      <main className="cvln-app-main pb-20 md:pb-0">
         <div className="fade-in">{children}</div>
       </main>
+
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-black/5 flex items-stretch"
+        data-testid="mobile-nav-bar"
+        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
+        aria-label="Navigation mobile"
+      >
+        {mobilePrimary.map(({ to, key, Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            data-testid={`mobile-nav-${key}`}
+            className={({ isActive }) =>
+              `flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium transition ${
+                isActive ? "text-[--cvln-forest]" : "text-[--cvln-ink-2]"
+              }`
+            }
+          >
+            <Icon width={20} height={20} />
+            {t(key)}
+          </NavLink>
+        ))}
+        <button
+          type="button"
+          data-testid="mobile-nav-more"
+          onClick={() => setMobileMoreOpen(true)}
+          aria-expanded={mobileMoreOpen}
+          aria-controls="mobile-nav-sheet"
+          className="flex-1 flex flex-col items-center justify-center gap-1 py-2.5 text-[10px] font-medium text-[--cvln-ink-2] transition"
+        >
+          <Menu width={20} height={20} />
+          {t("mobile_nav_more")}
+        </button>
+      </nav>
+
+      {mobileMoreOpen && (
+        <div className="md:hidden fixed inset-0 z-50 flex items-end">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/40"
+            data-testid="mobile-nav-sheet-backdrop"
+            aria-label={t("mobile_nav_close")}
+            onClick={() => setMobileMoreOpen(false)}
+          />
+          <div
+            id="mobile-nav-sheet"
+            data-testid="mobile-nav-sheet"
+            role="dialog"
+            aria-modal="true"
+            className="relative w-full max-h-[75vh] overflow-y-auto bg-white rounded-t-3xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]"
+          >
+            <div className="flex items-center justify-between mb-4">
+              <div className="font-display font-bold text-lg">{t("mobile_nav_more")}</div>
+              <button
+                type="button"
+                data-testid="mobile-nav-sheet-close"
+                aria-label={t("mobile_nav_close")}
+                onClick={() => setMobileMoreOpen(false)}
+                className="p-2 rounded-full hover:bg-black/5"
+              >
+                <Xmark width={20} height={20} />
+              </button>
+            </div>
+            <nav className="grid grid-cols-2 gap-2" aria-label="Navigation mobile secondaire">
+              {mobileMore.map(({ to, key, label, Icon }) => {
+                const testId = key || to.replace(/^\//, "").replace(/\//g, "-");
+                return (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    data-testid={`mobile-nav-sheet-${testId}`}
+                    className="flex items-center gap-3 rounded-xl border border-black/5 px-3 py-3 text-sm"
+                  >
+                    <Icon width={18} height={18} />
+                    <span>{label || t(key)}</span>
+                  </NavLink>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+      )}
 
       {mentorAvailable && <MentorPanel />}
     </div>
