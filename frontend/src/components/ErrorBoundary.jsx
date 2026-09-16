@@ -25,6 +25,7 @@ export default class ErrorBoundary extends Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false };
+    this.handleRetry = this.handleRetry.bind(this);
   }
 
   static getDerivedStateFromError() {
@@ -52,14 +53,14 @@ export default class ErrorBoundary extends Component {
     console.error("CVLN Academy — unhandled render error:", error);
   }
 
-  handleRetry = () => {
+  handleRetry() {
     try {
       sessionStorage.removeItem(RELOAD_GUARD_KEY);
     } catch {
       // best-effort only
     }
     window.location.reload();
-  };
+  }
 
   render() {
     if (!this.state.hasError) return this.props.children;
