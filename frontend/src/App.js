@@ -13,6 +13,7 @@ import LegalFooter from "@/components/LegalFooter";
 import CookieConsent from "@/components/CookieConsent";
 import PublicDiscoveryLayout from "@/components/PublicDiscoveryLayout";
 import SpatialWorldFrame from "@/components/spatial/SpatialWorldFrame.jsx";
+import ErrorBoundary from "@/components/ErrorBoundary.jsx";
 import { RouteTransition, sectionKeyFor } from "@/lib/RouteTransition";
 import { useScrollRestoration } from "@/lib/useScrollRestoration";
 import { ForgotPassword, ResetPassword, VerifyEmail } from "@/pages/AuthRecovery";
@@ -244,6 +245,7 @@ function App() {
         <BrowserRouter>
           <ScrollRestoration />
           <SpatialWorldFrame>
+            <ErrorBoundary>
             <Suspense fallback={<PageFallback />}>
               <RouteTransition keyFor={sectionKeyFor}>
                 <Routes>
@@ -372,6 +374,7 @@ function App() {
                 </Routes>
               </RouteTransition>
             </Suspense>
+            </ErrorBoundary>
           </SpatialWorldFrame>
           <LegalFooter onManageCookies={() => setCookieManagerToken((n) => n + 1)} />
           <CookieConsent manageToken={cookieManagerToken} />

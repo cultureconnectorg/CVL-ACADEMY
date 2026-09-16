@@ -46,7 +46,11 @@ export function clearSession() {
   localStorage.removeItem(REFRESH_KEY);
 }
 
-export const api = axios.create({ baseURL: API_BASE });
+// A cold-starting Render free-tier instance can take real time to answer;
+// axios has no default timeout (0 = wait forever), so a genuinely dead
+// backend left the caller's `busy` state spinning indefinitely instead of
+// surfacing a real, catchable error the UI can show.
+export const api = axios.create({ baseURL: API_BASE, timeout: 20_000 });
 
 api.interceptors.request.use((config) => {
   const t = getToken();
