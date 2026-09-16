@@ -50,6 +50,14 @@ jobs:
   frontend-e2e:
     name: Frontend Playwright runtime
     runs-on: ubuntu-latest
+    # The spatial contract suite asserts the canonical CSS-world DOM contract
+    # (`data-testid=spatial-background`). Chromium 151 headless can now expose
+    # WebGL where older runners did not, which silently selected the alternate
+    # renderer and made these tests runner-dependent. Pin the renderer for this
+    # contract suite; WebGL keeps its own capability/unit coverage and remains
+    # enabled by default in production.
+    env:
+      REACT_APP_ACADEMY_SPATIAL_WEBGL: "false"
     defaults:
       run:
         working-directory: frontend
