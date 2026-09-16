@@ -8,7 +8,15 @@ from mcp import Client
 
 import mcp_server
 from expert_directory import get_expert, list_experts, route_experts
+from fms_canonical.models import CanonicalFormation
+from frk_canonical.models import CanonicalFrkFormation
+from klt_canonical.models import CanonicalKltFormation
+from kor_canonical.models import CanonicalKorFormation
 from mcp_server import academy_mcp
+
+
+async def _empty_list(**_kwargs):
+    return []
 
 
 class FakeCursor:
@@ -161,6 +169,157 @@ async def test_mcp_never_exposes_unpublished_formation(monkeypatch):
         assert not detail.is_error
         payload = json.dumps(detail.model_dump(mode="json"), ensure_ascii=False)
         assert '"found": false' in payload.lower()
+
+
+@pytest.mark.asyncio
+async def test_search_formations_prefers_canonical_over_legacy_beatmaking(monkeypatch):
+    """Regression for the reported bug: a query matching a legacy formation
+    that HAS a real canonical replacement (FMS-03 "Beatmaking") must return
+    the canonical formation, never the bare legacy db.formations doc —
+    CANONICAL_CURRICULUM_RUNTIME=AUTHORITATIVE (ACA-0019) applies on the
+    MCP surface exactly as it already does on the rest of the app."""
+    legacy_beatmaking = {
+        "code": "FMS-03",
+        "name": "Beatmaking & Production musicale",
+        "pole": "FMS",
+        "content_status": "published",
+        "description": "Ancienne fiche non calibrée",
+        "calibration_confidence": "low",
+    }
+    fake_formations = FakeCollection([legacy_beatmaking])
+    monkeypatch.setattr(
+        mcp_server, "db", SimpleNamespace(formations=fake_formations, poles=FakeCollection([]))
+    )
+
+    canonical_fms03 = CanonicalFormation(
+        canonical_formation_code="FMS-03",
+        metier_number="03",
+        metier_name="Beatmaking & Production Musicale",
+        module_codes_in_order=["FMS03-M01", "FMS03-M02"],
+        module_count=2,
+    )
+
+    async def fake_fms_list(**_kwargs):
+        return [canonical_fms03]
+
+    async def fake_authority_map():
+        return {"FMS-03": {"domain": "FMS", "route": "/canonical/FMS-03"}}
+
+    monkeypatch.setattr(mcp_server.fms_canonical, "list_canonical_formations", fake_fms_list)
+    monkeypatch.setattr(mcp_server.klt_canonical, "list_canonical_klt_formations", _empty_list)
+    monkeypatch.setattr(mcp_server.kor_canonical, "list_canonical_kor_formations", _empty_list)
+    monkeypatch.setattr(mcp_server.frk_canonical, "list_canonical_frk_formations", _empty_list)
+    monkeypatch.setattr(mcp_server, "get_canonical_authority_map", fake_authority_map)
+
+    async with Client(academy_mcp) as client:
+        result = await client.call_tool("search_formations", {"query": "beatmaking", "limit": 10})
+        assert not result.is_error
+        items = result.structured_content["result"]["items"]
+        assert len(items) == 1, f"expected exactly one Beatmaking result, got {items}"
+        assert items[0]["code"] == "FMS-03"
+        assert items[0]["pedagogical_source"] == "CANONICAL"
+        assert items[0]["name"] == "Beatmaking & Production Musicale"
+
+
+@pytest.mark.asyncio
+async def test_get_formation_returns_canonical_not_legacy_for_superseded_code(monkeypatch):
+    legacy_beatmaking = {
+        "code": "FMS-03",
+        "name": "Beatmaking & Production musicale",
+        "content_status": "published",
+    }
+    fake_formations = FakeCollection([legacy_beatmaking])
+    monkeypatch.setattr(
+        mcp_server, "db", SimpleNamespace(formations=fake_formations, poles=FakeCollection([]))
+    )
+
+    canonical_fms03 = CanonicalFormation(
+        canonical_formation_code="FMS-03",
+        metier_number="03",
+        metier_name="Beatmaking & Production Musicale",
+        module_codes_in_order=["FMS03-M01"],
+        module_count=1,
+    )
+
+    async def fake_fms_list(**_kwargs):
+        return [canonical_fms03]
+
+    async def fake_authority_map():
+        return {"FMS-03": {"domain": "FMS", "route": "/canonical/FMS-03"}}
+
+    monkeypatch.setattr(mcp_server.fms_canonical, "list_canonical_formations", fake_fms_list)
+    monkeypatch.setattr(mcp_server.klt_canonical, "list_canonical_klt_formations", _empty_list)
+    monkeypatch.setattr(mcp_server.kor_canonical, "list_canonical_kor_formations", _empty_list)
+    monkeypatch.setattr(mcp_server.frk_canonical, "list_canonical_frk_formations", _empty_list)
+    monkeypatch.setattr(mcp_server, "get_canonical_authority_map", fake_authority_map)
+
+    async with Client(academy_mcp) as client:
+        detail = await client.call_tool("get_formation", {"code": "FMS-03"})
+        assert not detail.is_error
+        formation = detail.structured_content["result"]["formation"]
+        assert formation["pedagogical_source"] == "CANONICAL"
+        assert formation["name"] == "Beatmaking & Production Musicale"
+
+
+@pytest.mark.asyncio
+async def test_search_formations_covers_fms_klt_kor_frk_canonical_domains(monkeypatch):
+    monkeypatch.setattr(
+        mcp_server, "db", SimpleNamespace(formations=FakeCollection([]), poles=FakeCollection([]))
+    )
+
+    async def fake_authority_map():
+        return {}
+
+    fms_item = CanonicalFormation(
+        canonical_formation_code="FMS-01",
+        metier_number="01",
+        metier_name="Artist Development",
+        module_count=3,
+    )
+    klt_item = CanonicalKltFormation(
+        klt_formation_code="KLT-06",
+        title="Analyste Observatory",
+        structural_status="PARTIAL",
+        fully_complete=False,
+        contexts=["observatoire"],
+        module_count=5,
+    )
+    kor_item = CanonicalKorFormation(
+        kor_formation_code="KOR-01",
+        title="Podcast & Audio Production",
+        fully_complete=True,
+        contexts=["podcast"],
+        module_count=4,
+    )
+    frk_item = CanonicalFrkFormation(
+        frk_formation_code="FRK-01",
+        title="Culture Connect Operator",
+        status="PACKAGE_COMPLETE",
+        fully_complete=True,
+        module_count=6,
+    )
+
+    monkeypatch.setattr(mcp_server.fms_canonical, "list_canonical_formations", lambda **_k: _one(fms_item))
+    monkeypatch.setattr(mcp_server.klt_canonical, "list_canonical_klt_formations", lambda **_k: _one(klt_item))
+    monkeypatch.setattr(mcp_server.kor_canonical, "list_canonical_kor_formations", lambda **_k: _one(kor_item))
+    monkeypatch.setattr(mcp_server.frk_canonical, "list_canonical_frk_formations", lambda **_k: _one(frk_item))
+    monkeypatch.setattr(mcp_server, "get_canonical_authority_map", fake_authority_map)
+
+    async with Client(academy_mcp) as client:
+        result = await client.call_tool("search_formations", {"limit": 20})
+        assert not result.is_error
+        items = result.structured_content["result"]["items"]
+        codes = {item["code"] for item in items}
+        assert {"FMS-01", "KLT-06", "KOR-01", "FRK-01"}.issubset(codes)
+        sources = {item["code"]: item["pedagogical_source"] for item in items}
+        assert sources["FMS-01"] == "CANONICAL"
+        assert sources["KLT-06"] == "CANONICAL_KLT"
+        assert sources["KOR-01"] == "CANONICAL_KOR"
+        assert sources["FRK-01"] == "CANONICAL_FRK"
+
+
+async def _one(item):
+    return [item]
 
 
 def test_expert_registry_has_stable_ids_and_statuses():

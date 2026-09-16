@@ -16,6 +16,10 @@ from typing import Any, Dict, List, Optional
 from mcp.server import MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
 
+import fms_canonical
+import frk_canonical
+import klt_canonical
+import kor_canonical
 from db import db
 from expert_directory import (
     get_expert as directory_get_expert,
@@ -23,6 +27,10 @@ from expert_directory import (
     route_experts as directory_route_experts,
 )
 from pricing_catalog import formation_commercialization
+from services.canonical_convergence import (
+    CANONICAL_ROUTE_PREFIX,
+    get_canonical_authority_map,
+)
 
 
 academy_mcp = MCPServer(
@@ -31,7 +39,11 @@ academy_mcp = MCPServer(
         "CVLN Academy is an expert learning and career capability. Use the Expert "
         "Directory to identify the right domain, then use published Academy data to "
         "answer. Prefer search_formations before get_formation when the user has not "
-        "supplied an exact formation code. Never infer unpublished programmes, funding "
+        "supplied an exact formation code. Formations returned with "
+        "pedagogical_source starting with CANONICAL are the current, authoritative "
+        "curriculum (FMS/KLT/KOR/FRK); pedagogical_source LEGACY means no canonical "
+        "build exists yet for that formation_code — present it as such, never as "
+        "canonical-verified. Never infer unpublished programmes, funding "
         "eligibility, certifications or user state from missing results. Planned experts "
         "describe target capabilities only and must not be presented as implemented."
     ),
@@ -141,14 +153,119 @@ async def list_poles(limit: int = 50) -> Dict[str, Any]:
     return {"count": len(poles), "items": poles}
 
 
+def _text_matches(query: Optional[str], *fields: Optional[str]) -> bool:
+    if not query:
+        return True
+    needle = query.strip().lower()
+    return any(needle in (field or "").lower() for field in fields)
+
+
+async def _canonical_fms_items(query: Optional[str]) -> List[Dict[str, Any]]:
+    formations = await fms_canonical.list_canonical_formations()
+    return [
+        {
+            "pedagogical_source": "CANONICAL",
+            "domain": "FMS",
+            "code": f.canonical_formation_code,
+            "name": f.metier_name,
+            "modules_count": f.module_count,
+            "route": f"{CANONICAL_ROUTE_PREFIX['FMS']}/{f.canonical_formation_code}",
+        }
+        for f in formations
+        if _text_matches(query, f.canonical_formation_code, f.metier_name)
+    ]
+
+
+async def _canonical_klt_items(query: Optional[str]) -> List[Dict[str, Any]]:
+    formations = await klt_canonical.list_canonical_klt_formations()
+    return [
+        {
+            "pedagogical_source": "CANONICAL_KLT",
+            "domain": "KLT",
+            "code": f.klt_formation_code,
+            "name": f.title,
+            "modules_count": f.module_count,
+            "contexts": f.contexts,
+            "route": f"{CANONICAL_ROUTE_PREFIX['KLT']}/{f.klt_formation_code}",
+        }
+        for f in formations
+        if _text_matches(query, f.klt_formation_code, f.title, *f.contexts)
+    ]
+
+
+async def _canonical_kor_items(query: Optional[str]) -> List[Dict[str, Any]]:
+    formations = await kor_canonical.list_canonical_kor_formations()
+    return [
+        {
+            "pedagogical_source": "CANONICAL_KOR",
+            "domain": "KOR",
+            "code": f.kor_formation_code,
+            "name": f.title,
+            "modules_count": f.module_count,
+            "contexts": f.contexts,
+            "route": f"{CANONICAL_ROUTE_PREFIX['KOR']}/{f.kor_formation_code}",
+        }
+        for f in formations
+        if _text_matches(query, f.kor_formation_code, f.title, *f.contexts)
+    ]
+
+
+async def _canonical_frk_items(query: Optional[str]) -> List[Dict[str, Any]]:
+    formations = await frk_canonical.list_canonical_frk_formations()
+    # FRK codes (FRK-01..75) never collide with legacy or the other three
+    # canonical domains' codes — additive only, no authority-map dedup
+    # needed for this domain (see services/canonical_convergence.py).
+    return [
+        {
+            "pedagogical_source": "CANONICAL_FRK",
+            "domain": "FRK",
+            "code": f.frk_formation_code,
+            "name": f.title,
+            "modules_count": f.module_count,
+            "route": f"{CANONICAL_ROUTE_PREFIX['FRK']}/{f.frk_formation_code}",
+        }
+        for f in formations
+        if _text_matches(query, f.frk_formation_code, f.title, f.objectives)
+    ]
+
+
+async def _canonical_catalogue_items(query: Optional[str]) -> List[Dict[str, Any]]:
+    """All real canonical formations (FMS/KLT/KOR/FRK) matching `query`.
+
+    Reuses the exact same read functions and authority routing
+    (`services.canonical_convergence`) the rest of the app already runs
+    on — CANONICAL_CURRICULUM_RUNTIME=AUTHORITATIVE (Founder decision,
+    ACA-0019) applies identically to the MCP surface, never a second,
+    independently-invented ranking.
+    """
+    fms, klt, kor, frk = (
+        await _canonical_fms_items(query),
+        await _canonical_klt_items(query),
+        await _canonical_kor_items(query),
+        await _canonical_frk_items(query),
+    )
+    return fms + klt + kor + frk
+
+
 @academy_mcp.tool()
 async def search_formations(
     query: Optional[str] = None,
     pole: Optional[str] = None,
     limit: int = 20,
 ) -> Dict[str, Any]:
-    """Search published Academy formations by text and/or pole."""
+    """Search Academy formations by text and/or pole. Canonical FMS/KLT/KOR/FRK
+    content (CANONICAL_CURRICULUM_RUNTIME=AUTHORITATIVE) is searched first;
+    a legacy catalogue entry is only returned when no canonical formation
+    has replaced it — never both for the same formation_code."""
     safe_limit = _clean_limit(limit)
+    authority_map = await get_canonical_authority_map()
+
+    canonical_items = await _canonical_catalogue_items(query)
+    if pole:
+        canonical_items = [
+            item for item in canonical_items if item["domain"].lower() == pole.strip().lower()
+        ]
+
     mongo_filter: Dict[str, Any] = {"content_status": "published"}
 
     if pole:
@@ -178,19 +295,61 @@ async def search_formations(
         else:
             mongo_filter.update(text_filter)
 
-    docs = (
+    legacy_docs = (
         await db.formations.find(mongo_filter, {"_id": 0})
         .limit(safe_limit)
         .to_list(safe_limit)
     )
-    items = [_public_summary(doc) for doc in docs]
+    legacy_items = [
+        {**_public_summary(doc), "pedagogical_source": "LEGACY"}
+        for doc in legacy_docs
+        if doc.get("code") not in authority_map
+    ]
+
+    items = (canonical_items + legacy_items)[:safe_limit]
     return {"count": len(items), "items": items}
+
+
+async def _canonical_authority_detail(domain: str, code: str) -> Optional[Dict[str, Any]]:
+    finders = {
+        "FMS": _canonical_fms_items,
+        "KLT": _canonical_klt_items,
+        "KOR": _canonical_kor_items,
+        "FRK": _canonical_frk_items,
+    }
+    finder = finders.get(domain)
+    if not finder:
+        return None
+    items = await finder(None)
+    return next((item for item in items if item["code"] == code), None)
 
 
 @academy_mcp.tool()
 async def get_formation(code: str) -> Dict[str, Any]:
-    """Return one published formation, including modules and commercialisation."""
+    """Return one Academy formation, including modules and commercialisation.
+    When `code` has real canonical content (FMS/KLT/KOR), the canonical
+    formation is returned instead of the legacy catalogue entry at the same
+    code — the legacy doc is never returned bare for a superseded code."""
     normalized = code.strip()
+
+    authority_map = await get_canonical_authority_map()
+    authority = authority_map.get(normalized)
+    if authority:
+        canonical = await _canonical_authority_detail(authority["domain"], normalized)
+        if canonical:
+            return {"found": True, "formation": canonical}
+
+    for finder in (
+        _canonical_fms_items,
+        _canonical_klt_items,
+        _canonical_kor_items,
+        _canonical_frk_items,
+    ):
+        items = await finder(None)
+        match = next((item for item in items if item["code"] == normalized), None)
+        if match:
+            return {"found": True, "formation": match}
+
     doc = await db.formations.find_one(
         {"code": normalized, "content_status": "published"}, {"_id": 0}
     )
@@ -198,6 +357,7 @@ async def get_formation(code: str) -> Dict[str, Any]:
         return {"found": False, "code": normalized}
 
     doc["commercialization"] = formation_commercialization(doc)
+    doc["pedagogical_source"] = "LEGACY"
     return {"found": True, "formation": doc}
 
 
