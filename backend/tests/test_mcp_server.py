@@ -19,6 +19,33 @@ async def _empty_list(**_kwargs):
     return []
 
 
+async def _empty_authority_map():
+    return {}
+
+
+@pytest.fixture(autouse=True)
+def _stub_canonical_layer_by_default(monkeypatch):
+    """Every canonical domain call defaults to "nothing imported" (empty
+    list / empty authority map) unless a test explicitly overrides it.
+
+    Without this, get_formation/search_formations's unconditional calls
+    into fms_canonical/klt_canonical/kor_canonical/frk_canonical (via
+    services.canonical_convergence) hit a real, unmocked Motor client in
+    any test that only patches `mcp_server.db` for the legacy path (e.g.
+    test_mcp_never_exposes_unpublished_formation) — CI's mcp-ci.yml job
+    runs this file with no MOCK_DB and no real mongod, so that real call
+    surfaces as `RuntimeError: Event loop is closed` deep in motor's
+    asyncio executor rather than a clean, obviously-related failure.
+    Stubbing the canonical layer here is itself a real, honest default —
+    it matches the actual state of an environment where no canonical
+    corpus has been imported yet, never fabricated data."""
+    monkeypatch.setattr(mcp_server.fms_canonical, "list_canonical_formations", _empty_list)
+    monkeypatch.setattr(mcp_server.klt_canonical, "list_canonical_klt_formations", _empty_list)
+    monkeypatch.setattr(mcp_server.kor_canonical, "list_canonical_kor_formations", _empty_list)
+    monkeypatch.setattr(mcp_server.frk_canonical, "list_canonical_frk_formations", _empty_list)
+    monkeypatch.setattr(mcp_server, "get_canonical_authority_map", _empty_authority_map)
+
+
 class FakeCursor:
     def __init__(self, docs):
         self.docs = docs
