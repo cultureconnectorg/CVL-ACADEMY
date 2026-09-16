@@ -19,7 +19,7 @@
  *   background revalidation fetch so the cache heals itself over time.
  */
 
-const CACHE_VERSION = "cvln-academy-v1";
+const CACHE_VERSION = "cvln-academy-v2";
 const APP_SHELL_URLS = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
